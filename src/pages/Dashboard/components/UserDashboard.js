@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import { Route } from 'react-router-dom';
 import {
   makeStyles,
   MenuItem,
@@ -12,6 +13,8 @@ import {
   DeleteRounded as DeleteRoundedIcon,
   TrendingFlatRounded as TrendingFlatRoundedIcon,
 } from '@material-ui/icons';
+import { routes } from '@routes/routesConstants';
+import AddRequirements from '../forms/AddRequirements';
 
 const useStyles = makeStyles((theme) => ({
   section1: {
@@ -71,6 +74,7 @@ const useStyles = makeStyles((theme) => ({
   addIcon: {
     marginLeft: 'auto',
     marginBottom: theme.spacing(3),
+    cursor: 'pointer',
   },
   noData: {
     width: '100%',
@@ -87,6 +91,10 @@ const useStyles = makeStyles((theme) => ({
   },
   entryIcon: {
     marginRight: theme.spacing(2),
+    cursor: 'pointer',
+  },
+  icon: {
+    cursor: 'pointer',
   },
 }));
 
@@ -94,11 +102,54 @@ const UserDashboard = ({
   projects,
   requirements,
   issues,
+  redirectTo,
+  history,
 }) => {
   const classes = useStyles();
   const [proj, setProj] = useState(0);
   const [projReqs, setProjReqs] = useState([]);
   const [projIssues, setProjIssues] = useState([]);
+
+  const addReqPath = redirectTo
+    ? `${redirectTo}/dashboard`
+    : `${routes.DASHBOARD}/add-requirement`;
+
+  const editReqPath = redirectTo
+    ? `${redirectTo}/dashboard`
+    : `${routes.DASHBOARD}/edit-requirement`;
+
+  useEffect(() => {
+    const reqs = _.filter(
+      requirements,
+      { projId: proj},
+    );
+    setProjReqs(_.orderBy(reqs, ['id']));
+  }, [requirements]);
+
+  useEffect(() => {
+    const iss = _.filter(
+      issues,
+      { projId: proj},
+    );
+    setProjIssues(_.orderBy(iss, ['id']));
+  }, [issues]);
+
+  const editRequirement = (item) => {
+    history.push(`${editReqPath}/:${item.id}`, {
+      type: 'edit',
+      from: redirectTo || routes.DASHBOARD,
+      data: item,
+      projId: proj,
+    });
+  };
+
+  const addRequirement = () => {
+    history.push(addReqPath, {
+      from: redirectTo || routes.DASHBOARD,
+      projId: proj,
+      nextId: _.max(_.map(projReqs, 'id')) + 1,
+    });
+  };
   
   return (
     <div>
@@ -162,6 +213,7 @@ const UserDashboard = ({
           <AddRoundedIcon
             className={classes.addIcon}
             fontSize='large'
+            onClick={addRequirement}
           />
           {proj === 0 && (
             <Typography
@@ -195,8 +247,11 @@ const UserDashboard = ({
               <TrendingFlatRoundedIcon
                 className={classes.entryIcon}
               />
-              <EditRoundedIcon className={classes.entryIcon} />
-              <DeleteRoundedIcon />
+              <EditRoundedIcon
+                className={classes.entryIcon}
+                onClick={(e) => editRequirement(req)}
+              />
+              <DeleteRoundedIcon className={classes.icon} />
             </div>
           ))
           }
@@ -237,12 +292,15 @@ const UserDashboard = ({
                 {issue.title}
               </Typography>
               <EditRoundedIcon className={classes.entryIcon} />
-              <DeleteRoundedIcon />
+              <DeleteRoundedIcon className={classes.icon} />
             </div>
           ))
           }
         </div>
       </div>
+
+      <Route path={`${addReqPath}`} component={AddRequirements} />
+      <Route path={`${editReqPath}`} component={AddRequirements} />
     </div>
   )
 }

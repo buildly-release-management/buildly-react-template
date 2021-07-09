@@ -15,10 +15,30 @@ const initialState = {
     { id: 3, name: 'Project 3'},
   ],
   requirements: [
-    { projId: 1, id: 1, title: 'Requirements 1 (Project 1)' },
-    { projId: 1, id: 2, title: 'Requirements 2 (Project 1)' },
-    { projId: 2, id: 3, title: 'Requirements 1 (Project 2)' },
-    { projId: 2, id: 4, title: 'Requirements 2 (Project 2)' },
+    {
+      projId: 1,
+      id: 1,
+      title: 'Requirements 1 (Project 1)',
+      description: 'Description for Requirents 1 (Project 1)',
+    },
+    {
+      projId: 1,
+      id: 2,
+      title: 'Requirements 2 (Project 1)',
+      description: 'Description for Requirents 2 (Project 1)',
+    },
+    {
+      projId: 2,
+      id: 3,
+      title: 'Requirements 1 (Project 2)',
+      description: 'Description for Requirents 1 (Project 2)',
+    },
+    {
+      projId: 2,
+      id: 4,
+      title: 'Requirements 2 (Project 2)',
+      description: 'Description for Requirents 2 (Project 2)',
+    },
   ],
   issues: [
     { projId: 1, id: 1, title: 'Issue 1 (Project 1)' },
