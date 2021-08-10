@@ -15,6 +15,7 @@ import {
 } from '@material-ui/icons';
 import { routes } from '@routes/routesConstants';
 import AddRequirements from '../forms/AddRequirements';
+import AddIssues from '../forms/AddIssues';
 
 const useStyles = makeStyles((theme) => ({
   section1: {
@@ -118,6 +119,14 @@ const UserDashboard = ({
     ? `${redirectTo}/dashboard`
     : `${routes.DASHBOARD}/edit-requirement`;
 
+  const addIssuePath = redirectTo
+    ? `${redirectTo}/dashboard`
+    : `${routes.DASHBOARD}/add-issue`;
+
+  const editIssuePath = redirectTo
+    ? `${redirectTo}/dashboard`
+    : `${routes.DASHBOARD}/edit-issue`;
+
   useEffect(() => {
     const reqs = _.filter(
       requirements,
@@ -134,8 +143,15 @@ const UserDashboard = ({
     setProjIssues(_.orderBy(iss, ['id']));
   }, [issues]);
 
-  const editRequirement = (item) => {
-    history.push(`${editReqPath}/:${item.id}`, {
+  const editItem = (item, type) => {
+    let path;
+    if (type === 'req') {
+      path = `${editReqPath}/:${item.id}`;
+    } else if (type === 'issue') {
+      path = `${editIssuePath}/:${item.id}`;
+    }
+
+    history.push(path, {
       type: 'edit',
       from: redirectTo || routes.DASHBOARD,
       data: item,
@@ -143,11 +159,21 @@ const UserDashboard = ({
     });
   };
 
-  const addRequirement = () => {
-    history.push(addReqPath, {
+  const addItem = (type) => {
+    let path;
+    let nextId;
+    if (type === 'req') {
+      path = addReqPath;
+      nextId = (_.max(_.map(projReqs, 'id')) || 0) + 1;
+    } else if (type === 'issue') {
+      path = addIssuePath;
+      nextId = (_.max(_.map(projIssues, 'id')) || 0) + 1;
+    }
+
+    history.push(path, {
       from: redirectTo || routes.DASHBOARD,
       projId: proj,
-      nextId: _.max(_.map(projReqs, 'id')) + 1,
+      nextId,
     });
   };
   
@@ -213,7 +239,7 @@ const UserDashboard = ({
           <AddRoundedIcon
             className={classes.addIcon}
             fontSize='large'
-            onClick={addRequirement}
+            onClick={(e) => addItem('req')}
           />
           {proj === 0 && (
             <Typography
@@ -249,7 +275,7 @@ const UserDashboard = ({
               />
               <EditRoundedIcon
                 className={classes.entryIcon}
-                onClick={(e) => editRequirement(req)}
+                onClick={(e) => editItem(req, 'req')}
               />
               <DeleteRoundedIcon className={classes.icon} />
             </div>
@@ -261,6 +287,7 @@ const UserDashboard = ({
           <AddRoundedIcon
             className={classes.addIcon}
             fontSize='large'
+            onClick={(e) => addItem('issue')}
           />
           {proj === 0 && (
             <Typography
@@ -282,7 +309,7 @@ const UserDashboard = ({
           {proj !== 0 && projIssues && projIssues.length > 0
           && _.map(projIssues, (issue) => (
             <div
-              key={`req-${issue.projId}-${issue.id}`}
+              key={`issue-${issue.projId}-${issue.id}`}
               className={classes.boxEntry}
             >
               <Typography
@@ -291,7 +318,10 @@ const UserDashboard = ({
               >
                 {issue.title}
               </Typography>
-              <EditRoundedIcon className={classes.entryIcon} />
+              <EditRoundedIcon
+                className={classes.entryIcon}
+                onClick={(e) => editItem(issue, 'issue')}
+              />
               <DeleteRoundedIcon className={classes.icon} />
             </div>
           ))
@@ -301,6 +331,8 @@ const UserDashboard = ({
 
       <Route path={`${addReqPath}`} component={AddRequirements} />
       <Route path={`${editReqPath}`} component={AddRequirements} />
+      <Route path={`${addIssuePath}`} component={AddIssues} />
+      <Route path={`${editIssuePath}`} component={AddIssues} />
     </div>
   )
 }
