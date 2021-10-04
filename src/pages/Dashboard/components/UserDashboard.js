@@ -16,6 +16,7 @@ import {
 import { routes } from '@routes/routesConstants';
 import AddRequirements from '../forms/AddRequirements';
 import AddIssues from '../forms/AddIssues';
+import RequirementToIssue from '../forms/RequirementToIssue';
 
 const useStyles = makeStyles((theme) => ({
   section1: {
@@ -127,6 +128,10 @@ const UserDashboard = ({
     ? `${redirectTo}/dashboard`
     : `${routes.DASHBOARD}/edit-issue`;
 
+  const RequirementToIssuePath = redirectTo
+  ? `${redirectTo}/dashboard`
+  : `${routes.DASHBOARD}/add-requirement`;
+
   useEffect(() => {
     const reqs = _.filter(
       requirements,
@@ -150,6 +155,9 @@ const UserDashboard = ({
     } else if (type === 'issue') {
       path = `${editIssuePath}/:${item.id}`;
     }
+     else if (type === 'append') {
+      path = `${RequirementToIssuePath}/:${item.id}`;
+    }
 
     history.push(path, {
       type: 'edit',
@@ -168,6 +176,9 @@ const UserDashboard = ({
     } else if (type === 'issue') {
       path = addIssuePath;
       nextId = (_.max(_.map(projIssues, 'id')) || 0) + 1;
+    }else if (type === 'append') {
+      path = RequirementToIssuePath;
+      nextId = (_.max(_.map(projIssues, 'id')) || 0) + 1;
     }
 
     history.push(path, {
@@ -176,7 +187,23 @@ const UserDashboard = ({
       nextId,
     });
   };
-  
+  const appendItem = (item, type) => {
+    let path;
+    let nextId;
+    if (type === 'append') {
+      path = RequirementToIssuePath;
+      nextId = (_.max(_.map(projIssues, 'id')) || 0) + 1;
+    }
+
+    history.push(path, {
+      type: 'edit',
+      from: redirectTo || routes.DASHBOARD,
+      projId: proj,
+      nextId,
+      data: item,
+    });
+  };
+
   return (
     <div>
       <div className={classes.section1}>
@@ -272,6 +299,7 @@ const UserDashboard = ({
               </Typography>
               <TrendingFlatRoundedIcon
                 className={classes.entryIcon}
+                onClick={(e) => appendItem(req,'append')}
               />
               <EditRoundedIcon
                 className={classes.entryIcon}
@@ -281,6 +309,7 @@ const UserDashboard = ({
             </div>
           ))
           }
+
         </div>
 
         <div className={`${classes.boxSection} ${classes.rightBox}`}>
@@ -333,6 +362,7 @@ const UserDashboard = ({
       <Route path={`${editReqPath}`} component={AddRequirements} />
       <Route path={`${addIssuePath}`} component={AddIssues} />
       <Route path={`${editIssuePath}`} component={AddIssues} />
+      <Route path={`${RequirementToIssuePath}`} component={RequirementToIssue} />
     </div>
   )
 }
