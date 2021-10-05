@@ -6,6 +6,7 @@ import {
   ADD_ISSUE,
   EDIT_ISSUE,
   DELETE_ISSUE,
+  CONVERT_ISSUE,
 } from '@redux/dashboard/actions/dashboard.actions';
 
 const initialState = {
@@ -158,8 +159,8 @@ export default (state = initialState, action) => {
 
     case DELETE_ISSUE: {
       const deleteData = _.filter(
-        state.requirements,
-        (req) => (req.id !== action.id),
+        state.issues,
+        (req) => (issue.id !== action.id),
       );
       return {
         ...state,
@@ -167,6 +168,17 @@ export default (state = initialState, action) => {
       };
     }
 
+    case CONVERT_ISSUE: {
+      const deleteData = _.filter(
+        state.requirements,
+        (req) => (req.id !== action.reqId),
+      );
+      return {
+        ...state,
+        requirements: deleteData,
+        issues: [...state.issues, action.data],
+      };
+    }
     default:
       return state;
   }

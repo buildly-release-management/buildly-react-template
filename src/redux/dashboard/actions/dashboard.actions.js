@@ -7,6 +7,7 @@ export const ADD_ISSUE = 'DASHBOARD/ADD_ISSUE';
 export const EDIT_ISSUE = 'DASHBOARD/EDIT_ISSUE';
 export const DELETE_ISSUE = 'DASHBOARD/DELETE_ISSUE';
 
+export const CONVERT_ISSUE = 'DASHBOARD/CONVERT_ISSUE';
 /**
  * Add new requirement
  * @param {Object} data
@@ -59,4 +60,15 @@ export const editIssue = (data) => ({
 export const deleteIssue = (id) => ({
   type: DELETE_ISSUE,
   id,
+});
+
+/**
+ * Convert Requirement to Issue
+ * @param {Object} data
+ * @param {Number} reqId
+ */
+export const convertIssue = (data, reqId) => ({
+  type: CONVERT_ISSUE,
+  data,
+  reqId,
 });

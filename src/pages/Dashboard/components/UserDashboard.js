@@ -17,6 +17,8 @@ import { routes } from '@routes/routesConstants';
 import AddRequirements from '../forms/AddRequirements';
 import AddIssues from '../forms/AddIssues';
 import RequirementToIssue from '../forms/RequirementToIssue';
+import { deleteRequirement, deleteIssue } from '@redux/dashboard/actions/dashboard.actions';
+import ConfirmModal from '../forms/ConfirmModal';
 
 const useStyles = makeStyles((theme) => ({
   section1: {
@@ -102,6 +104,7 @@ const useStyles = makeStyles((theme) => ({
 
 const UserDashboard = ({
   projects,
+  dispatch,
   requirements,
   issues,
   redirectTo,
@@ -111,6 +114,8 @@ const UserDashboard = ({
   const [proj, setProj] = useState(0);
   const [projReqs, setProjReqs] = useState([]);
   const [projIssues, setProjIssues] = useState([]);
+  const [openDeleteModal, setDeleteModal] = useState(false);
+  const [toDeleteItem, setDeleteItem] = useState({'id':0,'type':'req'});
 
   const addReqPath = redirectTo
     ? `${redirectTo}/dashboard`
@@ -128,9 +133,9 @@ const UserDashboard = ({
     ? `${redirectTo}/dashboard`
     : `${routes.DASHBOARD}/edit-issue`;
 
-  const RequirementToIssuePath = redirectTo
+  const requirementToIssuePath = redirectTo
   ? `${redirectTo}/dashboard`
-  : `${routes.DASHBOARD}/add-requirement`;
+  : `${routes.DASHBOARD}/convert-issue`;
 
   useEffect(() => {
     const reqs = _.filter(
@@ -155,8 +160,8 @@ const UserDashboard = ({
     } else if (type === 'issue') {
       path = `${editIssuePath}/:${item.id}`;
     }
-     else if (type === 'append') {
-      path = `${RequirementToIssuePath}/:${item.id}`;
+     else if (type === 'convert') {
+      path = `${requirementToIssuePath}/:${item.id}`;
     }
 
     history.push(path, {
@@ -176,8 +181,8 @@ const UserDashboard = ({
     } else if (type === 'issue') {
       path = addIssuePath;
       nextId = (_.max(_.map(projIssues, 'id')) || 0) + 1;
-    }else if (type === 'append') {
-      path = RequirementToIssuePath;
+    }else if (type === 'convert') {
+      path = requirementToIssuePath;
       nextId = (_.max(_.map(projIssues, 'id')) || 0) + 1;
     }
 
@@ -187,11 +192,12 @@ const UserDashboard = ({
       nextId,
     });
   };
-  const appendItem = (item, type) => {
+
+  const convertIssue = (item, type) => {
     let path;
     let nextId;
-    if (type === 'append') {
-      path = RequirementToIssuePath;
+    if (type === 'convert') {
+      path = requirementToIssuePath;
       nextId = (_.max(_.map(projIssues, 'id')) || 0) + 1;
     }
 
@@ -202,6 +208,22 @@ const UserDashboard = ({
       nextId,
       data: item,
     });
+  };
+
+  const deleteItem = (item, type) => {
+    setDeleteItem({'id': item.id, 'type': type});
+    setDeleteModal(true);
+  }
+
+  const handleDeleteModal = () => {
+    let type = toDeleteItem.type;
+    let id = toDeleteItem.id;
+    setDeleteModal(false);
+    if (type === 'req') {
+      dispatch(deleteRequirement(id));
+    } else if (type === 'issue') {
+      dispatch(deleteIssue(id));
+    }
   };
 
   return (
@@ -299,13 +321,14 @@ const UserDashboard = ({
               </Typography>
               <TrendingFlatRoundedIcon
                 className={classes.entryIcon}
-                onClick={(e) => appendItem(req,'append')}
+                onClick={(e) => convertIssue(req,'convert')}
               />
               <EditRoundedIcon
                 className={classes.entryIcon}
                 onClick={(e) => editItem(req, 'req')}
               />
-              <DeleteRoundedIcon className={classes.icon} />
+              <DeleteRoundedIcon className={classes.icon}
+              onClick={(e) => deleteItem(req,'req')}/>
             </div>
           ))
           }
@@ -351,18 +374,27 @@ const UserDashboard = ({
                 className={classes.entryIcon}
                 onClick={(e) => editItem(issue, 'issue')}
               />
-              <DeleteRoundedIcon className={classes.icon} />
+              <DeleteRoundedIcon className={classes.icon}
+              onClick = {(e) => deleteItem(issue,'issue')}
+              />
             </div>
           ))
           }
         </div>
       </div>
 
+      <ConfirmModal
+        open={openDeleteModal}
+        setOpen={setDeleteModal}
+        submitAction={handleDeleteModal}
+        title="Are you sure you want to delete?"
+        submitText="Delete"
+      />
       <Route path={`${addReqPath}`} component={AddRequirements} />
       <Route path={`${editReqPath}`} component={AddRequirements} />
       <Route path={`${addIssuePath}`} component={AddIssues} />
       <Route path={`${editIssuePath}`} component={AddIssues} />
-      <Route path={`${RequirementToIssuePath}`} component={RequirementToIssue} />
+      <Route path={`${requirementToIssuePath}`} component={RequirementToIssue} />
     </div>
   )
 }
