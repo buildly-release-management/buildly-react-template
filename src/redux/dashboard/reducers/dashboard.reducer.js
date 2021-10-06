@@ -148,7 +148,7 @@ export default (state = initialState, action) => {
     case EDIT_ISSUE: {
       let editData = _.filter(
         state.issues,
-        (req) => (req.id !== action.data.id),
+        (issue) => (issue.id !== action.data.id),
       );
       editData = [...editData, action.data];
       return {
