@@ -17,6 +17,7 @@ const useStyles = makeStyles((theme) => ({
   appBar: {
     backgroundColor: theme.palette.secondary.light,
     zIndex: theme.zIndex.drawer + 1,
+    width: '100%',
   },
   logo: {
     maxWidth: 50,

@@ -12,6 +12,10 @@ const theme = createMuiTheme({
       light: '#707070',
       contrastText: '#fff',
     },
+    neutral: {
+      main: '#F6F8FA',
+      contrastText: '#000'
+    },
   },
   typography: {
     button: {
