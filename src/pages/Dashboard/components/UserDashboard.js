@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
   title: {
     margin: theme.spacing(2, 0),
   },
-  project: {
+  product: {
     width: '30%',
     '& .MuiOutlinedInput-notchedOutline': {
       borderColor: theme.palette.secondary.contrastText,
@@ -103,7 +103,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const UserDashboard = ({
-  projects,
+  products,
   dispatch,
   requirements,
   issues,
@@ -236,10 +236,10 @@ const UserDashboard = ({
           variant='outlined'
           margin='normal'
           select
-          id='project'
+          id='product'
           color='primary'
-          label='Select Project'
-          className={classes.project}
+          label='Select Product'
+          className={classes.product}
           value={proj}
           onChange={(e) => {
             setProj(e.target.value);
@@ -254,11 +254,11 @@ const UserDashboard = ({
           }}
         >
           <MenuItem value={0}>Select</MenuItem>
-          {projects
-          && projects.length > 0
-          && _.map(projects, (proj) => (
+          {products
+          && products.length > 0
+          && _.map(products, (proj) => (
             <MenuItem
-              key={`project-${proj.id}`}
+              key={`product-${proj.id}`}
               value={proj.id}
             >
               {proj.name}
@@ -295,7 +295,7 @@ const UserDashboard = ({
               className={classes.noData}
               variant='body1'
             >
-              No Project selected. Please select the project.
+              No Product selected. Please select the product.
             </Typography>
           )}
           {proj !== 0 && projReqs && projReqs.length === 0
@@ -346,7 +346,7 @@ const UserDashboard = ({
               className={classes.noData}
               variant='body1'
             >
-              No Project selected. Please select the project.
+              No Product selected. Please select the product.
             </Typography>
           )}
           {proj !== 0 && projIssues && projIssues.length === 0
