@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { connect } from 'react-redux';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
@@ -10,39 +11,12 @@ import {
 } from '@material-ui/icons';
 import {
 	makeStyles,
-	MenuItem,
-	TextField,
-	Typography,
 	Card,
-	CardActions,
 	CardContent,
-	Button,
 	IconButton,
 	CardHeader,
 	Chip,
 } from '@material-ui/core';
-
-const tasksList = [
-	{ _id: 1, title: 'First Task', status: 'backlog' },
-	{ _id: 2, title: 'Second Task', status: 'backlog' },
-	{ _id: 3, title: 'Third Task', status: 'backlog' },
-	{ _id: 4, title: 'Fourth Task', status: 'new' },
-	{ _id: 5, title: 'Fifth Task', status: 'new' },
-	{ _id: 6, title: 'Sixth Task', status: 'wip' },
-	{ _id: 7, title: 'Seventh Task', status: 'review' },
-	{ _id: 8, title: 'Eighth Task', status: 'review' },
-	{ _id: 9, title: 'Ninth Task', status: 'done' },
-	{ _id: 10, title: 'Tenth Task', status: 'done' },
-];
-
-const channels = ['backlog', 'new', 'wip', 'review', 'done'];
-const labelsMap = {
-	backlog: 'Backlog',
-	new: 'To Do',
-	wip: 'In Progress',
-	review: 'Review',
-	done: 'Done',
-};
 
 const useStyles = makeStyles((theme) => ({
 	board: {
@@ -52,8 +26,10 @@ const useStyles = makeStyles((theme) => ({
 	column: {
 		margin: theme.spacing(0, 1),
 		backgroundColor: theme.palette.neutral.main,
+		borderRadius: theme.spacing(1),
 	},
 	columnHead: {
+		borderRadius: theme.spacing(1),
 		padding: theme.spacing(1),
 		display: 'flex',
 		justifyContent: 'space-evenly',
@@ -68,8 +44,9 @@ const useStyles = makeStyles((theme) => ({
 	},
 	tasksList: {
 		padding: theme.spacing(0, 0.5),
-		height: '85vh',
+		height: '80vh',
 		overflow: 'auto',
+		minWidth: '300px',
 	},
 	icon: {
 		margin: 'auto',
@@ -101,11 +78,10 @@ const useStyles = makeStyles((theme) => ({
 	},
 	card: {
 		border: '1px solid #d8d8d8',
-		width: '250px',
+		// width: '250px',
 		padding: theme.spacing(1),
 		'& .MuiCardHeader-title': {
 			fontSize: '1rem',
-			padding: theme.spacing(0.2, 1),
 		},
 		'& .MuiCardHeader-root': {
 			padding: theme.spacing(0.5),
@@ -122,13 +98,20 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-const Kanban = () => {
+const Kanban = ({
+	products,
+	status,
+	requirements,
+	issues,
+	redirectTo,
+	history,
+}) => {
 	const classes = useStyles();
-	const [tasks, setTaskStatus] = useState(tasksList);
+	const [tasks, setTaskStatus] = useState(requirements.push(...issues));
 
 	const changeTaskStatus = useCallback(
 		(id, status) => {
-			let task = tasks.find((task) => task._id === id);
+			let task = tasks.find((task) => task.id === id);
 			const taskIndex = tasks.indexOf(task);
 			task = { ...task, status };
 			let newTasks = update(tasks, {
@@ -143,41 +126,59 @@ const Kanban = () => {
 		<main>
 			<DndProvider backend={HTML5Backend}>
 				<section className={classes.board}>
-					{channels.map((channel) => (
-						<KanbanColumn key={channel} status={channel} changeTaskStatus={changeTaskStatus}>
+					{status.map((statusItem) => (
+						<KanbanColumn key={statusItem.name} status={statusItem} changeTaskStatus={changeTaskStatus}>
 							<div className={classes.column}>
 								<div className={classes.columnHead}>
-									<p>{labelsMap[channel]}</p>
-									<AddRoundedIcon
-										className={classes.icon}
-										fontSize='small'
-										// onClick={(e) => addItem('req')}
-									/>
-									<MoreHorizIcon className={classes.icon} fontSize='small' />
+									<p>{statusItem.name}</p>
+									<IconButton>
+										<AddRoundedIcon
+											className={classes.icon}
+											fontSize='small'
+											// onClick={(e) => addItem('req')}
+										/>
+									</IconButton>
+									<IconButton
+										aria-label='column-options'
+										aria-controls='menu-column'
+										aria-haspopup='false'
+										color='default'>
+										<MoreHorizIcon className={classes.icon} fontSize='small' />
+
+									</IconButton>
 								</div>
 								<div className={classes.tasksList}>
-									{tasks
-										.filter((item) => item.status === channel)
+									{tasks && tasks.length > 0 && tasks
+										.filter((item) => item.status === statusItem.value)
 										.map((item) => (
-											<KanbanItem key={item._id} id={item._id}>
+											<KanbanItem key={`card-${item.id}-${item.name}`} id={`${item.id}-${item.name}`}>
 												<Card className={classes.card}>
 													<div className={classes.priority}></div>
 													<CardHeader
 														action={
 															<div>
-																<IconButton>
+																{item.featureUUID &&
+																<IconButton
+																	aria-label='convert-issue'
+																	aria-controls='menu-card'
+																	aria-haspopup='false'
+																	color='default'>
 																	<TrendingFlatRoundedIcon
 																		className={classes.icon}
 																		fontSize='small'
 																		// onClick={(e) => convertIssue(item,"convert")}
 																	/>
-																</IconButton>
-																<IconButton>
+																</IconButton>}
+																<IconButton
+																	aria-label='card-options'
+																	aria-controls='menu-card'
+																	aria-haspopup='false'
+																	color='default'>
 																	<MoreVertIcon className={classes.icon} fontSize='small' />
 																</IconButton>
 															</div>
 														}
-														title={item.title}
+														title={item.name}
 													/>
 													<CardContent>
 														<div className={classes.flexContainer}>
@@ -191,7 +192,7 @@ const Kanban = () => {
 														</div>
 														<div className={classes.datetime}>19 mins ago</div>
 													</CardContent>
-												</Card>
+													</Card>
 											</KanbanItem>
 										))}
 								</div>
@@ -204,7 +205,7 @@ const Kanban = () => {
 	);
 };
 
-export default Kanban;
+// export default Kanban;
 
 const KanbanColumn = ({ status, changeTaskStatus, children }) => {
 	const ref = useRef(null);
@@ -234,3 +235,10 @@ const KanbanItem = ({ id, children }) => {
 		</div>
 	);
 };
+
+const mapStateToProps = (state, ownProps) => ({
+	...ownProps,
+	...state.dashboardReducer,
+  });
+
+export default connect(mapStateToProps)(Kanban);
