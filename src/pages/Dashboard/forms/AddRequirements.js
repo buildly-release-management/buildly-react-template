@@ -145,15 +145,15 @@ const AddRequirements = ({
   };
 
   return (
-    <React.Fragment>
+    <>
       {openFormModal && (
         <FormModal
           open={openFormModal}
           handleClose={closeFormModal}
           title={formTitle}
           titleClass={classes.formTitle}
-          maxWidth='md'
-          wantConfirm={true}
+          maxWidth="md"
+          wantConfirm
           openConfirmModal={openConfirmModal}
           setConfirmModal={setConfirmModal}
           handleConfirmModal={discardFormData}
@@ -166,14 +166,14 @@ const AddRequirements = ({
             <Grid container spacing={isDesktop ? 2 : 0}>
               <Grid item xs={12}>
                 <TextField
-                  variant='outlined'
-                  margin='normal'
+                  variant="outlined"
+                  margin="normal"
                   required
                   fullWidth
-                  id='title'
-                  label='Title'
-                  name='title'
-                  autoComplete='title'
+                  id="title"
+                  label="Title"
+                  name="title"
+                  autoComplete="title"
                   error={
                     formError.title
                     && formError.title.error
@@ -189,15 +189,15 @@ const AddRequirements = ({
               </Grid>
               <Grid item xs={12}>
                 <TextField
-                  variant='outlined'
-                  margin='normal'
+                  variant="outlined"
+                  margin="normal"
                   required
                   fullWidth
                   multiline
-                  id='description'
-                  label='Description'
-                  name='description'
-                  autoComplete='description'
+                  id="description"
+                  label="Description"
+                  name="description"
+                  autoComplete="description"
                   error={
                     formError.description
                     && formError.description.error
@@ -216,14 +216,14 @@ const AddRequirements = ({
             <Grid
               container
               spacing={isDesktop ? 3 : 0}
-              justify='center'
+              justify="center"
             >
               <Grid item xs={12} sm={4}>
                 <Button
-                  type='submit'
+                  type="submit"
                   fullWidth
-                  variant='contained'
-                  color='primary'
+                  variant="contained"
+                  color="primary"
                   className={classes.submit}
                   disabled={submitDisabled()}
                 >
@@ -232,10 +232,10 @@ const AddRequirements = ({
               </Grid>
               <Grid item xs={12} sm={4}>
                 <Button
-                  type='button'
+                  type="button"
                   fullWidth
-                  variant='contained'
-                  color='primary'
+                  variant="contained"
+                  color="primary"
                   onClick={discardFormData}
                   className={classes.submit}
                 >
@@ -246,9 +246,9 @@ const AddRequirements = ({
           </form>
         </FormModal>
       )}
-    </React.Fragment>
-  )
-}
+    </>
+  );
+};
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,

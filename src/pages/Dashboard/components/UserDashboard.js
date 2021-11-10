@@ -1,5 +1,7 @@
+/* eslint-disable import/no-unresolved */
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import _ from 'lodash';
 import { Route } from 'react-router-dom';
 import {
   makeStyles,
@@ -14,10 +16,10 @@ import {
   TrendingFlatRounded as TrendingFlatRoundedIcon,
 } from '@material-ui/icons';
 import { routes } from '@routes/routesConstants';
+import { deleteRequirement, deleteIssue } from '@redux/dashboard/actions/dashboard.actions';
 import AddRequirements from '../forms/AddRequirements';
 import AddIssues from '../forms/AddIssues';
 import RequirementToIssue from '../forms/RequirementToIssue';
-import { deleteRequirement, deleteIssue } from '@redux/dashboard/actions/dashboard.actions';
 import ConfirmModal from '../forms/ConfirmModal';
 
 const useStyles = makeStyles((theme) => ({
@@ -115,7 +117,7 @@ const UserDashboard = ({
   const [projReqs, setProjReqs] = useState([]);
   const [projIssues, setProjIssues] = useState([]);
   const [openDeleteModal, setDeleteModal] = useState(false);
-  const [toDeleteItem, setDeleteItem] = useState({'id':0,'type':'req'});
+  const [toDeleteItem, setDeleteItem] = useState({ id: 0, type: 'req' });
 
   const addReqPath = redirectTo
     ? `${redirectTo}/dashboard`
@@ -134,13 +136,13 @@ const UserDashboard = ({
     : `${routes.DASHBOARD}/edit-issue`;
 
   const requirementToIssuePath = redirectTo
-  ? `${redirectTo}/dashboard`
-  : `${routes.DASHBOARD}/convert-issue`;
+    ? `${redirectTo}/dashboard`
+    : `${routes.DASHBOARD}/convert-issue`;
 
   useEffect(() => {
     const reqs = _.filter(
       requirements,
-      { projId: proj},
+      { productUUID: proj },
     );
     setProjReqs(_.orderBy(reqs, ['id']));
   }, [requirements]);
@@ -148,7 +150,7 @@ const UserDashboard = ({
   useEffect(() => {
     const iss = _.filter(
       issues,
-      { projId: proj},
+      { productUUID: proj },
     );
     setProjIssues(_.orderBy(iss, ['id']));
   }, [issues]);
@@ -159,8 +161,7 @@ const UserDashboard = ({
       path = `${editReqPath}/:${item.id}`;
     } else if (type === 'issue') {
       path = `${editIssuePath}/:${item.id}`;
-    }
-     else if (type === 'convert') {
+    } else if (type === 'convert') {
       path = `${requirementToIssuePath}/:${item.id}`;
     }
 
@@ -168,7 +169,7 @@ const UserDashboard = ({
       type: 'edit',
       from: redirectTo || routes.DASHBOARD,
       data: item,
-      projId: proj,
+      productUUID: proj,
     });
   };
 
@@ -181,14 +182,14 @@ const UserDashboard = ({
     } else if (type === 'issue') {
       path = addIssuePath;
       nextId = (_.max(_.map(projIssues, 'id')) || 0) + 1;
-    }else if (type === 'convert') {
+    } else if (type === 'convert') {
       path = requirementToIssuePath;
       nextId = (_.max(_.map(projIssues, 'id')) || 0) + 1;
     }
 
     history.push(path, {
       from: redirectTo || routes.DASHBOARD,
-      projId: proj,
+      productUUID: proj,
       nextId,
     });
   };
@@ -204,20 +205,20 @@ const UserDashboard = ({
     history.push(path, {
       type: 'edit',
       from: redirectTo || routes.DASHBOARD,
-      projId: proj,
+      productUUID: proj,
       nextId,
       data: item,
     });
   };
 
   const deleteItem = (item, type) => {
-    setDeleteItem({'id': item.id, 'type': type});
+    setDeleteItem({ id: item.id, type });
     setDeleteModal(true);
-  }
+  };
 
   const handleDeleteModal = () => {
-    let type = toDeleteItem.type;
-    let id = toDeleteItem.id;
+    const { type } = toDeleteItem;
+    const { id } = toDeleteItem;
     setDeleteModal(false);
     if (type === 'req') {
       dispatch(deleteRequirement(id));
@@ -233,23 +234,23 @@ const UserDashboard = ({
           Dashboard
         </Typography>
         <TextField
-          variant='outlined'
-          margin='normal'
+          variant="outlined"
+          margin="normal"
           select
-          id='product'
-          color='primary'
-          label='Select Product'
+          id="product"
+          color="primary"
+          label="Select Product"
           className={classes.product}
           value={proj}
           onChange={(e) => {
             setProj(e.target.value);
             setProjReqs(_.filter(
               requirements,
-              { projId: e.target.value},
+              { productUUID: e.target.value },
             ));
             setProjIssues(_.filter(
               issues,
-              { projId: e.target.value},
+              { productUUID: e.target.value },
             ));
           }}
         >
@@ -263,21 +264,20 @@ const UserDashboard = ({
             >
               {proj.name}
             </MenuItem>
-          ))
-          }
+          ))}
         </TextField>
       </div>
 
       <div className={classes.section2}>
         <Typography
           className={classes.actionTitle}
-          variant='h6'
+          variant="h6"
         >
           Requirements
         </Typography>
         <Typography
           className={`${classes.actionTitle} ${classes.rightBox}`}
-          variant='h6'
+          variant="h6"
         >
           Issues
         </Typography>
@@ -287,13 +287,13 @@ const UserDashboard = ({
         <div className={classes.boxSection}>
           <AddRoundedIcon
             className={classes.addIcon}
-            fontSize='large'
+            fontSize="large"
             onClick={(e) => addItem('req')}
           />
           {proj === 0 && (
             <Typography
               className={classes.noData}
-              variant='body1'
+              variant="body1"
             >
               No Product selected. Please select the product.
             </Typography>
@@ -302,7 +302,7 @@ const UserDashboard = ({
           && (
             <Typography
               className={classes.noData}
-              variant='body1'
+              variant="body1"
             >
               No Requirements yet.
             </Typography>
@@ -310,41 +310,42 @@ const UserDashboard = ({
           {proj !== 0 && projReqs && projReqs.length > 0
           && _.map(projReqs, (req) => (
             <div
-              key={`req-${req.projId}-${req.id}`}
+              key={`req-${req.productUUID}-${req.id}`}
               className={classes.boxEntry}
             >
               <Typography
                 className={classes.entryTitle}
-                variant='body1'
+                variant="body1"
               >
                 {req.title}
               </Typography>
               <TrendingFlatRoundedIcon
                 className={classes.entryIcon}
-                onClick={(e) => convertIssue(req,'convert')}
+                onClick={(e) => convertIssue(req, 'convert')}
               />
               <EditRoundedIcon
                 className={classes.entryIcon}
                 onClick={(e) => editItem(req, 'req')}
               />
-              <DeleteRoundedIcon className={classes.icon}
-              onClick={(e) => deleteItem(req,'req')}/>
+              <DeleteRoundedIcon
+                className={classes.icon}
+                onClick={(e) => deleteItem(req, 'req')}
+              />
             </div>
-          ))
-          }
+          ))}
 
         </div>
 
         <div className={`${classes.boxSection} ${classes.rightBox}`}>
           <AddRoundedIcon
             className={classes.addIcon}
-            fontSize='large'
+            fontSize="large"
             onClick={(e) => addItem('issue')}
           />
           {proj === 0 && (
             <Typography
               className={classes.noData}
-              variant='body1'
+              variant="body1"
             >
               No Product selected. Please select the product.
             </Typography>
@@ -353,7 +354,7 @@ const UserDashboard = ({
           && (
             <Typography
               className={classes.noData}
-              variant='body1'
+              variant="body1"
             >
               No Issues yet.
             </Typography>
@@ -361,12 +362,12 @@ const UserDashboard = ({
           {proj !== 0 && projIssues && projIssues.length > 0
           && _.map(projIssues, (issue) => (
             <div
-              key={`issue-${issue.projId}-${issue.id}`}
+              key={`issue-${issue.productUUID}-${issue.id}`}
               className={classes.boxEntry}
             >
               <Typography
                 className={classes.entryTitle}
-                variant='body1'
+                variant="body1"
               >
                 {issue.title}
               </Typography>
@@ -374,12 +375,12 @@ const UserDashboard = ({
                 className={classes.entryIcon}
                 onClick={(e) => editItem(issue, 'issue')}
               />
-              <DeleteRoundedIcon className={classes.icon}
-              onClick = {(e) => deleteItem(issue,'issue')}
+              <DeleteRoundedIcon
+                className={classes.icon}
+                onClick={(e) => deleteItem(issue, 'issue')}
               />
             </div>
-          ))
-          }
+          ))}
         </div>
       </div>
 
@@ -396,8 +397,8 @@ const UserDashboard = ({
       <Route path={`${editIssuePath}`} component={AddIssues} />
       <Route path={`${requirementToIssuePath}`} component={RequirementToIssue} />
     </div>
-  )
-}
+  );
+};
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,

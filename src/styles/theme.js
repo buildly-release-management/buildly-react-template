@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import { createTheme, responsiveFontSizes } from '@material-ui/core/styles';
 
 const theme = createTheme({
@@ -14,7 +15,7 @@ const theme = createTheme({
     },
     neutral: {
       main: '#F6F8FA',
-      contrastText: '#000'
+      contrastText: '#000',
     },
   },
   typography: {

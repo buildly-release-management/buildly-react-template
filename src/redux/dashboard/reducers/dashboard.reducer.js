@@ -8,36 +8,45 @@ import {
   DELETE_ISSUE,
   CONVERT_ISSUE,
 } from '@redux/dashboard/actions/dashboard.actions';
-import uuid from "uuid/v4";
+import uuid from 'uuid/v4';
 
 const initialState = {
+  view: 'table',
   products: [
-    { id: 1, name: 'Product 1'},
-    { id: 2, name: 'Product 2'},
-    { id: 3, name: 'Product 3'},
+    { id: 1, name: 'Product 1' },
+    { id: 2, name: 'Product 2' },
+    { id: 3, name: 'Product 3' },
   ],
   types: [
-    { id: 1, value: 'sprint', name: 'Sprint'},
-    { id: 2, value: 'release', name: 'Release'},
+    { id: 1, value: 'sprint', name: 'Sprint' },
+    { id: 2, value: 'release', name: 'Release' },
   ],
   status: [
-    { id: 1, value: 'backlog', name: 'Backlog'},
-    { id: 2, value: 'to-do', name: 'To-Do'},
-    { id: 3, value: 'in-progress', name: 'In-Progess'},
-    { id: 4, value: 'review', name: 'Review'},
-    { id: 5, value: 'done', name: 'Done'},
+    { id: 1, value: 'backlog', name: 'Backlog' },
+    { id: 2, value: 'to-do', name: 'To-Do' },
+    { id: 3, value: 'in-progress', name: 'In-Progess' },
+    { id: 4, value: 'review', name: 'Review' },
+    { id: 5, value: 'done', name: 'Done' },
   ],
   repos: [
-    { productUUID: 1, id: 1, name: 'buildly-react-template (Product 1)'},
-    { productUUID: 1, id: 2, name: 'buildly-core (Product 1)'},
-    { productUUID: 2, id: 3, name: 'buildly-react-template (Product 2)'},
-    { productUUID: 2, id: 4, name: 'buildly-core (Product 2)'},
+    { productUUID: 1, id: 1, name: 'buildly-react-template (Product 1)' },
+    { productUUID: 1, id: 2, name: 'buildly-core (Product 1)' },
+    { productUUID: 2, id: 3, name: 'buildly-react-template (Product 2)' },
+    { productUUID: 2, id: 4, name: 'buildly-core (Product 2)' },
   ],
   devs: [
-    { productUUID: 1, id: 1, value: 'dev1', name: 'Developer 1 (Product 1)'},
-    { productUUID: 1, id: 2, value: 'dev2', name: 'Developer 2 (Product 1)'},
-    { productUUID: 2, id: 3, value: 'dev3', name: 'Developer 3 (Product 2)'},
-    { productUUID: 2, id: 4, value: 'dev4', name: 'Developer 4 (Product 2)'},
+    {
+      productUUID: 1, id: 1, value: 'dev1', name: 'Developer 1 (Product 1)',
+    },
+    {
+      productUUID: 1, id: 2, value: 'dev2', name: 'Developer 2 (Product 1)',
+    },
+    {
+      productUUID: 2, id: 3, value: 'dev3', name: 'Developer 3 (Product 2)',
+    },
+    {
+      productUUID: 2, id: 4, value: 'dev4', name: 'Developer 4 (Product 2)',
+    },
   ],
   requirements: [
     {
@@ -51,7 +60,7 @@ const initialState = {
       decisions: [],
       issues: [],
       totalEstimate: '',
-      tags: ['testing', 'documentation']
+      tags: ['testing', 'documentation'],
     },
     {
       productUUID: 1,
@@ -64,7 +73,7 @@ const initialState = {
       decisions: [],
       issues: [],
       totalEstimate: '10',
-      tags: ['testing', 'bug']
+      tags: ['testing', 'bug'],
     },
     {
       productUUID: 2,
@@ -77,7 +86,7 @@ const initialState = {
       decisions: [],
       issues: [],
       totalEstimate: '15',
-      tags: ['testing', 'bug']
+      tags: ['testing', 'bug'],
     },
     {
       productUUID: 2,
@@ -90,7 +99,7 @@ const initialState = {
       decisions: [],
       issues: [],
       totalEstimate: '15',
-      tags: ['testing', 'bug']
+      tags: ['testing', 'bug'],
     },
   ],
   issues: [
@@ -101,10 +110,10 @@ const initialState = {
       repository: 'buildly-react-template (Product 1)',
       status: 'in-progress',
       productUUID: 1,
-      featureUUID:1,
+      featureUUID: 1,
       estimate: '1',
       sprint: 1,
-      tags: ['abc','def'],
+      tags: ['abc', 'def'],
       complexity: 1,
       issueType: 'backend',
       startDate: '2021-10-25 10:00:00',
@@ -119,10 +128,10 @@ const initialState = {
       repository: 'buildly-core (Product 1)',
       status: 'in-progress',
       productUUID: 1,
-      featureUUID:1,
+      featureUUID: 1,
       estimate: '1',
       sprint: 1,
-      tags: ['abc','def'],
+      tags: ['abc', 'def'],
       complexity: 1,
       issueType: 'backend',
       startDate: '2021-10-25 10:00:00',
@@ -137,10 +146,10 @@ const initialState = {
       repository: 'buildly-react-template (Product 2)',
       status: 'review',
       productUUID: 1,
-      featureUUID:1,
+      featureUUID: 1,
       estimate: '1',
       sprint: 1,
-      tags: ['abc','def'],
+      tags: ['abc', 'def'],
       complexity: 1,
       issueType: 'backend',
       startDate: '2021-10-25 10:00:00',
@@ -155,10 +164,10 @@ const initialState = {
       description: 'Description for Issue 2 (Product 2)',
       repository: 'buildly-react-template (Product 2)',
       status: 'done',
-      featureUUID:1,
+      featureUUID: 1,
       estimate: '2',
       sprint: 1,
-      tags: ['abc','def'],
+      tags: ['abc', 'def'],
       complexity: 1,
       issueType: 'backend',
       startDate: '2021-10-25 10:00:00',
