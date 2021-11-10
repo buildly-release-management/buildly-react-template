@@ -8,6 +8,7 @@ import {
   DELETE_ISSUE,
   CONVERT_ISSUE,
 } from '@redux/dashboard/actions/dashboard.actions';
+import uuid from "uuid/v4";
 
 const initialState = {
   products: [
@@ -41,7 +42,7 @@ const initialState = {
   requirements: [
     {
       productUUID: 1,
-      id: 1,
+      id: uuid(),
       name: 'Requirements 1 (Product 1)',
       description: 'Description for Requirents 1 (Product 1)',
       priority: 'high',
@@ -54,7 +55,7 @@ const initialState = {
     },
     {
       productUUID: 1,
-      id: 2,
+      id: uuid(),
       name: 'Requirements 2 (Product 1)',
       description: 'Description for Requirents 2 (Product 1)',
       priority: 'low',
@@ -67,7 +68,7 @@ const initialState = {
     },
     {
       productUUID: 2,
-      id: 3,
+      id: uuid(),
       name: 'Requirements 1 (Product 2)',
       description: 'Description for Requirents 1 (Product 2)',
       priority: 'medium',
@@ -80,7 +81,7 @@ const initialState = {
     },
     {
       productUUID: 2,
-      id: 4,
+      id: uuid(),
       name: 'Requirements 2 (Product 2)',
       description: 'Description for Requirents 2 (Product 2)',
       priority: 'urgent',
@@ -94,7 +95,7 @@ const initialState = {
   ],
   issues: [
     {
-      id: 1,
+      id: uuid(),
       name: 'Issue 1 (Product 1)',
       description: 'Description for Issue 1 (Product 1)',
       repository: 'buildly-react-template (Product 1)',
@@ -112,7 +113,7 @@ const initialState = {
       assignedTo: '',
     },
     {
-      id: 2,
+      id: uuid(),
       name: 'Issue 2 (Product 1)',
       description: 'Description for Issue 2 (Product 1)',
       repository: 'buildly-core (Product 1)',
@@ -130,7 +131,7 @@ const initialState = {
       assignedTo: 'dev1',
     },
     {
-      id: 3,
+      id: uuid(),
       name: 'Issue 1 (Product 2)',
       description: 'Description for Issue 1 (Product 2)',
       repository: 'buildly-react-template (Product 2)',
@@ -149,7 +150,7 @@ const initialState = {
     },
     {
       productUUID: 2,
-      id: 4,
+      id: uuid(),
       name: 'Issue 2 (Product 2)',
       description: 'Description for Issue 2 (Product 2)',
       repository: 'buildly-react-template (Product 2)',
