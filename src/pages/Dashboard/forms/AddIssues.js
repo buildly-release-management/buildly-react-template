@@ -57,9 +57,9 @@ const AddIssues = ({
     && location.state.type === 'edit'
     && location.state.data
   ) || {};
-  const projId = location.state && location.state.projId;
+  const projectID = location.state && location.state.projectID;
 
-  const title = useInput(editData.title || '', {
+  const name = useInput(editData.name || '', {
     required: true,
   });
   const description = useInput(editData.description || '', {
@@ -85,7 +85,7 @@ const AddIssues = ({
 
   const closeFormModal = () => {
     const dataHasChanged = (
-      title.hasChanged()
+      name.hasChanged()
       || description.hasChanged()
       || type.hasChanged()
       || repo.hasChanged()
@@ -117,9 +117,9 @@ const AddIssues = ({
       ? editData.id
       : (location.state && location.state.nextId);
     const issueFormValue = {
-      projId,
+      projectID,
       id,
-      title: title.value,
+      name: name.value,
       description: description.value,
       type: type.value,
       repo: repo.value,
@@ -157,7 +157,7 @@ const AddIssues = ({
   const submitDisabled = () => {
     const errorKeys = Object.keys(formError);
     if (
-      !title.value
+      !name.value
       || !description.value
       || !type.value
       || !repo.value
@@ -181,8 +181,8 @@ const AddIssues = ({
         <FormModal
           open={openFormModal}
           handleClose={closeFormModal}
-          title={formTitle}
-          titleClass={classes.formTitle}
+          name={formTitle}
+          nameClass={classes.formTitle}
           maxWidth="md"
           wantConfirm
           openConfirmModal={openConfirmModal}
@@ -201,21 +201,21 @@ const AddIssues = ({
                   margin="normal"
                   required
                   fullWidth
-                  id="title"
+                  id="name"
                   label="Title"
-                  name="title"
-                  autoComplete="title"
+                  name="name"
+                  autoComplete="name"
                   error={
-                    formError.title
-                    && formError.title.error
+                    formError.name
+                    && formError.name.error
                   }
                   helperText={
-                    formError.title
-                      ? formError.title.message
+                    formError.name
+                      ? formError.name.message
                       : ''
                   }
-                  onBlur={(e) => handleBlur(e, 'required', title)}
-                  {...title.bind}
+                  onBlur={(e) => handleBlur(e, 'required', name)}
+                  {...name.bind}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -301,10 +301,10 @@ const AddIssues = ({
                 >
                   <MenuItem value="">Select</MenuItem>
                   {_.map(
-                    _.filter(repos, { projId }),
+                    _.filter(repos, { projectID }),
                     (rp) => (
                       <MenuItem
-                        key={`type-${rp.projId}-${rp.id}`}
+                        key={`type-${rp.projectID}-${rp.id}`}
                         value={rp.name}
                       >
                         {rp.name}
@@ -374,10 +374,10 @@ const AddIssues = ({
                   >
                     <MenuItem value="">Select</MenuItem>
                     {_.map(
-                      _.filter(devs, { projId }),
+                      _.filter(devs, { projectID }),
                       (dev) => (
                         <MenuItem
-                          key={`type-${dev.projId}-${dev.id}`}
+                          key={`type-${dev.projectID}-${dev.id}`}
                           value={dev.value}
                         >
                           {dev.name}

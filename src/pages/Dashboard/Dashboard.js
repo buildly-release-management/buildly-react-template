@@ -11,8 +11,7 @@ const Dashboard = ({
   <>
     {loading && <Loader open={loading} />}
     {loaded && !filled && <FeedbackForm />}
-    {/* {loaded && filled && <UserDashboard history={history} />} */}
-    <Kanban />
+    {loaded && filled && <UserDashboard history={history} />}
   </>
 );
 

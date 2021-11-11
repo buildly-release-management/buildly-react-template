@@ -210,7 +210,7 @@ const FeedbackForm = ({ dispatch, loading }) => {
   return (
     <>
       <Typography className={classes.title} variant="body1">
-        Thanks for checking out Buildly and our new Product Management offering
+        Thanks for checking out Buildly and our new Project Management offering
         Buildly Planner intended to help facilitate the communication between
         product owners and development teams. To help us guide the direction of
         the application moving forward and help find a fit inside the Buildly
@@ -233,7 +233,7 @@ const FeedbackForm = ({ dispatch, loading }) => {
                 >
                   <FormLabel component="legend">
                     Do you use Trello or GitHub for either Issue tracking or
-                    Product Road-mapping?
+                    Project Road-mapping?
                   </FormLabel>
                   <RadioGroup
                     aria-label="issue-tracking-product-road-map"

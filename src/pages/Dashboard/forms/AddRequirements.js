@@ -52,9 +52,9 @@ const AddRequirements = ({
     && location.state.type === 'edit'
     && location.state.data
   ) || {};
-  const projId = location.state && location.state.projId;
+  const projectID = location.state && location.state.projectID;
 
-  const title = useInput(editData.title || '', {
+  const name = useInput(editData.name || '', {
     required: true,
   });
   const description = useInput(editData.description || '', {
@@ -70,7 +70,7 @@ const AddRequirements = ({
 
   const closeFormModal = () => {
     const dataHasChanged = (
-      title.hasChanged() || description.hasChanged()
+      name.hasChanged() || description.hasChanged()
     );
 
     if (dataHasChanged) {
@@ -97,9 +97,9 @@ const AddRequirements = ({
       ? editData.id
       : (location.state && location.state.nextId);
     const reqFormValue = {
-      projId,
+      projectID,
       id,
-      title: title.value,
+      name: name.value,
       description: description.value,
     };
 
@@ -132,7 +132,7 @@ const AddRequirements = ({
 
   const submitDisabled = () => {
     const errorKeys = Object.keys(formError);
-    if (!title.value || !description.value) {
+    if (!name.value || !description.value) {
       return true;
     }
     let errorExists = false;
@@ -150,8 +150,8 @@ const AddRequirements = ({
         <FormModal
           open={openFormModal}
           handleClose={closeFormModal}
-          title={formTitle}
-          titleClass={classes.formTitle}
+          name={formTitle}
+          nameClass={classes.formTitle}
           maxWidth="md"
           wantConfirm
           openConfirmModal={openConfirmModal}
@@ -170,21 +170,21 @@ const AddRequirements = ({
                   margin="normal"
                   required
                   fullWidth
-                  id="title"
+                  id="name"
                   label="Title"
-                  name="title"
-                  autoComplete="title"
+                  name="name"
+                  autoComplete="name"
                   error={
-                    formError.title
-                    && formError.title.error
+                    formError.name
+                    && formError.name.error
                   }
                   helperText={
-                    formError.title
-                      ? formError.title.message
+                    formError.name
+                      ? formError.name.message
                       : ''
                   }
-                  onBlur={(e) => handleBlur(e, 'required', title)}
-                  {...title.bind}
+                  onBlur={(e) => handleBlur(e, 'required', name)}
+                  {...name.bind}
                 />
               </Grid>
               <Grid item xs={12}>

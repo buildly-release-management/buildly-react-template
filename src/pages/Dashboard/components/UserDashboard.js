@@ -1,4 +1,3 @@
-/* eslint-disable import/no-unresolved */
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
@@ -8,22 +7,21 @@ import {
   MenuItem,
   TextField,
   Typography,
+  Chip,
 } from '@material-ui/core';
-import {
-  AddRounded as AddRoundedIcon,
-  EditRounded as EditRoundedIcon,
-  DeleteRounded as DeleteRoundedIcon,
-  TrendingFlatRounded as TrendingFlatRoundedIcon,
-} from '@material-ui/icons';
 import { routes } from '@routes/routesConstants';
 import { deleteRequirement, deleteIssue } from '@redux/dashboard/actions/dashboard.actions';
 import AddRequirements from '../forms/AddRequirements';
 import AddIssues from '../forms/AddIssues';
 import RequirementToIssue from '../forms/RequirementToIssue';
 import ConfirmModal from '../forms/ConfirmModal';
+import List from '../components/List';
+import Kanban from '../components/Kanban';
 
 const useStyles = makeStyles((theme) => ({
   section1: {
+    position: 'fixed',
+    width: '98%',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -49,6 +47,12 @@ const useStyles = makeStyles((theme) => ({
     '& .MuiInputBase-input': {
       color: theme.palette.secondary.contrastText,
     },
+  },
+  viewContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '12rem',
   },
   section2: {
     marginTop: theme.spacing(8),
@@ -104,15 +108,82 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const UserDashboard = ({
-  products,
-  dispatch,
-  requirements,
-  issues,
-  redirectTo,
-  history,
-}) => {
+const getView = (
+  view,
+  props,
+  proj,
+  setProj,
+  projReqs,
+  setProjReqs,
+  projIssues,
+  setProjIssues,
+  setDeleteModal,
+  setDeleteItem,
+  addItem,
+  editItem,
+  convertIssue,
+  deleteItem,
+  openDeleteModal,
+  handleDeleteModal,
+) => {
+  switch (view) {
+    case 'list':
+      return (
+        <List
+          {...props}
+          proj={proj}
+          setProj={setProj}
+          projReqs={projReqs}
+          setProjReqs={setProjReqs}
+          projIssues={projIssues}
+          setProjIssues={setProjIssues}
+          setDeleteModal={setDeleteModal}
+          setDeleteItem={setDeleteItem}
+          addItem={addItem}
+          editItem={editItem}
+          convertIssue={convertIssue}
+          deleteItem={deleteItem}
+          openDeleteModal={openDeleteModal}
+          handleDeleteModal={handleDeleteModal}
+        />
+      );
+    case 'kanban':
+      return (
+        <Kanban
+          {...props}
+          proj={proj}
+          setProj={setProj}
+          projReqs={projReqs}
+          setProjReqs={setProjReqs}
+          projIssues={projIssues}
+          setProjIssues={setProjIssues}
+          setDeleteModal={setDeleteModal}
+          setDeleteItem={setDeleteItem}
+          addItem={addItem}
+          editItem={editItem}
+          convertIssue={convertIssue}
+          deleteItem={deleteItem}
+          openDeleteModal={openDeleteModal}
+          handleDeleteModal={handleDeleteModal}
+        />
+      );
+
+    default:
+      return 'Unknown View Selection';
+  }
+};
+
+const UserDashboard = (props) => {
+  const {
+    products,
+    dispatch,
+    requirements,
+    issues,
+    redirectTo,
+    history,
+  } = props;
   const classes = useStyles();
+  const [view, setView] = useState('list');
   const [proj, setProj] = useState(0);
   const [projReqs, setProjReqs] = useState([]);
   const [projIssues, setProjIssues] = useState([]);
@@ -142,7 +213,7 @@ const UserDashboard = ({
   useEffect(() => {
     const reqs = _.filter(
       requirements,
-      { productUUID: proj },
+      { projectID: proj },
     );
     setProjReqs(_.orderBy(reqs, ['id']));
   }, [requirements]);
@@ -150,7 +221,7 @@ const UserDashboard = ({
   useEffect(() => {
     const iss = _.filter(
       issues,
-      { productUUID: proj },
+      { projectID: proj },
     );
     setProjIssues(_.orderBy(iss, ['id']));
   }, [issues]);
@@ -169,7 +240,7 @@ const UserDashboard = ({
       type: 'edit',
       from: redirectTo || routes.DASHBOARD,
       data: item,
-      productUUID: proj,
+      projectID: proj,
     });
   };
 
@@ -189,7 +260,7 @@ const UserDashboard = ({
 
     history.push(path, {
       from: redirectTo || routes.DASHBOARD,
-      productUUID: proj,
+      projectID: proj,
       nextId,
     });
   };
@@ -205,7 +276,7 @@ const UserDashboard = ({
     history.push(path, {
       type: 'edit',
       from: redirectTo || routes.DASHBOARD,
-      productUUID: proj,
+      projectID: proj,
       nextId,
       data: item,
     });
@@ -229,159 +300,69 @@ const UserDashboard = ({
 
   return (
     <div>
-      <div className={classes.section1}>
+      <div className={classes.section1} position="fixed">
         <Typography className={classes.title} variant="h3">
           Dashboard
         </Typography>
+        <div
+          className={classes.viewContainer}
+        >
+          <Chip label="List View" color={view === 'list' ? 'primary' : 'secondary'} onClick={(e) => setView('list')} />
+          <Chip label="Kanban View" color={view === 'kanban' ? 'primary' : 'secondary'} onClick={(e) => setView('kanban')} />
+        </div>
         <TextField
           variant="outlined"
           margin="normal"
           select
           id="product"
           color="primary"
-          label="Select Product"
+          label="Select Project"
           className={classes.product}
           value={proj}
           onChange={(e) => {
             setProj(e.target.value);
             setProjReqs(_.filter(
               requirements,
-              { productUUID: e.target.value },
+              { projectID: e.target.value },
             ));
             setProjIssues(_.filter(
               issues,
-              { productUUID: e.target.value },
+              { projectID: e.target.value },
             ));
           }}
         >
           <MenuItem value={0}>Select</MenuItem>
           {products
-          && products.length > 0
-          && _.map(products, (proj) => (
-            <MenuItem
-              key={`product-${proj.id}`}
-              value={proj.id}
-            >
-              {proj.name}
-            </MenuItem>
-          ))}
+                        && products.length > 0
+                        && _.map(products, (proj) => (
+                          <MenuItem
+                            key={`product-${proj.id}`}
+                            value={proj.id}
+                          >
+                            {proj.name}
+                          </MenuItem>
+                        ))}
         </TextField>
       </div>
-
-      <div className={classes.section2}>
-        <Typography
-          className={classes.actionTitle}
-          variant="h6"
-        >
-          Requirements
-        </Typography>
-        <Typography
-          className={`${classes.actionTitle} ${classes.rightBox}`}
-          variant="h6"
-        >
-          Issues
-        </Typography>
-      </div>
-
-      <div className={classes.section3}>
-        <div className={classes.boxSection}>
-          <AddRoundedIcon
-            className={classes.addIcon}
-            fontSize="large"
-            onClick={(e) => addItem('req')}
-          />
-          {proj === 0 && (
-            <Typography
-              className={classes.noData}
-              variant="body1"
-            >
-              No Product selected. Please select the product.
-            </Typography>
-          )}
-          {proj !== 0 && projReqs && projReqs.length === 0
-          && (
-            <Typography
-              className={classes.noData}
-              variant="body1"
-            >
-              No Requirements yet.
-            </Typography>
-          )}
-          {proj !== 0 && projReqs && projReqs.length > 0
-          && _.map(projReqs, (req) => (
-            <div
-              key={`req-${req.productUUID}-${req.id}`}
-              className={classes.boxEntry}
-            >
-              <Typography
-                className={classes.entryTitle}
-                variant="body1"
-              >
-                {req.title}
-              </Typography>
-              <TrendingFlatRoundedIcon
-                className={classes.entryIcon}
-                onClick={(e) => convertIssue(req, 'convert')}
-              />
-              <EditRoundedIcon
-                className={classes.entryIcon}
-                onClick={(e) => editItem(req, 'req')}
-              />
-              <DeleteRoundedIcon
-                className={classes.icon}
-                onClick={(e) => deleteItem(req, 'req')}
-              />
-            </div>
-          ))}
-
-        </div>
-
-        <div className={`${classes.boxSection} ${classes.rightBox}`}>
-          <AddRoundedIcon
-            className={classes.addIcon}
-            fontSize="large"
-            onClick={(e) => addItem('issue')}
-          />
-          {proj === 0 && (
-            <Typography
-              className={classes.noData}
-              variant="body1"
-            >
-              No Product selected. Please select the product.
-            </Typography>
-          )}
-          {proj !== 0 && projIssues && projIssues.length === 0
-          && (
-            <Typography
-              className={classes.noData}
-              variant="body1"
-            >
-              No Issues yet.
-            </Typography>
-          )}
-          {proj !== 0 && projIssues && projIssues.length > 0
-          && _.map(projIssues, (issue) => (
-            <div
-              key={`issue-${issue.productUUID}-${issue.id}`}
-              className={classes.boxEntry}
-            >
-              <Typography
-                className={classes.entryTitle}
-                variant="body1"
-              >
-                {issue.title}
-              </Typography>
-              <EditRoundedIcon
-                className={classes.entryIcon}
-                onClick={(e) => editItem(issue, 'issue')}
-              />
-              <DeleteRoundedIcon
-                className={classes.icon}
-                onClick={(e) => deleteItem(issue, 'issue')}
-              />
-            </div>
-          ))}
-        </div>
+      <div style={{ position: 'absolute', top: '11rem', left: '0' }}>
+        {getView(
+          view,
+          props,
+          proj,
+          setProj,
+          projReqs,
+          setProjReqs,
+          projIssues,
+          setProjIssues,
+          setDeleteModal,
+          setDeleteItem,
+          addItem,
+          editItem,
+          convertIssue,
+          deleteItem,
+          openDeleteModal,
+          handleDeleteModal,
+        )}
       </div>
 
       <ConfirmModal
