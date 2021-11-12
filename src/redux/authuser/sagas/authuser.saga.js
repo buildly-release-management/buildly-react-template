@@ -453,8 +453,6 @@ function* loadOrganizationNames() {
       httpService.makeRequest,
       'get',
       `${window.env.API_URL}organization/names/`,
-      null,
-      true,
     );
     yield put({ type: LOAD_ORG_NAMES_SUCCESS, orgNames: data.data });
   } catch (error) {
