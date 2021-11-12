@@ -21,11 +21,16 @@ import Kanban from '../components/Kanban';
 const useStyles = makeStyles((theme) => ({
   section1: {
     position: 'fixed',
-    width: '98%',
+    width: '100%',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     color: theme.palette.secondary.contrastText,
+    background: theme.palette.secondary.dark,
+    left: 0,
+    top: '4rem',
+    padding: theme.spacing(1),
+    zIndex: '99',
   },
   title: {
     margin: theme.spacing(2, 0),
@@ -55,56 +60,10 @@ const useStyles = makeStyles((theme) => ({
     width: '12rem',
   },
   section2: {
-    marginTop: theme.spacing(8),
-    display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    color: theme.palette.secondary.contrastText,
-  },
-  actionTitle: {
-    flex: 1,
-    marginLeft: theme.spacing(2),
-  },
-  section3: {
-    display: 'flex',
-    color: theme.palette.secondary.contrastText,
-  },
-  rightBox: {
-    marginLeft: theme.spacing(2),
-  },
-  boxSection: {
-    flex: 1,
-    marginTop: theme.spacing(2),
-    border: `1px solid ${theme.palette.secondary.contrastText}`,
-    borderRadius: theme.spacing(2),
-    padding: theme.spacing(1, 1, 8, 1),
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  addIcon: {
-    marginLeft: 'auto',
-    marginBottom: theme.spacing(3),
-    cursor: 'pointer',
-  },
-  noData: {
+    position: 'absolute',
+    top: '11rem',
+    left: '0',
     width: '100%',
-    textAlign: 'center',
-  },
-  boxEntry: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    margin: theme.spacing(1, 1, 2, 1),
-  },
-  entryTitle: {
-    flex: 1,
-  },
-  entryIcon: {
-    marginRight: theme.spacing(2),
-    cursor: 'pointer',
-  },
-  icon: {
-    cursor: 'pointer',
   },
 }));
 
@@ -300,7 +259,7 @@ const UserDashboard = (props) => {
 
   return (
     <div>
-      <div className={classes.section1} position="fixed">
+      <div className={classes.section1}>
         <Typography className={classes.title} variant="h3">
           Dashboard
         </Typography>
@@ -344,7 +303,7 @@ const UserDashboard = (props) => {
                         ))}
         </TextField>
       </div>
-      <div style={{ position: 'absolute', top: '11rem', left: '0' }}>
+      <div className={classes.section2}>
         {getView(
           view,
           props,

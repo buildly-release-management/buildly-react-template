@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
     margin: '0 auto',
   },
   column: {
-    margin: theme.spacing(0, 1),
+    margin: theme.spacing(1, 1),
     backgroundColor: theme.palette.neutral.main,
     borderRadius: theme.spacing(1),
   },
@@ -194,11 +194,10 @@ const Kanban = (props) => {
           <div className={classes.column} key={columnId}>
             <div className={classes.columnHead}>
               <p>{column.name}</p>
-              <IconButton>
+              <IconButton onClick={(e) => addItem(index === 0 ? 'req' : 'issue')}>
                 <AddRoundedIcon
                   className={classes.icon}
                   fontSize="small"
-                  onClick={(e) => addItem(index === 0 ? 'req' : 'issue')}
                 />
               </IconButton>
               {/* <IconButton
@@ -261,22 +260,18 @@ const Kanban = (props) => {
                                     aria-controls="menu-card"
                                     aria-haspopup="false"
                                     color="default"
+                                    onClick={(e) => editItem(item, item.featureUUID ? 'issue' : 'req')}
                                   >
-                                    <EditRoundedIcon
-                                      className={classes.entryIcon}
-                                      onClick={(e) => editItem(item, item.featureUUID ? 'issue' : 'req')}
-                                    />
+                                    <EditRoundedIcon className={classes.icon} fontSize="small" />
                                   </IconButton>
                                   <IconButton
                                     aria-label="delete-ticket"
                                     aria-controls="menu-card"
                                     aria-haspopup="false"
                                     color="default"
+                                    onClick={(e) => deleteItem(item, item.featureUUID ? 'issue' : 'req')}
                                   >
-                                    <DeleteRoundedIcon
-                                      className={classes.icon}
-                                      onClick={(e) => deleteItem(item, item.featureUUID ? 'issue' : 'req')}
-                                    />
+                                    <DeleteRoundedIcon className={classes.icon} fontSize="small" />
                                   </IconButton>
                                 </div>
                                 )}

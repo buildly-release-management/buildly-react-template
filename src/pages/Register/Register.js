@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import {
   makeStyles,
@@ -14,14 +14,19 @@ import {
   Grid,
 } from '@material-ui/core';
 import logo from '@assets/light-logo.png';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 import Copyright from '@components/Copyright/Copyright';
 import GithubLogin from '@components/SocialLogin/GithubLogin';
 import { useInput } from '@hooks/useInput';
-import { register } from '@redux/authuser/actions/authuser.actions';
+import {
+  register,
+  loadOrgNames,
+} from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
 import { isMobile } from '@utils/mediaQuery';
 import { providers } from '@utils/socialLogin';
+import _ from 'lodash';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {
@@ -78,7 +83,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Register = ({
-  dispatch, loading, history, socialLogin,
+  dispatch, loading, history, socialLogin, orgNames,
 }) => {
   const classes = useStyles();
   const email = useInput('', { required: true });
@@ -89,10 +94,15 @@ const Register = ({
     confirm: true,
     matchField: password,
   });
-  const organization_name = useInput('', { required: true });
+  const [orgName, setOrgName] = useState('');
   const first_name = useInput('', { required: true });
   const last_name = useInput('');
   const [formError, setFormError] = useState({});
+  useEffect(() => {
+    if (!orgNames) {
+      dispatch(loadOrgNames());
+    }
+  }, []);
 
   /**
    * Submit the form to the backend and attempts to authenticate
@@ -105,7 +115,7 @@ const Register = ({
       username: username.value,
       email: email.value,
       password: password.value,
-      organization_name: organization_name.value,
+      organization_name: orgName,
       first_name: first_name.value,
       last_name: last_name.value,
     };
@@ -146,7 +156,7 @@ const Register = ({
       || !password.value
       || !email.value
       || !re_password.value
-      || !organization_name.value
+      || !orgName
       || !first_name.value
     ) return true;
     errorKeys.forEach((key) => {
@@ -251,27 +261,30 @@ const Register = ({
                 </Grid>
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12}>
-                    <TextField
-                      variant="outlined"
-                      margin="normal"
-                      required
-                      fullWidth
+                    <Autocomplete
+                      freeSolo
+                      disableClearable
                       id="organization_name"
-                      label="Organisation Name"
                       name="organization_name"
-                      autoComplete="organization_name"
-                      error={
-                        formError.organization_name
-                        && formError.organization_name.error
-                      }
-                      helperText={
-                        formError.organization_name
-                          ? formError.organization_name.message
-                          : ''
-                      }
-                      className={classes.textField}
-                      onBlur={(e) => handleBlur(e, 'required', organization_name)}
-                      {...organization_name.bind}
+                      options={orgNames || []}
+                      getOptionLabel={(label) => _.capitalize(label)}
+                      onChange={(e, newValue) => {
+                        setOrgName(newValue || '');
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="outlined"
+                          margin="normal"
+                          required
+                          fullWidth
+                          id="organization_name"
+                          label="Organisation Name"
+                          className={classes.textField}
+                          value={orgName}
+                          onChange={(e) => setOrgName(e.target.value)}
+                        />
+                      )}
                     />
                   </Grid>
                 </Grid>

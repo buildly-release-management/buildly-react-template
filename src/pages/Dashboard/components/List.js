@@ -14,7 +14,7 @@ import {
 
 const useStyles = makeStyles((theme) => ({
   section2: {
-    marginTop: theme.spacing(8),
+    marginTop: theme.spacing(2),
     display: 'flex',
     justifyContent: 'flex-start',
     alignItems: 'center',
