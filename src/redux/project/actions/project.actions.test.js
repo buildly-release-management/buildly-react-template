@@ -4,11 +4,13 @@ import * as actions from './project.actions';
 describe('Get Product Team action', () => {
   it('should create an action to get product team', () => {
     const organization_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
+    const product_team_uuid = 'a9446cfa-6e45-4b2f-b250-6fa0059a1c5e'
     const expectedAction = {
       type: actions.GET_PRODUCTTEAMS,
       organization_uuid,
+      product_team_uuid,
     };
-    expect(actions.getProductteams(organization_uuid))
+    expect(actions.getProductteams(organization_uuid, product_team_uuid))
       .toEqual(expectedAction);
   });
 });
@@ -65,11 +67,13 @@ describe('Delete Product Team action', () => {
 describe('Get Product action', () => {
   it('should create an action to get product', () => {
     const project_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
+    const organization_uuid = 'a9446cfa-6e45-4b2f-b250-6fa0059a1c5e'
     const expectedAction = {
       type: actions.GET_PRODUCTS,
+      organization_uuid,
       project_uuid,
     };
-    expect(actions.getProducts(project_uuid))
+    expect(actions.getProducts(organization_uuid,project_uuid))
       .toEqual(expectedAction);
   });
 });
@@ -138,7 +142,7 @@ describe('Get Thirdpartytool action', () => {
 // Test Add Thirdpartytool
 describe('Add Thirdpartytool action', () => {
   it('should create an action to add thirdpartytool', () => {
-    const payload = { thirdpartytool_uuid: '224761f5-0010-4a46-ba2f-d92a4fdc1d21', name: 'Abc' };
+    const payload = { project_uuid: '224761f5-0010-4a46-ba2f-d92a4fdc1d21', name: 'Abc' };
     const history = {};
     const redirectTo = '/test';
     const expectedAction = {
@@ -155,7 +159,7 @@ describe('Add Thirdpartytool action', () => {
 // Test Edit Thirdpartytool
 describe('Edit Thirdpartytool action', () => {
   it('should create an action to edit thirdpartytool', () => {
-    const payload = { thirdpartytool_uuid: '224761f5-0010-4a46-ba2f-d92a4fdc1d21' };
+    const payload = { project_uuid: '224761f5-0010-4a46-ba2f-d92a4fdc1d21' };
     const history = {};
     const redirectTo = '/test';
     const expectedAction = {
@@ -172,20 +176,20 @@ describe('Edit Thirdpartytool action', () => {
 // Test Delete Thirdpartytool
 describe('Delete Thirdpartytool action', () => {
   it('should create an action to delete thirdpartytool', () => {
-    const thirdpartytool_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
+    const project_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
     const expectedAction = {
       type: actions.DELETE_THIRDPARTYTOOL,
-      thirdpartytool_uuid,
+      project_uuid,
     };
     expect(actions.deleteThirdpartytool(
-      thirdpartytool_uuid,
+      project_uuid,
     )).toEqual(expectedAction);
   });
 });
 
-// Test Get Thirdpartytool hours
-describe('Get Thirdpartytool hour action', () => {
-  it('should create an action to get thirdpartytool hour', () => {
+// Test Get Credentials
+describe('Get Credential action', () => {
+  it('should create an action to get credential', () => {
     const project_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
     const expectedAction = {
       type: actions.GET_CREDENTIALS,
@@ -196,9 +200,9 @@ describe('Get Thirdpartytool hour action', () => {
   });
 });
 
-// Test Add Thirdpartytool hour
-describe('Add Thirdpartytool hour action', () => {
-  it('should create an action to add thirdpartytool hour', () => {
+// Test Add Credential
+describe('Add Credential action', () => {
+  it('should create an action to add credential', () => {
     const payload = { credential_uuid: '224761f5-0010-4a46-ba2f-d92a4fdc1d21', name: 'Abc' };
     const history = {};
     const redirectTo = '/test';
@@ -213,9 +217,9 @@ describe('Add Thirdpartytool hour action', () => {
   });
 });
 
-// Test Edit Thirdpartytool hour
-describe('Edit Thirdpartytool hour action', () => {
-  it('should create an action to edit thirdpartytool hour', () => {
+// Test Edit Credential
+describe('Edit Credential action', () => {
+  it('should create an action to edit credential', () => {
     const payload = { credential_uuid: '224761f5-0010-4a46-ba2f-d92a4fdc1d21' };
     const history = {};
     const redirectTo = '/test';
@@ -230,9 +234,9 @@ describe('Edit Thirdpartytool hour action', () => {
   });
 });
 
-// Test Delete Thirdpartytool hour
-describe('Delete Thirdpartytool hour action', () => {
-  it('should create an action to delete thirdpartytool hour', () => {
+// Test Delete Credential
+describe('Delete Credential action', () => {
+  it('should create an action to delete credential', () => {
     const credential_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
     const expectedAction = {
       type: actions.DELETE_CREDENTIAL,
@@ -243,3 +247,69 @@ describe('Delete Thirdpartytool hour action', () => {
     )).toEqual(expectedAction);
   });
 });
+
+// Test Get Releases
+describe('Get Release action', () => {
+  it('should create an action to get release', () => {
+    const project_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
+    const dev_team_uuid = 'a9446cfa-6e45-4b2f-b250-6fa0059a1c5e';
+    const release_uuid = '275ac379-82a2-4937-a434-ce6c2e277c88';
+    const expectedAction = {
+      type: actions.GET_RELEASES,
+      project_uuid,
+      release_uuid,
+      dev_team_uuid,
+    };
+    expect(actions.getReleases(project_uuid, release_uuid, dev_team_uuid))
+      .toEqual(expectedAction);
+  });
+});
+
+// Test Add Release
+describe('Add Release action', () => {
+  it('should create an action to add release', () => {
+    const payload = { release_uuid: '224761f5-0010-4a46-ba2f-d92a4fdc1d21', name: 'Abc' };
+    const history = {};
+    const redirectTo = '/test';
+    const expectedAction = {
+      type: actions.ADD_RELEASE,
+      payload,
+      history,
+      redirectTo,
+    };
+    expect(actions.addRelease(payload, history, redirectTo))
+      .toEqual(expectedAction);
+  });
+});
+
+// Test Edit Release
+describe('Edit Release action', () => {
+  it('should create an action to edit release', () => {
+    const payload = { release_uuid: '224761f5-0010-4a46-ba2f-d92a4fdc1d21' };
+    const history = {};
+    const redirectTo = '/test';
+    const expectedAction = {
+      type: actions.UPDATE_RELEASE,
+      payload,
+      history,
+      redirectTo,
+    };
+    expect(actions.updateRelease(payload, history, redirectTo))
+      .toEqual(expectedAction);
+  });
+});
+
+// Test Delete Release
+describe('Delete Release action', () => {
+  it('should create an action to delete release', () => {
+    const release_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
+    const expectedAction = {
+      type: actions.DELETE_RELEASE,
+      release_uuid,
+    };
+    expect(actions.deleteRelease(
+      release_uuid,
+    )).toEqual(expectedAction);
+  });
+});
+

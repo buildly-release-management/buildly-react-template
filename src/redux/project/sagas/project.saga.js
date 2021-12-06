@@ -40,6 +40,18 @@ import {
   UPDATE_CREDENTIAL_FAILURE,
   DELETE_CREDENTIAL,
   DELETE_CREDENTIAL_FAILURE,
+  GET_RELEASES,
+  GET_RELEASES_SUCCESS,
+  GET_RELEASES_FAILURE,
+  ADD_RELEASE,
+  ADD_RELEASE_SUCCESS,
+  ADD_RELEASE_FAILURE,
+  UPDATE_RELEASE,
+  UPDATE_RELEASE_SUCCESS,
+  UPDATE_RELEASE_FAILURE,
+  DELETE_RELEASE,
+  DELETE_RELEASE_SUCCESS,
+  DELETE_RELEASE_FAILURE,
 } from '../actions/project.actions';
 
 const projecttoolEndpoint = 'projecttool/';
@@ -189,10 +201,16 @@ function* deleteProductteam(payload) {
 
 function* getProducts(payload) {
   try {
+    let query_params = '';
+    if (payload.organization_uuid) {
+      query_params = `organization_uuid=${payload.organization_uuid}/`;
+    } else if (payload.project_uuid) {
+      query_params = query_params.concat(`project_uuid=${payload.project_uuid}`);
+    }
     const data = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projecttoolEndpoint}product/?project_uuid=${payload.project_uuid}`,
+      `${window.env.API_URL}${projecttoolEndpoint}product/?${query_params}`,
     );
     yield put({ type: GET_PRODUCTS_SUCCESS, data: data.data });
   } catch (error) {
@@ -466,7 +484,7 @@ function* getCredentials(payload) {
     const data = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projecttoolEndpoint}credential/?project_uuid=${payload.project_uuid}`,
+      `${window.env.API_URL}${projecttoolEndpoint}credential/?thirdpartytool_uuid=${payload.thirdpartytool_uuid}`,
     );
     yield put({ type: GET_CREDENTIALS_SUCCESS, data: data.data });
   } catch (error) {
@@ -598,6 +616,151 @@ function* deleteCredential(payload) {
   }
 }
 
+function* getReleases(payload) {
+  try {
+    let query_params = '';
+    if (payload.release_uuid) {
+      query_params = `release_uuid=${payload.release_uuid}/`;
+    } else if (payload.project_uuid) {
+      query_params = query_params.concat(`project_uuid=${payload.project_uuid}`);
+    } else if (payload.dev_team_uuid) {
+      query_params = query_params.concat(`dev_team_uuid=${payload.dev_team_uuid}`);
+    }
+    const data = yield call(
+      httpService.makeRequest,
+      'get',
+      `${window.env.API_URL}${projecttoolEndpoint}release/?${query_params}`,
+    );
+    yield put({ type: GET_RELEASES_SUCCESS, data: data.data });
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t fetch Releases!',
+        }),
+      ),
+      yield put({
+        type: GET_RELEASES_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* addRelease(action) {
+  const { payload } = action;
+  try {
+    const data = yield call(
+      httpService.makeRequest,
+      'post',
+      `${window.env.API_URL}${projecttoolEndpoint}release/`,
+      payload,
+    );
+
+    if (data && data.data) {
+      yield [
+        yield put(getReleases(data.data.release_uuid)),
+        yield put(
+          showAlert({
+            type: 'success',
+            open: true,
+            message: 'Successfully Added Release',
+          }),
+        ),
+
+      ];
+    }
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t Add Release due to some error!',
+        }),
+      ),
+      yield put({
+        type: ADD_RELEASE_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* updateRelease(action) {
+  const { payload } = action;
+  try {
+    const data = yield call(
+      httpService.makeRequest,
+      'patch',
+      `${window.env.API_URL}${projecttoolEndpoint}release/${payload.release_uuid}/`,
+      payload,
+    );
+    if (data && data.data) {
+      yield [
+        yield put(getReleases(payload.release_uuid)),
+        yield put(
+          showAlert({
+            type: 'success',
+            open: true,
+            message: 'Successfully Edited Release',
+          }),
+        ),
+      ];
+    }
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t Edit Release due to some error!',
+        }),
+      ),
+      yield put({
+        type: UPDATE_RELEASE_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* deleteRelease(payload) {
+  try {
+    yield call(
+      httpService.makeRequest,
+      'delete',
+      `${window.env.API_URL}${projecttoolEndpoint}release/${payload.release_uuid}/`,
+    );
+    yield [
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: 'Release deleted successfully!',
+        }),
+      ),
+      yield put(getReleases(payload.project_uuid)),
+    ];
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Error in deleting release!',
+        }),
+      ),
+      yield put({
+        type: DELETE_RELEASE_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
 // Watchers
 function* watchGetProductteams() {
   yield takeLatest(GET_PRODUCTTEAMS, getProductteams);
@@ -663,6 +826,23 @@ function* watchDeleteCredential() {
   yield takeLatest(DELETE_CREDENTIAL, deleteCredential);
 }
 
+function* watchGetReleases() {
+  yield takeLatest(GET_RELEASES, getReleases);
+}
+
+function* watchAddRelease() {
+  yield takeLatest(ADD_RELEASE, addRelease);
+}
+
+function* watchUpdateRelease() {
+  yield takeLatest(UPDATE_RELEASE, updateRelease);
+}
+
+function* watchDeleteRelease() {
+  yield takeLatest(DELETE_RELEASE, deleteRelease);
+}
+
+
 export default function* projecttoolSaga() {
   yield all([
     watchGetProductteams(),
@@ -681,5 +861,9 @@ export default function* projecttoolSaga() {
     watchAddCredential(),
     watchUpdateCredential(),
     watchDeleteCredential(),
+    watchGetReleases(),
+    watchAddRelease(),
+    watchUpdateRelease(),
+    watchDeleteRelease(),
   ]);
 }

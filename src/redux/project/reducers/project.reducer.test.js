@@ -9,6 +9,7 @@ const initialState = {
   product: null,
   thirdpartytool: null,
   credential: null,
+  release: null,
 };
 
 describe('Get product team reducer', () => {
@@ -443,7 +444,7 @@ describe('Delete thirdpartytool reducer', () => {
   });
 });
 
-describe('Get thirdpartytool hour reducer', () => {
+describe('Get credentials reducer', () => {
   it('Empty reducer', () => {
     expect(reducer.default(
       initialState,
@@ -454,7 +455,7 @@ describe('Get thirdpartytool hour reducer', () => {
     });
   });
 
-  it('get thirdpartytool hour success reducer', () => {
+  it('get credentials success reducer', () => {
     expect(reducer.default(
       initialState,
       { type: actions.GET_CREDENTIALS_SUCCESS },
@@ -466,7 +467,7 @@ describe('Get thirdpartytool hour reducer', () => {
     });
   });
 
-  it('get thirdpartytool hour fail reducer', () => {
+  it('get credentials fail reducer', () => {
     expect(reducer.default(
       initialState,
       { type: actions.GET_CREDENTIALS_FAILURE },
@@ -479,7 +480,7 @@ describe('Get thirdpartytool hour reducer', () => {
   });
 });
 
-describe('Add thirdpartytool hour reducer', () => {
+describe('Add credentials reducer', () => {
   it('Empty reducer', () => {
     expect(reducer.default(
       initialState,
@@ -490,7 +491,7 @@ describe('Add thirdpartytool hour reducer', () => {
     });
   });
 
-  it('add thirdpartytool hour success reducer', () => {
+  it('add credentials success reducer', () => {
     expect(reducer.default(
       initialState,
       { type: actions.ADD_CREDENTIAL_SUCCESS },
@@ -502,7 +503,7 @@ describe('Add thirdpartytool hour reducer', () => {
     });
   });
 
-  it('add thirdpartytool hour fail reducer', () => {
+  it('add credentials fail reducer', () => {
     expect(reducer.default(
       initialState,
       { type: actions.ADD_CREDENTIAL_FAILURE },
@@ -515,7 +516,7 @@ describe('Add thirdpartytool hour reducer', () => {
   });
 });
 
-describe('Update thirdpartytool hour reducer', () => {
+describe('Update credentials reducer', () => {
   it('Empty reducer', () => {
     expect(reducer.default(
       initialState,
@@ -526,7 +527,7 @@ describe('Update thirdpartytool hour reducer', () => {
     });
   });
 
-  it('update thirdpartytool hour success reducer', () => {
+  it('update credentials success reducer', () => {
     expect(reducer.default(
       initialState,
       { type: actions.UPDATE_CREDENTIAL_SUCCESS },
@@ -538,7 +539,7 @@ describe('Update thirdpartytool hour reducer', () => {
     });
   });
 
-  it('update thirdpartytool hour fail reducer', () => {
+  it('update credentials fail reducer', () => {
     expect(reducer.default(
       initialState,
       { type: actions.UPDATE_CREDENTIAL_FAILURE },
@@ -551,7 +552,7 @@ describe('Update thirdpartytool hour reducer', () => {
   });
 });
 
-describe('Delete thirdpartytool hour reducer', () => {
+describe('Delete credentials reducer', () => {
   it('Empty reducer', () => {
     expect(reducer.default(
       initialState,
@@ -562,7 +563,7 @@ describe('Delete thirdpartytool hour reducer', () => {
     });
   });
 
-  it('delete thirdpartytool hour success reducer', () => {
+  it('delete credentials success reducer', () => {
     expect(reducer.default(
       initialState,
       { type: actions.DELETE_CREDENTIAL_SUCCESS },
@@ -574,10 +575,154 @@ describe('Delete thirdpartytool hour reducer', () => {
     });
   });
 
-  it('delete thirdpartytoolhour fail reducer', () => {
+  it('delete credentials fail reducer', () => {
     expect(reducer.default(
       initialState,
       { type: actions.DELETE_CREDENTIAL_FAILURE },
+    )).toEqual({
+      ...initialState,
+      error: undefined,
+      loaded: true,
+      loading: false,
+    });
+  });
+});
+
+describe('Get releases reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.GET_RELEASES },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('get releases success reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.GET_RELEASES_SUCCESS },
+    )).toEqual({
+      ...initialState,
+      loaded: true,
+      loading: false,
+      release: undefined,
+    });
+  });
+
+  it('get releases fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.GET_RELEASES_FAILURE },
+    )).toEqual({
+      ...initialState,
+      error: undefined,
+      loaded: true,
+      loading: false,
+    });
+  });
+});
+
+describe('Add releases reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.ADD_RELEASE },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('add releases success reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.ADD_RELEASE_SUCCESS },
+    )).toEqual({
+      ...initialState,
+      loaded: true,
+      loading: false,
+      release: undefined,
+    });
+  });
+
+  it('add releases fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.ADD_RELEASE_FAILURE },
+    )).toEqual({
+      ...initialState,
+      error: undefined,
+      loaded: true,
+      loading: false,
+    });
+  });
+});
+
+describe('Update releases reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_RELEASE },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('update releases success reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_RELEASE_SUCCESS },
+    )).toEqual({
+      ...initialState,
+      loaded: true,
+      loading: false,
+      release: undefined,
+    });
+  });
+
+  it('update releases fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_RELEASE_FAILURE },
+    )).toEqual({
+      ...initialState,
+      error: undefined,
+      loaded: true,
+      loading: false,
+    });
+  });
+});
+
+describe('Delete releases reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_RELEASE },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('delete releases success reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_RELEASE_SUCCESS },
+    )).toEqual({
+      ...initialState,
+      loaded: true,
+      loading: false,
+      release: undefined,
+    });
+  });
+
+  it('delete releases fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_RELEASE_FAILURE },
     )).toEqual({
       ...initialState,
       error: undefined,

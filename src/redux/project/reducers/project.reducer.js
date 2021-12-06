@@ -47,6 +47,18 @@ import {
   DELETE_CREDENTIAL,
   DELETE_CREDENTIAL_SUCCESS,
   DELETE_CREDENTIAL_FAILURE,
+  GET_RELEASES,
+  GET_RELEASES_SUCCESS,
+  GET_RELEASES_FAILURE,
+  ADD_RELEASE,
+  ADD_RELEASE_SUCCESS,
+  ADD_RELEASE_FAILURE,
+  UPDATE_RELEASE,
+  UPDATE_RELEASE_SUCCESS,
+  UPDATE_RELEASE_FAILURE,
+  DELETE_RELEASE,
+  DELETE_RELEASE_SUCCESS,
+  DELETE_RELEASE_FAILURE,
 } from '../actions/project.actions';
 
 const initialState = {
@@ -57,6 +69,7 @@ const initialState = {
   product: null,
   thirdpartytool: null,
   credential: null,
+  release: null,
 };
 
 // Reducer
@@ -439,6 +452,102 @@ export default (state = initialState, action) => {
       };
 
     case DELETE_CREDENTIAL_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        error: action.error,
+      };
+
+    case GET_RELEASES:
+      return {
+        ...state,
+        loading: true,
+        loaded: false,
+        error: null,
+      };
+
+    case GET_RELEASES_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        release: action.data,
+      };
+
+    case GET_RELEASES_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        error: action.error,
+      };
+
+    case ADD_RELEASE:
+      return {
+        ...state,
+        loading: true,
+        loaded: false,
+        error: null,
+      };
+
+    case ADD_RELEASE_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        release: action.data,
+      };
+
+    case ADD_RELEASE_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        error: action.error,
+      };
+
+    case UPDATE_RELEASE:
+      return {
+        ...state,
+        loading: true,
+        loaded: false,
+        error: null,
+      };
+
+    case UPDATE_RELEASE_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        release: action.data,
+      };
+
+    case UPDATE_RELEASE_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        error: action.error,
+      };
+
+    case DELETE_RELEASE:
+      return {
+        ...state,
+        loading: true,
+        loaded: false,
+        error: null,
+      };
+
+    case DELETE_RELEASE_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        release: action.data,
+      };
+
+    case DELETE_RELEASE_FAILURE:
       return {
         ...state,
         loading: false,

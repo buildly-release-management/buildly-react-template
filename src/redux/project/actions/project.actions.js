@@ -210,7 +210,7 @@ export const deleteThirdpartytool = (
 });
 
 /**
- * Get Thirdpartytool hours
+ * Get Credentials
  * @param {String} thirdpartytool_uuid
  */
 export const getCredentials = (thirdpartytool_uuid) => ({
@@ -254,7 +254,7 @@ export const deleteCredential = (
 });
 
 /**
- * Get Thirdpartytool hours
+ * Get Credentials
  * @param {String} project_uuid
  */
 export const getReleases = (project_uuid, release_uuid, dev_team_uuid) => ({
