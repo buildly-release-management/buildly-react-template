@@ -125,12 +125,12 @@ describe('Delete Timesheet action', () => {
 // Test Get Timesheet hours
 describe('Get Timesheet hour action', () => {
   it('should create an action to get timesheet hour', () => {
-    const project_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
+    const timesheet_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
     const expectedAction = {
       type: actions.GET_TIMESHEET_HOURS,
-      project_uuid,
+      timesheet_uuid,
     };
-    expect(actions.getTimesheet_hours(project_uuid))
+    expect(actions.getTimesheet_hours(timesheet_uuid))
       .toEqual(expectedAction);
   });
 });

@@ -176,13 +176,13 @@ describe('Edit Thirdpartytool action', () => {
 // Test Delete Thirdpartytool
 describe('Delete Thirdpartytool action', () => {
   it('should create an action to delete thirdpartytool', () => {
-    const project_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
+    const thirdpartytool_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
     const expectedAction = {
       type: actions.DELETE_THIRDPARTYTOOL,
-      project_uuid,
+      thirdpartytool_uuid,
     };
     expect(actions.deleteThirdpartytool(
-      project_uuid,
+      thirdpartytool_uuid,
     )).toEqual(expectedAction);
   });
 });
@@ -190,12 +190,12 @@ describe('Delete Thirdpartytool action', () => {
 // Test Get Credentials
 describe('Get Credential action', () => {
   it('should create an action to get credential', () => {
-    const project_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
+    const thirdpartytool_uuid = '224761f5-0010-4a46-ba2f-d92a4fdc1d21';
     const expectedAction = {
       type: actions.GET_CREDENTIALS,
-      project_uuid,
+      thirdpartytool_uuid,
     };
-    expect(actions.getCredentials(project_uuid))
+    expect(actions.getCredentials(thirdpartytool_uuid))
       .toEqual(expectedAction);
   });
 });
