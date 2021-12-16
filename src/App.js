@@ -13,7 +13,7 @@ import ResetPassword from './pages/ResetPassword/ResetPassword';
 import Help from './pages/Help/Help';
 import TicketStatus from './pages/TicketStatus/TicketStatus';
 import Release from './pages/Release/Release';
-import ViewRelease from './pages/Release/ViewRelease';
+import ViewRelease from './pages/Release/components/ViewRelease';
 import { routes } from './routes/routesConstants';
 import { PrivateRoute } from './routes/Private.route';
 import theme from './styles/theme';

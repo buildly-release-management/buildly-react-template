@@ -618,18 +618,26 @@ function* deleteCredential(payload) {
 
 function* getReleases(payload) {
   try {
+    let link = `${window.env.API_URL}${projecttoolEndpoint}release/`;
     let query_params = '';
-    if (payload.release_uuid) {
-      query_params = `release_uuid=${payload.release_uuid}/`;
-    } else if (payload.project_uuid) {
-      query_params = query_params.concat(`project_uuid=${payload.project_uuid}`);
-    } else if (payload.dev_team_uuid) {
-      query_params = query_params.concat(`dev_team_uuid=${payload.dev_team_uuid}`);
+    if (payload) {
+      if (payload.release_uuid) {
+        query_params = `release_uuid=${payload.release_uuid}/`;
+      } else if (payload.project_uuid) {
+        query_params = query_params.concat(`project_uuid=${payload.project_uuid}`);
+      } else if (payload.dev_team_uuid) {
+        query_params = query_params.concat(`dev_team_uuid=${payload.dev_team_uuid}`);
+      }
+
+      if (query_params) {
+        link = `${link}?${query_params}`;
+      }
     }
+
     const data = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projecttoolEndpoint}release/?${query_params}`,
+      link,
     );
     yield put({ type: GET_RELEASES_SUCCESS, data: data.data });
   } catch (error) {

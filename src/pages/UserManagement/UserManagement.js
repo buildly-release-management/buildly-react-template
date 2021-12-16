@@ -103,7 +103,7 @@ const UserManagement = ({
 
   return (
     <Box mt={1} mb={3}>
-      <Grid container mb={3} justify="space-between" alignItems="center">
+      <Grid container mb={3} justifyContent="space-between" alignItems="center">
         <Grid item>
           <Typography className={classes.userManagementHeading} variant="h4">
             People using this system
