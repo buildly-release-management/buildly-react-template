@@ -3,6 +3,7 @@ import { Route, Redirect } from "react-router-dom";
 import { makeStyles, Container } from "@material-ui/core";
 import { UserContext, getUser } from "@context/User.context";
 import TopBar from "@layout/TopBar/TopBar";
+import NavBar from "@layout/NavBar/NavBar";
 import Dashboard from "@pages/Dashboard/Dashboard";
 import UserManagement from "@pages/UserManagement/UserManagement";
 import MissingData from "@pages/MissingData/MissingData";
@@ -34,6 +35,7 @@ const ContainerDashboard = ({ location, history }) => {
     <div className={classes.root}>
       <UserContext.Provider value={getUser()}>
         <TopBar location={location} history={history} />
+        <NavBar location={location} history={history} />
         <Container className={classes.content}>
           <Route
             exact
