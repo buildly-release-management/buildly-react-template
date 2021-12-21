@@ -6,13 +6,16 @@ import {
   TextField,
   MenuItem,
   Button,
+  IconButton,
 } from '@material-ui/core';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { isMobile } from '@utils/mediaQuery';
+import { routes } from '@routes/routesConstants';
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    paddingTop: theme.spacing(5),
     paddingRight: theme.spacing(1),
+    paddingBottom: theme.spacing(5),
     paddingLeft: theme.spacing(3),
   },
   section: {
@@ -38,9 +41,13 @@ const useStyles = makeStyles((theme) => ({
   gridContent: {
     marginTop: theme.spacing(2),
   },
+  title: {
+    display: 'flex',
+    alignItems: 'center',
+  },
 }));
 
-const ViewRelease = () => {
+const ViewRelease = ({ history }) => {
   const classes = useStyles();
   const [region, setRegion] = useState('');
 
@@ -51,10 +58,17 @@ const ViewRelease = () => {
         spacing={isMobile() ? 0 : 3}
         className={classes.section}
       >
-        <Grid item xs={6}>
-          <Typography component="h3" variant="h3">
-            Release
-          </Typography>
+        <Grid item xs={5}>
+          <div className={classes.title}>
+            <IconButton
+              onClick={(e) => { history.push(routes.RELEASE); }}
+            >
+              <ArrowBackIcon fontSize="medium" />
+            </IconButton>
+            <Typography component="h3" variant="h3">
+              Release
+            </Typography>
+          </div>
         </Grid>
         <Grid item xs={6} align="right">
           <TextField

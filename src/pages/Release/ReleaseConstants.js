@@ -1,17 +1,9 @@
 import _ from 'lodash';
 import moment from 'moment-timezone';
 
+export const ReleaseEnv = ['Dev', 'Staging', 'Production'];
+
 export const releaseColumns = [
-  {
-    name: 'name',
-    label: 'Name',
-    options: {
-      sort: true,
-      sortThirdClickReset: true,
-      filter: true,
-      customBodyRender: (value) => value || '-',
-    },
-  },
   {
     name: 'description',
     label: 'Description',
@@ -23,18 +15,8 @@ export const releaseColumns = [
     },
   },
   {
-    name: 'features',
-    label: 'Features',
-    options: {
-      sort: true,
-      sortThirdClickReset: true,
-      filter: true,
-      customBodyRender: (value) => value || '-',
-    },
-  },
-  {
-    name: 'dev_team_names',
-    label: 'Dev Team',
+    name: 'product_name',
+    label: 'Product',
     options: {
       sort: true,
       sortThirdClickReset: true,
@@ -78,22 +60,16 @@ export const releaseColumns = [
   },
 ];
 
-export const getReleasesData = (releases, users) => {
+export const getReleasesData = (releases, products) => {
   let finalReleases = [];
   _.forEach(releases, (release) => {
     if (release) {
-      let devTeam = '';
-      _.forEach(release.dev_team_uuid, (id) => {
-        const user = _.find(users, { core_user_uuid: id });
-        devTeam = devTeam && user
-          ? `${devTeam}, ${user.first_name} ${user.last_name}`
-          : user ? `${user.first_name} ${user.last_name}` : ''
-      });
+      const product = _.find(products, { product_uuid: release.product_uuid });
       const rel = {
         ...release,
-        dev_team_names: devTeam,
+        product_name: product ? product.name : '',
       };
-      finalReleases = [ ...finalReleases, rel ];
+      finalReleases = [...finalReleases, rel];
     }
   });
   return finalReleases;

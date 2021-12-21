@@ -12,5 +12,5 @@ export const routes = {
   TICKET_STATUS: '/ticket-status',
   MISSING_DATA: '/app/missing-data',
   NEW_PROJECT: '/app/new-project',
-  RELEASE: '/app/release/',
+  RELEASE: '/app/release',
 };
