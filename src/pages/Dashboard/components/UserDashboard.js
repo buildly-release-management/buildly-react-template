@@ -36,6 +36,7 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.secondary.contrastText,
     background: theme.palette.secondary.dark,
     // left: 0,
+    flexWrap: 'wrap',
     top: '4rem',
     zIndex: '99',
     [theme.breakpoints.down("sm")]: {
@@ -72,13 +73,16 @@ const useStyles = makeStyles((theme) => ({
   },
   section2: {
     position: 'absolute',
-    top: '11rem',
+    top: '12rem',
     // left: '0',
     width: '75%',
     padding: theme.spacing(0, 2),
     [theme.breakpoints.down("sm")]: {
       width: '100%',
       left: 0
+    },
+    [theme.breakpoints.down("xs")]: {
+      top: '17rem'
     },
   },
 }));

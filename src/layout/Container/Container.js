@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from 'react';
 import { Route, Redirect } from "react-router-dom";
 import { makeStyles, Container } from "@material-ui/core";
 import { UserContext, getUser } from "@context/User.context";
@@ -30,12 +30,13 @@ const useStyles = makeStyles((theme) => ({
  */
 const ContainerDashboard = ({ location, history }) => {
   const classes = useStyles();
+  const [navHidden, setNavHidden] = useState(false);
 
   return (
     <div className={classes.root}>
       <UserContext.Provider value={getUser()}>
-        <TopBar location={location} history={history} />
-        <NavBar location={location} history={history} />
+        <TopBar navHidden={navHidden} setNavHidden={setNavHidden} location={location} history={history} />
+        <NavBar navHidden={navHidden} setNavHidden={setNavHidden} location={location} history={history} />
         <Container className={classes.content}>
           <Route
             exact

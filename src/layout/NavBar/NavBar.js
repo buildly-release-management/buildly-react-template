@@ -20,16 +20,16 @@ const useStyles = makeStyles((theme) => ({
       width: 240,
       flexShrink: 0,
     },
-    backgroundColor: '#646262',
+    backgroundColor: theme.palette.neutral.light,
   },
   toolbar: theme.mixins.toolbar,
   drawerPaper: {
     width: 240,
-    backgroundColor: '#383636',
-    color: '#fff',
+    backgroundColor: theme.palette.secondary.main,
+    color: theme.palette.secondary.contrastText,
   },
   active: {
-    backgroundColor: '#887C5E !important',
+    backgroundColor: theme.palette.neutral.dark,
     borderRightColor: theme.palette.primary.main,
     borderRightWidth: 10,
     borderRightStyle: 'solid',
@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
   navLink: {
     display: 'block',
     textDecoration: 'none',
-    color: '#fff',
+    color: theme.palette.secondary.contrastText,
   },
   navItems: {
     padding: theme.spacing(3, 4),
