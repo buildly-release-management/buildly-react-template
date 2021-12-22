@@ -1,9 +1,9 @@
 /* eslint-disable import/no-unresolved */
-import { createTheme, responsiveFontSizes } from '@material-ui/core/styles';
+import { createTheme, responsiveFontSizes, adaptV4Theme } from '@mui/material/styles';
 
-const theme = createTheme({
+const theme = createTheme(adaptV4Theme({
   palette: {
-    type: 'dark',
+    mode: 'dark',
     primary: {
       main: '#09b79a',
       contrastText: '#fff',
@@ -35,6 +35,6 @@ const theme = createTheme({
       },
     },
   },
-});
+}));
 
 export default responsiveFontSizes(theme);

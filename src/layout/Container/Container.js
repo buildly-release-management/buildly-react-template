@@ -1,6 +1,7 @@
 import React from "react";
 import { Route, Redirect } from "react-router-dom";
-import { makeStyles, Container } from "@material-ui/core";
+import { Container } from "@mui/material";
+import makeStyles from '@mui/styles/makeStyles';
 import { UserContext, getUser } from "@context/User.context";
 import TopBar from "@layout/TopBar/TopBar";
 import Dashboard from "@pages/Dashboard/Dashboard";

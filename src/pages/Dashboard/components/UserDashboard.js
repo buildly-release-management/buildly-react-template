@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import _ from 'lodash';
 import { Route } from 'react-router-dom';
 import {
-  makeStyles,
   useTheme,
   MenuItem,
   TextField,
@@ -12,10 +11,11 @@ import {
   Button,
   Box,
   useMediaQuery,
-} from '@material-ui/core';
+} from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   AddRounded as AddRoundedIcon,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import { routes } from '@routes/routesConstants';
 import { deleteRequirement, deleteIssue } from '@redux/dashboard/actions/dashboard.actions';
 import AddRequirements from '../forms/AddRequirements';
