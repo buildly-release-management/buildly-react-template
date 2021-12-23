@@ -143,8 +143,8 @@ const AddRequirements = ({
       <FormModal
         open={openFormModal}
         handleClose={closeFormModal}
-        name={formTitle}
-        nameClass={classes.formTitle}
+        title={formTitle}
+        titleClass={classes.formTitle}
         maxWidth="md"
         wantConfirm
         openConfirmModal={openConfirmModal}

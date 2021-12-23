@@ -33,7 +33,7 @@ const StyledDialogTitle = withStyles(styles)(({
   ...other
 }) => (
   <DialogTitle className={classes.root} {...other}>
-    <Typography className={titleClass} variant="h6">
+    <Typography className={titleClass}>
       {children}
     </Typography>
     {onClose ? (
