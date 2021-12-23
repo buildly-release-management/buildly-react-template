@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Redirect } from 'react-router-dom';
+import { Route, Redirect, Switch } from 'react-router-dom';
 import { makeStyles, Container } from '@material-ui/core';
 import { UserContext, getUser } from '@context/User.context';
 import TopBar from '@layout/TopBar/TopBar';
@@ -9,6 +9,7 @@ import MissingData from '@pages/MissingData/MissingData';
 import { routes } from '@routes/routesConstants';
 import NewProject from '@pages/NewProject/NewProject';
 import Release from '@pages/Release/Release';
+import ViewRelease from '@pages/Release/components/ViewRelease';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -36,16 +37,19 @@ const ContainerDashboard = ({ location, history }) => {
       <UserContext.Provider value={getUser()}>
         <TopBar location={location} history={history} />
         <Container className={classes.content}>
-          <Route
-            exact
-            path={routes.APP}
-            render={() => <Redirect to={routes.DASHBOARD} />}
-          />
-          <Route path={routes.DASHBOARD} component={Dashboard} />
-          <Route path={routes.USER_MANAGEMENT} component={UserManagement} />
-          <Route path={routes.MISSING_DATA} component={MissingData} />
-          <Route path={routes.NEW_PROJECT} component={NewProject} />
-          <Route path={routes.RELEASE} component={Release} />
+          <Switch>
+            <Route
+              exact
+              path={routes.APP}
+              render={() => <Redirect to={routes.DASHBOARD} />}
+            />
+            <Route path={routes.DASHBOARD} component={Dashboard} />
+            <Route path={routes.USER_MANAGEMENT} component={UserManagement} />
+            <Route path={routes.MISSING_DATA} component={MissingData} />
+            <Route path={routes.NEW_PROJECT} component={NewProject} />
+            <Route exact path={`${routes.RELEASE}/view/:releaseID`} component={ViewRelease} />
+            <Route path={routes.RELEASE} component={Release} />
+          </Switch>
         </Container>
       </UserContext.Provider>
     </div>

@@ -66,7 +66,7 @@ const Release = ({
                 return (
                   <Link
                     className={classes.link}
-                    to={`${routes.RELEASE}/view/:${row.release_uuid}`}
+                    to={`${routes.RELEASE}/view/${row.release_uuid}`}
                   >
                     {row.name}
                   </Link>

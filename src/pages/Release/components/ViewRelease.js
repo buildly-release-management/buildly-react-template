@@ -1,203 +1,181 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import _ from 'lodash';
 import {
   makeStyles,
   Grid,
   Typography,
-  TextField,
-  MenuItem,
   Button,
   IconButton,
 } from '@material-ui/core';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { isMobile } from '@utils/mediaQuery';
+import { getReleases } from '@redux/project/actions/project.actions';
 import { routes } from '@routes/routesConstants';
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    paddingRight: theme.spacing(1),
-    paddingBottom: theme.spacing(5),
-    paddingLeft: theme.spacing(3),
+    padding: theme.spacing(5),
+    paddingTop: 0,
   },
-  section: {
+  container: {
     marginTop: theme.spacing(5),
-    width: '100%',
   },
-  select: {
-    minWidth: theme.spacing(20),
+  backButton: {
+    display: 'flex',
+    alignItems: 'center',
+    marginLeft: `-${theme.spacing(2)}px`,
   },
-  graphXS: {
-    marginTop: theme.spacing(5),
-    backgroundColor: 'aqua',
-    height: theme.spacing(50),
-  },
-  graphMD: {
-    marginRight: theme.spacing(3),
-    backgroundColor: 'beige',
-    height: theme.spacing(50),
-  },
-  gridTitle: {
+  gridSection: {
     marginTop: theme.spacing(5),
   },
   gridContent: {
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(1),
   },
-  title: {
-    display: 'flex',
-    alignItems: 'center',
+  buttons: {
+    [theme.breakpoints.down('sm')]: {
+      marginTop: theme.spacing(5),
+    },
+    [theme.breakpoints.up('md')]: {
+      textAlign: 'right',
+    },
+  },
+  graph: {
+    marginTop: theme.spacing(2),
   },
 }));
 
-const ViewRelease = ({ history }) => {
+const ViewRelease = ({
+  dispatch, history, releaseID, releases,
+}) => {
   const classes = useStyles();
-  const [region, setRegion] = useState('');
+  const [release, setRelease] = useState(null);
+
+  useEffect(() => {
+    if (!releases) {
+      dispatch(getReleases());
+    }
+    const rel = _.find(releases, { release_uuid: releaseID });
+    if (rel) {
+      setRelease(rel);
+    }
+  }, [releases]);
 
   return (
     <div className={classes.root}>
-      <Grid
-        container
-        spacing={isMobile() ? 0 : 3}
-        className={classes.section}
-      >
-        <Grid item xs={5}>
-          <div className={classes.title}>
-            <IconButton
-              onClick={(e) => { history.push(routes.RELEASE); }}
-            >
-              <ArrowBackIcon fontSize="medium" />
-            </IconButton>
-            <Typography component="h3" variant="h3">
-              Release
-            </Typography>
-          </div>
-        </Grid>
-        <Grid item xs={6} align="right">
-          <TextField
-            variant="outlined"
-            size="small"
-            required
-            select
-            id="region"
-            name="region"
-            className={classes.select}
-            value={region}
-            onChange={(e) => { setRegion(e.target.value); }}
+      <Grid container spacing={isMobile() ? 0 : 3}>
+        <Grid item xs={12} className={classes.backButton}>
+          <IconButton
+            onClick={(e) => { history.push(routes.RELEASE); }}
           >
-            <MenuItem value="">Select region</MenuItem>
-            <MenuItem value="dev">Development</MenuItem>
-            <MenuItem value="demo">Demo</MenuItem>
-            <MenuItem value="prod">Production</MenuItem>
-          </TextField>
-        </Grid>
-      </Grid>
-      <Grid
-        container
-        spacing={isMobile() ? 0 : 3}
-        className={classes.section}
-      >
-        <Grid item xs={4} sm={6} md={8}>
+            <ArrowBackIcon fontSize="medium" />
+          </IconButton>
           <Typography component="div" variant="h4">
-            <em>Version 1.0.0</em>
+            Release
           </Typography>
         </Grid>
-        <Grid item xs={4} sm={3} md={2} align="right">
-          <Button
-            type="button"
-            variant="contained"
-            color="primary"
-          >
-            View Timeline
-          </Button>
-        </Grid>
-        <Grid item xs={4} sm={3} md={2} align="right">
-          <Button
-            type="button"
-            variant="contained"
-            color="primary"
-          >
-            View Status
-          </Button>
-        </Grid>
-      </Grid>
 
-      <Grid container className={classes.section}>
-        <Grid item xs={12} md={6}>
-          <Grid item>
-            <Typography component="div" variant="h5">
-              Release Notes
-            </Typography>
-          </Grid>
-          <Grid item className={classes.gridContent}>
-            <Typography component="div" variant="body1">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-              sed do eiusmod tempor incididunt ut labore et dolore magna
-              aliqua. Pellentesque elit eget gravida cum sociis natoque.
-              Sagittis eu volutpat odio facilisis mauris sit amet massa.
-              Semper viverra nam libero justo laoreet. Augue eget arcu
-              dictum varius duis at.
-            </Typography>
-          </Grid>
-          <Grid item className={classes.gridTitle}>
-            <Typography component="div" variant="h5">
-              Services
-            </Typography>
-          </Grid>
-          <Grid container className={classes.gridContent}>
-            <Grid item xs={6}>
-              <Typography component="div" variant="body1">
-                Service 1
+        <Grid
+          container
+          spacing={isMobile() ? 0 : 2}
+          className={classes.container}
+        >
+          <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
+              <Typography component="div" variant="h5">
+                {release ? release.name : ''}
               </Typography>
             </Grid>
-            <Grid item xs={6}>
-              <Typography component="div" variant="body1">
-                v1.0.0
+
+            <Grid item xs={12} className={classes.gridSection}>
+              <Typography component="div" variant="h6">
+                Region
+              </Typography>
+              <Typography
+                component="div"
+                variant="body1"
+                className={classes.gridContent}
+              >
+                {release ? release.environment : 'Not Available'}
               </Typography>
             </Grid>
-          </Grid>
-          <Grid container className={classes.gridContent}>
-            <Grid item xs={6}>
-              <Typography component="div" variant="body1">
-                Service 2
+
+            <Grid item xs={12} className={classes.gridSection}>
+              <Typography component="div" variant="h6">
+                Release Description
+              </Typography>
+              <Typography
+                component="div"
+                variant="body1"
+                className={classes.gridContent}
+              >
+                {release ? release.description : 'Not Available'}
               </Typography>
             </Grid>
-            <Grid item xs={6}>
-              <Typography component="div" variant="body1">
-                v1.0.0
+
+            <Grid item xs={12} className={classes.gridSection}>
+              <Typography component="div" variant="h6">
+                Services
               </Typography>
-            </Grid>
-          </Grid>
-          <Grid container className={classes.gridContent}>
-            <Grid item xs={6}>
-              <Typography component="div" variant="body1">
-                Service 3
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography component="div" variant="body1">
-                v1.0.0
-              </Typography>
-            </Grid>
-          </Grid>
-          <Grid container className={classes.gridContent}>
-            <Grid item xs={6}>
-              <Typography component="div" variant="body1">
-                Service 4
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography component="div" variant="body1">
-                v1.0.0
-              </Typography>
+
+              {release
+              && release.module_uuid
+              && release.module_uuid.length > 0
+                ? _.map(release.module_uuid, (uuid, idx) => (
+                  <Grid
+                    key={`module-${idx}:${uuid}`}
+                    container
+                    className={classes.gridContent}
+                  >
+                    <Grid item xs={3}>
+                      {uuid}
+                    </Grid>
+                    <Grid item xs={3}>
+                      v1.0.0
+                    </Grid>
+                  </Grid>
+                ))
+                : 'Not Available'}
             </Grid>
           </Grid>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <div className={isMobile() ? classes.graphXS : classes.graphMD}>
-            Graph here
-          </div>
+
+          <Grid item xs={12} md={6}>
+            <Grid container className={classes.buttons}>
+              <Grid item xs={6}>
+                <Button variant="contained" color="primary">
+                  View Timeline
+                </Button>
+              </Grid>
+              <Grid item xs={6}>
+                <Button variant="contained" color="primary">
+                  View Status
+                </Button>
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12} className={classes.graph}>
+              <div
+                style={{
+                  color: 'black',
+                  width: '100%',
+                  height: '500px',
+                  backgroundColor: 'beige',
+                }}
+              >
+                Graph Here
+              </div>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </div>
   );
 };
 
-export default ViewRelease;
+const mapStateToProps = (state, ownProps) => ({
+  ...ownProps,
+  releaseID: ownProps.match.params.releaseID,
+  releases: state.projectReducer.release,
+});
+
+export default connect(mapStateToProps)(ViewRelease);
