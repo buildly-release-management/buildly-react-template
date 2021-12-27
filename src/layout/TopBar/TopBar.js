@@ -1,13 +1,13 @@
 import React, { useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import {
-  makeStyles, AppBar, Toolbar, IconButton,
-} from '@material-ui/core';
+import { AppBar, Toolbar, IconButton, Hidden } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   ExitToApp as ExitToAppIcon,
   Group as GroupIcon,
-} from '@material-ui/icons';
+  Menu as MenuIcon,
+} from '@mui/icons-material';
 import logo from '@assets/light-logo.png';
 import { UserContext } from '@context/User.context';
 import { logout } from '@redux/authuser/actions/authuser.actions';
@@ -25,6 +25,9 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: 50,
     objectFit: 'contain',
   },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
   menuRight: {
     marginLeft: 'auto',
   },
@@ -39,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
 /**
  * Component for the top bar header.
  */
-const TopBar = ({ location, history, dispatch }) => {
+const TopBar = ({ location, history, dispatch, navHidden, setNavHidden, }) => {
   const classes = useStyles();
   const user = useContext(UserContext);
   const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
@@ -61,6 +64,17 @@ const TopBar = ({ location, history, dispatch }) => {
   return (
     <AppBar position="fixed" className={classes.appBar}>
       <Toolbar>
+        <Hidden mdUp>
+          <IconButton
+            edge="start"
+            className={classes.menuButton}
+            onClick={() => setNavHidden(!navHidden)}
+            color="default"
+            aria-label="menu"
+            size="large">
+            <MenuIcon />
+          </IconButton>
+        </Hidden>
         <Link to={routes.DASHBOARD}>
           <img src={logo} className={classes.logo} />
         </Link>
@@ -68,7 +82,7 @@ const TopBar = ({ location, history, dispatch }) => {
         <div className={classes.menuRight}>
           {isAdmin && (
             <Link to={routes.USER_MANAGEMENT}>
-              <IconButton aria-label="user-management" color="inherit">
+              <IconButton aria-label="user-management" color="inherit" size="large">
                 <GroupIcon fontSize="large" className={classes.menuIcon} />
               </IconButton>
             </Link>
@@ -77,7 +91,7 @@ const TopBar = ({ location, history, dispatch }) => {
             aria-label="logout"
             color="inherit"
             onClick={handleLogoutClick}
-          >
+            size="large">
             <ExitToAppIcon fontSize="large" className={classes.menuIcon} />
           </IconButton>
         </div>

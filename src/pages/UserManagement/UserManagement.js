@@ -7,17 +7,9 @@ import {
   NotificationManager,
 } from 'react-notifications';
 import { rem } from 'polished';
-import {
-  makeStyles,
-  Tabs,
-  Tab,
-  Button,
-  TextField,
-  Typography,
-  Grid,
-  Box,
-} from '@material-ui/core';
-import { Email as EmailIcon } from '@material-ui/icons';
+import { Tabs, Tab, Button, TextField, Typography, Grid, Box } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import { Email as EmailIcon } from '@mui/icons-material';
 import { useInput } from '@hooks/useInput';
 import { invite } from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
@@ -148,7 +140,7 @@ const UserManagement = ({
                 helperText={error}
                 {...email.bind}
               />
-              <Grid justify="flex-end" container spacing={0}>
+              <Grid justifyContent="flex-end" container spacing={0}>
                 <Grid item>
                   <Button
                     onClick={inviteUser}
@@ -166,7 +158,7 @@ const UserManagement = ({
           </Popup>
         </Grid>
       </Grid>
-      <Grid mb={3} container justify="center">
+      <Grid mb={3} container justifyContent="center">
         <Grid item className={classes.tabs}>
           <Tabs value={view} onChange={viewTabClicked}>
             {subNav.map((itemProps, index) => (
