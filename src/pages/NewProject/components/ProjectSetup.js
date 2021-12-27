@@ -119,7 +119,7 @@ function StyledRadio(props) {
 
   return (
     <Radio
-      className={classes.root}
+      // className={classes.root}
       color="primary"
       checkedIcon={
         <span className={`${classes.icon} ${classes.checkedIcon}`} />
