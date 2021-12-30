@@ -5,9 +5,7 @@ import authSaga from './authuser/sagas/authuser.saga';
 import coregroupSaga from './coregroup/sagas/coregroup.saga';
 import coreuserSaga from './coreuser/coreuser.saga';
 import googleSheetSaga from './googleSheet/sagas/googleSheet.saga';
-import devPartnerSaga from './devpartner/sagas/devpartner.saga';
-import projecttoolSaga from './project/sagas/project.saga';
-import releaseSaga from './release/sagas/release.saga';
+import projectSaga from './project/sagas/project.saga';
 
 export default function* rootSaga() {
   yield all([
@@ -16,8 +14,6 @@ export default function* rootSaga() {
     coreuserSaga(),
     crudSaga(),
     googleSheetSaga(),
-    devPartnerSaga(),
-    projecttoolSaga(),
-    releaseSaga(),
+    projectSaga(),
   ]);
 }
