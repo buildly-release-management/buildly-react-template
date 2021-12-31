@@ -1,69 +1,74 @@
-import React, { useState } from "react";
-import { connect } from "react-redux";
-import _ from "lodash";
-import { useTheme, useMediaQuery, Grid, Typography, Box, TextField, Button } from "@mui/material";
+import React, { useState } from 'react';
+import { connect } from 'react-redux';
+import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
-import { useInput } from "@hooks/useInput";
-import { validators } from "@utils/validators";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
+import {
+  useTheme,
+  useMediaQuery,
+  Grid,
+  Box,
+  TextField,
+  Button,
+} from '@mui/material';
+import { useInput } from '@hooks/useInput';
+import { validators } from '@utils/validators';
 
 const useStyles = makeStyles((theme) => ({
   form: {
-    width: "100%",
+    width: '100%',
     marginTop: theme.spacing(1),
-    color: "#fff",
-    [theme.breakpoints.up("sm")]: {
-      width: "70%",
-      margin: "auto",
+    color: '#fff',
+    [theme.breakpoints.up('sm')]: {
+      width: '70%',
+      margin: 'auto',
     },
-    "& .MuiOutlinedInput-notchedOutline": {
+    '& .MuiOutlinedInput-notchedOutline': {
       borderColor: theme.palette.secondary.contrastText,
     },
-    "& .MuiOutlinedInput-root:hover > .MuiOutlinedInput-notchedOutline": {
-      borderColor: "rgb(255, 255, 255, 0.23)",
+    '& .MuiOutlinedInput-root:hover > .MuiOutlinedInput-notchedOutline': {
+      borderColor: 'rgb(255, 255, 255, 0.23)',
     },
-    "& .MuiInputLabel-root": {
+    '& .MuiInputLabel-root': {
       color: theme.palette.secondary.contrastText,
     },
-    "& .MuiSelect-icon": {
+    '& .MuiSelect-icon': {
       color: theme.palette.secondary.contrastText,
     },
-    "& .MuiInputBase-input": {
+    '& .MuiInputBase-input': {
       color: theme.palette.secondary.contrastText,
     },
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
-    borderRadius: "18px",
-    "&.MuiButton-contained.Mui-disabled": {
-      color: "hsl(0deg 0% 100% / 70%);",
+    borderRadius: '18px',
+    '&.MuiButton-contained.Mui-disabled': {
+      color: 'hsl(0deg 0% 100% / 70%);',
     },
   },
   formTitle: {
-    fontWeight: "bold",
-    marginTop: "1em",
-    textAlign: "center",
+    fontWeight: 'bold',
+    marginTop: '1em',
+    textAlign: 'center',
     color: theme.palette.primary.contrastText,
   },
   buttonContainer: {
     margin: theme.spacing(8, 0),
-    textAlign: "center",
-    justifyContent: "center",
+    textAlign: 'center',
+    justifyContent: 'center',
   },
   buttonProgress: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
     marginTop: -12,
     marginLeft: -12,
   },
   loadingWrapper: {
-    position: "relative",
+    position: 'relative',
   },
   inputWithTooltip: {
-    display: "flex",
-    alignItems: "center",
+    display: 'flex',
+    alignItems: 'center',
   },
 }));
 
@@ -80,42 +85,42 @@ const UsersInfo = (props) => {
   const classes = useStyles();
   const theme = useTheme();
   const viewOnly = false;
-  const isDesktop = useMediaQuery(theme.breakpoints.up("sm"));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
   // const editPage = location.state && location.state.type === 'edit';
-  const editData =
-    (location.state && location.state.type === "edit" && location.state.data) ||
-    {};
+  const editData = (location.state
+    && location.state.type === 'edit'
+    && location.state.data) || {};
 
-  const product_use = useInput((editData && editData.product_use) || "", {
+  const product_use = useInput((editData && editData.product_use) || '', {
     required: true,
   });
 
   const product_use_when = useInput(
-    (editData && editData.product_use_when) || "",
+    (editData && editData.product_use_when) || '',
     {
       required: true,
-    }
+    },
   );
 
   const product_use_situation = useInput(
-    (editData && editData.product_use_situation) || "",
+    (editData && editData.product_use_situation) || '',
     {
       required: true,
-    }
+    },
   );
 
   const product_imp_func = useInput(
-    (editData && editData.product_imp_func) || "",
+    (editData && editData.product_imp_func) || '',
     {
       required: true,
-    }
+    },
   );
 
   const product_delivery_risk = useInput(
-    (editData && editData.product_delivery_risk) || "",
+    (editData && editData.product_delivery_risk) || '',
     {
       required: true,
-    }
+    },
   );
 
   const [formError, setFormError] = useState({});
@@ -139,7 +144,7 @@ const UsersInfo = (props) => {
         ...prevState,
         [e.target.id || parentId]: {
           error: false,
-          message: "",
+          message: '',
         },
       });
     }
@@ -173,11 +178,11 @@ const UsersInfo = (props) => {
     // return errorExists;
 
     if (
-      (product_use.value &&
-        product_use_when.value &&
-        product_use_situation.value &&
-        product_imp_func.value &&
-        product_delivery_risk.value) === ""
+      (product_use.value
+        && product_use_when.value
+        && product_use_situation.value
+        && product_imp_func.value
+        && product_delivery_risk.value) === ''
     ) {
       return true;
     }

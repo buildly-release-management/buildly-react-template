@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
-import { Typography } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
+import { Typography } from '@mui/material';
 import {
   AddRounded as AddRoundedIcon,
   EditRounded as EditRoundedIcon,
@@ -66,22 +66,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const List = (props) => {
-  const {
-    products,
-    requirements,
-    issues,
-    proj,
-    setProj,
-    projReqs,
-    setProjReqs,
-    projIssues,
-    setProjIssues,
-    addItem,
-    editItem,
-    convertIssue,
-    deleteItem,
-  } = props;
+const List = ({
+  proj,
+  projReqs,
+  projIssues,
+  addItem,
+  editItem,
+  convertIssue,
+  deleteItem,
+}) => {
   const classes = useStyles();
 
   return (
@@ -116,42 +109,40 @@ const List = (props) => {
               No Project selected. Please select the product.
             </Typography>
           )}
-          {proj !== 0 && projReqs && projReqs.length === 0
-                        && (
-                        <Typography
-                          className={classes.noData}
-                          variant="body1"
-                        >
-                          No Requirements yet.
-                        </Typography>
-                        )}
+          {proj !== 0 && projReqs && projReqs.length === 0 && (
+            <Typography
+              className={classes.noData}
+              variant="body1"
+            >
+              No Requirements yet.
+            </Typography>
+          )}
           {proj !== 0 && projReqs && projReqs.length > 0
-                        && _.map(projReqs, (req) => (
-                          <div
-                            key={`req-${req.projectID}-${req.id}`}
-                            className={classes.boxEntry}
-                          >
-                            <Typography
-                              className={classes.entryTitle}
-                              variant="body1"
-                            >
-                              {req.name}
-                            </Typography>
-                            <TrendingFlatRoundedIcon
-                              className={classes.entryIcon}
-                              onClick={(e) => convertIssue(req, 'convert')}
-                            />
-                            <EditRoundedIcon
-                              className={classes.entryIcon}
-                              onClick={(e) => editItem(req, 'req')}
-                            />
-                            <DeleteRoundedIcon
-                              className={classes.icon}
-                              onClick={(e) => deleteItem(req, 'req')}
-                            />
-                          </div>
-                        ))}
-
+            && _.map(projReqs, (req) => (
+              <div
+                key={`req-${req.projectID}-${req.id}`}
+                className={classes.boxEntry}
+              >
+                <Typography
+                  className={classes.entryTitle}
+                  variant="body1"
+                >
+                  {req.name}
+                </Typography>
+                <TrendingFlatRoundedIcon
+                  className={classes.entryIcon}
+                  onClick={(e) => convertIssue(req, 'convert')}
+                />
+                <EditRoundedIcon
+                  className={classes.entryIcon}
+                  onClick={(e) => editItem(req, 'req')}
+                />
+                <DeleteRoundedIcon
+                  className={classes.icon}
+                  onClick={(e) => deleteItem(req, 'req')}
+                />
+              </div>
+            ))}
         </div>
 
         <div className={`${classes.boxSection} ${classes.rightBox}`}>
@@ -168,40 +159,38 @@ const List = (props) => {
               No Project selected. Please select the product.
             </Typography>
           )}
-          {proj !== 0 && projIssues && projIssues.length === 0
-                        && (
-                        <Typography
-                          className={classes.noData}
-                          variant="body1"
-                        >
-                          No Issues yet.
-                        </Typography>
-                        )}
+          {proj !== 0 && projIssues && projIssues.length === 0 && (
+            <Typography
+              className={classes.noData}
+              variant="body1"
+            >
+              No Issues yet.
+            </Typography>
+          )}
           {proj !== 0 && projIssues && projIssues.length > 0
-                        && _.map(projIssues, (issue) => (
-                          <div
-                            key={`issue-${issue.projectID}-${issue.id}`}
-                            className={classes.boxEntry}
-                          >
-                            <Typography
-                              className={classes.entryTitle}
-                              variant="body1"
-                            >
-                              {issue.name}
-                            </Typography>
-                            <EditRoundedIcon
-                              className={classes.entryIcon}
-                              onClick={(e) => editItem(issue, 'issue')}
-                            />
-                            <DeleteRoundedIcon
-                              className={classes.icon}
-                              onClick={(e) => deleteItem(issue, 'issue')}
-                            />
-                          </div>
-                        ))}
+            && _.map(projIssues, (issue) => (
+              <div
+                key={`issue-${issue.projectID}-${issue.id}`}
+                className={classes.boxEntry}
+              >
+                <Typography
+                  className={classes.entryTitle}
+                  variant="body1"
+                >
+                  {issue.name}
+                </Typography>
+                <EditRoundedIcon
+                  className={classes.entryIcon}
+                  onClick={(e) => editItem(issue, 'issue')}
+                />
+                <DeleteRoundedIcon
+                  className={classes.icon}
+                  onClick={(e) => deleteItem(issue, 'issue')}
+                />
+              </div>
+            ))}
         </div>
       </div>
-
     </div>
   );
 };

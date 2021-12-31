@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
+import makeStyles from '@mui/styles/makeStyles';
 import {
-  makeStyles,
   Grid,
   Typography,
   Button,
   IconButton,
-} from '@material-ui/core';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { isMobile } from '@utils/mediaQuery';
 import { getAllReleases } from '@redux/product/actions/product.actions';
 import { routes } from '@routes/routesConstants';

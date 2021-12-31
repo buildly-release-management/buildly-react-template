@@ -1,4 +1,3 @@
-/* eslint-disable import/no-unresolved */
 import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
 const theme = createTheme(({

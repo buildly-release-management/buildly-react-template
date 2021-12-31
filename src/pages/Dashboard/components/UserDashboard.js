@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import { Route } from 'react-router-dom';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   useTheme,
   MenuItem,
@@ -9,19 +10,14 @@ import {
   Typography,
   Chip,
   Button,
-  Box,
-  useMediaQuery,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
-import {
-  AddRounded as AddRoundedIcon,
-} from '@mui/icons-material';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { routes } from '@routes/routesConstants';
+import ConfirmModal from '@components/Modal/ConfirmModal';
 import { deleteRequirement, deleteIssue } from '@redux/dashboard/actions/dashboard.actions';
 import AddRequirements from '../forms/AddRequirements';
 import AddIssues from '../forms/AddIssues';
 import RequirementToIssue from '../forms/RequirementToIssue';
-import ConfirmModal from '../forms/ConfirmModal';
 import List from '../components/List';
 import Kanban from '../components/Kanban';
 
@@ -35,13 +31,12 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     color: theme.palette.secondary.contrastText,
     background: theme.palette.secondary.dark,
-    // left: 0,
     flexWrap: 'wrap',
     top: '4rem',
     zIndex: '99',
     [theme.breakpoints.down('md')]: {
       width: '100%',
-      left: 0
+      left: 0,
     },
   },
   title: {
@@ -74,15 +69,14 @@ const useStyles = makeStyles((theme) => ({
   section2: {
     position: 'absolute',
     top: '12rem',
-    // left: '0',
     width: '75%',
     padding: theme.spacing(0, 2),
     [theme.breakpoints.down('md')]: {
       width: '100%',
-      left: 0
+      left: 0,
     },
     [theme.breakpoints.down('sm')]: {
-      top: '17rem'
+      top: '17rem',
     },
   },
 }));
@@ -126,6 +120,7 @@ const getView = (
           handleDeleteModal={handleDeleteModal}
         />
       );
+
     case 'kanban':
       return (
         <Kanban
@@ -169,7 +164,6 @@ const UserDashboard = (props) => {
   const [projIssues, setProjIssues] = useState([]);
   const [openDeleteModal, setDeleteModal] = useState(false);
   const [toDeleteItem, setDeleteItem] = useState({ id: 0, type: 'req' });
-  const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
 
   const addReqPath = redirectTo
     ? `${redirectTo}/dashboard`
@@ -286,8 +280,6 @@ const UserDashboard = (props) => {
   return (
     <div>
       <div className={classes.section1}>
-        {/* {!isDesktop && (
-          <Box mb={2}> */}
         <Typography className={classes.title} variant="h3">
           Dashboard
         </Typography>
@@ -321,12 +313,12 @@ const UserDashboard = (props) => {
           <MenuItem value={0}>Select</MenuItem>
           {products
             && products.length > 0
-            && _.map(products, (proj) => (
+            && _.map(products, (prj) => (
               <MenuItem
-                key={`product-${proj.id}`}
-                value={proj.id}
+                key={`product-${prj.id}`}
+                value={prj.id}
               >
-                {proj.name}
+                {prj.name}
               </MenuItem>
             ))}
         </TextField>

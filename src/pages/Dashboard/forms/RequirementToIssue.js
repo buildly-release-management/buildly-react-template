@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { useTheme, useMediaQuery, Grid, TextField, Button, MenuItem } from '@mui/material';
+import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
+import {
+  useTheme,
+  useMediaQuery,
+  Grid,
+  TextField,
+  Button,
+  MenuItem,
+} from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import { useInput } from '@hooks/useInput';
 import {
@@ -161,8 +169,9 @@ const RequirementToIssue = ({
     return errorExists;
   };
 
-  return <>
-    {openFormModal && (
+  return (
+    <>
+      {openFormModal && (
       <FormModal
         open={openFormModal}
         handleClose={closeFormModal}
@@ -299,78 +308,78 @@ const RequirementToIssue = ({
               </TextField>
             </Grid>
             {editPage && (
-              <Grid item xs={12}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  select
-                  id="issueStatus"
-                  label="Issue Status"
-                  name="issueStatus"
-                  autoComplete="issueStatus"
-                  error={
+            <Grid item xs={12}>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                select
+                id="issueStatus"
+                label="Issue Status"
+                name="issueStatus"
+                autoComplete="issueStatus"
+                error={
                     formError.issueStatus
                     && formError.issueStatus.error
                   }
-                  helperText={
+                helperText={
                     formError.issueStatus
                       ? formError.issueStatus.message
                       : ''
                   }
-                  onBlur={(e) => handleBlur(e, 'required', issueStatus)}
-                  {...issueStatus.bind}
-                >
-                  {_.map(status, (st) => (
-                    <MenuItem
-                      key={`type-${st.id}`}
-                      value={st.value}
-                    >
-                      {st.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
+                onBlur={(e) => handleBlur(e, 'required', issueStatus)}
+                {...issueStatus.bind}
+              >
+                {_.map(status, (st) => (
+                  <MenuItem
+                    key={`type-${st.id}`}
+                    value={st.value}
+                  >
+                    {st.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
             )}
             {editPage && (
-              <Grid item xs={12}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  select
-                  id="assignedTo"
-                  label="Assigned To"
-                  name="assignedTo"
-                  autoComplete="assignedTo"
-                  error={
+            <Grid item xs={12}>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                select
+                id="assignedTo"
+                label="Assigned To"
+                name="assignedTo"
+                autoComplete="assignedTo"
+                error={
                     formError.assignedTo
                     && formError.assignedTo.error
                   }
-                  helperText={
+                helperText={
                     formError.assignedTo
                       ? formError.assignedTo.message
                       : ''
                   }
-                  onBlur={(e) => handleBlur(e, 'required', assignedTo)}
-                  {...assignedTo.bind}
-                >
-                  <MenuItem value="">Select</MenuItem>
-                  {_.map(
-                    _.filter(devs, { projectID }),
-                    (dev) => (
-                      <MenuItem
-                        key={`type-${dev.projectID}-${dev.id}`}
-                        value={dev.value}
-                      >
-                        {dev.name}
-                      </MenuItem>
-                    ),
-                  )}
-                </TextField>
-              </Grid>
+                onBlur={(e) => handleBlur(e, 'required', assignedTo)}
+                {...assignedTo.bind}
+              >
+                <MenuItem value="">Select</MenuItem>
+                {_.map(
+                  _.filter(devs, { projectID }),
+                  (dev) => (
+                    <MenuItem
+                      key={`type-${dev.projectID}-${dev.id}`}
+                      value={dev.value}
+                    >
+                      {dev.name}
+                    </MenuItem>
+                  ),
+                )}
+              </TextField>
+            </Grid>
             )}
           </Grid>
 
@@ -406,8 +415,9 @@ const RequirementToIssue = ({
           </Grid>
         </form>
       </FormModal>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 const mapStateToProps = (state, ownProps) => ({

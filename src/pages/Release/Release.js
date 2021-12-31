@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Route } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
+import makeStyles from '@mui/styles/makeStyles';
 import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
 import { getAllReleases } from '@redux/product/actions/product.actions';
 import { routes } from '@routes/routesConstants';
@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Release = ({
-  dispatch, loading, releases, products, history, redirectTo,
+  dispatch, loading, releases, history, redirectTo,
 }) => {
   const classes = useStyles();
   const [rows, setRows] = useState([]);
@@ -46,7 +46,7 @@ const Release = ({
 
   useEffect(() => {
     if (releases && releases.length > 0) {
-      const rws = getReleasesData(releases, products);
+      const rws = getReleasesData(releases);
       let cols = columns;
 
       if (cols[0] && !(cols[0].label === 'Name')) {
@@ -117,7 +117,6 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
   loading: state.projectReducer.loading,
   releases: state.projectReducer.release,
-  products: state.projectReducer.product,
 });
 
 export default connect(mapStateToProps)(Release);

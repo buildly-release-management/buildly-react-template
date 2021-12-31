@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   useTheme,
   useMediaQuery,
@@ -13,7 +14,6 @@ import {
   ListItemText,
   Button,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
 import { showAlert } from '@redux/alert/actions/alert.actions';

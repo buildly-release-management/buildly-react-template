@@ -1,12 +1,16 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
-import { Stepper, Step, StepLabel, Hidden, Grid } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
+import {
+  Stepper,
+  Step,
+  StepLabel,
+  Hidden,
+  Grid,
+} from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
-import { UserContext } from '@context/User.context';
 import { routes } from '@routes/routesConstants';
-// import { checkForGlobalAdmin } from "@utils/utilMethods";
 import {
   saveProductFormData,
 } from '@redux/product/actions/product.actions';
@@ -187,7 +191,6 @@ const NewProjectForm = (props) => {
     location, history, productFormData, dispatch,
   } = props;
   const classes = useStyles();
-  const user = useContext(UserContext);
 
   const editPage = location.state && location.state.type === 'edit';
   const editData = location.state && location.state.data;
@@ -276,12 +279,6 @@ const NewProjectForm = (props) => {
 
       case 3:
         return checkIfTeamUserEdited();
-
-        // case 4:
-        //   return checkIfSensorGatewayEdited();
-
-        // case 5:
-        //   return checkIfEnvironmentLimitsEdited();
 
       default:
         return false;

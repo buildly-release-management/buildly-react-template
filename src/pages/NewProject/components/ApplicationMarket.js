@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   useTheme,
   useMediaQuery,
@@ -16,7 +17,6 @@ import {
   Select,
   Button,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
 
@@ -83,10 +83,6 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: '#f5f8fa',
     backgroundImage:
       'linear-gradient(180deg,hsla(0,0%,100%,.8),hsla(0,0%,100%,0))',
-    '$root.Mui-focusVisible &': {
-      outline: '2px auto rgba(19,124,189,.6)',
-      outlineOffset: 2,
-    },
     'input:hover ~ &': {
       backgroundColor: '#ebf1f5',
     },
@@ -96,54 +92,18 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   checkedIcon: {
-    backgroundColor: "#137cbd",
+    backgroundColor: '#137cbd',
     backgroundImage:
-      "linear-gradient(180deg,hsla(0,0%,100%,.1),hsla(0,0%,100%,0))",
-    "&:before": {
-      display: "block",
+      'linear-gradient(180deg,hsla(0,0%,100%,.1),hsla(0,0%,100%,0))',
+    '&:before': {
+      display: 'block',
       width: 16,
       height: 16,
-      backgroundImage: "radial-gradient(#fff,#fff 28%,transparent 32%)",
+      backgroundImage: 'radial-gradient(#fff,#fff 28%,transparent 32%)',
       content: '""',
     },
-    "input:hover ~ &": {
-      backgroundColor: "#106ba3",
-    },
-  },
-  icon: {
-    borderRadius: "50%",
-    width: 16,
-    height: 16,
-    boxShadow:
-      "inset 0 0 0 1px rgba(16,22,26,.2), inset 0 -1px 0 rgba(16,22,26,.1)",
-    backgroundColor: "#f5f8fa",
-    backgroundImage:
-      "linear-gradient(180deg,hsla(0,0%,100%,.8),hsla(0,0%,100%,0))",
-    "$root.Mui-focusVisible &": {
-      outline: "2px auto rgba(19,124,189,.6)",
-      outlineOffset: 2,
-    },
-    "input:hover ~ &": {
-      backgroundColor: "#ebf1f5",
-    },
-    "input:disabled ~ &": {
-      boxShadow: "none",
-      background: "rgba(206,217,224,.5)",
-    },
-  },
-  checkedIcon: {
-    backgroundColor: "#137cbd",
-    backgroundImage:
-      "linear-gradient(180deg,hsla(0,0%,100%,.1),hsla(0,0%,100%,0))",
-    "&:before": {
-      display: "block",
-      width: 16,
-      height: 16,
-      backgroundImage: "radial-gradient(#fff,#fff 28%,transparent 32%)",
-      content: '""',
-    },
-    "input:hover ~ &": {
-      backgroundColor: "#106ba3",
+    'input:hover ~ &': {
+      backgroundColor: '#106ba3',
     },
   },
 }));
@@ -153,7 +113,6 @@ function StyledRadio(props) {
 
   return (
     <Radio
-      className={classes.root}
       color="primary"
       checkedIcon={
         <span className={`${classes.icon} ${classes.checkedIcon}`} />
@@ -164,6 +123,7 @@ function StyledRadio(props) {
   );
 }
 
+// eslint-disable-next-line import/no-mutable-exports
 export let checkIfApplicationMarketEdited;
 
 const ApplicationMarket = (props) => {
@@ -262,8 +222,9 @@ const ApplicationMarket = (props) => {
     return false;
   };
 
-  checkIfApplicationMarketEdited = () =>
-    application_type.hasChanged() || primary_users.hasChanged();
+  checkIfApplicationMarketEdited = () => (
+    application_type.hasChanged() || primary_users.hasChanged()
+  );
 
   /**
    * Submit The form and add/edit custodian
@@ -331,7 +292,7 @@ const ApplicationMarket = (props) => {
                   }}
                 >
                   <FormControlLabel
-                    value={true}
+                    value
                     control={<StyledRadio />}
                     label="Yes"
                   />

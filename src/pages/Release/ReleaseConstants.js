@@ -60,16 +60,17 @@ export const releaseColumns = [
   },
 ];
 
-export const getReleasesData = (releases, products) => {
+export const getReleasesData = (releases) => {
   let finalReleases = [];
-  _.forEach(releases, (release) => {
-    if (release) {
-      const product = _.find(products, { product_uuid: release.product_uuid });
-      const rel = {
-        ...release,
-        product_name: product ? product.name : '',
+  _.forEach(releases, (rel) => {
+    if (rel) {
+      const release = {
+        ...rel,
+        product_name: rel.release_product_relationship
+          ? rel.release_product_relationship[0]?.name
+          : '',
       };
-      finalReleases = [...finalReleases, rel];
+      finalReleases = [...finalReleases, release];
     }
   });
   return finalReleases;

@@ -1,7 +1,7 @@
-/* eslint-disable no-param-reassign */
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   useTheme,
   useMediaQuery,
@@ -23,7 +23,6 @@ import {
   TextField,
   Button,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
 import AddIcon from '@mui/icons-material/Add';
@@ -119,42 +118,6 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: '#106ba3',
     },
   },
-  icon: {
-    borderRadius: '50%',
-    width: 16,
-    height: 16,
-    boxShadow:
-      'inset 0 0 0 1px rgba(16,22,26,.2), inset 0 -1px 0 rgba(16,22,26,.1)',
-    backgroundColor: '#f5f8fa',
-    backgroundImage:
-      'linear-gradient(180deg,hsla(0,0%,100%,.8),hsla(0,0%,100%,0))',
-    '$root.Mui-focusVisible &': {
-      outline: '2px auto rgba(19,124,189,.6)',
-      outlineOffset: 2,
-    },
-    'input:hover ~ &': {
-      backgroundColor: '#ebf1f5',
-    },
-    'input:disabled ~ &': {
-      boxShadow: 'none',
-      background: 'rgba(206,217,224,.5)',
-    },
-  },
-  checkedIcon: {
-    backgroundColor: '#137cbd',
-    backgroundImage:
-      'linear-gradient(180deg,hsla(0,0%,100%,.1),hsla(0,0%,100%,0))',
-    '&:before': {
-      display: 'block',
-      width: 16,
-      height: 16,
-      backgroundImage: 'radial-gradient(#fff,#fff 28%,transparent 32%)',
-      content: '""',
-    },
-    'input:hover ~ &': {
-      backgroundColor: '#106ba3',
-    },
-  },
 }));
 
 function StyledRadio(props) {
@@ -162,7 +125,6 @@ function StyledRadio(props) {
 
   return (
     <Radio
-      className={classes.root}
       color="primary"
       checkedIcon={
         <span className={`${classes.icon} ${classes.checkedIcon}`} />
@@ -173,31 +135,23 @@ function StyledRadio(props) {
   );
 }
 
+// eslint-disable-next-line import/no-mutable-exports
 export let checkIfTeamUserEdited;
 
-const TeamUser = (props) => {
-  const {
-    history,
-    loading,
-    dispatch,
-    location,
-    handleNext,
-    handleBack,
-    handleCancel,
-  } = props;
+const TeamUser = ({
+  location, handleNext, handleBack,
+}) => {
   const classes = useStyles();
   const theme = useTheme();
-  const viewOnly = false;
-  const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
-  // const editPage = location.state && location.state.type === 'edit';
-  const editData = (location.state && location.state.type === 'edit' && location.state.data)
-    || {};
+  const editData = (location.state
+    && location.state.type === 'edit'
+    && location.state.data) || {};
 
   const team_size = useInput((editData && editData.team_size) || '5 - 10', {
     required: true,
   });
 
-  const [role_count, setRole_count] = useState([
+  const [roleCount, setRoleCount] = useState([
     { role: 'CTO (Budget Approval?)', count: 0 },
     { role: 'COO (Budget Approval?)', count: 0 },
     { role: 'UI/UX', count: 0 },
@@ -216,31 +170,6 @@ const TeamUser = (props) => {
 
   const [formError, setFormError] = useState({});
 
-  /**
-   * Handle input field blur event
-   * @param {Event} e Event
-   * @param {String} validation validation type if any
-   * @param {Object} input input field
-   */
-  const handleBlur = (e, validation, input, parentId) => {
-    const validateObj = validators(validation, input);
-    const prevState = { ...formError };
-    if (validateObj && validateObj.error) {
-      setFormError({
-        ...prevState,
-        [e.target.id || parentId]: validateObj,
-      });
-    } else {
-      setFormError({
-        ...prevState,
-        [e.target.id || parentId]: {
-          error: false,
-          message: '',
-        },
-      });
-    }
-  };
-
   const onBackClick = (event) => {
     // if (checkIfProductInfoEdited() === true) {
     //   handleSubmit(event);
@@ -256,25 +185,13 @@ const TeamUser = (props) => {
   };
 
   const submitDisabled = () => {
-    // const errorKeys = Object.keys(formError);
-    // if (!project_name.value) {
-    //   return true;
-    // }
-    // let errorExists = false;
-    // _.forEach(errorKeys, (key) => {
-    //   if (formError[key].error) {
-    //     errorExists = true;
-    //   }
-    // });
-    // return errorExists;
-
     let countNum = 0;
-    role_count.forEach((role_CountObject) => {
+    roleCount.forEach((role_CountObject) => {
       if (role_CountObject.count === 0) {
         countNum += 1;
       }
     });
-    if (countNum === role_count.length) {
+    if (countNum === roleCount.length) {
       return true;
     }
     return false;
@@ -338,7 +255,7 @@ const TeamUser = (props) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {role_count.map((row, index) => (
+                    {_.map(roleCount, (row, index) => (
                       <TableRow key={index}>
                         <TableCell component="th" scope="row">
                           {row.role}
@@ -346,21 +263,22 @@ const TeamUser = (props) => {
                         <TableCell align="right">
                           <IconButton
                             onClick={() => {
-                              if (role_count[index].count > 0) {
-                                setRole_count((prevRole_count) => {
+                              if (roleCount[index].count > 0) {
+                                setRoleCount((prevRole_count) => {
                                   prevRole_count[index].count -= 1;
                                   return [...prevRole_count];
                                 });
                               }
                             }}
-                            size="large">
+                            size="large"
+                          >
                             <RemoveIcon />
                           </IconButton>
                         </TableCell>
                         <TableCell style={{ width: '30%' }}>
                           <TextField
                             onChange={(e) => {
-                              setRole_count((prevRole_count) => {
+                              setRoleCount((prevRole_count) => {
                                 prevRole_count[index].count += parseInt(
                                   e.target.value,
                                   10,
@@ -376,12 +294,13 @@ const TeamUser = (props) => {
                         <TableCell align="left">
                           <IconButton
                             onClick={() => {
-                              setRole_count((prevRole_count) => {
+                              setRoleCount((prevRole_count) => {
                                 prevRole_count[index].count += 1;
                                 return [...prevRole_count];
                               });
                             }}
-                            size="large">
+                            size="large"
+                          >
                             <AddIcon />
                           </IconButton>
                         </TableCell>

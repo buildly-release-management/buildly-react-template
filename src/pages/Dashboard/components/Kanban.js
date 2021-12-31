@@ -1,20 +1,26 @@
 /* eslint-disable no-shadow */
-/* eslint-disable import/no-unresolved */
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import {
+  DragDropContext,
+  Draggable,
+  Droppable,
+} from 'react-beautiful-dnd';
+import makeStyles from '@mui/styles/makeStyles';
+import {
+  Card,
+  CardContent,
+  IconButton,
+  CardHeader,
+  Chip,
+} from '@mui/material';
 import {
   AddRounded as AddRoundedIcon,
   EditRounded as EditRoundedIcon,
   DeleteRounded as DeleteRoundedIcon,
   TrendingFlatRounded as TrendingFlatRoundedIcon,
-  MoreVert as MoreVertIcon,
-  MoreHoriz as MoreHorizIcon,
 } from '@mui/icons-material';
-import { Card, CardContent, IconButton, CardHeader, Chip } from '@mui/material';
-
-import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles((theme) => ({
   kanbanContainer: {
@@ -24,10 +30,6 @@ const useStyles = makeStyles((theme) => ({
     position: 'absolute',
     padding: theme.spacing(0, 2),
   },
-  board: {
-    display: 'flex',
-    margin: '0 auto',
-  },
   column: {
     margin: theme.spacing(1, 1),
     backgroundColor: theme.palette.secondary.main,
@@ -36,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
   columnHead: {
     borderTopLeftRadius: theme.spacing(1),
     borderTopRightRadius: theme.spacing(1),
-    padding: theme.spacing(1,2),
+    padding: theme.spacing(1, 2),
     display: 'flex',
     justifyContent: 'space-evenly',
     fontSize: '1.2rem',
@@ -57,12 +59,6 @@ const useStyles = makeStyles((theme) => ({
   },
   icon: {
     margin: 'auto',
-    cursor: 'pointer',
-  },
-  item: {
-    padding: theme.spacing(1),
-    margin: theme.spacing(1),
-    fontSize: '0.8em',
     cursor: 'pointer',
   },
   flexContainer: {
@@ -106,22 +102,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Kanban = (props) => {
-  const {
-    products,
-    status,
-    requirements,
-    issues,
-    redirectTo,
-    proj,
-    setProj,
-    setProjReqs,
-    setProjIssues,
-    addItem,
-    editItem,
-    convertIssue,
-    deleteItem,
-  } = props;
+const Kanban = ({
+  status,
+  requirements,
+  issues,
+  proj,
+  setProjReqs,
+  setProjIssues,
+  addItem,
+  editItem,
+  convertIssue,
+  deleteItem,
+}) => {
   const classes = useStyles();
   const [columns, setColumns] = useState({});
 
@@ -199,14 +191,6 @@ const Kanban = (props) => {
                   fontSize="small"
                 />
               </IconButton>
-              {/* <IconButton
-                  aria-label="column-options"
-                  aria-controls="menu-column"
-                  aria-haspopup="false"
-                  color="default"
-                >
-                  <MoreHorizIcon className={classes.icon} fontSize="small" />
-                </IconButton> */}
             </div>
             <div style={{ margin: 8 }}>
               <Droppable droppableId={columnId} key={columnId}>
@@ -215,9 +199,6 @@ const Kanban = (props) => {
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                     className={classes.tasksList}
-                    // style={{
-                    //   background: snapshot.isDraggingOver ? '#D8D8D8' : '#707070',
-                    // }}
                   >
                     {column.items.map((item, itemIndex) => (
                       <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
@@ -246,11 +227,12 @@ const Kanban = (props) => {
                                     aria-controls="menu-card"
                                     aria-haspopup="false"
                                     color="default"
-                                    size="large">
+                                    size="large"
+                                    onClick={(e) => convertIssue(item, 'convert')}
+                                  >
                                     <TrendingFlatRoundedIcon
                                       className={classes.icon}
                                       fontSize="small"
-                                      onClick={(e) => convertIssue(item, 'convert')}
                                     />
                                   </IconButton>
                                   )}
@@ -260,7 +242,8 @@ const Kanban = (props) => {
                                     aria-haspopup="false"
                                     color="default"
                                     onClick={(e) => editItem(item, item.featureUUID ? 'issue' : 'req')}
-                                    size="large">
+                                    size="large"
+                                  >
                                     <EditRoundedIcon className={classes.icon} fontSize="small" />
                                   </IconButton>
                                   <IconButton
@@ -269,7 +252,8 @@ const Kanban = (props) => {
                                     aria-haspopup="false"
                                     color="default"
                                     onClick={(e) => deleteItem(item, item.featureUUID ? 'issue' : 'req')}
-                                    size="large">
+                                    size="large"
+                                  >
                                     <DeleteRoundedIcon className={classes.icon} fontSize="small" />
                                   </IconButton>
                                 </div>

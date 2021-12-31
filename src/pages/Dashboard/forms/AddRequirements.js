@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { useTheme, useMediaQuery, Grid, TextField, Button } from '@mui/material';
+import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
+import {
+  useTheme,
+  useMediaQuery,
+  Grid,
+  TextField,
+  Button,
+} from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import { useInput } from '@hooks/useInput';
 import {
@@ -138,8 +145,9 @@ const AddRequirements = ({
     return errorExists;
   };
 
-  return <>
-    {openFormModal && (
+  return (
+    <>
+      {openFormModal && (
       <FormModal
         open={openFormModal}
         handleClose={closeFormModal}
@@ -238,8 +246,9 @@ const AddRequirements = ({
           </Grid>
         </form>
       </FormModal>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 const mapStateToProps = (state, ownProps) => ({

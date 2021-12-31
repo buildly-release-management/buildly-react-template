@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   useTheme,
   useMediaQuery,
@@ -14,7 +15,6 @@ import {
   Button,
   FormLabel,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import DatePickerComponent from '@components/DatePicker/DatePicker';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
@@ -75,6 +75,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// eslint-disable-next-line import/no-mutable-exports
 export let checkIfBudgetTechnologyEdited;
 
 const BudgetTechnology = (props) => {

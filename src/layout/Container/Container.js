@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Route, Redirect, Switch } from "react-router-dom";
-import { Container } from "@mui/material";
+import { Route, Redirect, Switch } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
-import { UserContext, getUser } from "@context/User.context";
-import TopBar from "@layout/TopBar/TopBar";
-import NavBar from "@layout/NavBar/NavBar";
-import Dashboard from "@pages/Dashboard/Dashboard";
-import UserManagement from "@pages/UserManagement/UserManagement";
-import MissingData from "@pages/MissingData/MissingData";
-import { routes } from "@routes/routesConstants";
-import NewProject from "@pages/NewProject/NewProject";
+import { Container } from '@mui/material';
+import { UserContext, getUser } from '@context/User.context';
+import TopBar from '@layout/TopBar/TopBar';
+import NavBar from '@layout/NavBar/NavBar';
+import Dashboard from '@pages/Dashboard/Dashboard';
+import UserManagement from '@pages/UserManagement/UserManagement';
+import MissingData from '@pages/MissingData/MissingData';
+import { routes } from '@routes/routesConstants';
+import NewProject from '@pages/NewProject/NewProject';
 import Release from '@pages/Release/Release';
 import ViewRelease from '@pages/Release/components/ViewRelease';
 
@@ -38,8 +38,18 @@ const ContainerDashboard = ({ location, history }) => {
   return (
     <div className={classes.root}>
       <UserContext.Provider value={getUser()}>
-        <TopBar navHidden={navHidden} setNavHidden={setNavHidden} location={location} history={history} />
-        <NavBar navHidden={navHidden} setNavHidden={setNavHidden} location={location} history={history} />
+        <TopBar
+          navHidden={navHidden}
+          setNavHidden={setNavHidden}
+          location={location}
+          history={history}
+        />
+        <NavBar
+          navHidden={navHidden}
+          setNavHidden={setNavHidden}
+          location={location}
+          history={history}
+        />
         <Container className={classes.content}>
           <Switch>
             <Route

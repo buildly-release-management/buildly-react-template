@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   Button,
   useTheme,
@@ -14,7 +15,6 @@ import {
   FormControlLabel,
   Radio,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import { Autocomplete } from '@mui/material';
 import DatePickerComponent from '@components/DatePicker/DatePicker';
 import { useInput } from '@hooks/useInput';
@@ -83,10 +83,6 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: '#f5f8fa',
     backgroundImage:
       'linear-gradient(180deg,hsla(0,0%,100%,.8),hsla(0,0%,100%,0))',
-    '$root.Mui-focusVisible &': {
-      outline: '2px auto rgba(19,124,189,.6)',
-      outlineOffset: 2,
-    },
     'input:hover ~ &': {
       backgroundColor: '#ebf1f5',
     },
@@ -96,22 +92,23 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   checkedIcon: {
-    backgroundColor: "#137cbd",
+    backgroundColor: '#137cbd',
     backgroundImage:
-      "linear-gradient(180deg,hsla(0,0%,100%,.1),hsla(0,0%,100%,0))",
-    "&:before": {
-      display: "block",
+      'linear-gradient(180deg,hsla(0,0%,100%,.1),hsla(0,0%,100%,0))',
+    '&:before': {
+      display: 'block',
       width: 16,
       height: 16,
-      backgroundImage: "radial-gradient(#fff,#fff 28%,transparent 32%)",
+      backgroundImage: 'radial-gradient(#fff,#fff 28%,transparent 32%)',
       content: '""',
     },
-    "input:hover ~ &": {
-      backgroundColor: "#106ba3",
+    'input:hover ~ &': {
+      backgroundColor: '#106ba3',
     },
   },
 }));
 
+// eslint-disable-next-line import/no-mutable-exports
 export let checkIfProjectSetupEdited;
 
 function StyledRadio(props) {
@@ -119,7 +116,6 @@ function StyledRadio(props) {
 
   return (
     <Radio
-      // className={classes.root}
       color="primary"
       checkedIcon={
         <span className={`${classes.icon} ${classes.checkedIcon}`} />
@@ -213,11 +209,12 @@ const ProjectSetup = (props) => {
     return errorExists;
   };
 
-  checkIfProjectSetupEdited = () =>
-    requirements_tool.hasChanged() ||
-    description.hasChanged() ||
-    requirements_tool.hasChanged() ||
-    issues_tool.hasChanged();
+  checkIfProjectSetupEdited = () => (
+    requirements_tool.hasChanged()
+    || description.hasChanged()
+    || requirements_tool.hasChanged()
+    || issues_tool.hasChanged()
+  );
 
   /**
    * Submit The form and add/edit
