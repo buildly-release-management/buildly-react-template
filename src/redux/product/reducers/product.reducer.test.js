@@ -1,15 +1,15 @@
-import * as actions from '../actions/project.actions';
-import * as reducer from './project.reducer';
+import * as actions from '../actions/product.actions';
+import * as reducer from './product.reducer';
 
 const initialState = {
   loading: false,
   loaded: false,
   error: null,
-  credentials: null,
-  productTeams: null,
-  products: null,
-  releases: null,
-  thirdPartyTools: null,
+  credentials: [],
+  productTeams: [],
+  products: [],
+  releases: [],
+  thirdPartyTools: [],
   productFormData: null,
 };
 
@@ -21,7 +21,7 @@ describe('Save Project Form reducer', () => {
       { type: actions.SAVE_PRODUCT_FORM_DATA, formData },
     )).toEqual({
       ...initialState,
-      saveProductFormData: formData,
+      productFormData: formData,
     });
   });
 });

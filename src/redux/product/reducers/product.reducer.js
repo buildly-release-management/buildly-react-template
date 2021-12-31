@@ -31,17 +31,17 @@ import {
   GET_THIRD_PARTY_TOOL,
   GET_THIRD_PARTY_TOOL_SUCCESS,
   GET_THIRD_PARTY_TOOL_FAILURE,
-} from '../actions/project.actions';
+} from '../actions/product.actions';
 
 const initialState = {
   loading: false,
   loaded: false,
   error: null,
-  credentials: null,
-  productTeams: null,
-  products: null,
-  releases: null,
-  thirdPartyTools: null,
+  credentials: [],
+  productTeams: [],
+  products: [],
+  releases: [],
+  thirdPartyTools: [],
   productFormData: null,
 };
 
@@ -97,11 +97,17 @@ export default (state = initialState, action) => {
       };
 
     case GET_CREDENTIAL_SUCCESS: {
-      const credentials = _.map(state.credentials, (cred) => (
-        cred.credential_uuid === action.data.credential_uuid
-          ? action.data
-          : cred
-      ));
+      const found = _.find(
+        state.credentials,
+        { credential_uuid: action.data.credential_uuid },
+      );
+      const credentials = found
+        ? _.map(state.credentials, (cred) => (
+          cred.credential_uuid === action.data.credential_uuid
+            ? action.data
+            : cred
+        ))
+        : [...state.credentials, action.data];
 
       return {
         ...state,
@@ -120,11 +126,17 @@ export default (state = initialState, action) => {
       };
 
     case GET_PRODUCT_TEAM_SUCCESS: {
-      const productTeams = _.map(state.productTeams, (team) => (
-        team.product_team_uuid === action.data.product_team_uuid
-          ? action.data
-          : team
-      ));
+      const found = _.find(
+        state.productTeams,
+        { product_team_uuid: action.data.product_team_uuid },
+      );
+      const productTeams = found
+        ? _.map(state.productTeams, (team) => (
+          team.product_team_uuid === action.data.product_team_uuid
+            ? action.data
+            : team
+        ))
+        : [...state.productTeams, action.data];
 
       return {
         ...state,
@@ -143,11 +155,17 @@ export default (state = initialState, action) => {
       };
 
     case GET_PRODUCT_SUCCESS: {
-      const products = _.map(state.products, (product) => (
-        product.product_uuid === action.data.product_uuid
-          ? action.data
-          : product
-      ));
+      const found = _.find(
+        state.products,
+        { product_uuid: action.data.product_uuid },
+      );
+      const products = found
+        ? _.map(state.products, (product) => (
+          product.product_uuid === action.data.product_uuid
+            ? action.data
+            : product
+        ))
+        : [...state.products, action.data];
 
       return {
         ...state,
@@ -166,11 +184,17 @@ export default (state = initialState, action) => {
       };
 
     case GET_RELEASE_SUCCESS: {
-      const releases = _.map(state.releases, (release) => (
-        release.release_uuid === action.data.release_uuid
-          ? action.data
-          : release
-      ));
+      const found = _.find(
+        state.releases,
+        { release_uuid: action.data.release_uuid },
+      );
+      const releases = found
+        ? _.map(state.releases, (release) => (
+          release.release_uuid === action.data.release_uuid
+            ? action.data
+            : release
+        ))
+        : [...state.releases, action.data];
 
       return {
         ...state,
@@ -189,11 +213,17 @@ export default (state = initialState, action) => {
       };
 
     case GET_THIRD_PARTY_TOOL_SUCCESS: {
-      const thirdPartyTools = _.map(state.thirdPartyTools, (tool) => (
-        tool.third_party_tool_uuid === action.data.third_party_tool_uuid
-          ? action.data
-          : tool
-      ));
+      const found = _.find(
+        state.thirdPartyTools,
+        { third_party_tool_uuid: action.data.third_party_tool_uuid },
+      );
+      const thirdPartyTools = found
+        ? _.map(state.thirdPartyTools, (tool) => (
+          tool.third_party_tool_uuid === action.data.third_party_tool_uuid
+            ? action.data
+            : tool
+        ))
+        : [...state.thirdPartyTools, action.data];
 
       return {
         ...state,

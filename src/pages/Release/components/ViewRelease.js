@@ -10,7 +10,7 @@ import {
 } from '@material-ui/core';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import { isMobile } from '@utils/mediaQuery';
-import { getReleases } from '@redux/project/actions/project.actions';
+import { getAllReleases } from '@redux/product/actions/product.actions';
 import { routes } from '@routes/routesConstants';
 
 const useStyles = makeStyles((theme) => ({
@@ -53,7 +53,7 @@ const ViewRelease = ({
 
   useEffect(() => {
     if (!releases) {
-      dispatch(getReleases());
+      dispatch(getAllReleases());
     }
     const rel = _.find(releases, { release_uuid: releaseID });
     if (rel) {

@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
 import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
-import { getReleases, getProducts } from '@redux/project/actions/project.actions';
+import { getAllReleases } from '@redux/product/actions/product.actions';
 import { routes } from '@routes/routesConstants';
 import AddRelease from './components/AddRelease';
 import { releaseColumns, getReleasesData } from './ReleaseConstants';
@@ -39,11 +39,8 @@ const Release = ({
     : `${routes.RELEASE}/edit`;
 
   useEffect(() => {
-    if (!products) {
-      dispatch(getProducts());
-    }
     if (!releases) {
-      dispatch(getReleases());
+      dispatch(getAllReleases());
     }
   }, []);
 

@@ -5,9 +5,9 @@ const initialState = {
   loading: false,
   loaded: false,
   error: null,
-  devTeams: null,
-  timesheets: null,
-  timesheetHours: null,
+  devTeams: [],
+  timesheets: [],
+  timesheetHours: [],
 };
 
 describe('Get all dev teams reducer', () => {

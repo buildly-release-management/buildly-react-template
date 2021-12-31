@@ -24,9 +24,9 @@ const initialState = {
   loading: false,
   loaded: false,
   error: null,
-  devTeams: null,
-  timesheetHours: null,
-  timesheets: null,
+  devTeams: [],
+  timesheetHours: [],
+  timesheets: [],
 };
 
 // Reducer
@@ -67,11 +67,17 @@ export default (state = initialState, action) => {
       };
 
     case GET_DEV_TEAM_SUCCESS: {
-      const teams = _.map(state.devTeams, (team) => (
-        team.dev_team_uuid === action.data.dev_team_uuid
-          ? action.data
-          : team
-      ));
+      const found = _.find(
+        state.devTeams,
+        { dev_team_uuid: action.data.dev_team_uuid },
+      );
+      const teams = found
+        ? _.map(state.devTeams, (team) => (
+          team.dev_team_uuid === action.data.dev_team_uuid
+            ? action.data
+            : team
+        ))
+        : [...state.devTeams, action.data];
 
       return {
         ...state,
@@ -90,11 +96,17 @@ export default (state = initialState, action) => {
       };
 
     case GET_TIMESHEET_HOUR_SUCCESS: {
-      const hours = _.map(state.timesheetHours, (hour) => (
-        hour.timesheet_hour_uuid === action.data.timesheet_hour_uuid
-          ? action.data
-          : hour
-      ));
+      const found = _.find(
+        state.timesheetHours,
+        { timesheet_hour_uuid: action.data.timesheet_hour_uuid },
+      );
+      const hours = found
+        ? _.map(state.timesheetHours, (hour) => (
+          hour.timesheet_hour_uuid === action.data.timesheet_hour_uuid
+            ? action.data
+            : hour
+        ))
+        : [...state.timesheetHours, action.data];
 
       return {
         ...state,
@@ -113,11 +125,17 @@ export default (state = initialState, action) => {
       };
 
     case GET_TIMESHEET_SUCCESS: {
-      const sheets = _.map(state.timesheets, (sheet) => (
-        sheet.timesheet_uuid === action.data.timesheet_uuid
-          ? action.data
-          : sheet
-      ));
+      const found = _.find(
+        state.timesheets,
+        { timesheet_uuid: action.data.timesheet_uuid },
+      );
+      const sheets = found
+        ? _.map(state.timesheets, (sheet) => (
+          sheet.timesheet_uuid === action.data.timesheet_uuid
+            ? action.data
+            : sheet
+        ))
+        : [...state.timesheets, action.data];
 
       return {
         ...state,

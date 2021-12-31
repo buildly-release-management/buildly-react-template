@@ -1,4 +1,4 @@
-import * as actions from './project.actions';
+import * as actions from './product.actions';
 
 // Test Get All Credentials
 describe('Get All Credentials action', () => {
@@ -69,7 +69,7 @@ describe('Get Product action', () => {
 describe('Get All Releases action', () => {
   it('should create an action to get all releases', () => {
     const expectedAction = { type: actions.ALL_RELEASES };
-    expect(actions.getAllReleases(action)).toEqual(expectedAction);
+    expect(actions.getAllReleases()).toEqual(expectedAction);
   });
 });
 

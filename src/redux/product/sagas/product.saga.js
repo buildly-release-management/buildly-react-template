@@ -34,16 +34,16 @@ import {
   GET_THIRD_PARTY_TOOL,
   GET_THIRD_PARTY_TOOL_SUCCESS,
   GET_THIRD_PARTY_TOOL_FAILURE,
-} from '../actions/project.actions';
+} from '../actions/product.actions';
 
-const projectEndpoint = 'projecttool/';
+const productEndpoint = 'product/';
 
 function* allCredentials(payload) {
   try {
     const creds = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projectEndpoint}credential?join=true`,
+      `${window.env.API_URL}${productEndpoint}credential?join=true`,
     );
     yield put({ type: ALL_CREDENTIALS_SUCCESS, data: creds.data });
   } catch (error) {
@@ -68,7 +68,7 @@ function* getCredential(payload) {
     const cred = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projectEndpoint}credential?join=true&credential_uuid=${payload.credential_uuid}`,
+      `${window.env.API_URL}${productEndpoint}credential?join=true&credential_uuid=${payload.credential_uuid}`,
     );
     yield put({ type: GET_CREDENTIAL_SUCCESS, data: cred.data });
   } catch (error) {
@@ -93,7 +93,7 @@ function* allProductTeams(payload) {
     const teams = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projectEndpoint}productteam?join=true`,
+      `${window.env.API_URL}${productEndpoint}productteam?join=true`,
     );
     yield put({ type: ALL_PRODUCT_TEAMS_SUCCESS, data: teams.data });
   } catch (error) {
@@ -118,7 +118,7 @@ function* getProductTeam(payload) {
     const team = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projectEndpoint}productteam?join=true&product_team_uuid=${payload.product_team_uuid}`,
+      `${window.env.API_URL}${productEndpoint}productteam?join=true&product_team_uuid=${payload.product_team_uuid}`,
     );
     yield put({ type: GET_PRODUCT_TEAM_SUCCESS, data: team.data });
   } catch (error) {
@@ -143,7 +143,7 @@ function* allProducts(payload) {
     const products = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projectEndpoint}product?join=true`,
+      `${window.env.API_URL}${productEndpoint}product?join=true`,
     );
     yield put({ type: ALL_PRODUCTS_SUCCESS, data: products.data });
   } catch (error) {
@@ -168,7 +168,7 @@ function* getProduct(payload) {
     const product = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projectEndpoint}product?join=true&product_uuid=${payload.product_uuid}`,
+      `${window.env.API_URL}${productEndpoint}product?join=true&product_uuid=${payload.product_uuid}`,
     );
     yield put({ type: GET_PRODUCT_SUCCESS, data: product.data });
   } catch (error) {
@@ -193,7 +193,7 @@ function* allReleases(payload) {
     const releases = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projectEndpoint}release?join=true`,
+      `${window.env.API_URL}${productEndpoint}release?join=true`,
     );
     yield put({ type: ALL_RELEASES_SUCCESS, data: releases.data });
   } catch (error) {
@@ -218,7 +218,7 @@ function* getRelease(payload) {
     const release = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projectEndpoint}release?join=true&release_uuid=${payload.release_uuid}`,
+      `${window.env.API_URL}${productEndpoint}release?join=true&release_uuid=${payload.release_uuid}`,
     );
     yield put({ type: GET_RELEASE_SUCCESS, data: release.data });
   } catch (error) {
@@ -243,7 +243,7 @@ function* allThirdPartyTools(payload) {
     const tools = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projectEndpoint}thirdpartytool?join=true`,
+      `${window.env.API_URL}${productEndpoint}thirdpartytool?join=true`,
     );
     yield put({ type: ALL_THIRD_PARTY_TOOLS_SUCCESS, data: tools.data });
   } catch (error) {
@@ -268,7 +268,7 @@ function* getThirdPartyTool(payload) {
     const tool = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${projectEndpoint}thirdpartytool?join=true&third_party_tool_uuid=${payload.third_party_tool_uuid}`,
+      `${window.env.API_URL}${productEndpoint}thirdpartytool?join=true&third_party_tool_uuid=${payload.third_party_tool_uuid}`,
     );
     yield put({ type: GET_THIRD_PARTY_TOOL_SUCCESS, data: tool.data });
   } catch (error) {
@@ -329,7 +329,7 @@ function* watchGetThirdPartyTool() {
   yield takeLatest(GET_THIRD_PARTY_TOOL, getThirdPartyTool);
 }
 
-export default function* projectSaga() {
+export default function* productSaga() {
   yield all([
     watchGetAllCredentials(),
     watchGetAllProductTeams(),

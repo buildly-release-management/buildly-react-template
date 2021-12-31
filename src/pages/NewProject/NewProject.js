@@ -9,7 +9,7 @@ import { routes } from '@routes/routesConstants';
 // import { checkForGlobalAdmin } from "@utils/utilMethods";
 import {
   saveProductFormData,
-} from '@redux/project/actions/project.actions';
+} from '@redux/product/actions/product.actions';
 import ProjectSetup, {
   checkIfProjectSetupEdited,
 } from './components/ProjectSetup';
