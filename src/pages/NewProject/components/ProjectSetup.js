@@ -14,6 +14,8 @@ import {
   FormControlLabel,
   Radio,
 } from '@mui/material';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faGithub, faTrello, faAtlassian, faJira } from '@fortawesome/free-brands-svg-icons'
 import makeStyles from '@mui/styles/makeStyles';
 import { Autocomplete } from '@mui/material';
 import DatePickerComponent from '@components/DatePicker/DatePicker';
@@ -109,6 +111,9 @@ const useStyles = makeStyles((theme) => ({
     "input:hover ~ &": {
       backgroundColor: "#106ba3",
     },
+  },
+  radioButton: {
+    margin: theme.spacing(2, 2)
   },
 }));
 
@@ -299,57 +304,85 @@ const ProjectSetup = (props) => {
 
             <Grid item xs={12} sm={6}>
               <Typography variant="h6">Requirements</Typography>
-              <FormControl component="fieldset" required>
-                <RadioGroup
-                  row
-                  aria-label="requirements"
-                  name="requirements-radio-buttons-group"
-                  {...requirements_tool.bind}
-                >
-                  <FormControlLabel
-                    value="trello"
-                    control={<StyledRadio />}
-                    label="Trello"
-                  />
-                  <FormControlLabel
-                    value="atlassian"
-                    control={<StyledRadio />}
-                    label="Atlassian"
-                  />
-                  <FormControlLabel
-                    value="start fresh"
-                    control={<StyledRadio />}
-                    label="Start Fresh"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <Box sx={{ border: '1px solid white', borderRadius: '4px' }}>
+                <Typography variant="subtitle1" align="center" mt={2}>Connect to supported tool</Typography>
+                <FormControl component="fieldset" required>
+                  <RadioGroup
+                    row
+                    aria-label="requirements"
+                    name="requirements-radio-buttons-group"
+                    {...requirements_tool.bind}
+                    className={classes.radioButton}
+                  >
+                    <FormControlLabel
+                      value="trello"
+                      control={<StyledRadio />}
+                      label={
+                        <>
+                          <FontAwesomeIcon icon={faTrello} className='fa-5x'></FontAwesomeIcon>
+                          <Typography align="center">Trello</Typography>
+                        </>
+                      }
+                    />
+                    <FormControlLabel
+                      value="atlassian"
+                      control={<StyledRadio />}
+                      label={
+                        <>
+                          <FontAwesomeIcon icon={faAtlassian} className='fa-5x'></FontAwesomeIcon>
+                          <Typography align="center">Atlassian</Typography>
+                        </>
+                      }
+                    />
+                    <FormControlLabel
+                      value="start fresh"
+                      control={<StyledRadio />}
+                      label="Start Fresh"
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </Box>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Typography variant="h6">Issues</Typography>
-              <FormControl component="fieldset" required>
-                <RadioGroup
-                  row
-                  aria-label="issues"
-                  name="issues-radio-buttons-group"
-                  {...issues_tool.bind}
-                >
-                  <FormControlLabel
-                    value="github"
-                    control={<StyledRadio />}
-                    label="Github"
-                  />
-                  <FormControlLabel
-                    value="jira"
-                    control={<StyledRadio />}
-                    label="Jira"
-                  />
-                  <FormControlLabel
-                    value="start fresh"
-                    control={<StyledRadio />}
-                    label="Start Fresh"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <Box sx={{ border: '1px solid white', borderRadius: '4px' }}>
+                <Typography variant="subtitle1" align="center" mt={2}>Connect to supported tool</Typography>
+                <FormControl component="fieldset" required>
+                  <RadioGroup
+                    row
+                    aria-label="issues"
+                    name="issues-radio-buttons-group"
+                    {...issues_tool.bind}
+                    className={classes.radioButton}
+                  >
+                    <FormControlLabel
+                      value="github"
+                      control={<StyledRadio />}
+                      label={
+                        <>
+                          <FontAwesomeIcon icon={faGithub} className='fa-5x'></FontAwesomeIcon>
+                          <Typography align="center">Github</Typography>
+                        </>
+                      }
+                    />
+                    <FormControlLabel
+                      value="jira"
+                      control={<StyledRadio />}
+                      label={
+                        <>
+                          <FontAwesomeIcon icon={faJira} className='fa-5x'></FontAwesomeIcon>
+                          <Typography align="center">Jira</Typography>
+                        </>
+                      }
+                    />
+                    <FormControlLabel
+                      value="start fresh"
+                      control={<StyledRadio />}
+                      label="Start Fresh"
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </Box>
             </Grid>
           </Grid>
         </Box>
