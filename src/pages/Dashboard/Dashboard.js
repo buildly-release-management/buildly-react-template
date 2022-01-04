@@ -5,12 +5,17 @@ import UserDashboard from './components/UserDashboard';
 import FeedbackForm from './components/FeedbackForm';
 
 const Dashboard = ({
-  history, loading, loaded, filled,
+  loading, loaded, filled,
 }) => (
   <>
     {loading && <Loader open={loading} />}
-    {/* {loaded && !filled && <FeedbackForm />} */}
-    {loaded && <UserDashboard history={history} />}
+    {loaded && !filled && <FeedbackForm />}
+    {/* {loaded && <UserDashboard history={history} />} */}
+    {loaded && filled && (
+      <p style={{ padding: '160px 0', textAlign: 'center' }}>
+        Work in progress. Keep a tab on this space for more updates.
+      </p>
+    )}
   </>
 );
 

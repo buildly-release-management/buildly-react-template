@@ -47,7 +47,7 @@ const ContainerDashboard = ({ location, history }) => {
           <Route path={routes.DASHBOARD} component={Dashboard} />
           <Route path={routes.USER_MANAGEMENT} component={UserManagement} />
           <Route path={routes.MISSING_DATA} component={MissingData} />
-          <Route path={routes.NEW_PROJECT} component={NewProject} />
+          {/* <Route path={routes.NEW_PROJECT} component={NewProject} /> */}
         </Container>
       </UserContext.Provider>
     </div>
