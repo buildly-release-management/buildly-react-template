@@ -37,7 +37,7 @@ const ContainerDashboard = ({ location, history }) => {
     <div className={classes.root}>
       <UserContext.Provider value={getUser()}>
         <TopBar navHidden={navHidden} setNavHidden={setNavHidden} location={location} history={history} />
-        <NavBar navHidden={navHidden} setNavHidden={setNavHidden} location={location} history={history} />
+        {/* <NavBar navHidden={navHidden} setNavHidden={setNavHidden} location={location} history={history} /> */}
         <Container className={classes.content}>
           <Route
             exact
