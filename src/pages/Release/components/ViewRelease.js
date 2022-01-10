@@ -52,7 +52,7 @@ const ViewRelease = ({
   const [release, setRelease] = useState(null);
 
   useEffect(() => {
-    if (!releases) {
+    if (!releases || releases.length === 0) {
       dispatch(getAllReleases());
     }
     const rel = _.find(releases, { release_uuid: releaseID });
@@ -174,8 +174,8 @@ const ViewRelease = ({
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
+  ...state.productReducer,
   releaseID: ownProps.match.params.releaseID,
-  releases: state.projectReducer.release,
 });
 
 export default connect(mapStateToProps)(ViewRelease);

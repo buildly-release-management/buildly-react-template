@@ -1,5 +1,4 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import { Typography } from '@mui/material';
@@ -67,9 +66,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const List = ({
-  proj,
-  projReqs,
-  projIssues,
+  product,
+  productFeatures,
+  productIssues,
   addItem,
   editItem,
   convertIssue,
@@ -78,13 +77,13 @@ const List = ({
   const classes = useStyles();
 
   return (
-    <div>
+    <>
       <div className={classes.section2}>
         <Typography
           className={classes.actionTitle}
           variant="h6"
         >
-          Requirements
+          Features
         </Typography>
         <Typography
           className={`${classes.actionTitle} ${classes.rightBox}`}
@@ -99,47 +98,47 @@ const List = ({
           <AddRoundedIcon
             className={classes.addIcon}
             fontSize="large"
-            onClick={(e) => addItem('req')}
+            onClick={(e) => addItem('feat')}
           />
-          {proj === 0 && (
+          {product === 0 && (
             <Typography
               className={classes.noData}
               variant="body1"
             >
-              No Project selected. Please select the product.
+              No Product selected. Please select the product.
             </Typography>
           )}
-          {proj !== 0 && projReqs && projReqs.length === 0 && (
+          {product !== 0 && productFeatures && productFeatures.length === 0 && (
             <Typography
               className={classes.noData}
               variant="body1"
             >
-              No Requirements yet.
+              No features yet.
             </Typography>
           )}
-          {proj !== 0 && projReqs && projReqs.length > 0
-            && _.map(projReqs, (req) => (
+          {product !== 0 && productFeatures && productFeatures.length > 0
+            && _.map(productFeatures, (feat) => (
               <div
-                key={`req-${req.projectID}-${req.id}`}
+                key={`feature-${feat.product_uuid}-${feat.feature_uuid}`}
                 className={classes.boxEntry}
               >
                 <Typography
                   className={classes.entryTitle}
                   variant="body1"
                 >
-                  {req.name}
+                  {feat.name}
                 </Typography>
                 <TrendingFlatRoundedIcon
                   className={classes.entryIcon}
-                  onClick={(e) => convertIssue(req, 'convert')}
+                  onClick={(e) => convertIssue(feat, 'convert')}
                 />
                 <EditRoundedIcon
                   className={classes.entryIcon}
-                  onClick={(e) => editItem(req, 'req')}
+                  onClick={(e) => editItem(feat, 'feat')}
                 />
                 <DeleteRoundedIcon
                   className={classes.icon}
-                  onClick={(e) => deleteItem(req, 'req')}
+                  onClick={(e) => deleteItem(feat, 'feat')}
                 />
               </div>
             ))}
@@ -151,15 +150,15 @@ const List = ({
             fontSize="large"
             onClick={(e) => addItem('issue')}
           />
-          {proj === 0 && (
+          {product === 0 && (
             <Typography
               className={classes.noData}
               variant="body1"
             >
-              No Project selected. Please select the product.
+              No Product selected. Please select the product.
             </Typography>
           )}
-          {proj !== 0 && projIssues && projIssues.length === 0 && (
+          {product !== 0 && productIssues && productIssues.length === 0 && (
             <Typography
               className={classes.noData}
               variant="body1"
@@ -167,10 +166,10 @@ const List = ({
               No Issues yet.
             </Typography>
           )}
-          {proj !== 0 && projIssues && projIssues.length > 0
-            && _.map(projIssues, (issue) => (
+          {product !== 0 && productIssues && productIssues.length > 0
+            && _.map(productIssues, (issue) => (
               <div
-                key={`issue-${issue.projectID}-${issue.id}`}
+                key={`issue-${issue.product_uuid}-${issue.issue_uuid}`}
                 className={classes.boxEntry}
               >
                 <Typography
@@ -191,13 +190,8 @@ const List = ({
             ))}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  ...state.dashboardReducer,
-});
-
-export default connect(mapStateToProps)(List);
+export default List;

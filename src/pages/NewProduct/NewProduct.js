@@ -14,9 +14,9 @@ import { routes } from '@routes/routesConstants';
 import {
   saveProductFormData,
 } from '@redux/product/actions/product.actions';
-import ProjectSetup, {
-  checkIfProjectSetupEdited,
-} from './components/ProjectSetup';
+import ProductSetup, {
+  checkIfProductSetupEdited,
+} from './components/ProductSetup';
 import ApplicationMarket, {
   checkIfApplicationMarketEdited,
 } from './components/ApplicationMarket';
@@ -68,11 +68,11 @@ const getStepContent = (
         <ViewDetailsWrapper
           {...props}
           handleBack={handleBack}
-          title="New Project Setup"
+          title="New Product Setup"
           maxSteps={maxSteps}
           activeStep={stepIndex}
         >
-          <ProjectSetup
+          <ProductSetup
             {...props}
             // viewOnly={viewOnly}
             location={props.location}
@@ -87,7 +87,7 @@ const getStepContent = (
         <ViewDetailsWrapper
           {...props}
           handleBack={handleBack}
-          title="New Project Setup"
+          title="New Product Setup"
           maxSteps={maxSteps}
           activeStep={stepIndex}
         >
@@ -107,7 +107,7 @@ const getStepContent = (
         <ViewDetailsWrapper
           {...props}
           handleBack={handleBack}
-          title="New Project Setup"
+          title="New Product Setup"
           maxSteps={maxSteps}
           activeStep={stepIndex}
         >
@@ -127,7 +127,7 @@ const getStepContent = (
         <ViewDetailsWrapper
           {...props}
           handleBack={handleBack}
-          title="New Project Setup"
+          title="New Product Setup"
           maxSteps={maxSteps}
           activeStep={stepIndex}
         >
@@ -147,7 +147,7 @@ const getStepContent = (
         <ViewDetailsWrapper
           {...props}
           handleBack={handleBack}
-          title="New Project Setup"
+          title="New Product Setup"
           maxSteps={maxSteps}
           activeStep={stepIndex}
         >
@@ -167,7 +167,7 @@ const getStepContent = (
         <ViewDetailsWrapper
           {...props}
           handleBack={handleBack}
-          title="New Project Setup"
+          title="New Product Setup"
           maxSteps={maxSteps}
           activeStep={stepIndex}
         >
@@ -186,7 +186,7 @@ const getStepContent = (
   }
 };
 
-const NewProjectForm = (props) => {
+const NewProductForm = (props) => {
   const {
     location, history, productFormData, dispatch,
   } = props;
@@ -269,7 +269,7 @@ const NewProjectForm = (props) => {
   const checkIfFormEdited = (currentStep) => {
     switch (currentStep) {
       case 0:
-        return checkIfProjectSetupEdited();
+        return checkIfProductSetupEdited();
 
       case 1:
         return checkIfApplicationMarketEdited();
@@ -291,7 +291,7 @@ const NewProjectForm = (props) => {
       <FormModal
         open={openFormModal}
         handleClose={closeModal}
-        title="New Project Setup"
+        title="New Product Setup"
         titleClass={classes.formTitle}
         maxWidth="md"
         openConfirmModal={openConfirmModal}
@@ -345,4 +345,4 @@ const mapStateToProps = (state, ownProps) => ({
   ...state.optionsReducer,
 });
 
-export default connect(mapStateToProps)(NewProjectForm);
+export default connect(mapStateToProps)(NewProductForm);

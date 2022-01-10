@@ -12,10 +12,6 @@ import {
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import { useInput } from '@hooks/useInput';
-import {
-  addIssue,
-  editIssue,
-} from '@redux/dashboard/actions/dashboard.actions';
 import { validators } from '@utils/validators';
 
 const useStyles = makeStyles((theme) => ({
@@ -58,7 +54,7 @@ const AddIssues = ({
     && location.state.type === 'edit'
     && location.state.data
   ) || {};
-  const projectID = location.state && location.state.projectID;
+  const productID = location.state && location.state.productID;
 
   const name = useInput(editData.name || '', {
     required: true,
@@ -118,7 +114,7 @@ const AddIssues = ({
       ? editData.id
       : (location.state && location.state.nextId);
     const issueFormValue = {
-      projectID,
+      productID,
       id,
       name: name.value,
       description: description.value,
@@ -129,9 +125,9 @@ const AddIssues = ({
     };
 
     if (editPage) {
-      dispatch(editIssue(issueFormValue));
+      console.log('Dispatch edit issue action here');
     } else {
-      dispatch(addIssue(issueFormValue));
+      console.log('Dispatch add issue action here');
     }
     history.push(redirectTo);
   };
@@ -302,10 +298,10 @@ const AddIssues = ({
               >
                 <MenuItem value="">Select</MenuItem>
                 {_.map(
-                  _.filter(repos, { projectID }),
+                  _.filter(repos, { productID }),
                   (rp) => (
                     <MenuItem
-                      key={`type-${rp.projectID}-${rp.id}`}
+                      key={`type-${rp.productID}-${rp.id}`}
                       value={rp.name}
                     >
                       {rp.name}
@@ -375,10 +371,10 @@ const AddIssues = ({
               >
                 <MenuItem value="">Select</MenuItem>
                 {_.map(
-                  _.filter(devs, { projectID }),
+                  _.filter(devs, { productID }),
                   (dev) => (
                     <MenuItem
-                      key={`type-${dev.projectID}-${dev.id}`}
+                      key={`type-${dev.productID}-${dev.id}`}
                       value={dev.value}
                     >
                       {dev.name}
@@ -429,7 +425,6 @@ const AddIssues = ({
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
-  ...state.dashboardReducer,
 });
 
 export default connect(mapStateToProps)(AddIssues);

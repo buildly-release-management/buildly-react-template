@@ -46,7 +46,7 @@ const Release = ({
 
   useEffect(() => {
     if (releases && releases.length > 0) {
-      const rws = getReleasesData(releases);
+      const rws = _.orderBy(getReleasesData(releases), 'create_date', 'desc');
       let cols = columns;
 
       if (cols[0] && !(cols[0].label === 'Name')) {
@@ -115,8 +115,7 @@ const Release = ({
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
-  loading: state.projectReducer.loading,
-  releases: state.projectReducer.release,
+  ...state.productReducer,
 });
 
 export default connect(mapStateToProps)(Release);

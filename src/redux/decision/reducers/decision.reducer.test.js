@@ -9,7 +9,7 @@ const initialState = {
   features: [],
   feedbacks: [],
   issues: [],
-  kanbanStatuses: [],
+  statuses: [],
 };
 
 describe('Get all decisions reducer', () => {
@@ -340,38 +340,38 @@ describe('Get an issue reducer', () => {
   });
 });
 
-describe('Get all kanban statuses reducer', () => {
+describe('Get all statuses reducer', () => {
   it('Empty reducer', () => {
     expect(reducer.default(
       initialState,
-      { type: actions.ALL_KANBAN_STATUSES },
+      { type: actions.ALL_STATUSES },
     )).toEqual({
       ...initialState,
       loading: true,
     });
   });
 
-  it('get all kanban statuses success reducer', () => {
+  it('get all statuses success reducer', () => {
     const data = [{
-      kanban_status_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      status_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
       name: 'Test',
     }];
 
     expect(reducer.default(
       initialState,
-      { type: actions.ALL_KANBAN_STATUSES_SUCCESS, data },
+      { type: actions.ALL_STATUSES_SUCCESS, data },
     )).toEqual({
       ...initialState,
       loading: false,
       loaded: true,
-      kanbanStatuses: data,
+      statuses: data,
     });
   });
 
-  it('get all kanban statuses fail reducer', () => {
+  it('get all statuses fail reducer', () => {
     expect(reducer.default(
       initialState,
-      { type: actions.ALL_KANBAN_STATUSES_FAILURE },
+      { type: actions.ALL_STATUSES_FAILURE },
     )).toEqual({
       ...initialState,
       loading: false,
@@ -381,38 +381,38 @@ describe('Get all kanban statuses reducer', () => {
   });
 });
 
-describe('Get a kanban status reducer', () => {
+describe('Get a status reducer', () => {
   it('Empty reducer', () => {
     expect(reducer.default(
       initialState,
-      { type: actions.GET_KANBAN_STATUS },
+      { type: actions.GET_STATUS },
     )).toEqual({
       ...initialState,
       loading: true,
     });
   });
 
-  it('get a kanban status success reducer', () => {
+  it('get a status success reducer', () => {
     const data = {
-      kanban_status_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      status_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
       name: 'Test',
     };
 
     expect(reducer.default(
       initialState,
-      { type: actions.GET_KANBAN_STATUS_SUCCESS, data },
+      { type: actions.GET_STATUS_SUCCESS, data },
     )).toEqual({
       ...initialState,
       loading: false,
       loaded: true,
-      kanbanStatuses: [data],
+      statuses: [data],
     });
   });
 
-  it('get a kanban status fail reducer', () => {
+  it('get a status fail reducer', () => {
     expect(reducer.default(
       initialState,
-      { type: actions.GET_KANBAN_STATUS_FAILURE },
+      { type: actions.GET_STATUS_FAILURE },
     )).toEqual({
       ...initialState,
       loading: false,

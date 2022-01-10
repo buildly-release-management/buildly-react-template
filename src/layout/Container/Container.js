@@ -9,7 +9,7 @@ import Dashboard from '@pages/Dashboard/Dashboard';
 import UserManagement from '@pages/UserManagement/UserManagement';
 import MissingData from '@pages/MissingData/MissingData';
 import { routes } from '@routes/routesConstants';
-import NewProject from '@pages/NewProject/NewProject';
+import NewProduct from '@pages/NewProduct/NewProduct';
 import Release from '@pages/Release/Release';
 import ViewRelease from '@pages/Release/components/ViewRelease';
 
@@ -60,7 +60,7 @@ const ContainerDashboard = ({ location, history }) => {
             <Route path={routes.DASHBOARD} component={Dashboard} />
             <Route path={routes.USER_MANAGEMENT} component={UserManagement} />
             <Route path={routes.MISSING_DATA} component={MissingData} />
-            <Route path={routes.NEW_PROJECT} component={NewProject} />
+            <Route path={routes.NEW_PRODUCT} component={NewProduct} />
             <Route exact path={`${routes.RELEASE}/view/:releaseID`} component={ViewRelease} />
             <Route path={routes.RELEASE} component={Release} />
           </Switch>

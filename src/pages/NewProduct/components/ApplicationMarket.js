@@ -205,7 +205,7 @@ const ApplicationMarket = (props) => {
 
   const submitDisabled = () => {
     // const errorKeys = Object.keys(formError);
-    // if (!project_name.value) {
+    // if (!product_name.value) {
     //   return true;
     // }
     // let errorExists = false;
@@ -436,7 +436,7 @@ const ApplicationMarket = (props) => {
                 color="primary"
                 fullWidth
                 onClick={onBackClick}
-                // disabled={projectFormData === null}
+                // disabled={productFormData === null}
                 className={classes.submit}
               >
                 Back

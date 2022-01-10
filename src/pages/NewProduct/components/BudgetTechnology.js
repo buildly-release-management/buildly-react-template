@@ -105,32 +105,32 @@ const BudgetTechnology = (props) => {
     category: '10-15k',
   });
 
-  const project_hosting = useInput(
-    (editData && editData.project_hosting) || 'Hostinger',
+  const product_hosting = useInput(
+    (editData && editData.product_hosting) || 'Hostinger',
     {
       required: true,
     },
   );
-  const project_language = useInput(
-    (editData && editData.project_language) || 'JavaScript',
+  const product_language = useInput(
+    (editData && editData.product_language) || 'JavaScript',
     {
       required: true,
     },
   );
-  const project_database = useInput(
-    (editData && editData.project_database) || 'Postgres',
+  const product_database = useInput(
+    (editData && editData.product_database) || 'Postgres',
     {
       required: true,
     },
   );
-  const project_storage = useInput(
-    (editData && editData.project_storage) || 'AWS',
+  const product_storage = useInput(
+    (editData && editData.product_storage) || 'AWS',
     {
       required: true,
     },
   );
-  const project_deployment = useInput(
-    (editData && editData.project_deployment) || 'AWS',
+  const product_deployment = useInput(
+    (editData && editData.product_deployment) || 'AWS',
     {
       required: true,
     },
@@ -179,7 +179,7 @@ const BudgetTechnology = (props) => {
 
   const submitDisabled = () => {
     // const errorKeys = Object.keys(formError);
-    // if (!project_name.value) {
+    // if (!product_name.value) {
     //   return true;
     // }
     // let errorExists = false;
@@ -191,11 +191,11 @@ const BudgetTechnology = (props) => {
     // return errorExists;
   };
 
-  checkIfBudgetTechnologyEdited = () => project_hosting.hasChanged()
-    || project_language.hasChanged()
-    || project_database.hasChanged()
-    || project_storage.hasChanged()
-    || project_deployment.hasChanged();
+  checkIfBudgetTechnologyEdited = () => product_hosting.hasChanged()
+    || product_language.hasChanged()
+    || product_database.hasChanged()
+    || product_storage.hasChanged()
+    || product_deployment.hasChanged();
 
   /**
    * Submit The form and add/edit custodian
@@ -335,7 +335,7 @@ const BudgetTechnology = (props) => {
                 <FormLabel component="legend">
                   Select Hosting
                 </FormLabel>
-                <Select {...project_hosting.bind}>
+                <Select {...product_hosting.bind}>
                   <MenuItem value="Hostinger">Hostinger</MenuItem>
                   <MenuItem value="Bluehost">Bluehost</MenuItem>
                   <MenuItem value="Dreamhost">Dreamhost</MenuItem>
@@ -360,7 +360,7 @@ const BudgetTechnology = (props) => {
                 <FormLabel component="legend">
                   Select Language
                 </FormLabel>
-                <Select {...project_language.bind}>
+                <Select {...product_language.bind}>
                   <MenuItem value="JavaScript">JavaScript</MenuItem>
                   <MenuItem value="Python">Python</MenuItem>
                   <MenuItem value="Java">Java</MenuItem>
@@ -384,7 +384,7 @@ const BudgetTechnology = (props) => {
                 <FormLabel component="legend">
                   Select Database
                 </FormLabel>
-                <Select {...project_database.bind}>
+                <Select {...product_database.bind}>
                   <MenuItem value="Postgres">Postgres</MenuItem>
                   <MenuItem value="MySQL">MySQL</MenuItem>
                   <MenuItem value="Mongo">MongoDB</MenuItem>
@@ -401,7 +401,7 @@ const BudgetTechnology = (props) => {
                 <FormLabel component="legend">
                   Select Storage
                 </FormLabel>
-                <Select {...project_storage.bind}>
+                <Select {...product_storage.bind}>
                   <MenuItem value="AWS">AWS</MenuItem>
                   <MenuItem value="GCP">GCP</MenuItem>
                   <MenuItem value="Digital Ocean">Digital Ocean</MenuItem>
@@ -418,7 +418,7 @@ const BudgetTechnology = (props) => {
                 <FormLabel component="legend">
                   Select Deployment
                 </FormLabel>
-                <Select {...project_deployment.bind}>
+                <Select {...product_deployment.bind}>
                   <MenuItem value="AWS">AWS</MenuItem>
                   <MenuItem value="GCP">GCP</MenuItem>
                   <MenuItem value="Digital Ocean">Digital Ocean</MenuItem>

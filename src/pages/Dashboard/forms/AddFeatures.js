@@ -11,10 +11,6 @@ import {
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import { useInput } from '@hooks/useInput';
-import {
-  addRequirement,
-  editRequirement,
-} from '@redux/dashboard/actions/dashboard.actions';
 import { validators } from '@utils/validators';
 
 const useStyles = makeStyles((theme) => ({
@@ -37,8 +33,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const AddRequirements = ({
-  dispatch,
+const AddFeatures = ({
   history,
   location,
 }) => {
@@ -53,7 +48,7 @@ const AddRequirements = ({
     && location.state.type === 'edit'
     && location.state.data
   ) || {};
-  const projectID = location.state && location.state.projectID;
+  const productID = location.state && location.state.productID;
 
   const name = useInput(editData.name || '', {
     required: true,
@@ -63,8 +58,8 @@ const AddRequirements = ({
   });
   const [formError, setFormError] = useState({});
 
-  const buttonText = editPage ? 'Save' : 'Add Requirement';
-  const formTitle = editPage ? 'Edit Requirement' : 'Add Requirement';
+  const buttonText = editPage ? 'Save' : 'Add Feature';
+  const formTitle = editPage ? 'Edit Feature' : 'Add Feature';
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
@@ -97,17 +92,17 @@ const AddRequirements = ({
     const id = editPage
       ? editData.id
       : (location.state && location.state.nextId);
-    const reqFormValue = {
-      projectID,
+    const featFormValue = {
+      productID,
       id,
       name: name.value,
       description: description.value,
     };
 
     if (editPage) {
-      dispatch(editRequirement(reqFormValue));
+      console.log('Dispatch edit feature action here');
     } else {
-      dispatch(addRequirement(reqFormValue));
+      console.log('Dispatch add feature action here');
     }
     history.push(redirectTo);
   };
@@ -253,7 +248,6 @@ const AddRequirements = ({
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
-  ...state.dashboardReducer,
 });
 
-export default connect(mapStateToProps)(AddRequirements);
+export default connect(mapStateToProps)(AddFeatures);

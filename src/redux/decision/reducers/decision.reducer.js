@@ -12,9 +12,9 @@ import {
   ALL_ISSUES,
   ALL_ISSUES_SUCCESS,
   ALL_ISSUES_FAILURE,
-  ALL_KANBAN_STATUSES,
-  ALL_KANBAN_STATUSES_SUCCESS,
-  ALL_KANBAN_STATUSES_FAILURE,
+  ALL_STATUSES,
+  ALL_STATUSES_SUCCESS,
+  ALL_STATUSES_FAILURE,
   GET_DECISION,
   GET_DECISION_SUCCESS,
   GET_DECISION_FAILURE,
@@ -27,9 +27,9 @@ import {
   GET_ISSUE,
   GET_ISSUE_SUCCESS,
   GET_ISSUE_FAILURE,
-  GET_KANBAN_STATUS,
-  GET_KANBAN_STATUS_SUCCESS,
-  GET_KANBAN_STATUS_FAILURE,
+  GET_STATUS,
+  GET_STATUS_SUCCESS,
+  GET_STATUS_FAILURE,
 } from '../actions/decision.actions';
 
 const initialState = {
@@ -40,7 +40,7 @@ const initialState = {
   features: [],
   feedbacks: [],
   issues: [],
-  kanbanStatuses: [],
+  statuses: [],
 };
 
 // Reducer
@@ -50,12 +50,12 @@ export default (state = initialState, action) => {
     case ALL_FEATURES:
     case ALL_FEEDBACKS:
     case ALL_ISSUES:
-    case ALL_KANBAN_STATUSES:
+    case ALL_STATUSES:
     case GET_DECISION:
     case GET_FEATURE:
     case GET_FEEDBACK:
     case GET_ISSUE:
-    case GET_KANBAN_STATUS:
+    case GET_STATUS:
       return {
         ...state,
         loading: true,
@@ -67,12 +67,12 @@ export default (state = initialState, action) => {
     case ALL_FEATURES_FAILURE:
     case ALL_FEEDBACKS_FAILURE:
     case ALL_ISSUES_FAILURE:
-    case ALL_KANBAN_STATUSES_FAILURE:
+    case ALL_STATUSES_FAILURE:
     case GET_DECISION_FAILURE:
     case GET_FEATURE_FAILURE:
     case GET_FEEDBACK_FAILURE:
     case GET_ISSUE_FAILURE:
-    case GET_KANBAN_STATUS_FAILURE:
+    case GET_STATUS_FAILURE:
       return {
         ...state,
         loading: false,
@@ -196,32 +196,32 @@ export default (state = initialState, action) => {
       };
     }
 
-    case ALL_KANBAN_STATUSES_SUCCESS:
+    case ALL_STATUSES_SUCCESS:
       return {
         ...state,
         loading: false,
         loaded: true,
-        kanbanStatuses: action.data,
+        statuses: action.data,
       };
 
-    case GET_KANBAN_STATUS_SUCCESS: {
+    case GET_STATUS_SUCCESS: {
       const found = _.find(
-        state.kanbanStatuses,
-        { kanban_status_uuid: action.data.kanban_status_uuid },
+        state.statuses,
+        { status_uuid: action.data.status_uuid },
       );
-      const kanbanStatuses = found
-        ? _.map(state.kanbanStatuses, (status) => (
-          status.kanban_status_uuid === action.data.kanban_status_uuid
+      const statuses = found
+        ? _.map(state.statuses, (status) => (
+          status.status_uuid === action.data.status_uuid
             ? action.data
             : status
         ))
-        : [...state.kanbanStatuses, action.data];
+        : [...state.statuses, action.data];
 
       return {
         ...state,
         loading: false,
         loaded: true,
-        kanbanStatuses,
+        statuses,
       };
     }
 

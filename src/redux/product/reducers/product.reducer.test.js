@@ -13,8 +13,8 @@ const initialState = {
   productFormData: null,
 };
 
-describe('Save Project Form reducer', () => {
-  it('should save project form data', () => {
+describe('Save Product Form reducer', () => {
+  it('should save product form data', () => {
     const formData = { name: 'Test' };
     expect(reducer.default(
       initialState,

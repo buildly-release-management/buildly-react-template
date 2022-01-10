@@ -296,7 +296,7 @@ const AddRelease = ({
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
-  ...state.projectReducer,
+  ...state.productReducer,
 });
 
 export default connect(mapStateToProps)(AddRelease);

@@ -109,7 +109,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // eslint-disable-next-line import/no-mutable-exports
-export let checkIfProjectSetupEdited;
+export let checkIfProductSetupEdited;
 
 function StyledRadio(props) {
   const classes = useStyles();
@@ -126,7 +126,7 @@ function StyledRadio(props) {
   );
 }
 
-const ProjectSetup = (props) => {
+const ProductSetup = (props) => {
   const {
     history, loading, dispatch, location, handleNext, handleCancel,
   } = props;
@@ -137,7 +137,7 @@ const ProjectSetup = (props) => {
   // const editPage = location.state && location.state.type === 'edit';
   const editData = (location.state && location.state.type === 'edit' && location.state.data)
     || {};
-  const project_name = useInput((editData && editData.name) || '', {
+  const product_name = useInput((editData && editData.name) || '', {
     required: true,
   });
   const description = useInput((editData && editData.description) || '');
@@ -197,7 +197,7 @@ const ProjectSetup = (props) => {
 
   const submitDisabled = () => {
     const errorKeys = Object.keys(formError);
-    if (!project_name.value) {
+    if (!product_name.value) {
       return true;
     }
     let errorExists = false;
@@ -209,7 +209,7 @@ const ProjectSetup = (props) => {
     return errorExists;
   };
 
-  checkIfProjectSetupEdited = () => (
+  checkIfProductSetupEdited = () => (
     requirements_tool.hasChanged()
     || description.hasChanged()
     || requirements_tool.hasChanged()
@@ -235,14 +235,14 @@ const ProjectSetup = (props) => {
                 margin="normal"
                 fullWidth
                 required
-                id="project_name"
-                label="Project name"
-                name="project_name"
-                autoComplete="project_name"
+                id="product_name"
+                label="Product name"
+                name="product_name"
+                autoComplete="product_name"
                 disabled={viewOnly}
-                error={formError.project_name && formError.project_name.error}
-                onBlur={(e) => handleBlur(e, 'required', project_name)}
-                {...project_name.bind}
+                error={formError.product_name && formError.product_name.error}
+                onBlur={(e) => handleBlur(e, 'required', product_name)}
+                {...product_name.bind}
               />
             </Grid>
             <Grid item xs={12}>
@@ -255,7 +255,7 @@ const ProjectSetup = (props) => {
                     multiline
                     rows={6}
                     id="description"
-                    label="Project description"
+                    label="Product description"
                     name="description"
                     autoComplete="description"
                     disabled={viewOnly}
@@ -387,7 +387,7 @@ const ProjectSetup = (props) => {
               color="primary"
               fullWidth
               onClick={onNextClick}
-              // disabled={projectFormData === null}
+              // disabled={productFormData === null}
               className={classes.submit}
             >
               Save & Next
@@ -403,4 +403,4 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
 });
 
-export default connect(mapStateToProps)(ProjectSetup);
+export default connect(mapStateToProps)(ProductSetup);

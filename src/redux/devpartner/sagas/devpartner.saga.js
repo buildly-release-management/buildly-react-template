@@ -31,7 +31,7 @@ function* allDevTeams(payload) {
     const devteams = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${devpartnerEndpoint}devteam?join=true`,
+      `${window.env.API_URL}${devpartnerEndpoint}devteam/?join=true`,
     );
     yield put({ type: ALL_DEV_TEAMS_SUCCESS, data: devteams.data });
   } catch (error) {
@@ -56,7 +56,7 @@ function* getDevTeam(payload) {
     const devteam = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${devpartnerEndpoint}devteam?join=true&dev_team_uuid=${payload.dev_team_uuid}`,
+      `${window.env.API_URL}${devpartnerEndpoint}devteam/?join=true&dev_team_uuid=${payload.dev_team_uuid}`,
     );
     yield put({ type: GET_DEV_TEAM_SUCCESS, data: devteam.data });
   } catch (error) {
@@ -81,7 +81,7 @@ function* allTimesheetHours(payload) {
     const hours = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${devpartnerEndpoint}timesheet_hour?join=true`,
+      `${window.env.API_URL}${devpartnerEndpoint}timesheet_hour/?join=true`,
     );
     yield put({ type: ALL_TIMESHEET_HOURS_SUCCESS, data: hours.data });
   } catch (error) {
@@ -106,7 +106,7 @@ function* getTimesheetHour(payload) {
     const hour = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${devpartnerEndpoint}timesheet_hour?join=true&timesheet_hour_uuid=${payload.timesheet_hour_uuid}`,
+      `${window.env.API_URL}${devpartnerEndpoint}timesheet_hour/?join=true&timesheet_hour_uuid=${payload.timesheet_hour_uuid}`,
     );
     yield put({ type: GET_TIMESHEET_HOUR_SUCCESS, data: hour.data });
   } catch (error) {
@@ -131,7 +131,7 @@ function* allTimesheets(payload) {
     const sheets = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${devpartnerEndpoint}timesheet?join=true`,
+      `${window.env.API_URL}${devpartnerEndpoint}timesheet/?join=true`,
     );
     yield put({ type: ALL_TIMESHEETS_SUCCESS, data: sheets.data });
   } catch (error) {
@@ -156,7 +156,7 @@ function* getTimesheet(payload) {
     const sheet = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${devpartnerEndpoint}timesheet?join=true&timesheet_uuid=${payload.timesheet_uuid}`,
+      `${window.env.API_URL}${devpartnerEndpoint}timesheet/?join=true&timesheet_uuid=${payload.timesheet_uuid}`,
     );
     yield put({ type: GET_TIMESHEET_SUCCESS, data: sheet.data });
   } catch (error) {
@@ -201,7 +201,7 @@ function* watchGetTimesheet() {
   yield takeLatest(GET_TIMESHEET, getTimesheet);
 }
 
-export default function* projectSaga() {
+export default function* devpartnerSaga() {
   yield all([
     watchGetAllDevTeams(),
     watchGetAllTimesheetHours(),

@@ -12,9 +12,6 @@ import {
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import { useInput } from '@hooks/useInput';
-import {
-  convertIssue,
-} from '@redux/dashboard/actions/dashboard.actions';
 import { validators } from '@utils/validators';
 
 const useStyles = makeStyles((theme) => ({
@@ -37,8 +34,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RequirementToIssue = ({
-  dispatch,
+const FeatureToIssue = ({
   history,
   location,
   types,
@@ -57,7 +53,7 @@ const RequirementToIssue = ({
     && location.state.type === 'edit'
     && location.state.data
   ) || {};
-  const projectID = location.state && location.state.projectID;
+  const productID = location.state && location.state.productID;
 
   const name = useInput(editData.name || '', {
     required: true,
@@ -115,7 +111,7 @@ const RequirementToIssue = ({
     event.preventDefault();
     const id = (location.state && location.state.nextId);
     const issueFormValue = {
-      projectID,
+      productID,
       id,
       name: name.value,
       description: description.value,
@@ -124,8 +120,8 @@ const RequirementToIssue = ({
       status: editPage ? issueStatus.value : 'created',
       assignedTo: editPage ? assignedTo.value : '',
     };
-    const requirement = location.state.data;
-    dispatch(convertIssue(issueFormValue, requirement.id));
+    const feature = location.state.data;
+    console.log('Dispatch convert to issue action here');
     history.push(redirectTo);
   };
 
@@ -295,10 +291,10 @@ const RequirementToIssue = ({
               >
                 <MenuItem value="">Select</MenuItem>
                 {_.map(
-                  _.filter(repos, { projectID }),
+                  _.filter(repos, { productID }),
                   (rp) => (
                     <MenuItem
-                      key={`type-${rp.projectID}-${rp.id}`}
+                      key={`type-${rp.productID}-${rp.id}`}
                       value={rp.name}
                     >
                       {rp.name}
@@ -368,10 +364,10 @@ const RequirementToIssue = ({
               >
                 <MenuItem value="">Select</MenuItem>
                 {_.map(
-                  _.filter(devs, { projectID }),
+                  _.filter(devs, { productID }),
                   (dev) => (
                     <MenuItem
-                      key={`type-${dev.projectID}-${dev.id}`}
+                      key={`type-${dev.productID}-${dev.id}`}
                       value={dev.value}
                     >
                       {dev.name}
@@ -422,7 +418,6 @@ const RequirementToIssue = ({
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
-  ...state.dashboardReducer,
 });
 
-export default connect(mapStateToProps)(RequirementToIssue);
+export default connect(mapStateToProps)(FeatureToIssue);

@@ -6,18 +6,12 @@ import {
   useTheme,
   useMediaQuery,
   Grid,
-  Typography,
   Box,
   TextField,
-  List,
-  ListItem,
-  ListItemText,
   Button,
 } from '@mui/material';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
-import { showAlert } from '@redux/alert/actions/alert.actions';
-import { routes } from '@routes/routesConstants';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -47,7 +41,6 @@ const useStyles = makeStyles((theme) => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
     borderRadius: '18px',
-
     '&.MuiButton-contained.Mui-disabled': {
       color: 'hsl(0deg 0% 100% / 70%);',
     },
@@ -79,26 +72,52 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const example_list = [
-  'Example 1:  A general user will need to be able to see a list of products to buy and a shopping cart to put them in and the ability to pay for and have those items shipped.',
-  "Example 2: An administrative user should be able to approve every user's access and level, as well as fix any problem for a general user that does not require direct access to the code or data.",
-  'Example 3: A power user should be able to download a report of the previous quarters activity in the application with no more than 3 clicks.',
-];
-
-const MinimalFunctionality = (props) => {
+const UsersInfo = (props) => {
   const {
-    history, loading, dispatch, location, handleBack, handleCancel,
+    history,
+    loading,
+    dispatch,
+    location,
+    handleNext,
+    handleBack,
+    handleCancel,
   } = props;
   const classes = useStyles();
   const theme = useTheme();
   const viewOnly = false;
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
   // const editPage = location.state && location.state.type === 'edit';
-  const editData = (location.state && location.state.type === 'edit' && location.state.data)
-    || {};
+  const editData = (location.state
+    && location.state.type === 'edit'
+    && location.state.data) || {};
 
-  const minimal_functionality = useInput(
-    (editData && editData.minimal_functionality) || '',
+  const product_use = useInput((editData && editData.product_use) || '', {
+    required: true,
+  });
+
+  const product_use_when = useInput(
+    (editData && editData.product_use_when) || '',
+    {
+      required: true,
+    },
+  );
+
+  const product_use_situation = useInput(
+    (editData && editData.product_use_situation) || '',
+    {
+      required: true,
+    },
+  );
+
+  const product_imp_func = useInput(
+    (editData && editData.product_imp_func) || '',
+    {
+      required: true,
+    },
+  );
+
+  const product_delivery_risk = useInput(
+    (editData && editData.product_delivery_risk) || '',
     {
       required: true,
     },
@@ -138,9 +157,16 @@ const MinimalFunctionality = (props) => {
     handleBack();
   };
 
+  const onNextClick = (event) => {
+    // if (checkIfProductInfoEdited() === true) {
+    //   handleSubmit(event);
+    // }
+    handleNext();
+  };
+
   const submitDisabled = () => {
     // const errorKeys = Object.keys(formError);
-    // if (!project_name.value) {
+    // if (!product_name.value) {
     //   return true;
     // }
     // let errorExists = false;
@@ -150,7 +176,14 @@ const MinimalFunctionality = (props) => {
     //   }
     // });
     // return errorExists;
-    if (minimal_functionality.value === '') {
+
+    if (
+      (product_use.value
+        && product_use_when.value
+        && product_use_situation.value
+        && product_imp_func.value
+        && product_delivery_risk.value) === ''
+    ) {
       return true;
     }
     return false;
@@ -162,12 +195,6 @@ const MinimalFunctionality = (props) => {
    */
   const handleSubmit = (event) => {
     event.preventDefault();
-    dispatch(showAlert({
-      type: 'success',
-      open: true,
-      message: 'Project configuration added sucessfully!',
-    }));
-    history.push(routes.DASHBOARD);
   };
 
   return (
@@ -176,21 +203,19 @@ const MinimalFunctionality = (props) => {
         <Box mb={2} mt={3}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <Typography variant="h5" component="div">
-                What is the minimal amount of functionality you need to launch
-                this product
-              </Typography>
-              <Typography variant="caption" component="div">
-                (Try to limit to no more than 5 major pieces of Functionality
-                and assume registration and login are taken care of)
-              </Typography>
-              <List>
-                {example_list.map((listItem, index) => (
-                  <ListItem key={index}>
-                    <ListItemText primary={listItem} />
-                  </ListItem>
-                ))}
-              </List>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                multiline
+                rows={6}
+                id="product-use"
+                label="What is the product used for"
+                name="product-use"
+                autoComplete="product-use"
+                disabled={viewOnly}
+                {...product_use.bind}
+              />
             </Grid>
             <Grid item xs={12}>
               <TextField
@@ -199,54 +224,68 @@ const MinimalFunctionality = (props) => {
                 fullWidth
                 multiline
                 rows={6}
-                // id="description"
-                // label="Project description"
-                // name="product use"
-                // autoComplete="description"
-                // disabled={viewOnly}
-                {...minimal_functionality.bind}
+                id="product-use-when"
+                label="When is it used"
+                name="product-use-when"
+                autoComplete="product-use-when"
+                disabled={viewOnly}
+                {...product_use_when.bind}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                multiline
+                rows={6}
+                id="product-situation"
+                label="What situations is it used in?"
+                name="product-situation"
+                autoComplete="product-situation"
+                disabled={viewOnly}
+                {...product_use_situation.bind}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                multiline
+                rows={6}
+                id="product-imp-func"
+                label="What will be the most important functionality"
+                name="product-imp-func"
+                autoComplete="product-imp-func"
+                disabled={viewOnly}
+                {...product_imp_func.bind}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                multiline
+                rows={6}
+                id="product-delivery-risk"
+                label="What’s the biggest risk to product delivery?"
+                name="product-delivery-risk"
+                autoComplete="product-delivery-risk"
+                disabled={viewOnly}
+                {...product_delivery_risk.bind}
               />
             </Grid>
           </Grid>
           <Grid container spacing={3} className={classes.buttonContainer}>
-            {/* <Grid item xs={6} sm={2}>
-            {viewOnly ? (
-              <Button
-                type="button"
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={classes.submit}
-              >
-                Done
-              </Button>
-            ) : (
-              <div className={classes.loadingWrapper}>
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  className={classes.submit}
-                >
-                  Save
-                </Button>
-                {loading && (
-                  <CircularProgress
-                    size={24}
-                    className={classes.buttonProgress}
-                  />
-                )}
-              </div>
-            )}
-          </Grid> */}
             <Grid item xs={12} sm={4}>
               <Button
                 variant="contained"
                 color="primary"
                 fullWidth
                 onClick={onBackClick}
-                // disabled={projectFormData === null}
+                // disabled={productFormData === null}
                 className={classes.submit}
               >
                 Back
@@ -257,11 +296,11 @@ const MinimalFunctionality = (props) => {
                 variant="contained"
                 color="primary"
                 fullWidth
-                onClick={handleSubmit}
+                onClick={onNextClick}
                 disabled={submitDisabled()}
                 className={classes.submit}
               >
-                Submit
+                Save & Next
               </Button>
             </Grid>
           </Grid>
@@ -275,4 +314,4 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
 });
 
-export default connect(mapStateToProps)(MinimalFunctionality);
+export default connect(mapStateToProps)(UsersInfo);

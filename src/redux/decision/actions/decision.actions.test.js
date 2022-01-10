@@ -86,24 +86,23 @@ describe('Get Issue action', () => {
   });
 });
 
-// Test Get All Kanban Statuses
-describe('Get All Kanban Statuses action', () => {
-  it('should create an action to get all kanban statuses', () => {
-    const expectedAction = { type: actions.ALL_KANBAN_STATUSES };
-    expect(actions.getAllKanbanStatuses()).toEqual(expectedAction);
+// Test Get All Statuses
+describe('Get All Statuses action', () => {
+  it('should create an action to get all statuses', () => {
+    const expectedAction = { type: actions.ALL_STATUSES };
+    expect(actions.getAllStatuses()).toEqual(expectedAction);
   });
 });
 
-// Test Get Kanban Status
-describe('Get Kanban Status action', () => {
-  it('should create an action to get kanban status', () => {
-    const kanban_status_uuid = '275ac379-82a2-4937-a434-ce6c2e277c88';
+// Test Get Status
+describe('Get Status action', () => {
+  it('should create an action to get status', () => {
+    const status_uuid = '275ac379-82a2-4937-a434-ce6c2e277c88';
     const expectedAction = {
-      type: actions.GET_KANBAN_STATUS,
-      kanban_status_uuid,
+      type: actions.GET_STATUS,
+      status_uuid,
     };
 
-    expect(actions.getKanbanStatus(kanban_status_uuid))
-      .toEqual(expectedAction);
+    expect(actions.getStatus(status_uuid)).toEqual(expectedAction);
   });
 });

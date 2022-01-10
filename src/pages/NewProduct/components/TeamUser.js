@@ -156,7 +156,7 @@ const TeamUser = ({
     { role: 'COO (Budget Approval?)', count: 0 },
     { role: 'UI/UX', count: 0 },
     { role: 'Lead Developer', count: 0 },
-    { role: 'Project Manager', count: 0 },
+    { role: 'Product Manager', count: 0 },
     { role: 'Product Manager (Budget Approval?)', count: 0 },
     { role: 'Others', count: 0 },
   ]);
@@ -338,7 +338,7 @@ const TeamUser = ({
                 color="primary"
                 fullWidth
                 onClick={onBackClick}
-                // disabled={projectFormData === null}
+                // disabled={productFormData === null}
                 className={classes.submit}
               >
                 Back
