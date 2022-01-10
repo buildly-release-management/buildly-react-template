@@ -138,7 +138,7 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(2, 2)
   },
   radioLeft: {
-    marginLeft: theme.spacing(1)
+    marginLeft: theme.spacing(2)
   },
 }));
 
@@ -161,14 +161,16 @@ function StyledRadio(props) {
 }
 
 function StyledStart(props) {
-  const classes = useStyles();
   return (
     <Radio
-      color="primary"
-      checkedIcon={
-        <span className={`${classes.iconStart} ${classes.checkedIcon}`} />
-      }
-      icon={<span className={classes.iconStart} />}
+      sx={{
+        opacity: 0,
+        "&.Mui-checked": {
+          "&, & + .MuiFormControlLabel-label": {
+            color: "#137cbd"
+          }
+        }
+      }}
       {...props}
     />
   );
@@ -357,7 +359,7 @@ const ProjectSetup = (props) => {
                       control={<StyledStart />}
                       label={
                         <>
-                          <FontAwesomeIcon icon={faTrello} className='fa-5x'></FontAwesomeIcon>
+                          <FontAwesomeIcon icon={faTrello} className='fa-4x'></FontAwesomeIcon>
                           <Typography align="center">Trello</Typography>
                         </>
                       }
@@ -367,7 +369,7 @@ const ProjectSetup = (props) => {
                       control={<StyledStart />}
                       label={
                         <>
-                          <FontAwesomeIcon icon={faAtlassian} className='fa-5x'></FontAwesomeIcon>
+                          <FontAwesomeIcon icon={faAtlassian} className='fa-4x'></FontAwesomeIcon>
                           <Typography align="center">Atlassian</Typography>
                         </>
                       }
@@ -399,7 +401,7 @@ const ProjectSetup = (props) => {
                       control={<StyledStart />}
                       label={
                         <>
-                          <FontAwesomeIcon icon={faGithub} className='fa-5x'></FontAwesomeIcon>
+                          <FontAwesomeIcon icon={faGithub} className='fa-4x'></FontAwesomeIcon>
                           <Typography align="center">Github</Typography>
                         </>
                       }
@@ -409,7 +411,7 @@ const ProjectSetup = (props) => {
                       control={<StyledStart />}
                       label={
                         <>
-                          <FontAwesomeIcon icon={faJira} className='fa-5x'></FontAwesomeIcon>
+                          <FontAwesomeIcon icon={faJira} className='fa-4x'></FontAwesomeIcon>
                           <Typography align="center">Jira</Typography>
                         </>
                       }
