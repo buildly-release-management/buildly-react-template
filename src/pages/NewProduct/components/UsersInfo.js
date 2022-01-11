@@ -3,8 +3,6 @@ import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  useTheme,
-  useMediaQuery,
   Grid,
   Box,
   TextField,
@@ -63,9 +61,6 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
-  loadingWrapper: {
-    position: 'relative',
-  },
   inputWithTooltip: {
     display: 'flex',
     alignItems: 'center',
@@ -74,53 +69,39 @@ const useStyles = makeStyles((theme) => ({
 
 const UsersInfo = (props) => {
   const {
-    history,
-    loading,
-    dispatch,
     location,
     handleNext,
     handleBack,
-    handleCancel,
   } = props;
   const classes = useStyles();
-  const theme = useTheme();
   const viewOnly = false;
-  const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
   // const editPage = location.state && location.state.type === 'edit';
   const editData = (location.state
     && location.state.type === 'edit'
     && location.state.data) || {};
 
-  const product_use = useInput((editData && editData.product_use) || '', {
+  const productUse = useInput((editData && editData.product_use) || '', {
     required: true,
   });
 
-  const product_use_when = useInput(
+  const useWhen = useInput(
     (editData && editData.product_use_when) || '',
-    {
-      required: true,
-    },
+    { required: true },
   );
 
-  const product_use_situation = useInput(
+  const useSituation = useInput(
     (editData && editData.product_use_situation) || '',
-    {
-      required: true,
-    },
+    { required: true },
   );
 
-  const product_imp_func = useInput(
+  const impFunction = useInput(
     (editData && editData.product_imp_func) || '',
-    {
-      required: true,
-    },
+    { required: true },
   );
 
-  const product_delivery_risk = useInput(
+  const deliveryRisk = useInput(
     (editData && editData.product_delivery_risk) || '',
-    {
-      required: true,
-    },
+    { required: true },
   );
 
   const [formError, setFormError] = useState({});
@@ -178,11 +159,11 @@ const UsersInfo = (props) => {
     // return errorExists;
 
     if (
-      (product_use.value
-        && product_use_when.value
-        && product_use_situation.value
-        && product_imp_func.value
-        && product_delivery_risk.value) === ''
+      (productUse.value
+        && useWhen.value
+        && useSituation.value
+        && impFunction.value
+        && deliveryRisk.value) === ''
     ) {
       return true;
     }
@@ -209,12 +190,12 @@ const UsersInfo = (props) => {
                 fullWidth
                 multiline
                 rows={6}
-                id="product-use"
+                id="productUse"
                 label="What is the product used for"
-                name="product-use"
-                autoComplete="product-use"
+                name="productUse"
+                autoComplete="productUse"
                 disabled={viewOnly}
-                {...product_use.bind}
+                {...productUse.bind}
               />
             </Grid>
             <Grid item xs={12}>
@@ -224,12 +205,12 @@ const UsersInfo = (props) => {
                 fullWidth
                 multiline
                 rows={6}
-                id="product-use-when"
+                id="useWhen"
                 label="When is it used"
-                name="product-use-when"
-                autoComplete="product-use-when"
+                name="useWhen"
+                autoComplete="useWhen"
                 disabled={viewOnly}
-                {...product_use_when.bind}
+                {...useWhen.bind}
               />
             </Grid>
             <Grid item xs={12}>
@@ -239,12 +220,12 @@ const UsersInfo = (props) => {
                 fullWidth
                 multiline
                 rows={6}
-                id="product-situation"
+                id="useSituation"
                 label="What situations is it used in?"
-                name="product-situation"
-                autoComplete="product-situation"
+                name="useSituation"
+                autoComplete="useSituation"
                 disabled={viewOnly}
-                {...product_use_situation.bind}
+                {...useSituation.bind}
               />
             </Grid>
             <Grid item xs={12}>
@@ -254,12 +235,12 @@ const UsersInfo = (props) => {
                 fullWidth
                 multiline
                 rows={6}
-                id="product-imp-func"
+                id="impFunction"
                 label="What will be the most important functionality"
-                name="product-imp-func"
-                autoComplete="product-imp-func"
+                name="impFunction"
+                autoComplete="impFunction"
                 disabled={viewOnly}
-                {...product_imp_func.bind}
+                {...impFunction.bind}
               />
             </Grid>
             <Grid item xs={12}>
@@ -269,12 +250,12 @@ const UsersInfo = (props) => {
                 fullWidth
                 multiline
                 rows={6}
-                id="product-delivery-risk"
+                id="deliveryRisk"
                 label="What’s the biggest risk to product delivery?"
-                name="product-delivery-risk"
-                autoComplete="product-delivery-risk"
+                name="deliveryRisk"
+                autoComplete="deliveryRisk"
                 disabled={viewOnly}
-                {...product_delivery_risk.bind}
+                {...deliveryRisk.bind}
               />
             </Grid>
           </Grid>

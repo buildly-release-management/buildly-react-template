@@ -3,8 +3,6 @@ import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  useTheme,
-  useMediaQuery,
   Grid,
   Typography,
   Box,
@@ -16,7 +14,6 @@ import {
 } from '@mui/material';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
-import { showAlert } from '@redux/alert/actions/alert.actions';
 import { routes } from '@routes/routesConstants';
 
 const useStyles = makeStyles((theme) => ({
@@ -70,16 +67,13 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
-  loadingWrapper: {
-    position: 'relative',
-  },
   inputWithTooltip: {
     display: 'flex',
     alignItems: 'center',
   },
 }));
 
-const example_list = [
+const exampleList = [
   'Example 1:  A general user will need to be able to see a list of products to buy and a shopping cart to put them in and the ability to pay for and have those items shipped.',
   "Example 2: An administrative user should be able to approve every user's access and level, as well as fix any problem for a general user that does not require direct access to the code or data.",
   'Example 3: A power user should be able to download a report of the previous quarters activity in the application with no more than 3 clicks.',
@@ -87,23 +81,17 @@ const example_list = [
 
 const MinimalFunctionality = (props) => {
   const {
-    history, loading, dispatch, location, handleBack, handleCancel,
+    location, handleBack,
   } = props;
   const classes = useStyles();
-  const theme = useTheme();
-  const viewOnly = false;
-  const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
   // const editPage = location.state && location.state.type === 'edit';
   const editData = (location.state && location.state.type === 'edit' && location.state.data)
     || {};
 
-  const minimal_functionality = useInput(
+  const minimalFunc = useInput(
     (editData && editData.minimal_functionality) || '',
-    {
-      required: true,
-    },
+    { required: true },
   );
-
   const [formError, setFormError] = useState({});
 
   /**
@@ -139,18 +127,7 @@ const MinimalFunctionality = (props) => {
   };
 
   const submitDisabled = () => {
-    // const errorKeys = Object.keys(formError);
-    // if (!product_name.value) {
-    //   return true;
-    // }
-    // let errorExists = false;
-    // _.forEach(errorKeys, (key) => {
-    //   if (formError[key].error) {
-    //     errorExists = true;
-    //   }
-    // });
-    // return errorExists;
-    if (minimal_functionality.value === '') {
+    if (!minimalFunc.value) {
       return true;
     }
     return false;
@@ -162,12 +139,6 @@ const MinimalFunctionality = (props) => {
    */
   const handleSubmit = (event) => {
     event.preventDefault();
-    dispatch(showAlert({
-      type: 'success',
-      open: true,
-      message: 'Product configuration added sucessfully!',
-    }));
-    history.push(routes.DASHBOARD);
   };
 
   return (
@@ -185,7 +156,7 @@ const MinimalFunctionality = (props) => {
                 and assume registration and login are taken care of)
               </Typography>
               <List>
-                {example_list.map((listItem, index) => (
+                {exampleList.map((listItem, index) => (
                   <ListItem key={index}>
                     <ListItemText primary={listItem} />
                   </ListItem>
@@ -199,47 +170,11 @@ const MinimalFunctionality = (props) => {
                 fullWidth
                 multiline
                 rows={6}
-                // id="description"
-                // label="Product description"
-                // name="product use"
-                // autoComplete="description"
-                // disabled={viewOnly}
-                {...minimal_functionality.bind}
+                {...minimalFunc.bind}
               />
             </Grid>
           </Grid>
           <Grid container spacing={3} className={classes.buttonContainer}>
-            {/* <Grid item xs={6} sm={2}>
-            {viewOnly ? (
-              <Button
-                type="button"
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={classes.submit}
-              >
-                Done
-              </Button>
-            ) : (
-              <div className={classes.loadingWrapper}>
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  className={classes.submit}
-                >
-                  Save
-                </Button>
-                {loading && (
-                  <CircularProgress
-                    size={24}
-                    className={classes.buttonProgress}
-                  />
-                )}
-              </div>
-            )}
-          </Grid> */}
             <Grid item xs={12} sm={4}>
               <Button
                 variant="contained"

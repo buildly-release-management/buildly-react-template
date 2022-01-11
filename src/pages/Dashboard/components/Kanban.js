@@ -62,6 +62,7 @@ const useStyles = makeStyles((theme) => ({
   },
   iconButton: {
     padding: 0,
+    marginLeft: theme.spacing(1),
   },
 }));
 

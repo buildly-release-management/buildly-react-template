@@ -3,8 +3,6 @@ import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  useTheme,
-  useMediaQuery,
   Grid,
   Typography,
   Box,
@@ -67,9 +65,6 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
-  loadingWrapper: {
-    position: 'relative',
-  },
   inputWithTooltip: {
     display: 'flex',
     alignItems: 'center',
@@ -108,7 +103,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function StyledRadio(props) {
+const StyledRadio = (props) => {
   const classes = useStyles();
 
   return (
@@ -121,47 +116,34 @@ function StyledRadio(props) {
       {...props}
     />
   );
-}
+};
 
 // eslint-disable-next-line import/no-mutable-exports
 export let checkIfApplicationMarketEdited;
 
 const ApplicationMarket = (props) => {
   const {
-    history,
-    loading,
-    dispatch,
     location,
     handleNext,
     handleBack,
-    handleCancel,
   } = props;
   const classes = useStyles();
-  const theme = useTheme();
-  const viewOnly = false;
-  const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
   // const editPage = location.state && location.state.type === 'edit';
   const editData = (location.state && location.state.type === 'edit' && location.state.data)
     || {};
 
-  const application_type = useInput(
+  const applicationType = useInput(
     (editData && editData.application_type) || 'desktop',
-    {
-      required: true,
-    },
+    { required: true },
   );
-
-  const [specific_problem, setSpecific_problem] = useState({
+  const [specificProblem, setSpecificProblem] = useState({
     value: false,
     problem: '',
   });
-
-  const primary_users = useInput((editData && editData.primary_users) || '', {
+  const primaryUsers = useInput((editData && editData.primary_users) || '', {
     required: true,
   });
-
-  const [bussiness_segment, setBussiness_segment] = useState([]);
-
+  const [bussinessSegment, setBussinessSegment] = useState([]);
   const [formError, setFormError] = useState({});
 
   /**
@@ -204,26 +186,14 @@ const ApplicationMarket = (props) => {
   };
 
   const submitDisabled = () => {
-    // const errorKeys = Object.keys(formError);
-    // if (!product_name.value) {
-    //   return true;
-    // }
-    // let errorExists = false;
-    // _.forEach(errorKeys, (key) => {
-    //   if (formError[key].error) {
-    //     errorExists = true;
-    //   }
-    // });
-    // return errorExists;
-
-    if (primary_users.value === '' || bussiness_segment.length <= 0) {
+    if (primaryUsers.value === '' || bussinessSegment.length <= 0) {
       return true;
     }
     return false;
   };
 
   checkIfApplicationMarketEdited = () => (
-    application_type.hasChanged() || primary_users.hasChanged()
+    applicationType.hasChanged() || primaryUsers.hasChanged()
   );
 
   /**
@@ -249,7 +219,7 @@ const ApplicationMarket = (props) => {
                 row
                 aria-label="Application"
                 name="Application-radio-buttons-group"
-                {...application_type.bind}
+                {...applicationType.bind}
               >
                 <FormControlLabel
                   value="mobile"
@@ -283,10 +253,10 @@ const ApplicationMarket = (props) => {
                   row
                   aria-label="specific-problem"
                   name="specific-problem-radio-buttons-group"
-                  value={specific_problem.value}
+                  value={specificProblem.value}
                   onChange={(e) => {
-                    setSpecific_problem((prevSpecific_problem) => ({
-                      ...prevSpecific_problem,
+                    setSpecificProblem((prevSpecificProblem) => ({
+                      ...prevSpecificProblem,
                       value: e.target.value === 'true',
                     }));
                   }}
@@ -305,17 +275,17 @@ const ApplicationMarket = (props) => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              {specific_problem.value && (
+              {specificProblem.value && (
                 <FormControl fullWidth>
                   <InputLabel id="type-of-user-label">Type of User</InputLabel>
                   <Select
                     labelId="type-of-user-label"
                     id="type-of-user"
                     label="Type of User"
-                    value={specific_problem.problem}
+                    value={specificProblem.problem}
                     onChange={(e) => {
-                      setSpecific_problem((prevSpecific_problem) => ({
-                        ...prevSpecific_problem,
+                      setSpecificProblem((prevSpecificProblem) => ({
+                        ...prevSpecificProblem,
                         problem: e.target.value,
                       }));
                     }}
@@ -343,7 +313,7 @@ const ApplicationMarket = (props) => {
                   labelId="primary-user-label"
                   id="primary-user"
                   label="Type of User"
-                  {...primary_users.bind}
+                  {...primaryUsers.bind}
                 >
                   <MenuItem value="customer1">Customer 1</MenuItem>
                   <MenuItem value="customer2">
@@ -363,11 +333,11 @@ const ApplicationMarket = (props) => {
                 <Select
                   labelId="bussiness-segment-label"
                   id="bussiness-segment"
-                  value={bussiness_segment}
+                  value={bussinessSegment}
                   label="Type of User"
                   multiple
                   onChange={(e) => {
-                    setBussiness_segment(e.target.value);
+                    setBussinessSegment(e.target.value);
                   }}
                 >
                   <MenuItem value="Advertisement/Marketing">
@@ -399,37 +369,6 @@ const ApplicationMarket = (props) => {
             </Grid>
           </Grid>
           <Grid container spacing={3} className={classes.buttonContainer}>
-            {/* <Grid item xs={6} sm={2}>
-            {viewOnly ? (
-              <Button
-                type="button"
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={classes.submit}
-              >
-                Done
-              </Button>
-            ) : (
-              <div className={classes.loadingWrapper}>
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  className={classes.submit}
-                >
-                  Save
-                </Button>
-                {loading && (
-                  <CircularProgress
-                    size={24}
-                    className={classes.buttonProgress}
-                  />
-                )}
-              </div>
-            )}
-          </Grid> */}
             <Grid item xs={12} sm={4}>
               <Button
                 variant="contained"

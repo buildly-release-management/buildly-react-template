@@ -3,8 +3,6 @@ import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  useTheme,
-  useMediaQuery,
   Grid,
   Typography,
   Box,
@@ -66,9 +64,6 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
-  loadingWrapper: {
-    position: 'relative',
-  },
   inputWithTooltip: {
     display: 'flex',
     alignItems: 'center',
@@ -80,18 +75,12 @@ export let checkIfBudgetTechnologyEdited;
 
 const BudgetTechnology = (props) => {
   const {
-    history,
-    loading,
-    dispatch,
     location,
     handleNext,
     handleBack,
-    handleCancel,
   } = props;
   const classes = useStyles();
-  const theme = useTheme();
   const viewOnly = false;
-  const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
   // const editPage = location.state && location.state.type === 'edit';
   const editData = (location.state && location.state.type === 'edit' && location.state.data)
     || {};
@@ -100,40 +89,34 @@ const BudgetTechnology = (props) => {
     (editData && editData.first_user_ate) || new Date(),
   );
 
-  const [approx_budget, setApprox_budget] = useState({
+  const [approxBudget, setApproxBudget] = useState({
     value: 0,
     category: '10-15k',
   });
 
-  const product_hosting = useInput(
+  const hosting = useInput(
     (editData && editData.product_hosting) || 'Hostinger',
-    {
-      required: true,
-    },
+    { required: true },
   );
-  const product_language = useInput(
+
+  const language = useInput(
     (editData && editData.product_language) || 'JavaScript',
-    {
-      required: true,
-    },
+    { required: true },
   );
-  const product_database = useInput(
+
+  const database = useInput(
     (editData && editData.product_database) || 'Postgres',
-    {
-      required: true,
-    },
+    { required: true },
   );
-  const product_storage = useInput(
+
+  const storage = useInput(
     (editData && editData.product_storage) || 'AWS',
-    {
-      required: true,
-    },
+    { required: true },
   );
-  const product_deployment = useInput(
+
+  const deployment = useInput(
     (editData && editData.product_deployment) || 'AWS',
-    {
-      required: true,
-    },
+    { required: true },
   );
 
   const [formError, setFormError] = useState({});
@@ -177,25 +160,13 @@ const BudgetTechnology = (props) => {
     handleNext();
   };
 
-  const submitDisabled = () => {
-    // const errorKeys = Object.keys(formError);
-    // if (!product_name.value) {
-    //   return true;
-    // }
-    // let errorExists = false;
-    // _.forEach(errorKeys, (key) => {
-    //   if (formError[key].error) {
-    //     errorExists = true;
-    //   }
-    // });
-    // return errorExists;
-  };
-
-  checkIfBudgetTechnologyEdited = () => product_hosting.hasChanged()
-    || product_language.hasChanged()
-    || product_database.hasChanged()
-    || product_storage.hasChanged()
-    || product_deployment.hasChanged();
+  checkIfBudgetTechnologyEdited = () => (
+    hosting.hasChanged()
+    || language.hasChanged()
+    || database.hasChanged()
+    || storage.hasChanged()
+    || deployment.hasChanged()
+  );
 
   /**
    * Submit The form and add/edit custodian
@@ -248,7 +219,7 @@ const BudgetTechnology = (props) => {
     },
   ];
 
-  function getBudgetCategory(newValue) {
+  const getBudgetCategory = (newValue) => {
     switch (newValue) {
       case 1:
         return '10-15k';
@@ -270,11 +241,10 @@ const BudgetTechnology = (props) => {
         return '300-500k';
       case 10:
         return '500k+';
-
       default:
         return 'error';
     }
-  }
+  };
 
   return (
     <div>
@@ -291,9 +261,6 @@ const BudgetTechnology = (props) => {
               <DatePickerComponent
                 label="Date"
                 selectedDate={firstUserDate}
-                // moment(scheduled_start).tz(timezone)
-                //   .format('MMMM DD, YYYY HH:mm:ss')
-                // }
                 hasTime
                 handleDateChange={handlefirstUserDateChange}
                 disabled={viewOnly}
@@ -306,9 +273,9 @@ const BudgetTechnology = (props) => {
             </Grid>
             <Grid item xs={12} sm={12}>
               <Slider
-                value={approx_budget.value}
+                value={approxBudget.value}
                 onChange={(event, newValue) => {
-                  setApprox_budget({
+                  setApproxBudget({
                     value: newValue,
                     category: getBudgetCategory(newValue),
                   });
@@ -335,7 +302,7 @@ const BudgetTechnology = (props) => {
                 <FormLabel component="legend">
                   Select Hosting
                 </FormLabel>
-                <Select {...product_hosting.bind}>
+                <Select {...hosting.bind}>
                   <MenuItem value="Hostinger">Hostinger</MenuItem>
                   <MenuItem value="Bluehost">Bluehost</MenuItem>
                   <MenuItem value="Dreamhost">Dreamhost</MenuItem>
@@ -360,7 +327,7 @@ const BudgetTechnology = (props) => {
                 <FormLabel component="legend">
                   Select Language
                 </FormLabel>
-                <Select {...product_language.bind}>
+                <Select {...language.bind}>
                   <MenuItem value="JavaScript">JavaScript</MenuItem>
                   <MenuItem value="Python">Python</MenuItem>
                   <MenuItem value="Java">Java</MenuItem>
@@ -384,7 +351,7 @@ const BudgetTechnology = (props) => {
                 <FormLabel component="legend">
                   Select Database
                 </FormLabel>
-                <Select {...product_database.bind}>
+                <Select {...database.bind}>
                   <MenuItem value="Postgres">Postgres</MenuItem>
                   <MenuItem value="MySQL">MySQL</MenuItem>
                   <MenuItem value="Mongo">MongoDB</MenuItem>
@@ -401,7 +368,7 @@ const BudgetTechnology = (props) => {
                 <FormLabel component="legend">
                   Select Storage
                 </FormLabel>
-                <Select {...product_storage.bind}>
+                <Select {...storage.bind}>
                   <MenuItem value="AWS">AWS</MenuItem>
                   <MenuItem value="GCP">GCP</MenuItem>
                   <MenuItem value="Digital Ocean">Digital Ocean</MenuItem>
@@ -418,7 +385,7 @@ const BudgetTechnology = (props) => {
                 <FormLabel component="legend">
                   Select Deployment
                 </FormLabel>
-                <Select {...product_deployment.bind}>
+                <Select {...deployment.bind}>
                   <MenuItem value="AWS">AWS</MenuItem>
                   <MenuItem value="GCP">GCP</MenuItem>
                   <MenuItem value="Digital Ocean">Digital Ocean</MenuItem>

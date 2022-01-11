@@ -3,8 +3,6 @@ import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  useTheme,
-  useMediaQuery,
   Grid,
   Typography,
   Box,
@@ -120,7 +118,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function StyledRadio(props) {
+const StyledRadio = (props) => {
   const classes = useStyles();
 
   return (
@@ -133,7 +131,7 @@ function StyledRadio(props) {
       {...props}
     />
   );
-}
+};
 
 // eslint-disable-next-line import/no-mutable-exports
 export let checkIfTeamUserEdited;
@@ -142,12 +140,11 @@ const TeamUser = ({
   location, handleNext, handleBack,
 }) => {
   const classes = useStyles();
-  const theme = useTheme();
   const editData = (location.state
     && location.state.type === 'edit'
     && location.state.data) || {};
 
-  const team_size = useInput((editData && editData.team_size) || '5 - 10', {
+  const teamSize = useInput((editData && editData.team_size) || '5 - 10', {
     required: true,
   });
 
@@ -161,11 +158,9 @@ const TeamUser = ({
     { role: 'Others', count: 0 },
   ]);
 
-  const existing_requirements = useInput(
+  const existingFeatures = useInput(
     (editData && editData.existing_requirements) || '',
-    {
-      required: true,
-    },
+    { required: true },
   );
 
   const [formError, setFormError] = useState({});
@@ -186,8 +181,8 @@ const TeamUser = ({
 
   const submitDisabled = () => {
     let countNum = 0;
-    roleCount.forEach((role_CountObject) => {
-      if (role_CountObject.count === 0) {
+    _.forEach(roleCount, (roleCountObject) => {
+      if (roleCountObject.count === 0) {
         countNum += 1;
       }
     });
@@ -197,7 +192,7 @@ const TeamUser = ({
     return false;
   };
 
-  checkIfTeamUserEdited = () => team_size.hasChanged();
+  checkIfTeamUserEdited = () => teamSize.hasChanged();
 
   /**
    * Submit The form and add/edit custodian
@@ -223,7 +218,7 @@ const TeamUser = ({
                   row
                   aria-label="current-team-size"
                   name="current-team-size-radio-group"
-                  {...team_size.bind}
+                  {...teamSize.bind}
                 >
                   <FormControlLabel
                     value="1 - 5"
@@ -264,9 +259,9 @@ const TeamUser = ({
                           <IconButton
                             onClick={() => {
                               if (roleCount[index].count > 0) {
-                                setRoleCount((prevRole_count) => {
-                                  prevRole_count[index].count -= 1;
-                                  return [...prevRole_count];
+                                setRoleCount((prc) => {
+                                  prc[index].count -= 1;
+                                  return [...prc];
                                 });
                               }
                             }}
@@ -278,12 +273,12 @@ const TeamUser = ({
                         <TableCell style={{ width: '30%' }}>
                           <TextField
                             onChange={(e) => {
-                              setRoleCount((prevRole_count) => {
-                                prevRole_count[index].count += parseInt(
+                              setRoleCount((pvrc) => {
+                                pvrc[index].count += parseInt(
                                   e.target.value,
                                   10,
                                 );
-                                return [...prevRole_count];
+                                return [...pvrc];
                               });
                             }}
                             value={row.count}
@@ -294,9 +289,9 @@ const TeamUser = ({
                         <TableCell align="left">
                           <IconButton
                             onClick={() => {
-                              setRoleCount((prevRole_count) => {
-                                prevRole_count[index].count += 1;
-                                return [...prevRole_count];
+                              setRoleCount((prvrc) => {
+                                prvrc[index].count += 1;
+                                return [...prvrc];
                               });
                             }}
                             size="large"
@@ -323,11 +318,11 @@ const TeamUser = ({
                 fullWidth
                 multiline
                 rows={6}
-                // id="description"
-                label="existing requirements"
-                // name="description"
-                // autoComplete="description"
-                {...existing_requirements.bind}
+                id="existingFeatures"
+                label="existing features"
+                name="existingFeatures"
+                autoComplete="existingFeatures"
+                {...existingFeatures.bind}
               />
             </Grid>
           </Grid>

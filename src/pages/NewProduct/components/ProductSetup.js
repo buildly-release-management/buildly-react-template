@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
@@ -70,9 +70,6 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
-  loadingWrapper: {
-    position: 'relative',
-  },
   inputWithTooltip: {
     display: 'flex',
     alignItems: 'center',
@@ -120,7 +117,7 @@ const useStyles = makeStyles((theme) => ({
 // eslint-disable-next-line import/no-mutable-exports
 export let checkIfProductSetupEdited;
 
-function StyledRadio(props) {
+const StyledRadio = (props) => {
   const classes = useStyles();
 
   return (
@@ -133,27 +130,25 @@ function StyledRadio(props) {
       {...props}
     />
   );
-}
+};
 
-function StyledStart(props) {
-  return (
-    <Radio
-      sx={{
-        opacity: 0,
-        '&.Mui-checked': {
-          '&, & + .MuiFormControlLabel-label': {
-            color: '#137cbd',
-          },
+const StyledStart = (props) => (
+  <Radio
+    sx={{
+      opacity: 0,
+      '&.Mui-checked': {
+        '&, & + .MuiFormControlLabel-label': {
+          color: '#137cbd',
         },
-      }}
-      {...props}
-    />
-  );
-}
+      },
+    }}
+    {...props}
+  />
+);
 
 const ProductSetup = (props) => {
   const {
-    history, loading, dispatch, location, handleNext, handleCancel,
+    location, handleNext,
   } = props;
   const classes = useStyles();
   const theme = useTheme();
@@ -162,29 +157,28 @@ const ProductSetup = (props) => {
   // const editPage = location.state && location.state.type === 'edit';
   const editData = (location.state && location.state.type === 'edit' && location.state.data)
     || {};
-  const product_name = useInput((editData && editData.name) || '', {
+
+  const name = useInput((editData && editData.name) || '', {
     required: true,
   });
   const description = useInput((editData && editData.description) || '');
 
-  const requirements_tool = useInput(
-    (editData && editData.requirements_tool) || 'start fresh',
+  const featuresTool = useInput(
+    (editData && editData.feature_tool_detail) || 'start fresh',
   );
 
-  const issues_tool = useInput(
-    (editData && editData.issues_tool) || 'start fresh',
-  );
-  // const product_team = useInput((editData && editData.product_team) || "", {
-  //   required: true,
-  // });
-  const [start_date, handleStartDateChange] = useState(
-    (editData && editData.estimated_time_of_start) || new Date(),
-  );
-  const [end_date, handleEndDateChange] = useState(
-    (editData && editData.estimated_time_of_arrival) || new Date(),
+  const issuesTool = useInput(
+    (editData && editData.issues_tool_detail) || 'start fresh',
   );
 
-  const [buildly_architecture, setBuildly_architecture] = useState(true);
+  const [startDate, handleStartDateChange] = useState(
+    (editData && editData.start_date) || new Date(),
+  );
+  const [endDate, handleEndDateChange] = useState(
+    (editData && editData.end_date) || new Date(),
+  );
+
+  const [useBuildlyArch, setUseBuildlyArch] = useState(true);
 
   const [formError, setFormError] = useState({});
 
@@ -222,7 +216,7 @@ const ProductSetup = (props) => {
 
   const submitDisabled = () => {
     const errorKeys = Object.keys(formError);
-    if (!product_name.value) {
+    if (!name.value) {
       return true;
     }
     let errorExists = false;
@@ -235,10 +229,9 @@ const ProductSetup = (props) => {
   };
 
   checkIfProductSetupEdited = () => (
-    requirements_tool.hasChanged()
-    || description.hasChanged()
-    || requirements_tool.hasChanged()
-    || issues_tool.hasChanged()
+    description.hasChanged()
+    || featuresTool.hasChanged()
+    || issuesTool.hasChanged()
   );
 
   /**
@@ -260,14 +253,14 @@ const ProductSetup = (props) => {
                 margin="normal"
                 fullWidth
                 required
-                id="product_name"
+                id="name"
                 label="Product name"
-                name="product_name"
-                autoComplete="product_name"
+                name="name"
+                autoComplete="name"
                 disabled={viewOnly}
-                error={formError.product_name && formError.product_name.error}
-                onBlur={(e) => handleBlur(e, 'required', product_name)}
-                {...product_name.bind}
+                error={formError.name && formError.name.error}
+                onBlur={(e) => handleBlur(e, 'required', name)}
+                {...name.bind}
               />
             </Grid>
             <Grid item xs={12}>
@@ -294,10 +287,7 @@ const ProductSetup = (props) => {
                 <Grid item xs={12} sm={6}>
                   <DatePickerComponent
                     label="Start Date"
-                    selectedDate={start_date}
-                    // moment(scheduled_start).tz(timezone)
-                    //   .format('MMMM DD, YYYY HH:mm:ss')
-                    // }
+                    selectedDate={startDate}
                     hasTime
                     handleDateChange={handleStartDateChange}
                     disabled={viewOnly}
@@ -306,11 +296,7 @@ const ProductSetup = (props) => {
                 <Grid item xs={12} sm={6}>
                   <DatePickerComponent
                     label="End Date"
-                    selectedDate={end_date}
-                    // selectedDate={
-                    //   moment(scheduled_arrival).tz(timezone)
-                    //     .format('MMMM DD, YYYY HH:mm:ss')
-                    // }
+                    selectedDate={endDate}
                     hasTime
                     handleDateChange={handleEndDateChange}
                     disabled={viewOnly}
@@ -320,15 +306,15 @@ const ProductSetup = (props) => {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <Typography variant="h6">Requirements</Typography>
+              <Typography variant="h6">Features</Typography>
               <Box sx={{ border: '1px solid white', borderRadius: '4px' }}>
                 <Typography variant="subtitle1" align="center" mt={2}>Connect to supported tool</Typography>
                 <FormControl component="fieldset" required>
                   <RadioGroup
                     row
-                    aria-label="requirements"
-                    name="requirements-radio-buttons-group"
-                    {...requirements_tool.bind}
+                    aria-label="features"
+                    name="features-radio-buttons-group"
+                    {...featuresTool.bind}
                     className={classes.radioButton}
                   >
                     <FormControlLabel
@@ -370,7 +356,7 @@ const ProductSetup = (props) => {
                     row
                     aria-label="issues"
                     name="issues-radio-buttons-group"
-                    {...issues_tool.bind}
+                    {...issuesTool.bind}
                     className={classes.radioButton}
                   >
                     <FormControlLabel
@@ -417,9 +403,9 @@ const ProductSetup = (props) => {
                 name="row-radio-buttons-group"
                 color="success"
                 onChange={(e) => {
-                  setBuildly_architecture(e.target.value === 'true');
+                  setUseBuildlyArch(e.target.value === 'true');
                 }}
-                value={buildly_architecture}
+                value={useBuildlyArch}
               >
                 <FormControlLabel
                   value
