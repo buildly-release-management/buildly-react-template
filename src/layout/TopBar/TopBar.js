@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme) => ({
 const TopBar = ({ location, history, dispatch, navHidden, setNavHidden, data, orgNames, }) => {
   const classes = useStyles();
   const user = useContext(UserContext);
-  const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
+  const isAdmin = false;
   let isSuperAdmin = true;
   const [organization, setOrganization] = useState('');
 
@@ -61,7 +61,7 @@ const TopBar = ({ location, history, dispatch, navHidden, setNavHidden, data, or
     if (!organization) {
       setOrganization(user.organization.name);
     }
-    isAdmin = checkForAdmin(user) || checkForGlobalAdmin(user);
+    isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
     isSuperAdmin = checkForGlobalAdmin(user);
   }
 
