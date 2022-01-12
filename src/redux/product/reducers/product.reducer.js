@@ -31,6 +31,51 @@ import {
   GET_THIRD_PARTY_TOOL,
   GET_THIRD_PARTY_TOOL_SUCCESS,
   GET_THIRD_PARTY_TOOL_FAILURE,
+  CREATE_CREDENTIAL,
+  CREATE_CREDENTIAL_SUCCESS,
+  CREATE_CREDENTIAL_FAILURE,
+  CREATE_PRODUCT_TEAM,
+  CREATE_PRODUCT_TEAM_SUCCESS,
+  CREATE_PRODUCT_TEAM_FAILURE,
+  CREATE_PRODUCT,
+  CREATE_PRODUCT_SUCCESS,
+  CREATE_PRODUCT_FAILURE,
+  CREATE_RELEASE,
+  CREATE_RELEASE_SUCCESS,
+  CREATE_RELEASE_FAILURE,
+  CREATE_THIRD_PARTY_TOOL,
+  CREATE_THIRD_PARTY_TOOL_SUCCESS,
+  CREATE_THIRD_PARTY_TOOL_FAILURE,
+  UPDATE_CREDENTIAL,
+  UPDATE_CREDENTIAL_SUCCESS,
+  UPDATE_CREDENTIAL_FAILURE,
+  UPDATE_PRODUCT_TEAM,
+  UPDATE_PRODUCT_TEAM_SUCCESS,
+  UPDATE_PRODUCT_TEAM_FAILURE,
+  UPDATE_PRODUCT,
+  UPDATE_PRODUCT_SUCCESS,
+  UPDATE_PRODUCT_FAILURE,
+  UPDATE_RELEASE,
+  UPDATE_RELEASE_SUCCESS,
+  UPDATE_RELEASE_FAILURE,
+  UPDATE_THIRD_PARTY_TOOL,
+  UPDATE_THIRD_PARTY_TOOL_SUCCESS,
+  UPDATE_THIRD_PARTY_TOOL_FAILURE,
+  DELETE_CREDENTIAL,
+  DELETE_CREDENTIAL_SUCCESS,
+  DELETE_CREDENTIAL_FAILURE,
+  DELETE_PRODUCT_TEAM,
+  DELETE_PRODUCT_TEAM_SUCCESS,
+  DELETE_PRODUCT_TEAM_FAILURE,
+  DELETE_PRODUCT,
+  DELETE_PRODUCT_SUCCESS,
+  DELETE_PRODUCT_FAILURE,
+  DELETE_RELEASE,
+  DELETE_RELEASE_SUCCESS,
+  DELETE_RELEASE_FAILURE,
+  DELETE_THIRD_PARTY_TOOL,
+  DELETE_THIRD_PARTY_TOOL_SUCCESS,
+  DELETE_THIRD_PARTY_TOOL_FAILURE,
 } from '../actions/product.actions';
 
 const initialState = {
@@ -64,6 +109,21 @@ export default (state = initialState, action) => {
     case GET_PRODUCT:
     case GET_RELEASE:
     case GET_THIRD_PARTY_TOOL:
+    case CREATE_CREDENTIAL:
+    case CREATE_PRODUCT_TEAM:
+    case CREATE_PRODUCT:
+    case CREATE_RELEASE:
+    case CREATE_THIRD_PARTY_TOOL:
+    case UPDATE_CREDENTIAL:
+    case UPDATE_PRODUCT_TEAM:
+    case UPDATE_PRODUCT:
+    case UPDATE_RELEASE:
+    case UPDATE_THIRD_PARTY_TOOL:
+    case DELETE_CREDENTIAL:
+    case DELETE_PRODUCT_TEAM:
+    case DELETE_PRODUCT:
+    case DELETE_RELEASE:
+    case DELETE_THIRD_PARTY_TOOL:
       return {
         ...state,
         loading: true,
@@ -81,6 +141,21 @@ export default (state = initialState, action) => {
     case GET_PRODUCT_FAILURE:
     case GET_RELEASE_FAILURE:
     case GET_THIRD_PARTY_TOOL_FAILURE:
+    case CREATE_CREDENTIAL_FAILURE:
+    case CREATE_PRODUCT_TEAM_FAILURE:
+    case CREATE_PRODUCT_FAILURE:
+    case CREATE_RELEASE_FAILURE:
+    case CREATE_THIRD_PARTY_TOOL_FAILURE:
+    case UPDATE_CREDENTIAL_FAILURE:
+    case UPDATE_PRODUCT_TEAM_FAILURE:
+    case UPDATE_PRODUCT_FAILURE:
+    case UPDATE_RELEASE_FAILURE:
+    case UPDATE_THIRD_PARTY_TOOL_FAILURE:
+    case DELETE_CREDENTIAL_FAILURE:
+    case DELETE_PRODUCT_TEAM_FAILURE:
+    case DELETE_PRODUCT_FAILURE:
+    case DELETE_RELEASE_FAILURE:
+    case DELETE_THIRD_PARTY_TOOL_FAILURE:
       return {
         ...state,
         loading: false,
@@ -96,7 +171,9 @@ export default (state = initialState, action) => {
         credentials: action.data,
       };
 
-    case GET_CREDENTIAL_SUCCESS: {
+    case GET_CREDENTIAL_SUCCESS:
+    case CREATE_CREDENTIAL_SUCCESS:
+    case UPDATE_CREDENTIAL_SUCCESS: {
       const found = _.find(
         state.credentials,
         { credential_uuid: action.data.credential_uuid },
@@ -117,6 +194,21 @@ export default (state = initialState, action) => {
       };
     }
 
+    case DELETE_CREDENTIAL_SUCCESS: {
+      const { credentials } = state;
+      _.remove(
+        credentials,
+        { credential_uuid: action.credential_uuid },
+      );
+
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        credentials,
+      };
+    }
+
     case ALL_PRODUCT_TEAMS_SUCCESS:
       return {
         ...state,
@@ -125,18 +217,35 @@ export default (state = initialState, action) => {
         productTeams: action.data,
       };
 
-    case GET_PRODUCT_TEAM_SUCCESS: {
+    case GET_PRODUCT_TEAM_SUCCESS:
+    case CREATE_PRODUCT_TEAM_SUCCESS:
+    case UPDATE_PRODUCT_TEAM_SUCCESS: {
       const found = _.find(
         state.productTeams,
-        { product_team_uuid: action.data.product_team_uuid },
+        { productteam_uuid: action.data.productteam_uuid },
       );
       const productTeams = found
         ? _.map(state.productTeams, (team) => (
-          team.product_team_uuid === action.data.product_team_uuid
+          team.productteam_uuid === action.data.productteam_uuid
             ? action.data
             : team
         ))
         : [...state.productTeams, action.data];
+
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        productTeams,
+      };
+    }
+
+    case DELETE_PRODUCT_TEAM_SUCCESS: {
+      const { productTeams } = state;
+      _.remove(
+        productTeams,
+        { productteam_uuid: action.productteam_uuid },
+      );
 
       return {
         ...state,
@@ -154,7 +263,9 @@ export default (state = initialState, action) => {
         products: action.data,
       };
 
-    case GET_PRODUCT_SUCCESS: {
+    case GET_PRODUCT_SUCCESS:
+    case CREATE_PRODUCT_SUCCESS:
+    case UPDATE_PRODUCT_SUCCESS: {
       const found = _.find(
         state.products,
         { product_uuid: action.data.product_uuid },
@@ -175,6 +286,18 @@ export default (state = initialState, action) => {
       };
     }
 
+    case DELETE_PRODUCT_SUCCESS: {
+      const { products } = state;
+      _.remove(products, { product_uuid: action.product_uuid });
+
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        products,
+      };
+    }
+
     case ALL_RELEASES_SUCCESS:
       return {
         ...state,
@@ -183,7 +306,9 @@ export default (state = initialState, action) => {
         releases: action.data,
       };
 
-    case GET_RELEASE_SUCCESS: {
+    case GET_RELEASE_SUCCESS:
+    case CREATE_RELEASE_SUCCESS:
+    case UPDATE_RELEASE_SUCCESS: {
       const found = _.find(
         state.releases,
         { release_uuid: action.data.release_uuid },
@@ -204,6 +329,18 @@ export default (state = initialState, action) => {
       };
     }
 
+    case DELETE_RELEASE_SUCCESS: {
+      const { releases } = state;
+      _.remove(releases, { release_uuid: action.release_uuid });
+
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        releases,
+      };
+    }
+
     case ALL_THIRD_PARTY_TOOLS_SUCCESS:
       return {
         ...state,
@@ -212,18 +349,35 @@ export default (state = initialState, action) => {
         thirdPartyTools: action.data,
       };
 
-    case GET_THIRD_PARTY_TOOL_SUCCESS: {
+    case GET_THIRD_PARTY_TOOL_SUCCESS:
+    case CREATE_THIRD_PARTY_TOOL_SUCCESS:
+    case UPDATE_THIRD_PARTY_TOOL_SUCCESS: {
       const found = _.find(
         state.thirdPartyTools,
-        { third_party_tool_uuid: action.data.third_party_tool_uuid },
+        { thirdpartytool_uuid: action.data.thirdpartytool_uuid },
       );
       const thirdPartyTools = found
         ? _.map(state.thirdPartyTools, (tool) => (
-          tool.third_party_tool_uuid === action.data.third_party_tool_uuid
+          tool.thirdpartytool_uuid === action.data.thirdpartytool_uuid
             ? action.data
             : tool
         ))
         : [...state.thirdPartyTools, action.data];
+
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        thirdPartyTools,
+      };
+    }
+
+    case DELETE_THIRD_PARTY_TOOL_SUCCESS: {
+      const { thirdPartyTools } = state;
+      _.remove(
+        thirdPartyTools,
+        { thirdpartytool_uuid: action.thirdpartytool_uuid },
+      );
 
       return {
         ...state,

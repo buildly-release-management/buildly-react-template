@@ -94,6 +94,136 @@ describe('Get a decision reducer', () => {
   });
 });
 
+describe('Create a decision reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_DECISION },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('create a decision success reducer', () => {
+    const data = {
+      decision_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_DECISION_SUCCESS, data },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      decisions: [data],
+    });
+  });
+
+  it('create a decision fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_DECISION_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Update a decision reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_DECISION },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('update a decision success reducer', () => {
+    const data = {
+      decision_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+    const editedData = {
+      decision_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test Edited',
+    };
+
+    expect(reducer.default(
+      { ...initialState, decisions: [data] },
+      { type: actions.UPDATE_DECISION_SUCCESS, data: editedData },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      decisions: [editedData],
+    });
+  });
+
+  it('update a decision fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_DECISION_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Delete a decision reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_DECISION },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('delete a decision success reducer', () => {
+    const data = {
+      decision_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+
+    expect(reducer.default(
+      { ...initialState, decisions: [data] },
+      {
+        type: actions.DELETE_DECISION_SUCCESS,
+        decision_uuid: data.decision_uuid,
+      },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      decisions: [],
+    });
+  });
+
+  it('delete a decision fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_DECISION_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
 describe('Get all features reducer', () => {
   it('Empty reducer', () => {
     expect(reducer.default(
@@ -167,6 +297,136 @@ describe('Get a fetaure reducer', () => {
     expect(reducer.default(
       initialState,
       { type: actions.GET_FEATURE_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Create a feature reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_FEATURE },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('create a feature success reducer', () => {
+    const data = {
+      feature_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_FEATURE_SUCCESS, data },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      features: [data],
+    });
+  });
+
+  it('create a feature fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_FEATURE_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Update a feature reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_FEATURE },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('update a feature success reducer', () => {
+    const data = {
+      feature_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+    const editedData = {
+      feature_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test Edited',
+    };
+
+    expect(reducer.default(
+      { ...initialState, features: [data] },
+      { type: actions.UPDATE_FEATURE_SUCCESS, data: editedData },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      features: [editedData],
+    });
+  });
+
+  it('update a feature fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_FEATURE_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Delete a feature reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_FEATURE },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('delete a feature success reducer', () => {
+    const data = {
+      feature_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+
+    expect(reducer.default(
+      { ...initialState, features: [data] },
+      {
+        type: actions.DELETE_FEATURE_SUCCESS,
+        feature_uuid: data.feature_uuid,
+      },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      features: [],
+    });
+  });
+
+  it('delete a feature fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_FEATURE_FAILURE },
     )).toEqual({
       ...initialState,
       loading: false,
@@ -258,6 +518,136 @@ describe('Get a feedback reducer', () => {
   });
 });
 
+describe('Create a feedback reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_FEEDBACK },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('create a feedback success reducer', () => {
+    const data = {
+      feedback_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_FEEDBACK_SUCCESS, data },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      feedbacks: [data],
+    });
+  });
+
+  it('create a feedback fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_FEEDBACK_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Update a feedback reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_FEEDBACK },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('update a feedback success reducer', () => {
+    const data = {
+      feedback_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+    const editedData = {
+      feedback_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test Edited',
+    };
+
+    expect(reducer.default(
+      { ...initialState, feedbacks: [data] },
+      { type: actions.UPDATE_FEEDBACK_SUCCESS, data: editedData },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      feedbacks: [editedData],
+    });
+  });
+
+  it('update a feedback fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_FEEDBACK_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Delete a feedback reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_FEEDBACK },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('delete a feedback success reducer', () => {
+    const data = {
+      feedback_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+
+    expect(reducer.default(
+      { ...initialState, feedbacks: [data] },
+      {
+        type: actions.DELETE_FEEDBACK_SUCCESS,
+        feedback_uuid: data.feedback_uuid,
+      },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      feedbacks: [],
+    });
+  });
+
+  it('delete a feedback fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_FEEDBACK_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
 describe('Get all issues reducer', () => {
   it('Empty reducer', () => {
     expect(reducer.default(
@@ -340,6 +730,136 @@ describe('Get an issue reducer', () => {
   });
 });
 
+describe('Create a issue reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_ISSUE },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('create a issue success reducer', () => {
+    const data = {
+      issue_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_ISSUE_SUCCESS, data },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      issues: [data],
+    });
+  });
+
+  it('create a issue fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_ISSUE_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Update a issue reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_ISSUE },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('update a issue success reducer', () => {
+    const data = {
+      issue_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+    const editedData = {
+      issue_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test Edited',
+    };
+
+    expect(reducer.default(
+      { ...initialState, issues: [data] },
+      { type: actions.UPDATE_ISSUE_SUCCESS, data: editedData },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      issues: [editedData],
+    });
+  });
+
+  it('update a issue fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_ISSUE_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Delete a issue reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_ISSUE },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('delete a issue success reducer', () => {
+    const data = {
+      issue_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+
+    expect(reducer.default(
+      { ...initialState, issues: [data] },
+      {
+        type: actions.DELETE_ISSUE_SUCCESS,
+        issue_uuid: data.issue_uuid,
+      },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      issues: [],
+    });
+  });
+
+  it('delete a issue fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_ISSUE_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
 describe('Get all statuses reducer', () => {
   it('Empty reducer', () => {
     expect(reducer.default(
@@ -413,6 +933,136 @@ describe('Get a status reducer', () => {
     expect(reducer.default(
       initialState,
       { type: actions.GET_STATUS_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Create a status reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_STATUS },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('create a status success reducer', () => {
+    const data = {
+      status_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_STATUS_SUCCESS, data },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      statuses: [data],
+    });
+  });
+
+  it('create a status fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.CREATE_STATUS_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Update a status reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_STATUS },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('update a status success reducer', () => {
+    const data = {
+      status_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+    const editedData = {
+      status_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test Edited',
+    };
+
+    expect(reducer.default(
+      { ...initialState, statuses: [data] },
+      { type: actions.UPDATE_STATUS_SUCCESS, data: editedData },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      statuses: [editedData],
+    });
+  });
+
+  it('update a status fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.UPDATE_STATUS_FAILURE },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      error: undefined,
+    });
+  });
+});
+
+describe('Delete a status reducer', () => {
+  it('Empty reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_STATUS },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('delete a status success reducer', () => {
+    const data = {
+      status_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      name: 'Test',
+    };
+
+    expect(reducer.default(
+      { ...initialState, statuses: [data] },
+      {
+        type: actions.DELETE_STATUS_SUCCESS,
+        status_uuid: data.status_uuid,
+      },
+    )).toEqual({
+      ...initialState,
+      loading: false,
+      loaded: true,
+      statuses: [],
+    });
+  });
+
+  it('delete a status fail reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.DELETE_STATUS_FAILURE },
     )).toEqual({
       ...initialState,
       loading: false,
