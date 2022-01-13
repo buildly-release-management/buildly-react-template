@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import logo from '@assets/light-logo.png';
 import { UserContext } from '@context/User.context';
-import { logout, getUser, loadOrgNames, updateUser } from '@redux/authuser/actions/authuser.actions';
+import { logout, loadOrgNames } from '@redux/authuser/actions/authuser.actions';
 import { checkFilled } from '@redux/googleSheet/actions/googleSheet.actions';
 import { routes } from '@routes/routesConstants';
 import { hasGlobalAdminRights, hasAdminRights } from '@utils/permissions';
@@ -49,21 +49,19 @@ const useStyles = makeStyles((theme) => ({
 /**
  * Component for the top bar header.
  */
-const TopBar = ({ location, history, dispatch, navHidden, setNavHidden, data, orgNames, }) => {
+const TopBar = ({ location, history, dispatch, navHidden, setNavHidden, orgNames, }) => {
   const classes = useStyles();
   const user = useContext(UserContext);
-  const isAdmin = false;
-  let isSuperAdmin = true;
-  const [organization, setOrganization] = useState('');
+  // const isAdmin = false;
+  let isSuperAdmin = false;
+  const [organization, setOrganization] = useState(null);
 
-  if (data && data.data) {
-    user = data.data;
-    if (!organization) {
-      setOrganization(user.organization.name);
-    }
-    isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
-    isSuperAdmin = checkForGlobalAdmin(user);
+  if (!organization) {
+    setOrganization(user.organization.name);
   }
+  const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
+  isSuperAdmin = hasGlobalAdminRights(user);
+
 
   useEffect(() => {
     if (location.path !== routes.MISSING_DATA) {
@@ -75,7 +73,6 @@ const TopBar = ({ location, history, dispatch, navHidden, setNavHidden, data, or
   }, []);
 
   useEffect(() => {
-    dispatch(getUser());
     if (!orgNames) {
       dispatch(loadOrgNames());
     }
@@ -89,12 +86,6 @@ const TopBar = ({ location, history, dispatch, navHidden, setNavHidden, data, or
   const handleOrganizationChange = (e) => {
     const organization_name = e.target.value;
     setOrganization(organization_name);
-    const { organization_uuid } = _.filter(orgNames, (org) => org.name === organization_name)[0];
-    dispatch(updateUser({
-      id: user.id,
-      organization_uuid,
-      organization_name,
-    }, true));
     history.push(routes.DASHBOARD);
   };
 
