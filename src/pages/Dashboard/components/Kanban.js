@@ -16,12 +16,15 @@ import {
   Grid,
   IconButton,
   Typography,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import {
   AddRounded,
   EditRounded,
   DeleteRounded,
   TrendingFlatRounded,
+  MoreHoriz as MoreHorizIcon,
 } from '@mui/icons-material';
 
 const useStyles = makeStyles((theme) => ({
@@ -66,6 +69,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const ITEM_HEIGHT = 48;
+
 const Kanban = ({
   statuses,
   product,
@@ -78,6 +83,16 @@ const Kanban = ({
 }) => {
   const classes = useStyles();
   const [columns, setColumns] = useState({});
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
 
   useEffect(() => {
     let cols = {};
@@ -194,13 +209,18 @@ const Kanban = ({
                         ref={provided.innerRef}
                       >
                         {_.map(column.items, (item, itemIndex) => (
-                          <Draggable
-                            key={item.issue_uuid
-                              ? item.issue_uuid
-                              : item.feature_uuid}
-                            draggableId={item.issue_uuid
-                              ? item.issue_uuid
-                              : item.feature_uuid}
+
+                          < Draggable
+                            key={
+                              item.issue_uuid
+                                ? item.issue_uuid
+                                : item.feature_uuid
+                            }
+                            draggableId={
+                              item.issue_uuid
+                                ? item.issue_uuid
+                                : item.feature_uuid
+                            }
                             index={itemIndex}
                           >
                             {(provided, snapshot) => (
@@ -240,7 +260,7 @@ const Kanban = ({
                                         aria-controls="menu-card"
                                         aria-haspopup="false"
                                         color="secondary"
-                                        onClick={(e) => editItem(item, item.featureUUID ? 'issue' : 'feat')}
+                                        onClick={(e) => editItem(item, item.issue_uuid ? 'issue' : 'feat')}
                                         size="large"
                                         className={classes.iconButton}
                                       >
@@ -251,12 +271,49 @@ const Kanban = ({
                                         aria-controls="menu-card"
                                         aria-haspopup="false"
                                         color="secondary"
-                                        onClick={(e) => deleteItem(item, item.featureUUID ? 'issue' : 'feat')}
+                                        onClick={(e) => deleteItem(item, item.issue_uuid ? 'issue' : 'feat')}
                                         size="large"
                                         className={classes.iconButton}
                                       >
                                         <DeleteRounded fontSize="small" />
                                       </IconButton>
+                                      <IconButton
+                                        id="menu-button"
+                                        aria-label="column-options"
+                                        aria-controls="menu-column"
+                                        aria-haspopup="true"
+                                        color="secondary"
+                                        aria-controls={open ? 'menu-column' : undefined}
+                                        aria-expanded={open ? 'true' : undefined}
+                                        onClick={handleClick}
+
+                                      >
+                                        <MoreHorizIcon />
+                                      </IconButton>
+                                      <Menu
+                                        id="long-menu"
+                                        MenuListProps={{
+                                          'aria-labelledby': 'long-button',
+                                        }}
+                                        anchorEl={anchorEl}
+                                        open={open}
+
+                                        PaperProps={{
+                                          style: {
+                                            maxHeight: ITEM_HEIGHT * 4.5,
+                                            width: '20ch',
+                                          },
+                                        }}
+
+                                      >
+                                        <MenuItem selected key={itemIndex} onClick={() => { editItem(item, item.issue_uuid ? 'issue' : 'feat'), handleClose() }}>
+                                          Edit
+                                        </MenuItem>
+                                        <MenuItem onClick={() => { deleteItem(item, item.issue_uuid ? 'issue' : 'feat'), handleClose() }}>
+                                          Delete
+                                        </MenuItem>
+
+                                      </Menu>
                                     </div>
                                   )}
                                 />
@@ -292,7 +349,7 @@ const Kanban = ({
               </Grid>
             ))}
           </Grid>
-        </DragDropContext>
+        </DragDropContext >
       )}
     </>
   );
