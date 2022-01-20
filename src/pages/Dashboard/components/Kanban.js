@@ -24,7 +24,7 @@ import {
   EditRounded,
   DeleteRounded,
   TrendingFlatRounded,
-  MoreHoriz as MoreHorizIcon,
+  MoreHoriz,
 } from '@mui/icons-material';
 
 const useStyles = makeStyles((theme) => ({
@@ -69,7 +69,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ITEM_HEIGHT = 48;
+const options = [
+  'Edit',
+  'Delete',
+];
 
 const Kanban = ({
   statuses,
@@ -84,15 +87,17 @@ const Kanban = ({
   const classes = useStyles();
   const [columns, setColumns] = useState({});
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [currentNumber, setCurrentNumber] = React.useState(null);
   const open = Boolean(anchorEl);
 
-  const handleClick = (event) => {
+  const handleClick = (event, number) => {
     setAnchorEl(event.currentTarget);
+    setCurrentNumber(number);
   };
   const handleClose = () => {
     setAnchorEl(null);
+    setCurrentNumber(null);
   };
-
 
   useEffect(() => {
     let cols = {};
@@ -209,7 +214,6 @@ const Kanban = ({
                         ref={provided.innerRef}
                       >
                         {_.map(column.items, (item, itemIndex) => (
-
                           < Draggable
                             key={
                               item.issue_uuid
@@ -256,28 +260,6 @@ const Kanban = ({
                                         </IconButton>
                                       )}
                                       <IconButton
-                                        aria-label="edit-ticket"
-                                        aria-controls="menu-card"
-                                        aria-haspopup="false"
-                                        color="secondary"
-                                        onClick={(e) => editItem(item, item.issue_uuid ? 'issue' : 'feat')}
-                                        size="large"
-                                        className={classes.iconButton}
-                                      >
-                                        <EditRounded fontSize="small" />
-                                      </IconButton>
-                                      <IconButton
-                                        aria-label="delete-ticket"
-                                        aria-controls="menu-card"
-                                        aria-haspopup="false"
-                                        color="secondary"
-                                        onClick={(e) => deleteItem(item, item.issue_uuid ? 'issue' : 'feat')}
-                                        size="large"
-                                        className={classes.iconButton}
-                                      >
-                                        <DeleteRounded fontSize="small" />
-                                      </IconButton>
-                                      <IconButton
                                         id="menu-button"
                                         aria-label="column-options"
                                         aria-controls="menu-column"
@@ -285,10 +267,10 @@ const Kanban = ({
                                         color="secondary"
                                         aria-controls={open ? 'menu-column' : undefined}
                                         aria-expanded={open ? 'true' : undefined}
-                                        onClick={handleClick}
+                                        onClick={(e) => handleClick(e, item)}
 
                                       >
-                                        <MoreHorizIcon />
+                                        <MoreHoriz />
                                       </IconButton>
                                       <Menu
                                         id="long-menu"
@@ -297,22 +279,23 @@ const Kanban = ({
                                         }}
                                         anchorEl={anchorEl}
                                         open={open}
-
+                                        open={currentNumber === item}
                                         PaperProps={{
                                           style: {
-                                            maxHeight: ITEM_HEIGHT * 4.5,
+                                            maxHeight: 48 * 4.5,
                                             width: '20ch',
                                           },
                                         }}
-
+                                        onClick={handleClose}
                                       >
-                                        <MenuItem selected key={itemIndex} onClick={() => { editItem(item, item.issue_uuid ? 'issue' : 'feat'), handleClose() }}>
-                                          Edit
-                                        </MenuItem>
-                                        <MenuItem onClick={() => { deleteItem(item, item.issue_uuid ? 'issue' : 'feat'), handleClose() }}>
-                                          Delete
-                                        </MenuItem>
-
+                                        {_.map(options, (option, optInd) => (
+                                          <MenuItem key={optInd} selected={option === 'Edit'} onClick={(e) => {
+                                            option == 'Edit' ? editItem(item, item.issue_uuid ? 'issue' : 'feat')
+                                              : deleteItem(item, item.issue_uuid ? 'issue' : 'feat')
+                                          }}>
+                                            {option}
+                                          </MenuItem>
+                                        ))}
                                       </Menu>
                                     </div>
                                   )}
