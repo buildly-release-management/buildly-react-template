@@ -17,7 +17,7 @@ import {
   IconButton,
   Typography,
   Menu,
-  MenuItem
+  MenuItem,
 } from '@mui/material';
 import {
   AddRounded,
@@ -214,7 +214,7 @@ const Kanban = ({
                         ref={provided.innerRef}
                       >
                         {_.map(column.items, (item, itemIndex) => (
-                          < Draggable
+                          <Draggable
                             key={
                               item.issue_uuid
                                 ? item.issue_uuid
@@ -265,8 +265,7 @@ const Kanban = ({
                                         aria-controls="menu-column"
                                         aria-haspopup="true"
                                         color="secondary"
-                                        aria-controls={open ? 'menu-column' : undefined}
-                                        aria-expanded={open ? 'true' : undefined}
+                                        aria-expanded
                                         onClick={(e) => handleClick(e, item)}
 
                                       >
@@ -278,7 +277,6 @@ const Kanban = ({
                                           'aria-labelledby': 'long-button',
                                         }}
                                         anchorEl={anchorEl}
-                                        open={open}
                                         open={currentNumber === item}
                                         PaperProps={{
                                           style: {
@@ -289,10 +287,18 @@ const Kanban = ({
                                         onClick={handleClose}
                                       >
                                         {_.map(options, (option, optInd) => (
-                                          <MenuItem key={optInd} selected={option === 'Edit'} onClick={(e) => {
-                                            option == 'Edit' ? editItem(item, item.issue_uuid ? 'issue' : 'feat')
-                                              : deleteItem(item, item.issue_uuid ? 'issue' : 'feat')
-                                          }}>
+                                          <MenuItem
+                                            key={optInd}
+                                            selected={option === 'Edit'}
+                                            onClick={(e) => {
+                                              const type = item.issue_uuid ? 'issue' : 'feat';
+                                              if (option === 'Edit') {
+                                                editItem(item, type);
+                                              } else {
+                                                deleteItem(item, type);
+                                              }
+                                            }}
+                                          >
                                             {option}
                                           </MenuItem>
                                         ))}
@@ -332,7 +338,7 @@ const Kanban = ({
               </Grid>
             ))}
           </Grid>
-        </DragDropContext >
+        </DragDropContext>
       )}
     </>
   );
