@@ -274,7 +274,7 @@ const AddIssues = ({
                   {...description.bind}
                 />
               </Grid>
-              <Grid item xs={12}>
+              {/* <Grid item xs={12}>
                 <TextField
                   variant="outlined"
                   margin="normal"
@@ -344,7 +344,7 @@ const AddIssues = ({
                     ),
                   )}
                 </TextField>
-              </Grid>
+              </Grid> */}
               {editPage && (
                 <Grid item xs={12}>
                   <TextField
@@ -424,6 +424,7 @@ const AddIssues = ({
                   multiple
                   id="tags-outlined"
                   options={[]}
+                  freeSolo
                   value={autoCompleteValue}
                   onChange={(e, newval, reason) => {
                     setAutoCompleteValue(newval);
@@ -436,7 +437,7 @@ const AddIssues = ({
                       required
                       fullWidth
                       id="tag"
-                      label="Tag"
+                      label="Tags"
                       name="tag"
                       onKeyDown={(e) => {
                         if (e.keyCode == 13 && e.target.value) {

@@ -255,6 +255,7 @@ const AddFeatures = ({
                 multiple
                 id="tags-outlined"
                 options={[]}
+                freeSolo
                 value={autoCompleteValue}
                 onChange={(e, newval, reason) => {
                   setAutoCompleteValue(newval);
@@ -267,7 +268,7 @@ const AddFeatures = ({
                     required
                     fullWidth
                     id="tag"
-                    label="Tag"
+                    label="Tags"
                     name="tag"
                     onKeyDown={(e) => {
                       if (e.keyCode == 13 && e.target.value) {
