@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
@@ -58,22 +59,34 @@ const AddIssues = ({
 
   const redirectTo = location.state && location.state.from;
   const editPage = location.state && location.state.type === 'edit';
+  const convertPage = location.state && location.state.type === 'convert';
   const editData = (
     location.state
     && location.state.type === 'edit'
     && location.state.data
   ) || {};
+  const convertData = (
+    location.state
+    && location.state.type === 'convert'
+    && location.state.data
+  ) || {};
   const product_uuid = location.state && location.state.product_uuid;
 
-  const name = useInput((editData && editData.name) || '', {
-    required: true,
-  });
-  const description = useInput((editData && editData.description) || '', {
-    required: true,
-  });
-  const feature = useInput((editData && editData.feature_uuid) || '', {
-    required: true,
-  });
+  const name = useInput(
+    (convertData && convertData.name)
+    || (editData && editData.name) || '',
+    { required: true },
+  );
+  const description = useInput(
+    (convertData && convertData.description)
+    || (editData && editData.description) || '',
+    { required: true },
+  );
+  const feature = useInput(
+    (convertData && convertData.feature_uuid)
+    || (editData && editData.feature_uuid) || '',
+    { required: true },
+  );
   const type = useInput((editData && editData.issue_type) || '', {
     required: true,
   });
@@ -83,16 +96,30 @@ const AddIssues = ({
   const [endDate, handleEndDateChange] = useState(
     (editData && editData.end_date) || new Date(),
   );
-  const status = useInput(editData && editData.status, {
-    required: true,
-  });
-  const [tags, setTags] = useState((editData && editData.tags) || []);
-  const estimate = useInput((editData && editData.estimate) || '');
+  const status = useInput(
+    (convertData && convertData.status)
+    || (editData && editData.status),
+    { required: true },
+  );
+  const [tags, setTags] = useState(
+    (convertData && convertData.tags)
+    || (editData && editData.tags)
+    || [],
+  );
+  const estimate = useInput(
+    (convertData && convertData.total_estimate)
+    || (editData && editData.estimate)
+    || '',
+  );
   const complexity = useInput((editData && editData.complexity) || 0);
   const [formError, setFormError] = useState({});
 
-  const buttonText = editPage ? 'Save' : 'Add Issue';
-  const formTitle = editPage ? 'Edit Issue' : 'Add Issue';
+  const buttonText = convertPage
+    ? 'Convert to Issue'
+    : editPage ? 'Save' : 'Add Issue';
+  const formTitle = convertPage
+    ? 'Convert to Issue'
+    : editPage ? 'Edit Issue' : 'Add Issue';
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
@@ -119,6 +146,7 @@ const AddIssues = ({
       || (!_.isEmpty(editData) && !_.isEqual(startDate, editData.start_date))
       || (!_.isEmpty(editData) && !_.isEqual(endDate, editData.end_date))
       || status.hasChanged()
+      || (!_.isEmpty(convertData) && !_.isEqual(tags, convertData.tags))
       || (!_.isEmpty(editData) && !_.isEqual(tags, editData.tags))
       || (_.isEmpty(editData) && !_.isEmpty(tags))
       || estimate.hasChanged()
