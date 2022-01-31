@@ -11,10 +11,15 @@ import {
   MenuItem,
   Autocomplete,
 } from '@mui/material';
+import DatePickerComponent from '@components/DatePicker/DatePicker';
 import FormModal from '@components/Modal/FormModal';
 import { useInput } from '@hooks/useInput';
+import {
+  getAllFeatures,
+  getAllIssues,
+  getAllStatuses,
+} from '@redux/decision/actions/decision.actions';
 import { validators } from '@utils/validators';
-import DatePickerComponent from '@components/DatePicker/DatePicker';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -40,11 +45,9 @@ const AddIssues = ({
   dispatch,
   history,
   location,
-  types,
   statuses,
   issues,
   features,
-  repos,
   devs,
 }) => {
   const classes = useStyles();
@@ -96,12 +99,23 @@ const AddIssues = ({
     (editData && editData.end_date) || new Date(),
   );
 
-
   const buttonText = editPage ? 'Save' : 'Add Issue';
   const formTitle = editPage ? 'Edit Issue' : 'Add Issue';
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
+
+  useEffect(() => {
+    if (!features || _.isEmpty(features)) {
+      dispatch(getAllFeatures());
+    }
+    if (!issues || _.isEmpty(issues)) {
+      dispatch(getAllIssues());
+    }
+    if (!statuses || _.isEmpty(statuses)) {
+      dispatch(getAllStatuses());
+    }
+  }, []);
 
   const closeFormModal = () => {
     const dataHasChanged = (
@@ -194,18 +208,6 @@ const AddIssues = ({
     });
     return errorExists;
   };
-
-  useEffect(() => {
-    if (!features || _.isEmpty(features)) {
-      dispatch(getAllFeatures());
-    }
-    if (!issues || _.isEmpty(issues)) {
-      dispatch(getAllIssues());
-    }
-    if (!statuses || _.isEmpty(statuses)) {
-      dispatch(getAllStatuses());
-    }
-  }, []);
 
   return (
     <>
@@ -440,7 +442,7 @@ const AddIssues = ({
                       label="Tags"
                       name="tag"
                       onKeyDown={(e) => {
-                        if (e.keyCode == 13 && e.target.value) {
+                        if (e.keyCode === 13 && e.target.value) {
                           setAutoCompleteValue(autoCompleteValue.concat(e.target.value));
                         }
                       }}
@@ -515,12 +517,12 @@ const AddIssues = ({
                   onBlur={(e) => handleBlur(e, 'required', feature)}
                   {...feature.bind}
                 >
-                  {_.map(features, (feature) => (
+                  {_.map(features, (feat) => (
                     <MenuItem
-                      key={feature.feature_uuid}
-                      value={feature.name}
+                      key={feat.feature_uuid}
+                      value={feat.name}
                     >
-                      {feature.name}
+                      {feat.name}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -530,7 +532,6 @@ const AddIssues = ({
               <TextField
                 variant="outlined"
                 margin="normal"
-
                 fullWidth
                 id="estimate"
                 label="Estimate"
