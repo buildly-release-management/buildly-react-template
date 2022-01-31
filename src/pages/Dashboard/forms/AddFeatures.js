@@ -63,22 +63,22 @@ const AddFeatures = ({
   ) || {};
   const product_uuid = location.state && location.state.product_uuid;
 
-  const name = useInput(editData.name || '', {
+  const name = useInput((editData && editData.name) || '', {
     required: true,
   });
-  const description = useInput(editData.description || '', {
+  const description = useInput((editData && editData.description) || '', {
     required: true,
   });
-  const priority = useInput(editData.priority || '', {
+  const priority = useInput((editData && editData.priority) || '', {
     required: true,
   });
-  const status = useInput(editData.status || '', {
+  const status = useInput((editData && editData.status) || '', {
     required: true,
   });
-  const [tags, setTags] = useState(editData.tags || []);
+  const [tags, setTags] = useState((editData && editData.tags) || []);
   const [colID, setColID] = useState('');
-  const totalEstimate = useInput(editData.total_estimate || '');
-  const version = useInput(editData.version || '');
+  const totalEstimate = useInput((editData && editData.total_estimate) || '');
+  const version = useInput((editData && editData.version) || '');
   const [formError, setFormError] = useState({});
 
   const buttonText = editPage ? 'Save' : 'Add Feature';
@@ -108,7 +108,9 @@ const AddFeatures = ({
       || totalEstimate.hasChanged()
       || version.hasChanged()
       || (!editPage && product
-        && product.feature_tool_detail && !colID)
+        && product.feature_tool_detail
+        && product.feature_tool_detail.column_list
+        && colID !== '')
     );
 
     if (dataHasChanged) {

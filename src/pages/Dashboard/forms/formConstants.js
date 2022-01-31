@@ -18,3 +18,10 @@ export const TAGS = [
   'wontfix',
   'Story/Sub-Feature',
 ];
+
+export const ISSUETYPES = [
+  'FE',
+  'BE',
+  'UI/UX',
+  'Documentation',
+];
