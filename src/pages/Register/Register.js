@@ -95,6 +95,7 @@ const Register = ({
     matchField: password,
   });
   const [orgName, setOrgName] = useState('');
+  const [userType, setUserType] = useState('');
   const first_name = useInput('', { required: true });
   const last_name = useInput('');
   const [formError, setFormError] = useState({});
@@ -116,6 +117,7 @@ const Register = ({
       email: email.value,
       password: password.value,
       organization_name: orgName,
+      user_type: userType,
       first_name: first_name.value,
       last_name: last_name.value,
     };
@@ -157,6 +159,7 @@ const Register = ({
       || !email.value
       || !re_password.value
       || !orgName
+      || !userType
       || !first_name.value
     ) return true;
     errorKeys.forEach((key) => {
@@ -289,6 +292,35 @@ const Register = ({
                   </Grid>
                 </Grid>
                 <Grid container spacing={isMobile() ? 0 : 3}>
+                  <Grid item xs={12}>
+                    <Autocomplete
+                      freeSolo
+                      disableClearable
+                      id="user_type"
+                      name="user_type"
+                      options={["Product Team", "Developer"]}
+                      // getOptionLabel={(label) => _.capitalize(label)}
+                      onChange={(e, nValue) => {
+                        setUserType(nValue || '');
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="outlined"
+                          margin="normal"
+                          required
+                          fullWidth
+                          id="user_type"
+                          label="User Type"
+                          className={classes.textField}
+                          value={userType}
+                          onChange={(e) => setUserType(e.target.value)}
+                        />
+                      )}
+                    />
+                  </Grid>
+                </Grid>
+                <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12} md={6}>
                     <TextField
                       variant="outlined"
@@ -371,7 +403,7 @@ const Register = ({
                         size={24}
                         className={classes.buttonProgress}
                       />
-                  )}
+                    )}
                 </Grid>
                 <Grid item className={classes.link}>
                   <Link href={routes.LOGIN} variant="body2" color="primary">

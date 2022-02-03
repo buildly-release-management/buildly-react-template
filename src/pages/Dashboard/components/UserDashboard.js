@@ -254,7 +254,7 @@ const UserDashboard = (props) => {
               ))}
           </TextField>
         </Grid>
-        <Grid item xs={4} md={3} lg={2} textAlign="end">
+        {/* <Grid item xs={4} md={3} lg={2} textAlign="end">
           <Button
             aria-controls="new-product"
             aria-haspopup="true"
@@ -265,7 +265,7 @@ const UserDashboard = (props) => {
           >
             New Product
           </Button>
-        </Grid>
+        </Grid> */}
       </Grid>
       <Grid mb={3} container justifyContent="center">
         <Grid item className={classes.tabs}>

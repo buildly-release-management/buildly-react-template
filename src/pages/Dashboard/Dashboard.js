@@ -1,18 +1,27 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import Loader from '@components/Loader/Loader';
 import UserDashboard from './components/UserDashboard';
-// import FeedbackForm from './components/FeedbackForm';
+import NewProductForm from '../NewProduct/NewProduct'
+import FeedbackForm from './components/FeedbackForm';
+import { UserContext } from '@context/User.context';
 
 const Dashboard = ({
   history, loading, loaded, filled,
-}) => (
-  <>
-    {loading && <Loader open={loading} />}
-    {/* {loaded && !filled && <FeedbackForm />} */}
-    {loaded && <UserDashboard history={history} />}
-  </>
-);
+}) => {
+  const user = useContext(UserContext);
+  return (
+    <>
+      {loading && <Loader open={loading} />}
+      {loaded && !filled && user.user_type == 'Developer' ?
+        <FeedbackForm />
+        :
+        <NewProductForm />
+      }
+      {loaded && filled && <UserDashboard history={history} />}
+    </>
+  );
+};
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
