@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import Loader from '@components/Loader/Loader';
 import UserDashboard from './components/UserDashboard';
-import NewProductForm from '../NewProduct/NewProduct'
+import NewProductForm from '../NewProduct/NewProduct';
 import FeedbackForm from './components/FeedbackForm';
 import { UserContext } from '@context/User.context';
 
@@ -13,11 +13,9 @@ const Dashboard = ({
   return (
     <>
       {loading && <Loader open={loading} />}
-      {loaded && !filled && user.user_type == 'Developer' ?
-        <FeedbackForm />
-        :
-        <NewProductForm />
-      }
+      {loaded && !filled && user.user_type === 'Developer'
+        ? <FeedbackForm />
+        : <NewProductForm />}
       {loaded && filled && <UserDashboard history={history} />}
     </>
   );
