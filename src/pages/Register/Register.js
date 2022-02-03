@@ -13,6 +13,7 @@ import {
   Typography,
   Container,
   Grid,
+  MenuItem
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import logo from '@assets/light-logo.png';
@@ -81,6 +82,11 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(1, 0, 0, 1),
   },
 }));
+
+const users = [
+  'Product Team',
+  'Developer',
+];
 
 const Register = ({
   dispatch, loading, history, socialLogin, orgNames,
@@ -293,31 +299,27 @@ const Register = ({
                 </Grid>
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12}>
-                    <Autocomplete
-                      freeSolo
-                      disableClearable
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      select
                       id="user_type"
-                      name="user_type"
-                      options={["Product Team", "Developer"]}
-                      // getOptionLabel={(label) => _.capitalize(label)}
-                      onChange={(e, nValue) => {
-                        setUserType(nValue || '');
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          variant="outlined"
-                          margin="normal"
-                          required
-                          fullWidth
-                          id="user_type"
-                          label="User Type"
-                          className={classes.textField}
-                          value={userType}
-                          onChange={(e) => setUserType(e.target.value)}
-                        />
-                      )}
-                    />
+                      label="User Type"
+                      value={userType}
+                      onChange={(e) => setUserType(e.target.value)}
+                      className={classes.textField}
+                    >
+                      {_.map(users, (user, userIndex) => (
+                        <MenuItem
+                          key={userIndex}
+                          value={user}
+                        >
+                          {user}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </Grid>
                 </Grid>
                 <Grid container spacing={isMobile() ? 0 : 3}>
