@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
+import { withRouter } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Stepper,
@@ -294,4 +295,4 @@ const mapStateToProps = (state, ownProps) => ({
   productFormData: state.productReducer.productFormData,
 });
 
-export default connect(mapStateToProps)(NewProductForm);
+export default connect(mapStateToProps)(withRouter(NewProductForm));

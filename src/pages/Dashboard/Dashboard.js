@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import Loader from '@components/Loader/Loader';

@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -106,7 +107,7 @@ const MinimalFunctionality = ({
     const formData = {
       ...productFormData,
       product_info: {
-        ...productFormData.product_info,
+        ...productFormData?.product_info,
         minimal_functionality: minimalFunc.value,
       },
       edit_date: new Date(),
@@ -194,4 +195,4 @@ const mapStateToProps = (state, ownProps) => ({
   productFormData: state.productReducer.productFormData,
 });
 
-export default connect(mapStateToProps)(MinimalFunctionality);
+export default connect(mapStateToProps)(withRouter(MinimalFunctionality));
