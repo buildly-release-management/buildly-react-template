@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
@@ -16,6 +16,8 @@ import { useInput } from '@hooks/useInput';
 import { saveProductFormData, createProduct } from '@redux/product/actions/product.actions';
 import { routes } from '@routes/routesConstants';
 import { EXAMPLELIST } from '../ProductFormConstants';
+import { updateUser } from '@redux/authuser/actions/authuser.actions';
+import { UserContext } from '@context/User.context';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -84,7 +86,7 @@ const MinimalFunctionality = ({
   history,
 }) => {
   const classes = useStyles();
-
+  const user = useContext(UserContext);
   const minimalFunc = useInput(
     (productFormData
       && productFormData.product_info
@@ -109,7 +111,15 @@ const MinimalFunctionality = ({
       },
       edit_date: new Date(),
     };
+    const userUpdateData = {
+      survey_status: 'true',
+      id: user.id,
+      organization_uuid: user.organization.organization_uuid,
+      organization_name: user.organization.name,
+
+    };
     dispatch(createProduct(formData));
+    dispatch(updateUser(userUpdateData));
     dispatch(saveProductFormData(null));
     history.push(routes.DASHBOARD);
   };

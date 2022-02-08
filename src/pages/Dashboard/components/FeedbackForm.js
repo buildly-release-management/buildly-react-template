@@ -23,6 +23,7 @@ import {
 import { UserContext } from '@context/User.context';
 import { useInput } from '@hooks/useInput';
 import { addData } from '@redux/googleSheet/actions/googleSheet.actions';
+import { updateUser } from '@redux/authuser/actions/authuser.actions';
 import { validators } from '@utils/validators';
 
 const useStyles = makeStyles((theme) => ({
@@ -134,8 +135,15 @@ const FeedbackForm = ({ dispatch, loading }) => {
         question13.pushEmail,
       'Version Dependency Management': question13.versionDependency,
     };
+    const userUpdateData = {
+      survey_status: 'true',
+      id: user.id,
+      organization_uuid: user.organization.organization_uuid,
+      organization_name: user.organization.name,
+    };
 
     dispatch(addData(formData));
+    dispatch(updateUser(userUpdateData));
   };
 
   /**

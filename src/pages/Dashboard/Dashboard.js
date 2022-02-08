@@ -13,10 +13,13 @@ const Dashboard = ({
   return (
     <>
       {loading && <Loader open={loading} />}
-      {loaded && !filled && user.user_type === 'Developer'
-        ? <FeedbackForm />
-        : <NewProductForm />}
-      {loaded && filled && <UserDashboard history={history} />}
+      {loaded && user.survey_status === false && user.user_type === 'Developer'
+        ? <FeedbackForm /> : user.user_type === 'Product Team' && user.survey_status === false
+          ? <NewProductForm />
+          : (
+            <UserDashboard history={history} />
+          )}
+
     </>
   );
 };
