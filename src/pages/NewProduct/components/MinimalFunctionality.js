@@ -112,7 +112,7 @@ const MinimalFunctionality = ({
       edit_date: new Date(),
     };
     const userUpdateData = {
-      survey_status: 'true',
+      survey_status: true,
       id: user.id,
       organization_uuid: user.organization.organization_uuid,
       organization_name: user.organization.name,

@@ -136,7 +136,7 @@ const FeedbackForm = ({ dispatch, loading }) => {
       'Version Dependency Management': question13.versionDependency,
     };
     const userUpdateData = {
-      survey_status: 'true',
+      survey_status: true,
       id: user.id,
       organization_uuid: user.organization.organization_uuid,
       organization_name: user.organization.name,
