@@ -7,8 +7,8 @@ export const NAVIGATION_ITEMS = [
     link: routes.DASHBOARD,
   },
   // {
-  //   id: 'projects',
-  //   name: 'Projects',
-  //   link: routes.NEW_PROJECT,
+  //   id: 'releases',
+  //   name: 'Releases',
+  //   link: routes.RELEASE,
   // },
 ];

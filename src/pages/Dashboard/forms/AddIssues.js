@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
+/* eslint-disable no-nested-ternary */
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { useTheme, useMediaQuery, Grid, TextField, Button, MenuItem } from '@mui/material';
+import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
+import {
+  useTheme,
+  useMediaQuery,
+  Grid,
+  TextField,
+  Button,
+  MenuItem,
+  Autocomplete,
+  Chip,
+} from '@mui/material';
+import DatePickerComponent from '@components/DatePicker/DatePicker';
 import FormModal from '@components/Modal/FormModal';
 import { useInput } from '@hooks/useInput';
 import {
-  addIssue,
-  editIssue,
-} from '@redux/dashboard/actions/dashboard.actions';
+  getAllFeatures,
+  getAllStatuses,
+  createIssue,
+  updateIssue,
+} from '@redux/decision/actions/decision.actions';
 import { validators } from '@utils/validators';
+import { ISSUETYPES, TAGS } from './formConstants';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -34,56 +49,108 @@ const AddIssues = ({
   dispatch,
   history,
   location,
-  types,
-  status,
-  repos,
-  devs,
+  statuses,
+  features,
 }) => {
   const classes = useStyles();
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
+  const [productFeatures, setProductFeatures] = useState([]);
 
   const redirectTo = location.state && location.state.from;
   const editPage = location.state && location.state.type === 'edit';
+  const convertPage = location.state && location.state.type === 'convert';
   const editData = (
     location.state
     && location.state.type === 'edit'
     && location.state.data
   ) || {};
-  const projectID = location.state && location.state.projectID;
+  const convertData = (
+    location.state
+    && location.state.type === 'convert'
+    && location.state.data
+  ) || {};
+  const product_uuid = location.state && location.state.product_uuid;
 
-  const name = useInput(editData.name || '', {
+  const name = useInput(
+    (convertData && convertData.name)
+    || (editData && editData.name) || '',
+    { required: true },
+  );
+  const description = useInput(
+    (convertData && convertData.description)
+    || (editData && editData.description) || '',
+    { required: true },
+  );
+  const feature = useInput(
+    (convertData && convertData.feature_uuid)
+    || (editData && editData.feature_uuid) || '',
+    { required: true },
+  );
+  const type = useInput((editData && editData.issue_type) || '', {
     required: true,
   });
-  const description = useInput(editData.description || '', {
-    required: true,
-  });
-  const type = useInput(editData.type || '', {
-    required: true,
-  });
-  const repo = useInput(editData.repo || '', {
-    required: true,
-  });
-  const issueStatus = useInput(editData && editData.status, {
-    required: true,
-  });
-  const assignedTo = useInput(editData.assignedTo || '');
+  const [startDate, handleStartDateChange] = useState(
+    (editData && editData.start_date) || new Date(),
+  );
+  const [endDate, handleEndDateChange] = useState(
+    (editData && editData.end_date) || new Date(),
+  );
+  const status = useInput(
+    (convertData && convertData.status)
+    || (editData && editData.status),
+    { required: true },
+  );
+  const [tags, setTags] = useState(
+    (convertData && convertData.tags)
+    || (editData && editData.tags)
+    || [],
+  );
+  const estimate = useInput(
+    (convertData && convertData.total_estimate)
+    || (editData && editData.estimate)
+    || '',
+  );
+  const complexity = useInput((editData && editData.complexity) || 0);
   const [formError, setFormError] = useState({});
 
-  const buttonText = editPage ? 'Save' : 'Add Issue';
-  const formTitle = editPage ? 'Edit Issue' : 'Add Issue';
+  const buttonText = convertPage
+    ? 'Convert to Issue'
+    : editPage ? 'Save' : 'Add Issue';
+  const formTitle = convertPage
+    ? 'Convert to Issue'
+    : editPage ? 'Edit Issue' : 'Add Issue';
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
+
+  useEffect(() => {
+    if (!features || _.isEmpty(features)) {
+      dispatch(getAllFeatures());
+    }
+    if (!statuses || _.isEmpty(statuses)) {
+      dispatch(getAllStatuses());
+    }
+  }, []);
+
+  useEffect(() => {
+    setProductFeatures(_.filter(features, { product_uuid }));
+  }, [features]);
 
   const closeFormModal = () => {
     const dataHasChanged = (
       name.hasChanged()
       || description.hasChanged()
+      || feature.hasChanged()
       || type.hasChanged()
-      || repo.hasChanged()
-      || (editPage && issueStatus.hasChanged())
-      || (editPage && assignedTo.hasChanged())
+      || (!_.isEmpty(editData) && !_.isEqual(startDate, editData.start_date))
+      || (!_.isEmpty(editData) && !_.isEqual(endDate, editData.end_date))
+      || status.hasChanged()
+      || (!_.isEmpty(convertData) && !_.isEqual(tags, convertData.tags))
+      || (!_.isEmpty(editData) && !_.isEqual(tags, editData.tags))
+      || (_.isEmpty(editData) && !_.isEmpty(tags))
+      || estimate.hasChanged()
+      || complexity.hasChanged()
     );
 
     if (dataHasChanged) {
@@ -104,26 +171,46 @@ const AddIssues = ({
     }
   };
 
+  // Handle tags list
+  const onTagsChange = (value) => {
+    switch (true) {
+      case (value.length > tags.length):
+        setTags([...tags, _.last(value)]);
+        break;
+
+      case (value.length < tags.length):
+        setTags(value);
+        break;
+
+      default:
+        break;
+    }
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    const id = editPage
-      ? editData.id
-      : (location.state && location.state.nextId);
-    const issueFormValue = {
-      projectID,
-      id,
+    const dateTime = new Date();
+
+    const formData = {
+      ...editData,
+      edit_date: dateTime,
       name: name.value,
       description: description.value,
-      type: type.value,
-      repo: repo.value,
-      status: editPage ? issueStatus.value : 'created',
-      assignedTo: editPage ? assignedTo.value : '',
+      feature_uuid: feature.value,
+      issue_type: type.value,
+      start_date: startDate,
+      end_data: endDate,
+      status: status.value,
+      tags,
+      estimate: estimate.value,
+      complexity: Number(complexity.value),
     };
 
     if (editPage) {
-      dispatch(editIssue(issueFormValue));
+      dispatch(updateIssue(formData));
     } else {
-      dispatch(addIssue(issueFormValue));
+      formData.create_date = dateTime;
+      dispatch(createIssue(formData));
     }
     history.push(redirectTo);
   };
@@ -152,10 +239,9 @@ const AddIssues = ({
     if (
       !name.value
       || !description.value
+      || !feature.value
       || !type.value
-      || !repo.value
-      || (editPage && !issueStatus.value)
-      || (editPage && !assignedTo.value)
+      || !status.value
     ) {
       return true;
     }
@@ -168,144 +254,73 @@ const AddIssues = ({
     return errorExists;
   };
 
-  return <>
-    {openFormModal && (
-      <FormModal
-        open={openFormModal}
-        handleClose={closeFormModal}
-        title={formTitle}
-        titleClass={classes.formTitle}
-        maxWidth="md"
-        wantConfirm
-        openConfirmModal={openConfirmModal}
-        setConfirmModal={setConfirmModal}
-        handleConfirmModal={discardFormData}
-      >
-        <form
-          className={classes.form}
-          noValidate
-          onSubmit={handleSubmit}
+  return (
+    <>
+      {openFormModal && (
+        <FormModal
+          open={openFormModal}
+          handleClose={closeFormModal}
+          title={formTitle}
+          titleClass={classes.formTitle}
+          maxWidth="md"
+          wantConfirm
+          openConfirmModal={openConfirmModal}
+          setConfirmModal={setConfirmModal}
+          handleConfirmModal={discardFormData}
         >
-          <Grid container spacing={isDesktop ? 2 : 0}>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                id="name"
-                label="Title"
-                name="name"
-                autoComplete="name"
-                error={
-                  formError.name
-                  && formError.name.error
-                }
-                helperText={
-                  formError.name
-                    ? formError.name.message
-                    : ''
-                }
-                onBlur={(e) => handleBlur(e, 'required', name)}
-                {...name.bind}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                multiline
-                id="description"
-                label="Description"
-                name="description"
-                autoComplete="description"
-                error={
-                  formError.description
-                  && formError.description.error
-                }
-                helperText={
-                  formError.description
-                    ? formError.description.message
-                    : ''
-                }
-                onBlur={(e) => handleBlur(e, 'required', description)}
-                {...description.bind}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                select
-                id="type"
-                label="Issue Type"
-                name="type"
-                autoComplete="type"
-                error={
-                  formError.type
-                  && formError.type.error
-                }
-                helperText={
-                  formError.type
-                    ? formError.type.message
-                    : ''
-                }
-                onBlur={(e) => handleBlur(e, 'required', type)}
-                {...type.bind}
-              >
-                <MenuItem value="">Select</MenuItem>
-                {_.map(types, (tp) => (
-                  <MenuItem
-                    key={`type-${tp.id}`}
-                    value={tp.value}
-                  >
-                    {tp.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                select
-                id="repo"
-                label="Link to Repo"
-                name="repo"
-                autoComplete="repo"
-                error={
-                  formError.repo
-                  && formError.repo.error
-                }
-                helperText={
-                  formError.repo
-                    ? formError.repo.message
-                    : ''
-                }
-                onBlur={(e) => handleBlur(e, 'required', repo)}
-                {...repo.bind}
-              >
-                <MenuItem value="">Select</MenuItem>
-                {_.map(
-                  _.filter(repos, { projectID }),
-                  (rp) => (
-                    <MenuItem
-                      key={`type-${rp.projectID}-${rp.id}`}
-                      value={rp.name}
-                    >
-                      {rp.name}
-                    </MenuItem>
-                  ),
-                )}
-              </TextField>
-            </Grid>
-            {editPage && (
+          <form
+            className={classes.form}
+            noValidate
+            onSubmit={handleSubmit}
+          >
+            <Grid container spacing={isDesktop ? 2 : 0}>
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="name"
+                  label="Title"
+                  name="name"
+                  autoComplete="name"
+                  error={
+                    formError.name
+                    && formError.name.error
+                  }
+                  helperText={
+                    formError.name
+                      ? formError.name.message
+                      : ''
+                  }
+                  onBlur={(e) => handleBlur(e, 'required', name)}
+                  {...name.bind}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  multiline
+                  id="description"
+                  label="Description"
+                  name="description"
+                  autoComplete="description"
+                  error={
+                    formError.description
+                    && formError.description.error
+                  }
+                  helperText={
+                    formError.description
+                      ? formError.description.message
+                      : ''
+                  }
+                  onBlur={(e) => handleBlur(e, 'required', description)}
+                  {...description.bind}
+                />
+              </Grid>
               <Grid item xs={12}>
                 <TextField
                   variant="outlined"
@@ -313,34 +328,32 @@ const AddIssues = ({
                   required
                   fullWidth
                   select
-                  id="issueStatus"
-                  label="Issue Status"
-                  name="issueStatus"
-                  autoComplete="issueStatus"
+                  id="feature"
+                  label="Feature"
+                  name="feature"
+                  autoComplete="feature"
                   error={
-                    formError.issueStatus
-                    && formError.issueStatus.error
+                    formError.feature
+                    && formError.feature.error
                   }
                   helperText={
-                    formError.issueStatus
-                      ? formError.issueStatus.message
+                    formError.feature
+                      ? formError.feature.message
                       : ''
                   }
-                  onBlur={(e) => handleBlur(e, 'required', issueStatus)}
-                  {...issueStatus.bind}
+                  onBlur={(e) => handleBlur(e, 'required', feature)}
+                  {...feature.bind}
                 >
-                  {_.map(status, (st) => (
+                  {_.map(productFeatures, (feat) => (
                     <MenuItem
-                      key={`type-${st.id}`}
-                      value={st.value}
+                      key={`feature-${feat.feature_uuid}-${feat.name}`}
+                      value={feat.feature_uuid}
                     >
-                      {st.name}
+                      {feat.name}
                     </MenuItem>
                   ))}
                 </TextField>
               </Grid>
-            )}
-            {editPage && (
               <Grid item xs={12}>
                 <TextField
                   variant="outlined"
@@ -348,78 +361,198 @@ const AddIssues = ({
                   required
                   fullWidth
                   select
-                  id="assignedTo"
-                  label="Assigned To"
-                  name="assignedTo"
-                  autoComplete="assignedTo"
+                  id="type"
+                  label="Issue Type"
+                  name="type"
+                  autoComplete="type"
                   error={
-                    formError.assignedTo
-                    && formError.assignedTo.error
+                    formError.type
+                    && formError.type.error
                   }
                   helperText={
-                    formError.assignedTo
-                      ? formError.assignedTo.message
+                    formError.type
+                      ? formError.type.message
                       : ''
                   }
-                  onBlur={(e) => handleBlur(e, 'required', assignedTo)}
-                  {...assignedTo.bind}
+                  onBlur={(e) => handleBlur(e, 'required', type)}
+                  {...type.bind}
                 >
-                  <MenuItem value="">Select</MenuItem>
-                  {_.map(
-                    _.filter(devs, { projectID }),
-                    (dev) => (
-                      <MenuItem
-                        key={`type-${dev.projectID}-${dev.id}`}
-                        value={dev.value}
-                      >
-                        {dev.name}
-                      </MenuItem>
-                    ),
-                  )}
+                  {_.map(ISSUETYPES, (tp, idx) => (
+                    <MenuItem
+                      key={`issue-type-${idx}`}
+                      value={tp}
+                    >
+                      {tp}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid>
-            )}
-          </Grid>
-
-          <Grid
-            container
-            spacing={isDesktop ? 3 : 0}
-            justifyContent="center"
-          >
-            <Grid item xs={12} sm={4}>
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={classes.submit}
-                disabled={submitDisabled()}
-              >
-                {buttonText}
-              </Button>
+              <Grid item xs={12} md={6}>
+                <DatePickerComponent
+                  label="Start Date"
+                  selectedDate={startDate}
+                  hasTime
+                  handleDateChange={handleStartDateChange}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <DatePickerComponent
+                  label="End Date"
+                  selectedDate={endDate}
+                  hasTime
+                  handleDateChange={handleEndDateChange}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  select
+                  id="status"
+                  label="Status"
+                  name="status"
+                  autoComplete="status"
+                  error={
+                    formError.status
+                    && formError.status.error
+                  }
+                  helperText={
+                    formError.status
+                      ? formError.status.message
+                      : ''
+                  }
+                  onBlur={(e) => handleBlur(e, 'required', status)}
+                  {...status.bind}
+                >
+                  {_.map(statuses, (sts) => (
+                    <MenuItem
+                      key={`status-${sts.status_uuid}-${sts.name}`}
+                      value={sts.status_uuid}
+                    >
+                      {sts.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={12}>
+                <Autocomplete
+                  fullWidth
+                  multiple
+                  filterSelectedOptions
+                  id="tags"
+                  options={TAGS}
+                  value={tags}
+                  onChange={(e, newValue) => onTagsChange(newValue)}
+                  renderTags={(value, getTagProps) => (
+                    _.map(value, (option, index) => (
+                      <Chip
+                        variant="default"
+                        label={option}
+                        {...getTagProps({ index })}
+                      />
+                    ))
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      label="Tags"
+                      margin="normal"
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="estimate"
+                  label="Estimate"
+                  name="estimate"
+                  autoComplete="estimate"
+                  error={
+                    formError.estimate
+                    && formError.estimate.error
+                  }
+                  helperText={
+                    formError.estimate
+                      ? formError.estimate.message
+                      : ''
+                  }
+                  onBlur={(e) => handleBlur(e, '', estimate)}
+                  {...estimate.bind}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  type="number"
+                  id="complexity"
+                  label="Complexity"
+                  name="complexity"
+                  autoComplete="complexity"
+                  error={
+                    formError.complexity
+                    && formError.complexity.error
+                  }
+                  helperText={
+                    formError.complexity
+                      ? formError.complexity.message
+                      : ''
+                  }
+                  onBlur={(e) => handleBlur(e, '', complexity)}
+                  {...complexity.bind}
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={4}>
-              <Button
-                type="button"
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={discardFormData}
-                className={classes.submit}
-              >
-                Cancel
-              </Button>
+            <Grid
+              container
+              spacing={isDesktop ? 3 : 0}
+              justifyContent="center"
+            >
+              <Grid item xs={12} sm={4}>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  className={classes.submit}
+                  disabled={submitDisabled()}
+                >
+                  {buttonText}
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Button
+                  type="button"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  onClick={discardFormData}
+                  className={classes.submit}
+                >
+                  Cancel
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
-        </form>
-      </FormModal>
-    )}
-  </>;
+          </form>
+        </FormModal>
+      )}
+    </>
+  );
 };
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
-  ...state.dashboardReducer,
+  statuses: state.decisionReducer.statuses,
+  features: state.decisionReducer.features,
 });
 
 export default connect(mapStateToProps)(AddIssues);

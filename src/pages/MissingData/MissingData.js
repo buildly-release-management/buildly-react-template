@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import _ from 'lodash';
 import { connect } from 'react-redux';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   Backdrop,
   Grid,
@@ -11,8 +12,8 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  MenuItem,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import Autocomplete from '@mui/material/Autocomplete';
 import { UserContext } from '@context/User.context';
 import FormModal from '@components/Modal/FormModal';
@@ -51,6 +52,7 @@ const MissingData = ({
   const classes = useStyles();
   const user = useContext(UserContext);
 
+  const userType = useInput('', { required: true });
   const email = useInput('', { required: true });
   const [radioValue, setRadioValue] = useState(null);
   const [orgName, setOrgName] = useState('');
@@ -65,6 +67,7 @@ const MissingData = ({
     const updateForm = {
       id: user.id,
       organization_name: orgName,
+      user_type: userType.value,
     };
 
     if (email.value) {
@@ -107,6 +110,7 @@ const MissingData = ({
     let errorExists = false;
     if (
       (!user.email && !email.value)
+      || !userType.value
       || !radioValue
       || (radioValue === 'no' && !orgName)
     ) return true;
@@ -138,6 +142,28 @@ const MissingData = ({
         >
           <form noValidate onSubmit={handleSubmit}>
             <Grid container>
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  select
+                  id="userType"
+                  label="User Type"
+                  name="userType"
+                  autoComplete="userType"
+                  error={formError.userType && formError.userType.error}
+                  helperText={formError.userType ? formError.userType.message : ''}
+                  className={classes.textField}
+                  onBlur={(e) => handleBlur(e, 'required', userType)}
+                  {...userType.bind}
+                >
+                  <MenuItem value="">----------</MenuItem>
+                  <MenuItem value="Developer">Developer</MenuItem>
+                  <MenuItem value="Product Team">Product Team</MenuItem>
+                </TextField>
+              </Grid>
               {!user.email && (
                 <Grid item xs={12}>
                   <TextField

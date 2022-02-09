@@ -1,3 +1,4 @@
+import { getUser } from '@context/User.context';
 import {
   LOGIN,
   LOGIN_SUCCESS,
@@ -40,7 +41,7 @@ import {
 const initialState = {
   loading: false,
   loaded: false,
-  data: null,
+  data: getUser(),
   error: null,
   organizationData: null,
   socialLogin: null,
@@ -63,7 +64,7 @@ export default (state = initialState, action) => {
         ...state,
         loading: false,
         loaded: true,
-        data: action.user,
+        data: action.user.data,
       };
 
     case LOGIN_FAIL:
@@ -184,7 +185,7 @@ export default (state = initialState, action) => {
         ...state,
         loading: false,
         loaded: true,
-        data: action.user,
+        data: action.user.data,
       };
 
     case UPDATE_USER_FAIL:
@@ -287,7 +288,7 @@ export default (state = initialState, action) => {
         ...state,
         loading: false,
         loaded: true,
-        data: action.user,
+        data: action.user.data,
       };
 
     case SOCIAL_LOGIN_FAIL:
