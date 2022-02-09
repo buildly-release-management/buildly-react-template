@@ -45,12 +45,12 @@ const ContainerDashboard = ({ location, history }) => {
           location={location}
           history={history}
         />
-        <NavBar
+        {/* <NavBar
           navHidden={navHidden}
           setNavHidden={setNavHidden}
           location={location}
           history={history}
-        />
+        /> */}
         <Container className={classes.content}>
           <Switch>
             <Route
