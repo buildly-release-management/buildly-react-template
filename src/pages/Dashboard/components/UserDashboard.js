@@ -119,9 +119,7 @@ const UserDashboard = (props) => {
     : `${routes.DASHBOARD}/convert-issue`;
 
   useEffect(() => {
-    if (!products || _.isEmpty(products)) {
-      dispatch(getAllProducts());
-    }
+    dispatch(getAllProducts());
     if (!features || _.isEmpty(features)) {
       dispatch(getAllFeatures());
     }
@@ -222,27 +220,33 @@ const UserDashboard = (props) => {
   return (
     <div>
       {loading && <Loader open={loading} />}
-      <Grid container alignItems="center">
-        <Grid item xs={4} md={6} lg={8}>
+      <Grid container alignItems="center" mb={2}>
+        <Grid item xs={8}>
           <Typography component="div" variant="h3">
             Dashboard
           </Typography>
         </Grid>
-        <Grid item xs={4} md={3} lg={2} textAlign="end">
+        <Grid item xs={4}>
           <TextField
             variant="outlined"
             margin="normal"
+            fullWidth
             select
             id="product"
             color="primary"
-            label="Select Product"
+            label="Product Options"
             className={classes.product}
             value={product}
             onChange={(e) => {
-              setProduct(e.target.value);
+              if (e.target.value === -1) {
+                history.push(routes.NEW_PRODUCT);
+              } else {
+                setProduct(e.target.value);
+              }
             }}
           >
             <MenuItem value={0}>Select</MenuItem>
+            <MenuItem value={-1}>Create New Product</MenuItem>
             {products && !_.isEmpty(products)
               && _.map(products, (prd) => (
                 <MenuItem
@@ -253,18 +257,6 @@ const UserDashboard = (props) => {
                 </MenuItem>
               ))}
           </TextField>
-        </Grid>
-        <Grid item xs={4} md={3} lg={2} textAlign="end">
-          <Button
-            aria-controls="new-product"
-            aria-haspopup="true"
-            color="primary"
-            variant="contained"
-            onClick={(e) => { history.push(routes.NEW_PRODUCT); }}
-            startIcon={<AddRoundedIcon />}
-          >
-            New Product
-          </Button>
         </Grid>
       </Grid>
       <Grid mb={3} container justifyContent="center">

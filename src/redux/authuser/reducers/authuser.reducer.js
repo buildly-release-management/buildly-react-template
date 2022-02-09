@@ -1,3 +1,4 @@
+import { getUser } from '@context/User.context';
 import {
   LOGIN,
   LOGIN_SUCCESS,
@@ -40,7 +41,7 @@ import {
 const initialState = {
   loading: false,
   loaded: false,
-  data: null,
+  data: getUser(),
   error: null,
   organizationData: null,
   socialLogin: null,

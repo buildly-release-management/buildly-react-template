@@ -76,6 +76,9 @@ const AddFeatures = ({
     required: true,
   });
   const [tags, setTags] = useState((editData && editData.tags) || []);
+  const [boardList, setBoardList] = useState([]);
+  const [colList, setColList] = useState([]);
+  const [boardID, setBoardID] = useState('');
   const [colID, setColID] = useState('');
   const totalEstimate = useInput((editData && editData.total_estimate) || '');
   const version = useInput((editData && editData.version) || '');
@@ -94,7 +97,17 @@ const AddFeatures = ({
   }, []);
 
   useEffect(() => {
-    setProduct(_.find(products, { product_uuid }));
+    const prd = _.find(products, { product_uuid });
+    if (prd && prd.feature_tool_detail
+      && prd.feature_tool_detail.organisation_list
+      && !_.isEmpty(prd.feature_tool_detail.organisation_list)
+    ) {
+      setBoardList(_.flatMap(_.map(
+        prd.feature_tool_detail.organisation_list,
+        'board_list',
+      )));
+    }
+    setProduct(prd);
   }, [products]);
 
   const closeFormModal = () => {
@@ -109,7 +122,11 @@ const AddFeatures = ({
       || version.hasChanged()
       || (!editPage && product
         && product.feature_tool_detail
-        && product.feature_tool_detail.column_list
+        && !_.isEmpty(boardList)
+        && boardID !== '')
+      || (!editPage && product
+        && product.feature_tool_detail
+        && !_.isEmpty(colList)
         && colID !== '')
     );
 
@@ -168,9 +185,8 @@ const AddFeatures = ({
       dispatch(updateFeature(formData));
     } else {
       formData.create_date = dateTime;
-      if (colID) {
-        formData.column_id = colID;
-      }
+      formData.board_id = boardID;
+      formData.column_id = colID;
       dispatch(createFeature(formData));
     }
     history.push(redirectTo);
@@ -202,7 +218,13 @@ const AddFeatures = ({
       || !status.value
       || !priority.value
       || (!editPage && product
-        && product.feature_tool_detail && !colID)
+        && product.feature_tool_detail
+        && !_.isEmpty(boardList)
+        && !boardID)
+      || (!editPage && product
+        && product.feature_tool_detail
+        && !_.isEmpty(colList)
+        && !colID)
     ) {
       return true;
     }
@@ -379,10 +401,7 @@ const AddFeatures = ({
                 )}
               />
             </Grid>
-            {!editPage && product
-            && product.feature_tool_detail
-            && product.feature_tool_detail.column_list
-            && (
+            {!editPage && !_.isEmpty(boardList) && (
               <Grid item xs={12}>
                 <TextField
                   variant="outlined"
@@ -390,19 +409,49 @@ const AddFeatures = ({
                   required
                   fullWidth
                   select
-                  id="colid "
+                  id="boardID"
+                  label="Tool Board"
+                  name="boardID"
+                  autoComplete="boardID"
+                  value={boardID}
+                  onChange={(e) => {
+                    setBoardID(e.target.value);
+                    const board = _.find(boardList, { board_id: e.target.value });
+                    setColList(board.column_list);
+                  }}
+                >
+                  {_.map(boardList, (board) => (
+                    <MenuItem
+                      key={`board-${board.board_id}-${board.board_name}`}
+                      value={board.board_id}
+                    >
+                      {board.board_name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            )}
+            {!editPage && !_.isEmpty(colList) && (
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  select
+                  id="colID"
                   label="Tool Column"
-                  name="colid"
-                  autoComplete="colid"
+                  name="colID"
+                  autoComplete="colID"
                   value={colID}
                   onChange={(e) => setColID(e.target.value)}
                 >
-                  {_.map(product.feature_tool_detail.column_list, (col) => (
+                  {_.map(colList, (col) => (
                     <MenuItem
-                      key={`column-${col.id}-${col.name}`}
-                      value={col.id}
+                      key={`column-${col.column_id}-${col.column_name}`}
+                      value={col.column_id}
                     >
-                      {col.name}
+                      {col.column_name}
                     </MenuItem>
                   ))}
                 </TextField>
