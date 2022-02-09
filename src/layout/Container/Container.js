@@ -63,8 +63,8 @@ const ContainerDashboard = ({ location, history }) => {
             <Route path={routes.MISSING_DATA} component={MissingData} />
             <Route path={routes.NEW_PRODUCT} component={NewProduct} />
             <Route path={routes.DEVELOPER_FORM} component={DeveloperForm} />
-            <Route exact path={`${routes.RELEASE}/view/:releaseID`} component={ViewRelease} />
-            <Route path={routes.RELEASE} component={Release} />
+            {/* <Route exact path={`${routes.RELEASE}/view/:releaseID`} component={ViewRelease} /> */}
+            {/* <Route path={routes.RELEASE} component={Release} /> */}
           </Switch>
         </Container>
       </UserContext.Provider>
