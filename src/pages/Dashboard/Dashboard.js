@@ -1,33 +1,40 @@
 /* eslint-disable no-nested-ternary */
-import React, { useContext } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import Loader from '@components/Loader/Loader';
+import { routes } from '@routes/routesConstants';
 import UserDashboard from './components/UserDashboard';
-import NewProductForm from '../NewProduct/NewProduct';
-import FeedbackForm from './components/FeedbackForm';
-import { UserContext } from '@context/User.context';
 
 const Dashboard = ({
-  history, loading, loaded, filled,
+  history,
+  loading,
+  loaded,
+  user,
 }) => {
-  const user = useContext(UserContext);
+  useEffect(() => {
+    if (!user.survey_status) {
+      if (user.user_type === 'Developer') {
+        history.push(routes.DEVELOPER_FORM);
+      }
+      if (user.user_type === 'Product Team') {
+        history.push(routes.NEW_PRODUCT);
+      }
+    }
+  }, [user]);
+
   return (
     <>
       {loading && <Loader open={loading} />}
-      {loaded && user.survey_status === false && user.user_type === 'Developer'
-        ? <FeedbackForm /> : user.user_type === 'Product Team' && user.survey_status === false
-          ? <NewProductForm />
-          : (
-            <UserDashboard history={history} />
-          )}
-
+      {loaded && user && user.survey_status && <UserDashboard history={history} />}
     </>
   );
 };
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
-  ...state.googleSheetReducer,
+  loading: state.authReducer.loading,
+  loaded: state.authReducer.loaded,
+  user: state.authReducer.data,
 });
 
 export default connect(mapStateToProps)(Dashboard);

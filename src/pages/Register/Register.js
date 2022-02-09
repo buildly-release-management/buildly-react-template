@@ -83,11 +83,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const users = [
-  'Product Team',
-  'Developer',
-];
-
 const Register = ({
   dispatch, loading, history, socialLogin, orgNames,
 }) => {
@@ -101,7 +96,7 @@ const Register = ({
     matchField: password,
   });
   const [orgName, setOrgName] = useState('');
-  const [userType, setUserType] = useState('');
+  const userType = useInput('', { required: true });
   const first_name = useInput('', { required: true });
   const last_name = useInput('');
   const [formError, setFormError] = useState({});
@@ -123,7 +118,7 @@ const Register = ({
       email: email.value,
       password: password.value,
       organization_name: orgName,
-      user_type: userType,
+      user_type: userType.value,
       first_name: first_name.value,
       last_name: last_name.value,
     };
@@ -165,7 +160,7 @@ const Register = ({
       || !email.value
       || !re_password.value
       || !orgName
-      || !userType
+      || !userType.value
       || !first_name.value
     ) return true;
     errorKeys.forEach((key) => {
@@ -305,20 +300,21 @@ const Register = ({
                       required
                       fullWidth
                       select
-                      id="user_type"
+                      id="userType"
+                      name="userType"
                       label="User Type"
-                      value={userType}
-                      onChange={(e) => setUserType(e.target.value)}
+                      autoComplete="userType"
+                      error={formError.userType && formError.userType.error}
+                      helperText={
+                        formError.userType ? formError.userType.message : ''
+                      }
                       className={classes.textField}
+                      onBlur={(e) => handleBlur(e, 'required', userType)}
+                      {...userType.bind}
                     >
-                      {_.map(users, (user, userIndex) => (
-                        <MenuItem
-                          key={userIndex}
-                          value={user}
-                        >
-                          {user}
-                        </MenuItem>
-                      ))}
+                      <MenuItem value="">----------</MenuItem>
+                      <MenuItem value="Developer">Developer</MenuItem>
+                      <MenuItem value="Product Team">Product Team</MenuItem>
                     </TextField>
                   </Grid>
                 </Grid>
@@ -405,7 +401,7 @@ const Register = ({
                         size={24}
                         className={classes.buttonProgress}
                       />
-                    )}
+                  )}
                 </Grid>
                 <Grid item className={classes.link}>
                   <Link href={routes.LOGIN} variant="body2" color="primary">

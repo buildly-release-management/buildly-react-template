@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const FeedbackForm = ({ dispatch, loading }) => {
+const DeveloperForm = ({ dispatch, loading, history }) => {
   const classes = useStyles();
   const user = useContext(UserContext);
 
@@ -135,15 +135,9 @@ const FeedbackForm = ({ dispatch, loading }) => {
         question13.pushEmail,
       'Version Dependency Management': question13.versionDependency,
     };
-    const userUpdateData = {
-      survey_status: true,
-      id: user.id,
-      organization_uuid: user.organization.organization_uuid,
-      organization_name: user.organization.name,
-    };
 
-    dispatch(addData(formData));
-    dispatch(updateUser(userUpdateData));
+    dispatch(addData(formData, history));
+    dispatch(updateUser({ id: user.id, survey_status: true }));
   };
 
   /**
@@ -680,4 +674,4 @@ const mapStateToProps = (state, ownProps) => ({
   ...state.googleSheetReducer,
 });
 
-export default connect(mapStateToProps)(FeedbackForm);
+export default connect(mapStateToProps)(DeveloperForm);
