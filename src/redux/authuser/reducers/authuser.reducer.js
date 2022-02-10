@@ -336,7 +336,7 @@ export default (state = initialState, action) => {
         ...state,
         loading: false,
         loaded: true,
-        data: action.user,
+        data: action.user.data,
       };
 
     case ADD_ORG_SOCIAL_USER_FAIL:
