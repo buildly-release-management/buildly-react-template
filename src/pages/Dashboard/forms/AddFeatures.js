@@ -78,7 +78,6 @@ const AddFeatures = ({
   const [tags, setTags] = useState((editData && editData.tags) || []);
   const [boardList, setBoardList] = useState([]);
   const [colList, setColList] = useState([]);
-  const [boardID, setBoardID] = useState('');
   const [colID, setColID] = useState('');
   const totalEstimate = useInput((editData && editData.total_estimate) || '');
   const version = useInput((editData && editData.version) || '');
@@ -120,10 +119,6 @@ const AddFeatures = ({
       || (_.isEmpty(editData) && !_.isEmpty(tags))
       || totalEstimate.hasChanged()
       || version.hasChanged()
-      || (!editPage && product
-        && product.feature_tool_detail
-        && !_.isEmpty(boardList)
-        && boardID !== '')
       || (!editPage && product
         && product.feature_tool_detail
         && !_.isEmpty(colList)
@@ -185,7 +180,6 @@ const AddFeatures = ({
       dispatch(updateFeature(formData));
     } else {
       formData.create_date = dateTime;
-      formData.board_id = boardID;
       formData.column_id = colID;
       dispatch(createFeature(formData));
     }
@@ -217,10 +211,6 @@ const AddFeatures = ({
       || !description.value
       || !status.value
       || !priority.value
-      || (!editPage && product
-        && product.feature_tool_detail
-        && !_.isEmpty(boardList)
-        && !boardID)
       || (!editPage && product
         && product.feature_tool_detail
         && !_.isEmpty(colList)
@@ -413,17 +403,15 @@ const AddFeatures = ({
                   label="Tool Board"
                   name="boardID"
                   autoComplete="boardID"
-                  value={boardID}
                   onChange={(e) => {
-                    setBoardID(e.target.value);
-                    const board = _.find(boardList, { board_id: e.target.value });
+                    const board = e.target.value;
                     setColList(board.column_list);
                   }}
                 >
                   {_.map(boardList, (board) => (
                     <MenuItem
                       key={`board-${board.board_id}-${board.board_name}`}
-                      value={board.board_id}
+                      value={board}
                     >
                       {board.board_name}
                     </MenuItem>
