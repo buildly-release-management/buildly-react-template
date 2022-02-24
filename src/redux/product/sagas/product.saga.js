@@ -117,7 +117,7 @@ function* getCredential(payload) {
     const cred = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${productEndpoint}credential/?credential_uuid=${payload.credential_uuid}`,
+      `${window.env.API_URL}${productEndpoint}credential/?product_uuid=${payload.credential_uuid.credential_uuid}`,
     );
     yield put({ type: GET_CREDENTIAL_SUCCESS, data: cred.data });
   } catch (error) {

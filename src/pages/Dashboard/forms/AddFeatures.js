@@ -19,6 +19,7 @@ import {
   createFeature,
   updateFeature,
 } from '@redux/decision/actions/decision.actions';
+import { getCredential } from '@redux/product/actions/product.actions';
 import { validators } from '@utils/validators';
 import { PRIORITIES, TAGS } from './formConstants';
 
@@ -48,6 +49,7 @@ const AddFeatures = ({
   statuses,
   dispatch,
   products,
+  credentials,
 }) => {
   const classes = useStyles();
   const [openFormModal, setFormModal] = useState(true);
@@ -90,6 +92,9 @@ const AddFeatures = ({
   useEffect(() => {
     if (!statuses || _.isEmpty(statuses)) {
       dispatch(getAllStatuses());
+    }
+    if (!credentials || _.isEmpty(credentials)) {
+      dispatch(getCredential({ credential_uuid: product_uuid }));
     }
   }, []);
 
@@ -151,6 +156,10 @@ const AddFeatures = ({
     event.preventDefault();
     const dateTime = new Date();
 
+    const featCred = _.filter(
+      credentials[0],
+      { auth_detail: { tool_type: 'Feature' } },
+    );
     const formData = {
       ...editData,
       edit_date: dateTime,
@@ -162,11 +171,16 @@ const AddFeatures = ({
       priority: priority.value,
       total_estimate: totalEstimate.value,
       version: version.value,
+      tool_name: featCred[0].auth_detail.tool_name,
+      tool_type: featCred[0].auth_detail.tool_type,
+      trello_key: featCred[0].auth_detail.trello_key || null,
+      access_token: featCred[0].auth_detail.access_token,
     };
 
     if (editPage) {
       dispatch(updateFeature(formData));
     } else {
+      console.log('nedit');
       formData.create_date = dateTime;
       if (colID) {
         formData.column_id = colID;
@@ -380,34 +394,35 @@ const AddFeatures = ({
               />
             </Grid>
             {!editPage && product
-            && product.feature_tool_detail
-            && product.feature_tool_detail.column_list
-            && (
-              <Grid item xs={12}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  select
-                  id="colid "
-                  label="Tool Column"
-                  name="colid"
-                  autoComplete="colid"
-                  value={colID}
-                  onChange={(e) => setColID(e.target.value)}
-                >
-                  {_.map(product.feature_tool_detail.column_list, (col) => (
-                    <MenuItem
-                      key={`column-${col.id}-${col.name}`}
-                      value={col.id}
-                    >
-                      {col.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-            )}
+              && product.feature_tool_detail
+              && product.feature_tool_detail.organisation_list[0].board_list[0].column_list
+              && (
+                <Grid item xs={12}>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    select
+                    id="colid "
+                    label="Tool Column"
+                    name="colid"
+                    autoComplete="colid"
+                    value={colID}
+                    onChange={(e) => setColID(e.target.value)}
+                  >
+                    {_.map(product.feature_tool_detail.organisation_list[0].board_list[0].column_list,
+                      (col) => (
+                        <MenuItem
+                          key={`column-${col.column_id}-${col.column_name}`}
+                          value={col.column_id}
+                        >
+                          {col.column_name}
+                        </MenuItem>
+                      ))}
+                  </TextField>
+                </Grid>
+              )}
             <Grid item xs={12}>
               <TextField
                 variant="outlined"
@@ -493,6 +508,7 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
   statuses: state.decisionReducer.statuses,
   products: state.productReducer.products,
+  credentials: state.productReducer.credentials,
 });
 
 export default connect(mapStateToProps)(AddFeatures);

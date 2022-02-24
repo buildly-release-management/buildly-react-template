@@ -51,10 +51,12 @@ const AddIssues = ({
   location,
   statuses,
   features,
+  products,
 }) => {
   const classes = useStyles();
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
+  const [product, setProduct] = useState('');
   const [productFeatures, setProductFeatures] = useState([]);
 
   const redirectTo = location.state && location.state.from;
@@ -88,6 +90,9 @@ const AddIssues = ({
     { required: true },
   );
   const type = useInput((editData && editData.issue_type) || '', {
+    required: true,
+  });
+  const repo = useInput((editData && editData.repository) || '', {
     required: true,
   });
   const [startDate, handleStartDateChange] = useState(
@@ -137,12 +142,17 @@ const AddIssues = ({
     setProductFeatures(_.filter(features, { product_uuid }));
   }, [features]);
 
+  useEffect(() => {
+    setProduct(_.find(products, { product_uuid }));
+  }, [products]);
+
   const closeFormModal = () => {
     const dataHasChanged = (
       name.hasChanged()
       || description.hasChanged()
       || feature.hasChanged()
       || type.hasChanged()
+      || repo.hasChanged()
       || (!_.isEmpty(editData) && !_.isEqual(startDate, editData.start_date))
       || (!_.isEmpty(editData) && !_.isEqual(endDate, editData.end_date))
       || status.hasChanged()
@@ -199,14 +209,23 @@ const AddIssues = ({
       feature_uuid: feature.value,
       issue_type: type.value,
       start_date: startDate,
-      end_data: endDate,
+      end_date: endDate,
       status: status.value,
       tags,
+      product_uuid,
       estimate: estimate.value,
       complexity: Number(complexity.value),
+      repository: repo.value,
+      tool_name: 'GitHub',
+      tool_type: 'Issue',
+      access_token: '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',
+      owner_name: 'Insights-Ajackus-Test',
+      sprint: 'mar-11',
+      assignees: ['manishinsightstest'],
     };
 
     if (editPage) {
+      // assignees for update
       dispatch(updateIssue(formData));
     } else {
       formData.create_date = dateTime;
@@ -242,6 +261,7 @@ const AddIssues = ({
       || !feature.value
       || !type.value
       || !status.value
+      || !repo.value
     ) {
       return true;
     }
@@ -387,6 +407,43 @@ const AddIssues = ({
                   ))}
                 </TextField>
               </Grid>
+              {product
+                && product.issue_tool_detail.organisation_list
+                && (
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      select
+                      id="repo"
+                      label="Repository"
+                      name="repo"
+                      autoComplete="repo"
+                      error={
+                        formError.repo
+                        && formError.repo.error
+                      }
+                      helperText={
+                        formError.repo
+                          ? formError.repo.message
+                          : ''
+                      }
+                      onBlur={(e) => handleBlur(e, 'required', repo)}
+                      {...repo.bind}
+                    >
+                      {_.map(product.issue_tool_detail.organisation_list[0].repo_list, (repos, repoIdx) => (
+                        <MenuItem
+                          key={`issue-repo-${repoIdx}`}
+                          value={repos.name}
+                        >
+                          {repos.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                )}
               <Grid item xs={12} md={6}>
                 <DatePickerComponent
                   label="Start Date"
@@ -553,6 +610,7 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
   statuses: state.decisionReducer.statuses,
   features: state.decisionReducer.features,
+  products: state.productReducer.products,
 });
 
 export default connect(mapStateToProps)(AddIssues);
