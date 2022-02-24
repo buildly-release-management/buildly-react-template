@@ -25,6 +25,7 @@ import { useInput } from '@hooks/useInput';
 import { addData } from '@redux/googleSheet/actions/googleSheet.actions';
 import { updateUser } from '@redux/authuser/actions/authuser.actions';
 import { validators } from '@utils/validators';
+import { routes } from '@routes/routesConstants';
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -138,6 +139,7 @@ const DeveloperForm = ({ dispatch, loading, history }) => {
 
     dispatch(addData(formData, history));
     dispatch(updateUser({ id: user.id, survey_status: true }));
+    history.push(routes.DASHBOARD);
   };
 
   /**
