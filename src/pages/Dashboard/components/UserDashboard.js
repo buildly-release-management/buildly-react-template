@@ -24,7 +24,7 @@ import {
   deleteFeature,
   deleteIssue,
 } from '@redux/decision/actions/decision.actions';
-import { getCredential } from '@redux/product/actions/product.actions';
+import { getAllCredentials } from '@redux/product/actions/product.actions';
 import List from '../components/List';
 import Kanban from '../components/Kanban';
 import AddFeatures from '../forms/AddFeatures';
@@ -133,9 +133,9 @@ const UserDashboard = (props) => {
     if (!statuses || _.isEmpty(statuses)) {
       dispatch(getAllStatuses());
     }
-    // if (!credentials || _.isEmpty(credentials)) {
-    // 	dispatch(getCredential({ credential_uuid: product_uuid }));
-    // }
+    if (!credentials || _.isEmpty(credentials)) {
+      dispatch(getAllCredentials());
+    }
   }, []);
 
   // this will be triggered whenever the content switcher is clicked to change the view
@@ -155,7 +155,7 @@ const UserDashboard = (props) => {
 
     setProductFeatures(_.orderBy(feats, 'create_date', 'desc'));
     setProductIssues(_.orderBy(iss, 'create_date', 'desc'));
-  }, [product, features, issues]);
+  }, [product, features, issues, features.length, issues.length]);
 
   const viewTabClicked = (event, vw) => {
     setView(vw);
@@ -206,7 +206,6 @@ const UserDashboard = (props) => {
   };
 
   const deleteItem = (item, type) => {
-    console.log('item', item);
     const deleteID = type === 'feat'
       ? item.feature_uuid
       : item.issue_uuid;
@@ -218,20 +217,41 @@ const UserDashboard = (props) => {
   const handleDeleteModal = () => {
     const { id, type } = toDeleteItem;
     setDeleteModal(false);
+    const cred = _.filter(
+      credentials,
+      { product_uuid: product },
+    );
     if (type === 'feat') {
       const featCred = _.filter(
-        credentials[0],
+        cred,
         { auth_detail: { tool_type: 'Feature' } },
       );
-      const deleteCred = {
-        tool_name: featCred[0].auth_detail.tool_name,
-        tool_type: featCred[0].auth_detail.tool_type,
-        trello_key: featCred[0].auth_detail.trello_key,
-        access_token: featCred[0].auth_detail.access_token,
+      if (featCred) {
+        const deleteCred = {
+          tool_name: featCred[0]?.auth_detail.tool_name,
+          tool_type: featCred[0]?.auth_detail.tool_type,
+          trello_key: featCred[0]?.auth_detail.trello_key,
+          access_token: featCred[0]?.auth_detail.access_token,
+          feature_uuid: id,
+        };
+        dispatch(deleteFeature(deleteCred));
       }
-      dispatch(deleteFeature(id));
     } else if (type === 'issue') {
-      dispatch(deleteIssue(id));
+      const issueCred = _.filter(
+        cred,
+        { auth_detail: { tool_type: 'Issue' } },
+      );
+      if (issueCred) {
+        const deleteCreds = {
+          tool_name: issueCred[0]?.auth_detail.tool_name,
+          tool_type: issueCred[0]?.auth_detail.tool_type,
+          trello_key: issueCred[0]?.auth_detail.trello_key,
+          access_token: issueCred[0]?.auth_detail.access_token,
+          owner_name: issueCred[0]?.auth_detail.owner_name,
+          issue_uuid: id,
+        };
+        dispatch(deleteIssue(deleteCreds));
+      }
     }
   };
 

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
@@ -22,6 +23,7 @@ import {
   createIssue,
   updateIssue,
 } from '@redux/decision/actions/decision.actions';
+import { getAllCredentials } from '@redux/product/actions/product.actions';
 import { validators } from '@utils/validators';
 import { ISSUETYPES, TAGS } from './formConstants';
 
@@ -52,6 +54,7 @@ const AddIssues = ({
   statuses,
   features,
   products,
+  credentials,
 }) => {
   const classes = useStyles();
   const [openFormModal, setFormModal] = useState(true);
@@ -136,6 +139,9 @@ const AddIssues = ({
     if (!statuses || _.isEmpty(statuses)) {
       dispatch(getAllStatuses());
     }
+    if (!credentials || _.isEmpty(credentials)) {
+      dispatch(getAllCredentials());
+    }
   }, []);
 
   useEffect(() => {
@@ -161,6 +167,9 @@ const AddIssues = ({
       || (_.isEmpty(editData) && !_.isEmpty(tags))
       || estimate.hasChanged()
       || complexity.hasChanged()
+      || (product
+        && product.issue_tool_detail
+        && repo.hasChanged())
     );
 
     if (dataHasChanged) {
@@ -200,7 +209,13 @@ const AddIssues = ({
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-
+    const cred = _.filter(
+      credentials, { product_uuid },
+    );
+    const issueCred = _.filter(
+      cred,
+      { auth_detail: { tool_type: 'Issue' } },
+    );
     const formData = {
       ...editData,
       edit_date: dateTime,
@@ -215,17 +230,16 @@ const AddIssues = ({
       product_uuid,
       estimate: estimate.value,
       complexity: Number(complexity.value),
-      repository: repo.value,
-      tool_name: 'GitHub',
-      tool_type: 'Issue',
-      access_token: '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',
-      owner_name: 'Insights-Ajackus-Test',
-      sprint: 'mar-11',
-      assignees: ['manishinsightstest'],
+      tool_name: issueCred[0]?.auth_detail.tool_name,
+      tool_type: issueCred[0]?.auth_detail.tool_type,
+      access_token: issueCred[0]?.auth_detail.access_token,
+      owner_name: issueCred[0]?.auth_detail.owner_name,
     };
 
+    if (repo.value) {
+      formData.repository = repo.value;
+    }
     if (editPage) {
-      // assignees for update
       dispatch(updateIssue(formData));
     } else {
       formData.create_date = dateTime;
@@ -261,7 +275,7 @@ const AddIssues = ({
       || !feature.value
       || !type.value
       || !status.value
-      || !repo.value
+      || (product && product.issue_tool_detail && !repo.value)
     ) {
       return true;
     }
@@ -408,7 +422,7 @@ const AddIssues = ({
                 </TextField>
               </Grid>
               {product
-                && product.issue_tool_detail.organisation_list
+                && product.issue_tool_detail?.organisation_list
                 && (
                   <Grid item xs={12}>
                     <TextField
@@ -611,6 +625,7 @@ const mapStateToProps = (state, ownProps) => ({
   statuses: state.decisionReducer.statuses,
   features: state.decisionReducer.features,
   products: state.productReducer.products,
+  credentials: state.productReducer.credentials,
 });
 
 export default connect(mapStateToProps)(AddIssues);

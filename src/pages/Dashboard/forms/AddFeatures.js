@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
@@ -19,7 +20,7 @@ import {
   createFeature,
   updateFeature,
 } from '@redux/decision/actions/decision.actions';
-import { getCredential } from '@redux/product/actions/product.actions';
+import { getAllCredentials } from '@redux/product/actions/product.actions';
 import { validators } from '@utils/validators';
 import { PRIORITIES, TAGS } from './formConstants';
 
@@ -64,7 +65,6 @@ const AddFeatures = ({
     && location.state.data
   ) || {};
   const product_uuid = location.state && location.state.product_uuid;
-
   const name = useInput((editData && editData.name) || '', {
     required: true,
   });
@@ -94,7 +94,7 @@ const AddFeatures = ({
       dispatch(getAllStatuses());
     }
     if (!credentials || _.isEmpty(credentials)) {
-      dispatch(getCredential({ credential_uuid: product_uuid }));
+      dispatch(getAllCredentials());
     }
   }, []);
 
@@ -155,11 +155,14 @@ const AddFeatures = ({
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-
+    const cred = _.filter(
+      credentials, { product_uuid },
+    );
     const featCred = _.filter(
-      credentials[0],
+      cred,
       { auth_detail: { tool_type: 'Feature' } },
     );
+
     const formData = {
       ...editData,
       edit_date: dateTime,
@@ -171,16 +174,15 @@ const AddFeatures = ({
       priority: priority.value,
       total_estimate: totalEstimate.value,
       version: version.value,
-      tool_name: featCred[0].auth_detail.tool_name,
-      tool_type: featCred[0].auth_detail.tool_type,
-      trello_key: featCred[0].auth_detail.trello_key || null,
-      access_token: featCred[0].auth_detail.access_token,
+      tool_name: featCred[0]?.auth_detail.tool_name,
+      tool_type: featCred[0]?.auth_detail.tool_type,
+      trello_key: featCred[0]?.auth_detail.trello_key,
+      access_token: featCred[0]?.auth_detail.access_token,
     };
 
     if (editPage) {
       dispatch(updateFeature(formData));
     } else {
-      console.log('nedit');
       formData.create_date = dateTime;
       if (colID) {
         formData.column_id = colID;
