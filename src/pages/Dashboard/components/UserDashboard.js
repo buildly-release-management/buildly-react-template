@@ -217,41 +217,26 @@ const UserDashboard = (props) => {
   const handleDeleteModal = () => {
     const { id, type } = toDeleteItem;
     setDeleteModal(false);
-    const cred = _.filter(
+    const featCred = _.find(
       credentials,
-      { product_uuid: product },
+      { product_uuid: product, auth_detail: { tool_type: 'Feature' } },
     );
     if (type === 'feat') {
-      const featCred = _.filter(
-        cred,
-        { auth_detail: { tool_type: 'Feature' } },
-      );
-      if (featCred) {
-        const deleteCred = {
-          tool_name: featCred[0]?.auth_detail.tool_name,
-          tool_type: featCred[0]?.auth_detail.tool_type,
-          trello_key: featCred[0]?.auth_detail.trello_key,
-          access_token: featCred[0]?.auth_detail.access_token,
-          feature_uuid: id,
-        };
-        dispatch(deleteFeature(deleteCred));
-      }
+      const deleteCred = {
+        ...featCred?.auth_detail,
+        feature_uuid: id,
+      };
+      dispatch(deleteFeature(deleteCred));
     } else if (type === 'issue') {
-      const issueCred = _.filter(
-        cred,
-        { auth_detail: { tool_type: 'Issue' } },
+      const issueCred = _.find(
+        credentials,
+        { product_uuid: product, auth_detail: { tool_type: 'Issue' } },
       );
-      if (issueCred) {
-        const deleteCreds = {
-          tool_name: issueCred[0]?.auth_detail.tool_name,
-          tool_type: issueCred[0]?.auth_detail.tool_type,
-          trello_key: issueCred[0]?.auth_detail.trello_key,
-          access_token: issueCred[0]?.auth_detail.access_token,
-          owner_name: issueCred[0]?.auth_detail.owner_name,
-          issue_uuid: id,
-        };
-        dispatch(deleteIssue(deleteCreds));
-      }
+      const deleteCreds = {
+        ...issueCred?.auth_detail,
+        issue_uuid: id,
+      };
+      dispatch(deleteIssue(deleteCreds));
     }
   };
 

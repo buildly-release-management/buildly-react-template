@@ -209,12 +209,9 @@ const AddIssues = ({
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-    const cred = _.filter(
-      credentials, { product_uuid },
-    );
-    const issueCred = _.filter(
-      cred,
-      { auth_detail: { tool_type: 'Issue' } },
+    const issueCred = _.find(
+      credentials,
+      { product_uuid: product, auth_detail: { tool_type: 'Issue' } },
     );
     const formData = {
       ...editData,
@@ -230,10 +227,7 @@ const AddIssues = ({
       product_uuid,
       estimate: estimate.value,
       complexity: Number(complexity.value),
-      tool_name: issueCred[0]?.auth_detail.tool_name,
-      tool_type: issueCred[0]?.auth_detail.tool_type,
-      access_token: issueCred[0]?.auth_detail.access_token,
-      owner_name: issueCred[0]?.auth_detail.owner_name,
+      ...issueCred?.auth_detail,
     };
 
     if (repo.value) {

@@ -155,12 +155,9 @@ const AddFeatures = ({
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-    const cred = _.filter(
-      credentials, { product_uuid },
-    );
-    const featCred = _.filter(
-      cred,
-      { auth_detail: { tool_type: 'Feature' } },
+    const featCred = _.find(
+      credentials,
+      { product_uuid: product, auth_detail: { tool_type: 'Feature' } },
     );
 
     const formData = {
@@ -174,10 +171,7 @@ const AddFeatures = ({
       priority: priority.value,
       total_estimate: totalEstimate.value,
       version: version.value,
-      tool_name: featCred[0]?.auth_detail.tool_name,
-      tool_type: featCred[0]?.auth_detail.tool_type,
-      trello_key: featCred[0]?.auth_detail.trello_key,
-      access_token: featCred[0]?.auth_detail.access_token,
+      ...featCred?.auth_detail,
     };
 
     if (editPage) {
