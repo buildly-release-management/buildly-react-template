@@ -24,6 +24,7 @@ import {
   deleteFeature,
   deleteIssue,
 } from '@redux/decision/actions/decision.actions';
+import { getAllCredentials } from '@redux/product/actions/product.actions';
 import List from '../components/List';
 import Kanban from '../components/Kanban';
 import AddFeatures from '../forms/AddFeatures';
@@ -69,6 +70,7 @@ const UserDashboard = (props) => {
     features,
     issues,
     statuses,
+    credentials,
     redirectTo,
     history,
   } = props;
@@ -129,6 +131,9 @@ const UserDashboard = (props) => {
     if (!statuses || _.isEmpty(statuses)) {
       dispatch(getAllStatuses());
     }
+    if (!credentials || _.isEmpty(credentials)) {
+      dispatch(getAllCredentials());
+    }
   }, []);
 
   // this will be triggered whenever the content switcher is clicked to change the view
@@ -148,7 +153,7 @@ const UserDashboard = (props) => {
 
     setProductFeatures(_.orderBy(feats, 'create_date', 'desc'));
     setProductIssues(_.orderBy(iss, 'create_date', 'desc'));
-  }, [product, features, issues]);
+  }, [product, features, issues, features.length, issues.length]);
 
   const viewTabClicked = (event, vw) => {
     setView(vw);
@@ -211,9 +216,25 @@ const UserDashboard = (props) => {
     const { id, type } = toDeleteItem;
     setDeleteModal(false);
     if (type === 'feat') {
-      dispatch(deleteFeature(id));
+      const featCred = _.find(
+        credentials,
+        { product_uuid: product, auth_detail: { tool_type: 'Feature' } },
+      );
+      const deleteCred = {
+        ...featCred?.auth_detail,
+        feature_uuid: id,
+      };
+      dispatch(deleteFeature(deleteCred));
     } else if (type === 'issue') {
-      dispatch(deleteIssue(id));
+      const issueCred = _.find(
+        credentials,
+        { product_uuid: product, auth_detail: { tool_type: 'Issue' } },
+      );
+      const deleteCreds = {
+        ...issueCred?.auth_detail,
+        issue_uuid: id,
+      };
+      dispatch(deleteIssue(deleteCreds));
     }
   };
 

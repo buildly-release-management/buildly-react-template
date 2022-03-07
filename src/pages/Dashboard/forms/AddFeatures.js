@@ -19,6 +19,7 @@ import {
   createFeature,
   updateFeature,
 } from '@redux/decision/actions/decision.actions';
+import { getAllCredentials } from '@redux/product/actions/product.actions';
 import { validators } from '@utils/validators';
 import { PRIORITIES, TAGS } from './formConstants';
 
@@ -48,6 +49,7 @@ const AddFeatures = ({
   statuses,
   dispatch,
   products,
+  credentials,
 }) => {
   const classes = useStyles();
   const [openFormModal, setFormModal] = useState(true);
@@ -92,6 +94,9 @@ const AddFeatures = ({
   useEffect(() => {
     if (!statuses || _.isEmpty(statuses)) {
       dispatch(getAllStatuses());
+    }
+    if (!credentials || _.isEmpty(credentials)) {
+      dispatch(getAllCredentials());
     }
   }, []);
 
@@ -162,7 +167,10 @@ const AddFeatures = ({
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-
+    const featCred = _.find(
+      credentials,
+      { product_uuid, auth_detail: { tool_type: 'Feature' } },
+    );
     const formData = {
       ...editData,
       edit_date: dateTime,
@@ -174,6 +182,7 @@ const AddFeatures = ({
       priority: priority.value,
       total_estimate: totalEstimate.value,
       version: version.value,
+      ...featCred?.auth_detail,
     };
 
     if (editPage) {
@@ -530,6 +539,7 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
   statuses: state.decisionReducer.statuses,
   products: state.productReducer.products,
+  credentials: state.productReducer.credentials,
 });
 
 export default connect(mapStateToProps)(AddFeatures);
