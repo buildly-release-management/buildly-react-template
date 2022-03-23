@@ -63,6 +63,7 @@ const AddIssues = ({
   const [orgList, setOrgList] = useState([]);
   const [repoList, setRepoList] = useState([]);
   const [repo, setRepo] = useState('');
+  const [orgID, setOrgID] = useState('');
 
   const redirectTo = location.state && location.state.from;
   const editPage = location.state && location.state.type === 'edit';
@@ -275,6 +276,10 @@ const AddIssues = ({
       || !status.value
       || (product
         && product.issue_tool_detail
+        && !_.isEmpty(orgList)
+        && !orgID)
+      || (product
+        && product.issue_tool_detail
         && !_.isEmpty(repoList)
         && !repo)
     ) {
@@ -434,8 +439,10 @@ const AddIssues = ({
                     label="Organisation"
                     name="orgID"
                     autoComplete="orgID"
+                    value={orgID}
                     onChange={(e) => {
                       const org = e.target.value;
+                      setOrgID(org);
                       setRepoList(org.repo_list);
                     }}
                   >
