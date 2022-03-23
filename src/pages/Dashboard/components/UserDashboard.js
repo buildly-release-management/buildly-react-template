@@ -153,7 +153,7 @@ const UserDashboard = (props) => {
 
     setProductFeatures(_.orderBy(feats, 'create_date', 'desc'));
     setProductIssues(_.orderBy(iss, 'create_date', 'desc'));
-  }, [product, features, issues, features.length, issues.length]);
+  }, [product, JSON.stringify(features), JSON.stringify(issues)]);
 
   const viewTabClicked = (event, vw) => {
     setView(vw);
