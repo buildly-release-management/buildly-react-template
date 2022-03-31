@@ -19,6 +19,7 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material';
+import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 import {
   AddRounded,
   EditRounded,
@@ -58,6 +59,7 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.down('lg')]: {
       marginTop: theme.spacing(1),
     },
+    marginBottom: theme.spacing(0.5),
   },
   moment: {
     marginTop: theme.spacing(3),
@@ -318,6 +320,15 @@ const Kanban = ({
                                       className={classes.chip}
                                     />
                                   ))}
+                                  {item.estimate
+                                  && (
+                                  <Chip
+                                    variant="outlined"
+                                    color="primary"
+                                    icon={<AccessAlarmsIcon />}
+                                    label={`${item.estimate}:00 Hrs`}
+                                  />
+                                  )}
                                   <Typography
                                     className={classes.moment}
                                     component="div"
