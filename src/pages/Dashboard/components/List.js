@@ -8,6 +8,13 @@ import {
   DeleteRounded as DeleteRoundedIcon,
   TrendingFlatRounded as TrendingFlatRoundedIcon,
 } from '@mui/icons-material';
+import {
+  Chip,
+} from '@mui/material';
+import UpdateIcon from '@mui/icons-material/Update';
+import DateRangeIcon from '@mui/icons-material/DateRange';
+import CommentIcon from '@mui/icons-material/Comment';
+import AltRouteIcon from '@mui/icons-material/AltRoute';
 
 const useStyles = makeStyles((theme) => ({
   section2: {
@@ -57,11 +64,11 @@ const useStyles = makeStyles((theme) => ({
     flex: 1,
   },
   entryIcon: {
-    marginRight: theme.spacing(2),
+    marginRight: theme.spacing(1),
     cursor: 'pointer',
   },
-  icon: {
-    cursor: 'pointer',
+  chip: {
+    width: '20%',
   },
 }));
 
@@ -73,6 +80,7 @@ const List = ({
   editItem,
   convertIssue,
   deleteItem,
+  commentItem,
 }) => {
   const classes = useStyles();
 
@@ -140,7 +148,7 @@ const List = ({
                   onClick={(e) => editItem(feat, 'feat')}
                 />
                 <DeleteRoundedIcon
-                  className={classes.icon}
+                  className={classes.entryIcon}
                   onClick={(e) => deleteItem(feat, 'feat')}
                 />
               </div>
@@ -189,9 +197,36 @@ const List = ({
                   onClick={(e) => editItem(issue, 'issue')}
                 />
                 <DeleteRoundedIcon
-                  className={classes.icon}
+                  className={classes.entryIcon}
                   onClick={(e) => deleteItem(issue, 'issue')}
                 />
+                <CommentIcon
+                  className={classes.entryIcon}
+                  onClick={(e) => commentItem()}
+                />
+                <Chip
+                  variant="outlined"
+                  className={classes.entryIcon}
+                  icon={<UpdateIcon fontSize="small" />}
+                  label={`${issue.estimate}:00 Hrs`}
+                />
+                <Chip
+                  variant="outlined"
+                  className={classes.entryIcon}
+                  icon={<DateRangeIcon fontSize="small" />}
+                  label={(issue.end_date).slice(0, 10)}
+                />
+                {productFeatures
+                  .filter((feat) => (feat.feature_uuid === issue.feature_uuid))
+                  .map((feat, ind) => (
+                    <Chip
+                      key={ind}
+                      variant="outlined"
+                      className={classes.chip}
+                      icon={<AltRouteIcon fontSize="small" />}
+                      label={feat.name}
+                    />
+                  ))}
               </div>
             ))}
         </div>

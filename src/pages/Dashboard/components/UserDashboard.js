@@ -29,6 +29,7 @@ import List from '../components/List';
 import Kanban from '../components/Kanban';
 import AddFeatures from '../forms/AddFeatures';
 import AddIssues from '../forms/AddIssues';
+import AddComments from '../forms/AddComments';
 import ConfirmModal from '@components/Modal/ConfirmModal';
 
 const useStyles = makeStyles((theme) => ({
@@ -120,6 +121,12 @@ const UserDashboard = (props) => {
       : `${redirectTo}/dashboard/kanban`
     : `${routes.DASHBOARD}/convert-issue`;
 
+  const addCommentPath = redirectTo
+    ? _.includes(location.pathname, 'list')
+      ? `${redirectTo}/dashboard/list`
+      : `${redirectTo}/dashboard/kanban`
+    : `${routes.DASHBOARD}/add-comment`;
+
   useEffect(() => {
     dispatch(getAllProducts());
     if (!features || _.isEmpty(features)) {
@@ -183,6 +190,14 @@ const UserDashboard = (props) => {
       path = addIssuePath;
     }
 
+    history.push(path, {
+      from: redirectTo || location.pathname,
+      product_uuid: product,
+    });
+  };
+
+  const commentItem = () => {
+    const path = addCommentPath;
     history.push(path, {
       from: redirectTo || location.pathname,
       product_uuid: product,
@@ -309,6 +324,7 @@ const UserDashboard = (props) => {
             editItem={editItem}
             convertIssue={convertIssue}
             deleteItem={deleteItem}
+            commentItem={commentItem}
           />
         )}
       />
@@ -325,6 +341,7 @@ const UserDashboard = (props) => {
             editItem={editItem}
             convertIssue={convertIssue}
             deleteItem={deleteItem}
+            commentItem={commentItem}
           />
         )}
       />
@@ -333,6 +350,7 @@ const UserDashboard = (props) => {
       <Route path={addIssuePath} component={AddIssues} />
       <Route path={editIssuePath} component={AddIssues} />
       <Route path={featureToIssuePath} component={AddIssues} />
+      <Route path={addCommentPath} component={AddComments} />
     </div>
   );
 };
