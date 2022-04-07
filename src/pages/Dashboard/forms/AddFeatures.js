@@ -165,13 +165,13 @@ const AddFeatures = ({
     }
   };
 
+  const featCred = _.find(
+    credentials,
+    { product_uuid, auth_detail: { tool_type: 'Feature' } },
+  );
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-    const featCred = _.find(
-      credentials,
-      { product_uuid, auth_detail: { tool_type: 'Feature' } },
-    );
     const formData = {
       ...editData,
       edit_date: dateTime,
