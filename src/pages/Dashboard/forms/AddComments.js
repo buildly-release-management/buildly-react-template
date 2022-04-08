@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
@@ -8,20 +8,10 @@ import {
   Grid,
   TextField,
   Button,
-  Autocomplete,
-  MenuItem,
-  Chip,
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import { useInput } from '@hooks/useInput';
-import {
-  getAllStatuses,
-  createFeature,
-  updateFeature,
-} from '@redux/decision/actions/decision.actions';
-import { getAllCredentials } from '@redux/product/actions/product.actions';
 import { validators } from '@utils/validators';
-import { PRIORITIES, TAGS } from './formConstants';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -46,15 +36,10 @@ const useStyles = makeStyles((theme) => ({
 const AddComments = ({
   history,
   location,
-  statuses,
-  dispatch,
-  products,
-  credentials,
 }) => {
   const classes = useStyles();
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
-  const [product, setProduct] = useState('');
   const [formError, setFormError] = useState({});
 
   const redirectTo = location.state && location.state.from;
@@ -64,7 +49,6 @@ const AddComments = ({
     && location.state.type === 'edit'
     && location.state.data
   ) || {};
-  const product_uuid = location.state && location.state.product_uuid;
 
   const comment = useInput((editData && editData.comment) || '', {
     required: true,
