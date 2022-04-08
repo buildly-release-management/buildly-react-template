@@ -84,6 +84,7 @@ const AddFeatures = ({
   const totalEstimate = useInput((editData && editData.total_estimate) || '');
   const version = useInput((editData && editData.version) || '');
   const [formError, setFormError] = useState({});
+  const [boardID, setBoardID] = useState('');
 
   const buttonText = editPage ? 'Save' : 'Add Feature';
   const formTitle = editPage ? 'Edit Feature' : 'Add Feature';
@@ -164,13 +165,13 @@ const AddFeatures = ({
     }
   };
 
+  const featCred = _.find(
+    credentials,
+    { product_uuid, auth_detail: { tool_type: 'Feature' } },
+  );
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-    const featCred = _.find(
-      credentials,
-      { product_uuid, auth_detail: { tool_type: 'Feature' } },
-    );
     const formData = {
       ...editData,
       edit_date: dateTime,
@@ -220,6 +221,10 @@ const AddFeatures = ({
       || !description.value
       || !status.value
       || !priority.value
+      || (!editPage && product
+        && product.feature_tool_detail
+        && !_.isEmpty(boardList)
+        && !boardID)
       || (!editPage && product
         && product.feature_tool_detail
         && !_.isEmpty(colList)
@@ -411,9 +416,11 @@ const AddFeatures = ({
                   id="boardID"
                   label="Tool Board"
                   name="boardID"
+                  value={boardID}
                   autoComplete="boardID"
                   onChange={(e) => {
                     const board = e.target.value;
+                    setBoardID(board);
                     setColList(board.column_list);
                   }}
                 >

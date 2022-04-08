@@ -227,24 +227,24 @@ const UserDashboard = (props) => {
     setDeleteModal(true);
   };
 
+  const featCred = _.find(
+    credentials,
+    { product_uuid: product, auth_detail: { tool_type: 'Feature' } },
+  );
+  const issueCred = _.find(
+    credentials,
+    { product_uuid: product, auth_detail: { tool_type: 'Issue' } },
+  );
   const handleDeleteModal = () => {
     const { id, type } = toDeleteItem;
     setDeleteModal(false);
     if (type === 'feat') {
-      const featCred = _.find(
-        credentials,
-        { product_uuid: product, auth_detail: { tool_type: 'Feature' } },
-      );
       const deleteCred = {
         ...featCred?.auth_detail,
         feature_uuid: id,
       };
       dispatch(deleteFeature(deleteCred));
     } else if (type === 'issue') {
-      const issueCred = _.find(
-        credentials,
-        { product_uuid: product, auth_detail: { tool_type: 'Issue' } },
-      );
       const deleteCreds = {
         ...issueCred?.auth_detail,
         issue_uuid: id,

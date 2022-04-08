@@ -213,13 +213,13 @@ const AddIssues = ({
     }
   };
 
+  const issueCred = _.find(
+    credentials,
+    { product_uuid, auth_detail: { tool_type: 'Issue' } },
+  );
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-    const issueCred = _.find(
-      credentials,
-      { product_uuid, auth_detail: { tool_type: 'Issue' } },
-    );
     const formData = {
       ...editData,
       edit_date: dateTime,

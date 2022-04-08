@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 600,
   },
   card: {
-    margin: theme.spacing(2),
+    margin: theme.spacing(1),
     backgroundColor: theme.palette.neutral.main,
     color: theme.palette.neutral.contrastText,
     '& span.MuiCardHeader-subheader': {
@@ -258,7 +258,7 @@ const Kanban = ({
                                   subheader={item.name}
                                   action={(
                                     <div>
-                                      {index === 0 && (
+                                      {!item.issue_uuid && (
                                         <IconButton
                                           aria-label="convert-ticket"
                                           aria-controls="menu-card"
