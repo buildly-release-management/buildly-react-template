@@ -50,6 +50,7 @@ const AddFeatures = ({
   dispatch,
   products,
   credentials,
+  productFeatures,
 }) => {
   const classes = useStyles();
   const [openFormModal, setFormModal] = useState(true);
@@ -67,6 +68,7 @@ const AddFeatures = ({
 
   const name = useInput((editData && editData.name) || '', {
     required: true,
+    productFeatures,
   });
   const description = useInput((editData && editData.description) || '', {
     required: true,
@@ -280,7 +282,7 @@ const AddFeatures = ({
                       ? formError.name.message
                       : ''
                   }
-                  onBlur={(e) => handleBlur(e, 'required', name)}
+                  onBlur={(e) => handleBlur(e, 'duplicate', name)}
                   {...name.bind}
                 />
               </Grid>
