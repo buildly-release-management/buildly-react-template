@@ -28,6 +28,7 @@ import { getAllCredentials } from '@redux/product/actions/product.actions';
 import List from '../components/List';
 import Kanban from '../components/Kanban';
 import AddFeatures from '../forms/AddFeatures';
+import NewFeatureForm from '../forms/NewFeatureForm';
 import AddIssues from '../forms/AddIssues';
 import ConfirmModal from '@components/Modal/ConfirmModal';
 
@@ -331,13 +332,13 @@ const UserDashboard = (props) => {
       <Route
         path={addFeatPath}
         render={(prps) => (
-          <AddFeatures
+          <NewFeatureForm
             {...prps}
             productFeatures={productFeatures}
           />
         )}
       />
-      <Route path={editFeatPath} component={AddFeatures} />
+      <Route path={editFeatPath} component={NewFeatureForm} />
       <Route path={addIssuePath} component={AddIssues} />
       <Route path={editIssuePath} component={AddIssues} />
       <Route path={featureToIssuePath} component={AddIssues} />
