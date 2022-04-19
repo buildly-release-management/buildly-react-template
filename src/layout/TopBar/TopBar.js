@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
   logo: {
-    maxWidth: 100,
+    maxWidth: 130,
     objectFit: 'contain',
   },
   menuButton: {
