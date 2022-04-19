@@ -13,7 +13,7 @@ import {
   Typography,
   Container,
 } from '@mui/material';
-import logo from '@assets/insights-logo-orange.png';
+import logo from '@assets/insights-logo.png';
 import Copyright from '@components/Copyright/Copyright';
 import { useInput } from '@hooks/useInput';
 import { sendPasswordResetLink } from '@redux/authuser/actions/authuser.actions';

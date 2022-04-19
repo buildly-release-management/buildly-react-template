@@ -16,7 +16,7 @@ import {
   Group as GroupIcon,
   Menu as MenuIcon,
 } from '@mui/icons-material';
-import logo from '@assets/insights-logo-orange.png';
+import logo from '@assets/insights-logo.png';
 import { UserContext } from '@context/User.context';
 import { logout, loadOrgNames } from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
