@@ -77,6 +77,7 @@ const useStyles = makeStyles((theme) => ({
   },
   comment: {
     float: 'right',
+    cursor: 'pointer',
   },
 }));
 
