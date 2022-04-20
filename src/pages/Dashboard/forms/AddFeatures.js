@@ -90,7 +90,7 @@ const AddFeatures = ({
   const buttonText = editPage ? 'Save' : 'Add Feature';
 
   let formTitle;
-  if(editPage) {
+  if (editPage) {
     formTitle = viewPage ? 'View Feature' : 'Edit Feature';
   } else {
     formTitle = 'Add Feature';
@@ -522,36 +522,38 @@ const AddFeatures = ({
               />
             </Grid>
             {
-              !viewPage && <Grid
-                    container
-                    spacing={isDesktop ? 3 : 0}
-                    justifyContent="center"
-                >
-                  <Grid item xs={12} sm={4}>
-                    <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        className={classes.submit}
-                        disabled={submitDisabled()}
-                    >
-                      {buttonText}
-                    </Button>
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Button
-                        type="button"
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        onClick={discardFormData}
-                        className={classes.submit}
-                    >
-                      Cancel
-                    </Button>
-                  </Grid>
+              !viewPage && (
+              <Grid
+                container
+                spacing={isDesktop ? 3 : 0}
+                justifyContent="center"
+              >
+                <Grid item xs={12} sm={4}>
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    className={classes.submit}
+                    disabled={submitDisabled()}
+                  >
+                    {buttonText}
+                  </Button>
                 </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Button
+                    type="button"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    onClick={discardFormData}
+                    className={classes.submit}
+                  >
+                    Cancel
+                  </Button>
+                </Grid>
+              </Grid>
+              )
             }
           </form>
         </FormModal>

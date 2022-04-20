@@ -4,7 +4,9 @@ import { connect } from 'react-redux';
 import _ from 'lodash';
 import { Route } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
-import { Grid, MenuItem, Tab, Tabs, TextField, Typography, } from '@mui/material';
+import {
+  Grid, MenuItem, Tab, Tabs, TextField, Typography,
+} from '@mui/material';
 import Loader from '@components/Loader/Loader';
 import { routes } from '@routes/routesConstants';
 import { getAllCredentials, getAllProducts } from '@redux/product/actions/product.actions';

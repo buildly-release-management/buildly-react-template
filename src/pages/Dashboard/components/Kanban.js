@@ -95,6 +95,7 @@ const Kanban = ({
   convertIssue,
   deleteItem,
   commentItem,
+  dispatch,
 }) => {
   const classes = useStyles();
   const [columns, setColumns] = useState({});
