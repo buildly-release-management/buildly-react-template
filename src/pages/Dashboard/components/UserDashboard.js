@@ -332,6 +332,7 @@ const UserDashboard = (props) => {
             convertIssue={convertIssue}
             deleteItem={deleteItem}
             commentItem={commentItem}
+            dispatch={dispatch}
           />
         )}
       />

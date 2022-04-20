@@ -25,11 +25,10 @@ import DateRangeIcon from '@mui/icons-material/DateRange';
 import CommentIcon from '@mui/icons-material/Comment';
 import {
   AddRounded,
-  EditRounded,
-  DeleteRounded,
   TrendingFlatRounded,
   MoreHoriz,
 } from '@mui/icons-material';
+import { updateFeature, updateIssue } from '@redux/decision/actions/decision.actions';
 
 const useStyles = makeStyles((theme) => ({
   noProduct: {
@@ -159,6 +158,14 @@ const Kanban = ({
           items: destItems,
         },
       });
+
+      // Update status of the card on drag and drop to other column
+      removed.status = destination.droppableId;
+      if (removed.issue_uuid) {
+        dispatch(updateIssue(removed));
+      } else {
+        dispatch(updateFeature(removed));
+      }
     } else {
       const column = columns[source.droppableId];
       const copiedItems = [...column.items];
