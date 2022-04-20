@@ -206,13 +206,11 @@ const List = ({
                 />
                 <Chip
                   variant="outlined"
-                  className={classes.entryIcon}
                   icon={<UpdateIcon fontSize="small" />}
                   label={`${issue.estimate}:00 Hrs`}
                 />
                 <Chip
                   variant="outlined"
-                  className={classes.entryIcon}
                   icon={<DateRangeIcon fontSize="small" />}
                   label={(issue.end_date).slice(0, 10)}
                 />

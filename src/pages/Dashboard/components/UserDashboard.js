@@ -95,6 +95,12 @@ const UserDashboard = (props) => {
       : `${redirectTo}/dashboard/kanban`
     : `${routes.DASHBOARD}/edit-feature`;
 
+  const viewFeatPath = redirectTo
+    ? _.includes(location.pathname, 'list')
+      ? `${redirectTo}/dashboard/list`
+      : `${redirectTo}/dashboard/kanban`
+    : `${routes.DASHBOARD}/view-feature`;
+
   const addIssuePath = redirectTo
     ? _.includes(location.pathname, 'list')
       ? `${redirectTo}/dashboard/list`
@@ -161,7 +167,7 @@ const UserDashboard = (props) => {
   const editItem = (item, type, viewOnly = false) => {
     let path;
     if (type === 'feat') {
-      path = `${editFeatPath}/:${item.feature_uuid}`;
+      path = `${viewOnly ? viewFeatPath : editFeatPath}/:${item.feature_uuid}`;
     } else if (type === 'issue') {
       path = `${editIssuePath}/:${item.issue_uuid}`;
     }
@@ -340,6 +346,7 @@ const UserDashboard = (props) => {
       />
       <Route path={addFeatPath} component={AddFeatures} />
       <Route path={editFeatPath} component={AddFeatures} />
+      <Route path={viewFeatPath} component={AddFeatures} />
       <Route path={addIssuePath} component={AddIssues} />
       <Route path={editIssuePath} component={AddIssues} />
       <Route path={featureToIssuePath} component={AddIssues} />
