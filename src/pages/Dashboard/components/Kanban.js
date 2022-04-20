@@ -362,6 +362,7 @@ const Kanban = ({
                                         className={classes.chip}
                                         icon={<AltRouteIcon fontSize="small" />}
                                         label={feat.name}
+                                        onClick={() => editItem(feat, 'feat', true)}
                                       />
                                     ))}
                                   <Typography

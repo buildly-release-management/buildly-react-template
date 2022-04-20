@@ -4,27 +4,17 @@ import { connect } from 'react-redux';
 import _ from 'lodash';
 import { Route } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
-import {
-  MenuItem,
-  TextField,
-  Typography,
-  Button,
-  Grid,
-  Tabs,
-  Tab,
-} from '@mui/material';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import { Grid, MenuItem, Tab, Tabs, TextField, Typography, } from '@mui/material';
 import Loader from '@components/Loader/Loader';
 import { routes } from '@routes/routesConstants';
-import { getAllProducts } from '@redux/product/actions/product.actions';
+import { getAllCredentials, getAllProducts } from '@redux/product/actions/product.actions';
 import {
+  deleteFeature,
+  deleteIssue,
   getAllFeatures,
   getAllIssues,
   getAllStatuses,
-  deleteFeature,
-  deleteIssue,
 } from '@redux/decision/actions/decision.actions';
-import { getAllCredentials } from '@redux/product/actions/product.actions';
 import List from '../components/List';
 import Kanban from '../components/Kanban';
 import AddFeatures from '../forms/AddFeatures';
@@ -166,7 +156,7 @@ const UserDashboard = (props) => {
     setView(vw);
   };
 
-  const editItem = (item, type) => {
+  const editItem = (item, type, viewOnly = false) => {
     let path;
     if (type === 'feat') {
       path = `${editFeatPath}/:${item.feature_uuid}`;
@@ -175,10 +165,11 @@ const UserDashboard = (props) => {
     }
 
     history.push(path, {
-      type: 'edit',
+      type: viewOnly ? 'view' : 'edit',
       from: redirectTo || location.pathname,
       data: item,
       product_uuid: product,
+      viewOnly,
     });
   };
 
@@ -197,8 +188,7 @@ const UserDashboard = (props) => {
   };
 
   const commentItem = () => {
-    const path = addCommentPath;
-    history.push(path, {
+    history.push(addCommentPath, {
       from: redirectTo || location.pathname,
       product_uuid: product,
     });
