@@ -6,11 +6,8 @@ import './i18n';
 import configureStore from './redux/store';
 
 if(window.env.PRODUCTION) {
-    const srcUrl = "https://www.googletagmanager.com/gtag/js?id=";
-    const id = 'UA-226504961-1';
-
     const script = document.createElement('script');
-    script.src = `${srcUrl}${id}`;
+    script.src = "https://www.googletagmanager.com/gtag/js?id=UA-226504961-1";
     script.async = true;
 
     const script2 = document.createElement('script');
@@ -18,7 +15,7 @@ if(window.env.PRODUCTION) {
                             window.dataLayer = window.dataLayer || [];
                             function gtag() { dataLayer.push(arguments); }
                             gtag('js', new Date());
-                            gtag('config', ${id}, { 'send_page_view': false });
+                            gtag('config', 'UA-226504961-1', { 'send_page_view': false });
                         `;
 
     document.body.appendChild(script);
