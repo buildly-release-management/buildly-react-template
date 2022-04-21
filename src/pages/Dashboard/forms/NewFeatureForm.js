@@ -85,13 +85,21 @@ const NewFeatureForm = (props) => {
   const classes = useStyles();
   const steps = getSteps();
   const maxSteps = steps.length;
-  const editPage = location.state && location.state.type === 'edit';
+  const editPage = location.state && (location.state.type === 'edit' || location.state.type === 'view');
   const [activeStep, setActiveStep] = React.useState(0);
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
   const [confirmModalFor, setConfirmModalFor] = useState(null);
   const redirectTo = location.state && location.state.from;
-  const formTitle = editPage ? 'Edit Feature' : 'New Feature Setup';
+  const viewPage = (location.state && location.state.viewOnly) || false;
+
+  let formTitle;
+  if (editPage) {
+    formTitle = viewPage ? 'View Feature' : 'Edit Feature';
+  } else {
+    formTitle = 'New Feature Setup';
+  }
+
   const editData = (
     location.state
     && location.state.type === 'edit'

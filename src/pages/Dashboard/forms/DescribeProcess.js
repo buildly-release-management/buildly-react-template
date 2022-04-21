@@ -137,30 +137,31 @@ const DescribeProcess = ({
   const [product, setProduct] = useState('');
 
   const redirectTo = location.state && location.state.from;
-  const editPage = location.state && location.state.type === 'edit';
+  const editPage = location.state && (location.state.type === 'edit' || location.state.type === 'view');
   const product_uuid = location.state && location.state.product_uuid;
   const [formError, setFormError] = useState({});
   const editData = (
     location.state
-    && location.state.type === 'edit'
+    && (location.state.type === 'edit' || location.state.type === 'view')
     && location.state.data
   ) || {};
+  const viewPage = (location.state && location.state.viewOnly) || false;
 
-  const [quest1, setQuest1] = useState((editData && editData.collecting_data) || []);
-  const quest2 = useInput((editData && editData.field_desc) || '', {
+  const [quest1, setQuest1] = useState((editData && editData.feature_detail.collecting_data) || []);
+  const quest2 = useInput((editData && editData.feature_detail.field_desc) || '', {
     required: true,
   });
-  const [quest3, setQuest3] = useState((editData && editData.displaying_data) || []);
-  const quest4 = useInput((editData && editData.display_desc) || '', {
+  const [quest3, setQuest3] = useState((editData && editData.feature_detail.displaying_data) || []);
+  const quest4 = useInput((editData && editData.feature_detail.display_desc) || '', {
     required: true,
   });
-  const [quest5, setQuest5] = useState((editData && editData.business_logic) || []);
-  const [quest6, setQuest6] = useState((editData && editData.enanled) || []);
-  const quest7 = useInput((editData && editData.enabled_desc) || '', {
+  const [quest5, setQuest5] = useState((editData && editData.feature_detail.business_logic) || []);
+  const [quest6, setQuest6] = useState((editData && editData.feature_detail.enabled) || []);
+  const quest7 = useInput((editData && editData.feature_detail.enabled_desc) || '', {
     required: true,
   });
-  const [quest8, setQuest8] = useState((editData && editData.search_or_nav) || []);
-  const [quest9, setQuest9] = useState((editData && editData.links) || []);
+  const [quest8, setQuest8] = useState((editData && editData.feature_detail.search_or_nav) || []);
+  const [quest9, setQuest9] = useState((editData && editData.feature_detail.links) || []);
 
   const buttonText = editPage ? 'Save' : 'Add Feature';
   const formTitle = editPage ? 'Edit Feature' : 'Add Feature';
@@ -181,25 +182,23 @@ const DescribeProcess = ({
     quest2.hasChanged()
     || quest4.hasChanged()
     || quest7.hasChanged()
-    || (!_.isEmpty(editData) && !_.isEqual(quest1, editData.quest1))
+    || (!_.isEmpty(editData) && !_.isEqual(quest1, editData.feature_detail.quest1))
       || (_.isEmpty(editData) && !_.isEmpty(quest1))
-    || (!_.isEmpty(editData) && !_.isEqual(quest3, editData.quest3))
+    || (!_.isEmpty(editData) && !_.isEqual(quest3, editData.feature_detail.quest3))
       || (_.isEmpty(editData) && !_.isEmpty(quest3))
-    || (!_.isEmpty(editData) && !_.isEqual(quest6, editData.quest6))
+    || (!_.isEmpty(editData) && !_.isEqual(quest6, editData.feature_detail.quest6))
       || (_.isEmpty(editData) && !_.isEmpty(quest6))
-    || (!_.isEmpty(editData) && !_.isEqual(quest8, editData.quest8))
+    || (!_.isEmpty(editData) && !_.isEqual(quest8, editData.feature_detail.quest8))
       || (_.isEmpty(editData) && !_.isEmpty(quest8))
-    || (!_.isEmpty(editData) && !_.isEqual(quest9, editData.quest9))
+    || (!_.isEmpty(editData) && !_.isEqual(quest9, editData.feature_detail.quest9))
       || (_.isEmpty(editData) && !_.isEmpty(quest9))
   );
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const dateTime = new Date();
     const featureDetails = {
-      ...editData,
       ...featureFormData,
-      details: {
+      feature_detail: {
         collecting_data: quest1,
         field_desc: quest2.value,
         displaying_data: quest3,
@@ -214,7 +213,6 @@ const DescribeProcess = ({
     if (editPage) {
       dispatch(updateFeature(featureDetails));
     } else {
-      featureDetails.create_date = dateTime;
       dispatch(createFeature(featureDetails));
     }
     history.push(redirectTo);
@@ -273,6 +271,7 @@ const DescribeProcess = ({
             className={classes.choice}
             fullWidth
             component="fieldset"
+            disabled={viewPage}
           >
             <FormLabel component="legend">
               Collecting Data?
@@ -314,12 +313,14 @@ const DescribeProcess = ({
             className={classes.textField}
             onBlur={(e) => handleBlur(e, 'required', quest2)}
             {...quest2.bind}
+            disabled={viewPage}
           />
           )}
           <FormControl
             className={classes.choice}
             fullWidth
             component="fieldset"
+            disabled={viewPage}
           >
             <FormLabel component="legend">
               Displaying Data?
@@ -361,6 +362,7 @@ const DescribeProcess = ({
             className={classes.textField}
             onBlur={(e) => handleBlur(e, 'required', quest4)}
             {...quest4.bind}
+            disabled={viewPage}
           />
           )}
           {quest3 === 'yes' && (
@@ -368,6 +370,7 @@ const DescribeProcess = ({
             className={classes.choice}
             fullWidth
             component="fieldset"
+            disabled={viewPage}
           >
             <FormLabel component="legend">
               Business Logic?
@@ -395,6 +398,7 @@ const DescribeProcess = ({
             className={classes.choice}
             fullWidth
             component="fieldset"
+            disabled={viewPage}
           >
             <FormLabel component="legend">
               Making a decision?
@@ -436,6 +440,7 @@ const DescribeProcess = ({
             className={classes.textField}
             onBlur={(e) => handleBlur(e, 'required', quest7)}
             {...quest7.bind}
+            disabled={viewPage}
           />
           )}
           {quest5 === 'no' && (
@@ -443,6 +448,7 @@ const DescribeProcess = ({
             className={classes.choice}
             fullWidth
             component="fieldset"
+            disabled={viewPage}
           >
             <FormLabel component="legend">
               How does a user find this data?
@@ -471,6 +477,7 @@ const DescribeProcess = ({
             className={classes.choice}
             fullWidth
             component="fieldset"
+            disabled={viewPage}
           >
             <FormLabel component="legend">
               Links?
@@ -513,6 +520,7 @@ const DescribeProcess = ({
               Back
             </Button>
           </Grid>
+          { !viewPage && (
           <Grid item xs={12} sm={4}>
             <Button
               type="submit"
@@ -525,6 +533,7 @@ const DescribeProcess = ({
               {buttonText}
             </Button>
           </Grid>
+          )}
         </Grid>
       </form>
     </>

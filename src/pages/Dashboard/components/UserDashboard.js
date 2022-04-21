@@ -354,8 +354,23 @@ const UserDashboard = (props) => {
           />
         )}
       />
-      <Route path={editFeatPath} component={NewFeatureForm} />
-      <Route path={viewFeatPath} component={AddFeatures} />
+      <Route
+        path={editFeatPath}
+        render={(prps) => (
+          <NewFeatureForm
+            {...prps}
+            productFeatures={productFeatures}
+          />
+        )}
+      />
+      <Route
+        path={viewFeatPath}
+        render={(prps) => (
+          <NewFeatureForm
+            {...prps}
+          />
+        )}
+      />
       <Route path={addIssuePath} component={AddIssues} />
       <Route path={editIssuePath} component={AddIssues} />
       <Route path={featureToIssuePath} component={AddIssues} />

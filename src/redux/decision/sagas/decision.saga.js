@@ -79,6 +79,7 @@ import {
   DELETE_STATUS,
   DELETE_STATUS_SUCCESS,
   DELETE_STATUS_FAILURE,
+  saveFeatureFormData,
 } from '../actions/decision.actions';
 
 const decisionEndpoint = 'decision/';
@@ -269,7 +270,10 @@ function* createFeature(payload) {
       `${window.env.API_URL}${decisionEndpoint}feature/`,
       payload.data,
     );
-    yield put({ type: CREATE_FEATURE_SUCCESS, data: feature.data });
+    yield [
+      yield put({ type: CREATE_FEATURE_SUCCESS, data: feature.data }),
+      yield put(saveFeatureFormData(null)),
+    ];
   } catch (error) {
     yield [
       yield put(
