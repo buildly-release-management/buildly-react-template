@@ -147,21 +147,23 @@ const DescribeProcess = ({
   ) || {};
   const viewPage = (location.state && location.state.viewOnly) || false;
 
-  const [quest1, setQuest1] = useState((editData && editData.feature_detail.collecting_data) || []);
-  const quest2 = useInput((editData && editData.feature_detail.field_desc) || '', {
+  const [quest1, setQuest1] = useState((editData
+    && editData.feature_detail?.collecting_data) || []);
+  const quest2 = useInput((editData && editData.feature_detail?.field_desc) || '', {
     required: true,
   });
-  const [quest3, setQuest3] = useState((editData && editData.feature_detail.displaying_data) || []);
-  const quest4 = useInput((editData && editData.feature_detail.display_desc) || '', {
+  const [quest3, setQuest3] = useState((editData
+    && editData.feature_detail?.displaying_data) || []);
+  const quest4 = useInput((editData && editData.feature_detail?.display_desc) || '', {
     required: true,
   });
-  const [quest5, setQuest5] = useState((editData && editData.feature_detail.business_logic) || []);
-  const [quest6, setQuest6] = useState((editData && editData.feature_detail.enabled) || []);
-  const quest7 = useInput((editData && editData.feature_detail.enabled_desc) || '', {
+  const [quest5, setQuest5] = useState((editData && editData.feature_detail?.business_logic) || []);
+  const [quest6, setQuest6] = useState((editData && editData.feature_detail?.enabled) || []);
+  const quest7 = useInput((editData && editData.feature_detail?.enabled_desc) || '', {
     required: true,
   });
-  const [quest8, setQuest8] = useState((editData && editData.feature_detail.search_or_nav) || []);
-  const [quest9, setQuest9] = useState((editData && editData.feature_detail.links) || []);
+  const [quest8, setQuest8] = useState((editData && editData.feature_detail?.search_or_nav) || []);
+  const [quest9, setQuest9] = useState((editData && editData.feature_detail?.links) || []);
 
   const buttonText = editPage ? 'Save' : 'Add Feature';
   const formTitle = editPage ? 'Edit Feature' : 'Add Feature';
@@ -182,15 +184,15 @@ const DescribeProcess = ({
     quest2.hasChanged()
     || quest4.hasChanged()
     || quest7.hasChanged()
-    || (!_.isEmpty(editData) && !_.isEqual(quest1, editData.feature_detail.quest1))
+    || (!_.isEmpty(editData) && !_.isEqual(quest1, editData.feature_detail?.quest1))
       || (_.isEmpty(editData) && !_.isEmpty(quest1))
-    || (!_.isEmpty(editData) && !_.isEqual(quest3, editData.feature_detail.quest3))
+    || (!_.isEmpty(editData) && !_.isEqual(quest3, editData.feature_detail?.quest3))
       || (_.isEmpty(editData) && !_.isEmpty(quest3))
-    || (!_.isEmpty(editData) && !_.isEqual(quest6, editData.feature_detail.quest6))
+    || (!_.isEmpty(editData) && !_.isEqual(quest6, editData.feature_detail?.quest6))
       || (_.isEmpty(editData) && !_.isEmpty(quest6))
-    || (!_.isEmpty(editData) && !_.isEqual(quest8, editData.feature_detail.quest8))
+    || (!_.isEmpty(editData) && !_.isEqual(quest8, editData.feature_detail?.quest8))
       || (_.isEmpty(editData) && !_.isEmpty(quest8))
-    || (!_.isEmpty(editData) && !_.isEqual(quest9, editData.feature_detail.quest9))
+    || (!_.isEmpty(editData) && !_.isEqual(quest9, editData.feature_detail?.quest9))
       || (_.isEmpty(editData) && !_.isEmpty(quest9))
   );
 
