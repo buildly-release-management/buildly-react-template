@@ -5,31 +5,24 @@ import _ from 'lodash';
 import { Route } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  MenuItem,
-  TextField,
-  Typography,
-  Button,
-  Grid,
-  Tabs,
-  Tab,
+  Grid, MenuItem, Tab, Tabs, TextField, Typography,
 } from '@mui/material';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import Loader from '@components/Loader/Loader';
 import { routes } from '@routes/routesConstants';
-import { getAllProducts } from '@redux/product/actions/product.actions';
+import { getAllCredentials, getAllProducts } from '@redux/product/actions/product.actions';
 import {
+  deleteFeature,
+  deleteIssue,
   getAllFeatures,
   getAllIssues,
   getAllStatuses,
-  deleteFeature,
-  deleteIssue,
 } from '@redux/decision/actions/decision.actions';
-import { getAllCredentials } from '@redux/product/actions/product.actions';
 import List from '../components/List';
 import Kanban from '../components/Kanban';
 import AddFeatures from '../forms/AddFeatures';
 import NewFeatureForm from '../forms/NewFeatureForm';
 import AddIssues from '../forms/AddIssues';
+import AddComments from '../forms/AddComments';
 import ConfirmModal from '@components/Modal/ConfirmModal';
 
 const useStyles = makeStyles((theme) => ({
@@ -103,6 +96,12 @@ const UserDashboard = (props) => {
       : `${redirectTo}/dashboard/kanban`
     : `${routes.DASHBOARD}/edit-feature`;
 
+  const viewFeatPath = redirectTo
+    ? _.includes(location.pathname, 'list')
+      ? `${redirectTo}/dashboard/list`
+      : `${redirectTo}/dashboard/kanban`
+    : `${routes.DASHBOARD}/view-feature`;
+
   const addIssuePath = redirectTo
     ? _.includes(location.pathname, 'list')
       ? `${redirectTo}/dashboard/list`
@@ -120,6 +119,12 @@ const UserDashboard = (props) => {
       ? `${redirectTo}/dashboard/list`
       : `${redirectTo}/dashboard/kanban`
     : `${routes.DASHBOARD}/convert-issue`;
+
+  const addCommentPath = redirectTo
+    ? _.includes(location.pathname, 'list')
+      ? `${redirectTo}/dashboard/list`
+      : `${redirectTo}/dashboard/kanban`
+    : `${routes.DASHBOARD}/add-comment`;
 
   useEffect(() => {
     dispatch(getAllProducts());
@@ -160,19 +165,20 @@ const UserDashboard = (props) => {
     setView(vw);
   };
 
-  const editItem = (item, type) => {
+  const editItem = (item, type, viewOnly = false) => {
     let path;
     if (type === 'feat') {
-      path = `${editFeatPath}/:${item.feature_uuid}`;
+      path = `${viewOnly ? viewFeatPath : editFeatPath}/:${item.feature_uuid}`;
     } else if (type === 'issue') {
       path = `${editIssuePath}/:${item.issue_uuid}`;
     }
 
     history.push(path, {
-      type: 'edit',
+      type: viewOnly ? 'view' : 'edit',
       from: redirectTo || location.pathname,
       data: item,
       product_uuid: product,
+      viewOnly,
     });
   };
 
@@ -185,6 +191,13 @@ const UserDashboard = (props) => {
     }
 
     history.push(path, {
+      from: redirectTo || location.pathname,
+      product_uuid: product,
+    });
+  };
+
+  const commentItem = () => {
+    history.push(addCommentPath, {
       from: redirectTo || location.pathname,
       product_uuid: product,
     });
@@ -310,6 +323,7 @@ const UserDashboard = (props) => {
             editItem={editItem}
             convertIssue={convertIssue}
             deleteItem={deleteItem}
+            commentItem={commentItem}
           />
         )}
       />
@@ -326,6 +340,8 @@ const UserDashboard = (props) => {
             editItem={editItem}
             convertIssue={convertIssue}
             deleteItem={deleteItem}
+            commentItem={commentItem}
+            dispatch={dispatch}
           />
         )}
       />
@@ -339,9 +355,11 @@ const UserDashboard = (props) => {
         )}
       />
       <Route path={editFeatPath} component={NewFeatureForm} />
+      <Route path={viewFeatPath} component={AddFeatures} />
       <Route path={addIssuePath} component={AddIssues} />
       <Route path={editIssuePath} component={AddIssues} />
       <Route path={featureToIssuePath} component={AddIssues} />
+      <Route path={addCommentPath} component={AddComments} />
     </div>
   );
 };
