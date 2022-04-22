@@ -120,9 +120,7 @@ const NewFeatureForm = (props) => {
   };
 
   const handleClose = () => {
-    if (checkIfFormEdited(activeStep)
-      || (featureFormData && !_.isEmpty(featureFormData))
-    ) {
+    if (checkIfFormEdited(activeStep)) {
       setConfirmModal(true);
       setConfirmModalFor(null);
     } else {

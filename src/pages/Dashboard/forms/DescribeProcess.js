@@ -181,19 +181,39 @@ const DescribeProcess = ({
   }, []);
 
   checkIfDescribeProcessEdited = () => (
-    quest2.hasChanged()
-    || quest4.hasChanged()
-    || quest7.hasChanged()
-    || (!_.isEmpty(editData) && !_.isEqual(quest1, editData.feature_detail?.quest1))
-      || (_.isEmpty(editData) && !_.isEmpty(quest1))
-    || (!_.isEmpty(editData) && !_.isEqual(quest3, editData.feature_detail?.quest3))
-      || (_.isEmpty(editData) && !_.isEmpty(quest3))
-    || (!_.isEmpty(editData) && !_.isEqual(quest6, editData.feature_detail?.quest6))
-      || (_.isEmpty(editData) && !_.isEmpty(quest6))
-    || (!_.isEmpty(editData) && !_.isEqual(quest8, editData.feature_detail?.quest8))
-      || (_.isEmpty(editData) && !_.isEmpty(quest8))
-    || (!_.isEmpty(editData) && !_.isEqual(quest9, editData.feature_detail?.quest9))
-      || (_.isEmpty(editData) && !_.isEmpty(quest9))
+    (editData
+        && editData.feature_detail
+        && editData.feature_detail.collecting_data
+        && !_.isEqual(quest1,
+          editData.feature_detail.collecting_data))
+      || quest2.hasChanged()
+      || (editData
+        && editData.feature_detail
+        && editData.feature_detail.displaying_data
+        && !_.isEqual(quest3,
+          editData.feature_detail.displaying_data))
+      || quest4.hasChanged()
+      || (editData
+        && editData.feature_detail
+        && editData.feature_detail.business_logic
+        && !_.isEqual(quest5,
+          editData.feature_detail.business_logic))
+      || (editData
+          && editData.feature_detail
+          && editData.feature_detail.enabled
+          && !_.isEqual(quest6,
+            editData.feature_detail.enabled))
+      || quest7.hasChanged()
+      || (editData
+            && editData.feature_detail
+            && editData.feature_detail.search_or_nav
+            && !_.isEqual(quest8,
+              editData.feature_detail.search_or_nav))
+      || (editData
+            && editData.feature_detail
+            && editData.feature_detail.links
+            && !_.isEqual(quest9,
+              editData.feature_detail.links))
   );
 
   const handleSubmit = (event) => {
