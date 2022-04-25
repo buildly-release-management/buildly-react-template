@@ -88,7 +88,7 @@ const AddFeatures = ({
   || (featureFormData && featureFormData.tags) || []);
   const [boardList, setBoardList] = useState([]);
   const [colList, setColList] = useState([]);
-  const [colID, setColID] = useState('');
+  const [colID, setColID] = useState((featureFormData && featureFormData.column_id) || '');
   const totalEstimate = useInput((editData && editData.total_estimate) || (featureFormData && featureFormData.total_estimate) || '');
   const version = useInput((editData && editData.version) || (featureFormData && featureFormData.version) || '');
   const [formError, setFormError] = useState({});
@@ -216,11 +216,6 @@ const AddFeatures = ({
       || !priority.value
       || (!editPage && product
         && product.feature_tool_detail
-        && !_.isEmpty(boardList)
-        && !boardID)
-      || (!editPage && product
-        && product.feature_tool_detail
-        && !_.isEmpty(colList)
         && !colID)
     ) {
       return true;
