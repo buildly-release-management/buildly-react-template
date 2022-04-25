@@ -62,7 +62,6 @@ const AddIssues = ({
   const [product, setProduct] = useState('');
   const [orgList, setOrgList] = useState([]);
   const [repoList, setRepoList] = useState([]);
-  const [repo, setRepo] = useState('');
   const [orgID, setOrgID] = useState('');
 
   const redirectTo = location.state && location.state.from;
@@ -120,6 +119,7 @@ const AddIssues = ({
     || '',
   );
   const complexity = useInput((editData && editData.complexity) || 0);
+  const [repo, setRepo] = useState((editData && editData.repository) || '');
   const [formError, setFormError] = useState({});
 
   const buttonText = convertPage
@@ -274,7 +274,7 @@ const AddIssues = ({
       || !feature.value
       || !type.value
       || !status.value
-      || (product
+      || (!editPage && product
         && product.issue_tool_detail
         && !_.isEmpty(orgList)
         && !orgID)
