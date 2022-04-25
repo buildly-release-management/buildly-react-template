@@ -137,7 +137,9 @@ const NewFeatureForm = (props) => {
       setActiveStep(confirmModalFor);
     } else {
       dispatch(saveFeatureFormData(null));
-      history.push(routes.DASHBOARD);
+      if (location && location.state) {
+        history.push(redirectTo);
+      }
     }
   };
 
