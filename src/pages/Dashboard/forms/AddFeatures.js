@@ -71,29 +71,28 @@ const AddFeatures = ({
   const product_uuid = location.state && location.state.product_uuid;
   const viewPage = (location.state && location.state.viewOnly) || false;
 
-  const name = useInput((editData && editData.name) || '', {
+  const name = useInput((editData && editData.name) || (featureFormData && featureFormData.name) || '', {
     required: true,
     productFeatures,
   });
-  const description = useInput((editData && editData.description) || '', {
+  const description = useInput((editData && editData.description) || (featureFormData && featureFormData.description) || '', {
     required: true,
   });
-  const priority = useInput((editData && editData.priority) || '', {
+  const priority = useInput((editData && editData.priority) || (featureFormData && featureFormData.priority) || '', {
     required: true,
   });
-  const status = useInput((editData && editData.status) || '', {
+  const status = useInput((editData && editData.status) || (featureFormData && featureFormData.status) || '', {
     required: true,
   });
-  const [tags, setTags] = useState((editData && editData.tags) || []);
+  const [tags, setTags] = useState((editData && editData.tags)
+  || (featureFormData && featureFormData.tags) || []);
   const [boardList, setBoardList] = useState([]);
   const [colList, setColList] = useState([]);
   const [colID, setColID] = useState('');
-  const totalEstimate = useInput((editData && editData.total_estimate) || '');
-  const version = useInput((editData && editData.version) || '');
+  const totalEstimate = useInput((editData && editData.total_estimate) || (featureFormData && featureFormData.total_estimate) || '');
+  const version = useInput((editData && editData.version) || (featureFormData && featureFormData.version) || '');
   const [formError, setFormError] = useState({});
   const [boardID, setBoardID] = useState('');
-
-  const buttonText = editPage ? 'Save' : 'Add Feature';
 
   let formTitle;
   if (editPage) {
