@@ -92,7 +92,13 @@ const AddFeatures = ({
   const totalEstimate = useInput((editData && editData.total_estimate) || (featureFormData && featureFormData.total_estimate) || '');
   const version = useInput((editData && editData.version) || (featureFormData && featureFormData.version) || '');
   const [formError, setFormError] = useState({});
-  const [boardID, setBoardID] = useState('');
+  const prdt = _.find(products, { product_uuid });
+  const listB = _.flatMap(_.map(
+    prdt?.feature_tool_detail?.organisation_list,
+    'board_list',
+  ));
+  const boardData = _.find(listB, { column_list: [{ column_id: colID }] });
+  const [boardID, setBoardID] = useState(boardData || '');
 
   let formTitle;
   if (editPage) {
