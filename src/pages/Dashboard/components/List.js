@@ -166,10 +166,14 @@ const List = ({
                       >
                         {feat.name}
                       </Typography>
+                      {_.filter(productIssues, (issue) => (
+                        issue.feature_uuid === feat.feature_uuid)).length === 0
+                      && (
                       <TrendingFlatRoundedIcon
                         className={classes.entryIcon}
                         onClick={(e) => issueSuggestions(feat, 'show')}
                       />
+                      )}
                       <EditRoundedIcon
                         className={classes.entryIcon}
                         onClick={(e) => editItem(feat, 'feat')}
