@@ -92,7 +92,7 @@ const Kanban = ({
   productIssues,
   addItem,
   editItem,
-  convertIssue,
+  issueSuggestions,
   deleteItem,
   commentItem,
   dispatch,
@@ -269,11 +269,11 @@ const Kanban = ({
                                     <div>
                                       {!item.issue_uuid && (
                                         <IconButton
-                                          aria-label="convert-ticket"
+                                          aria-label="issue-suggestion"
                                           aria-controls="menu-card"
                                           aria-haspopup="false"
                                           color="secondary"
-                                          onClick={(e) => convertIssue(item, 'convert')}
+                                          onClick={(e) => issueSuggestions(item, 'show')}
                                           size="large"
                                           className={classes.iconButton}
                                         >

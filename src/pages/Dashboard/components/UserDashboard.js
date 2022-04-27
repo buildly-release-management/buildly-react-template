@@ -22,6 +22,7 @@ import Kanban from '../components/Kanban';
 import AddFeatures from '../forms/AddFeatures';
 import NewFeatureForm from '../forms/NewFeatureForm';
 import AddIssues from '../forms/AddIssues';
+import IssueSuggestions from '../forms/IssueSuggestions';
 import AddComments from '../forms/AddComments';
 import ConfirmModal from '@components/Modal/ConfirmModal';
 
@@ -113,6 +114,12 @@ const UserDashboard = (props) => {
       ? `${redirectTo}/dashboard/list`
       : `${redirectTo}/dashboard/kanban`
     : `${routes.DASHBOARD}/edit-issue`;
+
+  const issueSuggestionsPath = redirectTo
+    ? _.includes(location.pathname, 'list')
+      ? `${redirectTo}/dashboard/list`
+      : `${redirectTo}/dashboard/kanban`
+    : `${routes.DASHBOARD}/issue-suggestions`;
 
   const featureToIssuePath = redirectTo
     ? _.includes(location.pathname, 'list')
@@ -211,6 +218,20 @@ const UserDashboard = (props) => {
 
     history.push(path, {
       type: 'convert',
+      from: redirectTo || location.pathname,
+      product_uuid: product,
+      data: item,
+    });
+  };
+
+  const issueSuggestions = (item, type) => {
+    let path;
+    if (type === 'show') {
+      path = issueSuggestionsPath;
+    }
+
+    history.push(path, {
+      type: 'show',
       from: redirectTo || location.pathname,
       product_uuid: product,
       data: item,
@@ -321,9 +342,9 @@ const UserDashboard = (props) => {
             productIssues={productIssues}
             addItem={addItem}
             editItem={editItem}
-            convertIssue={convertIssue}
             deleteItem={deleteItem}
             commentItem={commentItem}
+            issueSuggestions={issueSuggestions}
           />
         )}
       />
@@ -338,7 +359,7 @@ const UserDashboard = (props) => {
             productIssues={productIssues}
             addItem={addItem}
             editItem={editItem}
-            convertIssue={convertIssue}
+            issueSuggestions={issueSuggestions}
             deleteItem={deleteItem}
             commentItem={commentItem}
             dispatch={dispatch}
@@ -373,6 +394,15 @@ const UserDashboard = (props) => {
       />
       <Route path={addIssuePath} component={AddIssues} />
       <Route path={editIssuePath} component={AddIssues} />
+      <Route
+        path={issueSuggestionsPath}
+        render={(prps) => (
+          <IssueSuggestions
+            {...prps}
+            convertIssue={convertIssue}
+          />
+        )}
+      />
       <Route path={featureToIssuePath} component={AddIssues} />
       <Route path={addCommentPath} component={AddComments} />
     </div>

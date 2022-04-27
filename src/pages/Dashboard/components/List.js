@@ -94,9 +94,9 @@ const List = ({
   productIssues,
   addItem,
   editItem,
-  convertIssue,
   deleteItem,
   commentItem,
+  issueSuggestions,
 }) => {
   const classes = useStyles();
 
@@ -168,7 +168,7 @@ const List = ({
                       </Typography>
                       <TrendingFlatRoundedIcon
                         className={classes.entryIcon}
-                        onClick={(e) => convertIssue(feat, 'convert')}
+                        onClick={(e) => issueSuggestions(feat, 'show')}
                       />
                       <EditRoundedIcon
                         className={classes.entryIcon}

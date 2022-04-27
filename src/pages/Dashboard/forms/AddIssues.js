@@ -25,6 +25,7 @@ import {
 import { getAllCredentials } from '@redux/product/actions/product.actions';
 import { validators } from '@utils/validators';
 import { ISSUETYPES, TAGS } from './formConstants';
+import { routes } from '@routes/routesConstants';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -184,7 +185,9 @@ const AddIssues = ({
     } else {
       setFormModal(false);
       if (location && location.state) {
-        history.push(redirectTo);
+        history.push(_.includes(location.state.from, 'kanban')
+          ? `${routes.DASHBOARD}/kanban`
+          : `${routes.DASHBOARD}/list`);
       }
     }
   };
@@ -193,7 +196,9 @@ const AddIssues = ({
     setConfirmModal(false);
     setFormModal(false);
     if (location && location.state) {
-      history.push(redirectTo);
+      history.push(_.includes(location.state.from, 'kanban')
+        ? `${routes.DASHBOARD}/kanban`
+        : `${routes.DASHBOARD}/list`);
     }
   };
 
