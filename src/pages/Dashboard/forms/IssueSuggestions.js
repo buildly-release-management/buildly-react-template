@@ -44,11 +44,13 @@ const IssueSuggestions = ({
   location,
   dispatch,
   credentials,
+  products,
   convertIssue,
 }) => {
   const classes = useStyles();
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
+  const [product, setProduct] = useState('');
 
   const redirectTo = location.state && location.state.from;
   const editData = (
@@ -67,6 +69,8 @@ const IssueSuggestions = ({
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
 
   useEffect(() => {
+    const prd = _.find(products, { product_uuid });
+    setProduct(prd);
     if (!credentials || _.isEmpty(credentials)) {
       dispatch(getAllCredentials());
     }
@@ -90,7 +94,7 @@ const IssueSuggestions = ({
       product_uuid,
       estimate: showData.total_estimate,
       complexity: Number(),
-      repository: 'FE-Testing',
+      repository: product.issue_tool_detail.organisation_list[0].repo_list[0].name,
       create_date: dateTime,
       ...issueCred?.auth_detail,
     };
@@ -191,6 +195,7 @@ const IssueSuggestions = ({
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
+  products: state.productReducer.products,
   credentials: state.productReducer.credentials,
 });
 
