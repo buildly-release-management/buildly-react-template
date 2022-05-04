@@ -64,6 +64,10 @@ const AddIssues = ({
   const [orgList, setOrgList] = useState([]);
   const [repoList, setRepoList] = useState([]);
   const [orgID, setOrgID] = useState('');
+  const [boardList, setBoardList] = useState([]);
+  const [colList, setColList] = useState([]);
+  const [colID, setColID] = useState('');
+  const [boardID, setBoardID] = useState('');
 
   const redirectTo = location.state && location.state.from;
   const editPage = location.state && location.state.type === 'edit';
@@ -156,6 +160,10 @@ const AddIssues = ({
       && !_.isEmpty(prd.issue_tool_detail)
     ) {
       setOrgList(_.map(prd.issue_tool_detail.organisation_list));
+      setBoardList(_.flatMap(_.map(
+        prd.issue_tool_detail.organisation_list,
+        'board_list',
+      )));
     }
     setProduct(prd);
   }, [products]);
@@ -240,6 +248,7 @@ const AddIssues = ({
       estimate: estimate.value,
       complexity: Number(complexity.value),
       repository: repo,
+      column_id: colID,
       ...issueCred?.auth_detail,
     };
 
@@ -249,7 +258,9 @@ const AddIssues = ({
       formData.create_date = dateTime;
       dispatch(createIssue(formData));
     }
-    history.push(redirectTo);
+    history.push(_.includes(location.state.from, 'kanban')
+      ? `${routes.DASHBOARD}/kanban`
+      : `${routes.DASHBOARD}/list`);
   };
 
   const handleBlur = (e, validation, input, parentId) => {
@@ -487,6 +498,62 @@ const AddIssues = ({
                     ))}
                   </TextField>
                 </Grid>
+              )}
+              {!_.isEmpty(boardList) && (
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  select
+                  id="boardID"
+                  label="Tool Board"
+                  name="boardID"
+                  value={boardID}
+                  autoComplete="boardID"
+                  onChange={(e) => {
+                    const board = e.target.value;
+                    setBoardID(board);
+                    setColList(board.column_list);
+                  }}
+                >
+                  {_.map(boardList, (board) => (
+                    <MenuItem
+                      key={`board-${board.board_id}-${board.board_name}`}
+                      value={board}
+                    >
+                      {board.board_name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              )}
+              {!_.isEmpty(colList) && (
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  select
+                  id="colID"
+                  label="Tool Column"
+                  name="colID"
+                  autoComplete="colID"
+                  value={colID}
+                  onChange={(e) => setColID(e.target.value)}
+                >
+                  {_.map(colList, (col) => (
+                    <MenuItem
+                      key={`column-${col.column_id}-${col.column_name}`}
+                      value={col.column_id}
+                    >
+                      {col.column_name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
               )}
               <Grid item xs={12} md={6}>
                 <DatePickerComponent

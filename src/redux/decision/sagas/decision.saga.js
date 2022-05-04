@@ -524,13 +524,25 @@ function* getIssue(payload) {
 
 function* createIssue(payload) {
   try {
-    const issue = yield call(
-      httpService.makeRequest,
-      'post',
-      `${window.env.API_URL}${decisionEndpoint}issue/`,
-      payload.data,
-    );
-    yield put({ type: CREATE_ISSUE_SUCCESS, data: issue.data });
+    if (payload.data.length > 0) {
+      for (let i = 0; i < payload.data.length; i += 1) {
+        const issue = yield call(
+          httpService.makeRequest,
+          'post',
+          `${window.env.API_URL}${decisionEndpoint}issue/`,
+          payload.data[i],
+        );
+        yield put({ type: CREATE_ISSUE_SUCCESS, data: issue.data });
+      }
+    } else {
+      const issue = yield call(
+        httpService.makeRequest,
+        'post',
+        `${window.env.API_URL}${decisionEndpoint}issue/`,
+        payload.data,
+      );
+      yield put({ type: CREATE_ISSUE_SUCCESS, data: issue.data });
+    }
   } catch (error) {
     yield [
       yield put(

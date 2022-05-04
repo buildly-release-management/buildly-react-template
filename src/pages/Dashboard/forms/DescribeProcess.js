@@ -502,7 +502,7 @@ const DescribeProcess = ({
             disabled={viewPage}
           >
             <FormLabel component="legend">
-              Links?
+              Where do you want to display links?
             </FormLabel>
             <RadioGroup
               aria-label="links"

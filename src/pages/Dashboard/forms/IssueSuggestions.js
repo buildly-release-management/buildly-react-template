@@ -94,18 +94,20 @@ const IssueSuggestions = ({
       product_uuid,
       estimate: showData.total_estimate,
       complexity: Number(),
-      repository: product.issue_tool_detail.organisation_list[0].repo_list[0].name,
+      repository: product.issue_tool_detail?.organisation_list[0]?.repo_list[0].name,
       create_date: dateTime,
+      column_id: product.issue_tool_detail
+        ?.organisation_list[0]?.board_list[0].column_list[0].column_id,
       ...issueCred?.auth_detail,
     };
-    // eslint-disable-next-line no-return-assign
-    _.map(showData.issue_suggestion, (issue) => (
-      // eslint-disable-next-line no-sequences
-      formData.name = issue.name,
-      formData.description = issue.description,
-      formData.issue_type = issue.ticket_type,
-      dispatch(createIssue(formData))
-    ));
+    const issueSuggestionsData = showData.issue_suggestion.map((issue) => ({
+      ...formData,
+      name: issue.name,
+      description: issue.description,
+      issue_type: issue.ticket_type,
+    }));
+
+    dispatch(createIssue(issueSuggestionsData));
     history.push(redirectTo);
   };
 
@@ -150,6 +152,7 @@ const IssueSuggestions = ({
                     <ListItemButton>
                       <ListItemText
                         primary={issue.name}
+                        secondary={`${issue.ticket_type} ticket`}
                       />
                     </ListItemButton>
                     <Divider />

@@ -182,6 +182,7 @@ const AddFeatures = ({
       priority: priority.value,
       total_estimate: totalEstimate.value,
       version: version.value,
+      column_id: colID,
       ...featCred?.auth_detail,
     };
 
@@ -189,7 +190,6 @@ const AddFeatures = ({
       dispatch(saveFeatureFormData(formData));
     } else {
       formData.create_date = dateTime;
-      formData.column_id = colID;
       dispatch(saveFeatureFormData(formData));
     }
     handleNext();
@@ -392,7 +392,7 @@ const AddFeatures = ({
             disabled={viewPage}
           />
         </Grid>
-        {!editPage && !_.isEmpty(boardList) && (
+        {!_.isEmpty(boardList) && (
         <Grid item xs={12}>
           <TextField
             variant="outlined"
@@ -423,7 +423,7 @@ const AddFeatures = ({
           </TextField>
         </Grid>
         )}
-        {!editPage && !_.isEmpty(colList) && (
+        {!_.isEmpty(colList) && (
         <Grid item xs={12}>
           <TextField
             variant="outlined"
