@@ -73,10 +73,12 @@ const AddIssues = ({
   const product_uuid = location.state && location.state.product_uuid;
   const prdt = _.find(products, { product_uuid });
   const [product, setProduct] = useState('');
-  const [orgList, setOrgList] = useState((editData && prdt?.issue_tool_detail?.organisation_list)
-                               || []);
-  const [repoList, setRepoList] = useState((orgList[0]?.repo_list) || []);
-  const [orgID, setOrgID] = useState((editData && orgList[0]) || '');
+  const [repo, setRepo] = useState((editData && editData.repository) || '');
+  const orgData = _.map(prdt.issue_tool_detail?.organisation_list);
+  const orgVal = _.find(orgData, { repo_list: [{ name: repo }] });
+  const [orgList, setOrgList] = useState([]);
+  const [repoList, setRepoList] = useState((editData && orgVal?.repo_list) || []);
+  const [orgID, setOrgID] = useState((editData && orgVal) || '');
   const listB = _.flatMap(_.map(
     prdt?.issue_tool_detail?.organisation_list,
     'board_list',
@@ -131,7 +133,6 @@ const AddIssues = ({
     || '',
   );
   const complexity = useInput((editData && editData.complexity) || 0);
-  const [repo, setRepo] = useState((editData && editData.repository) || '');
   const [formError, setFormError] = useState({});
 
   const buttonText = convertPage
@@ -261,7 +262,6 @@ const AddIssues = ({
       },
       ...issueCred?.auth_detail,
     };
-    console.log('formData', formData);
     if (editPage) {
       dispatch(updateIssue(formData));
     } else {
