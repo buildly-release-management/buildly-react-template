@@ -60,18 +60,6 @@ const AddIssues = ({
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
   const [productFeatures, setProductFeatures] = useState([]);
-  const [product, setProduct] = useState('');
-  const [orgList, setOrgList] = useState([]);
-  const [repoList, setRepoList] = useState([]);
-  const [orgID, setOrgID] = useState('');
-  const [boardList, setBoardList] = useState([]);
-  const [colList, setColList] = useState([]);
-  const [colID, setColID] = useState('');
-  const [boardID, setBoardID] = useState('');
-
-  const redirectTo = location.state && location.state.from;
-  const editPage = location.state && location.state.type === 'edit';
-  const convertPage = location.state && location.state.type === 'convert';
   const editData = (
     location.state
     && location.state.type === 'edit'
@@ -83,6 +71,25 @@ const AddIssues = ({
     && location.state.data
   ) || {};
   const product_uuid = location.state && location.state.product_uuid;
+  const prdt = _.find(products, { product_uuid });
+  const [product, setProduct] = useState('');
+  const [orgList, setOrgList] = useState((editData && prdt?.issue_tool_detail?.organisation_list)
+                               || []);
+  const [repoList, setRepoList] = useState((orgList[0]?.repo_list) || []);
+  const [orgID, setOrgID] = useState((editData && orgList[0]) || '');
+  const listB = _.flatMap(_.map(
+    prdt?.issue_tool_detail?.organisation_list,
+    'board_list',
+  ));
+  const [colID, setColID] = useState((editData && editData.issue_detail?.column_id) || '');
+  const boardData = _.find(listB, { column_list: [{ column_id: colID }] });
+  const [colList, setColList] = useState((editData && boardData?.column_list) || []); 
+  const [boardList, setBoardList] = useState((boardData) || []);
+  const [boardID, setBoardID] = useState((editData && boardData) || '');
+
+  const redirectTo = location.state && location.state.from;
+  const editPage = location.state && location.state.type === 'edit';
+  const convertPage = location.state && location.state.type === 'convert';
 
   const name = useInput(
     (convertData && convertData.name)
@@ -249,9 +256,12 @@ const AddIssues = ({
       complexity: Number(complexity.value),
       repository: repo,
       column_id: colID,
+      issue_detail: {
+        column_id: colID,
+      },
       ...issueCred?.auth_detail,
     };
-
+    console.log('formData', formData);
     if (editPage) {
       dispatch(updateIssue(formData));
     } else {

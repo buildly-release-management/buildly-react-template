@@ -267,7 +267,9 @@ const Kanban = ({
                                   subheader={item.name}
                                   action={(
                                     <div>
-                                      {!item.issue_uuid && (
+                                      {!item.issue_uuid && _.filter(productIssues, (issue) => (
+                                        issue.feature_uuid === item.feature_uuid)).length === 0
+                                        && (
                                         <IconButton
                                           aria-label="issue-suggestion"
                                           aria-controls="menu-card"
@@ -279,7 +281,7 @@ const Kanban = ({
                                         >
                                           <TrendingFlatRounded fontSize="small" />
                                         </IconButton>
-                                      )}
+                                        )}
                                       <IconButton
                                         id="menu-button"
                                         aria-label="column-options"

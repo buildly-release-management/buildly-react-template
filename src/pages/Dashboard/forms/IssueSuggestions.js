@@ -99,6 +99,10 @@ const IssueSuggestions = ({
       column_id: product.issue_tool_detail
         ?.organisation_list[0]?.board_list[0].column_list[0].column_id,
       ...issueCred?.auth_detail,
+      issue_detail: {
+        column_id: product.issue_tool_detail
+          ?.organisation_list[0]?.board_list[0].column_list[0].column_id,
+      },
     };
     const issueSuggestionsData = showData.issue_suggestion.map((issue) => ({
       ...formData,

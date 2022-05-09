@@ -226,10 +226,11 @@ const DescribeProcess = ({
         displaying_data: quest3,
         display_desc: quest4.value,
         business_logic: quest5,
-        enabled: quest6,
+        enabled: quest6 !== 'yes' ? 'no' : 'yes',
         enabled_desc: quest7.value,
         search_or_nav: quest8,
         links: quest9,
+        column_id: featureFormData.column_id,
       },
     };
     if (editPage) {
@@ -237,6 +238,7 @@ const DescribeProcess = ({
     } else {
       dispatch(createFeature(featureDetails));
     }
+    dispatch(saveFeatureFormData(null));
     history.push(redirectTo);
   };
 
@@ -266,7 +268,7 @@ const DescribeProcess = ({
     || !quest3
     || (quest3 === 'yes' && !quest4.value)
     || (quest3 === 'yes' && !quest5)
-    || !quest6
+    || ((quest3 === 'no' || quest5 === 'yes') && !quest6)
     || (quest6 === 'yes' && !quest7.value)
     || (quest5 === 'no' && !quest8)
     ) {
@@ -296,7 +298,7 @@ const DescribeProcess = ({
             disabled={viewPage}
           >
             <FormLabel component="legend">
-              Collecting Data?
+              Are we collecting any data from the user?
             </FormLabel>
             <RadioGroup
               aria-label="collecting-data"
@@ -345,7 +347,7 @@ const DescribeProcess = ({
             disabled={viewPage}
           >
             <FormLabel component="legend">
-              Displaying Data?
+              Is the collected or stored data to be displayed to the user?
             </FormLabel>
             <RadioGroup
               aria-label="displaying-data"
@@ -395,7 +397,7 @@ const DescribeProcess = ({
             disabled={viewPage}
           >
             <FormLabel component="legend">
-              Business Logic?
+              Is there any particular flow or logic to be followed for the collected or stored data?
             </FormLabel>
             <RadioGroup
               aria-label="business-logic"
@@ -416,6 +418,7 @@ const DescribeProcess = ({
             </RadioGroup>
           </FormControl>
           )}
+          {(quest3 === 'no' || quest5 === 'yes') && (
           <FormControl
             className={classes.choice}
             fullWidth
@@ -423,7 +426,7 @@ const DescribeProcess = ({
             disabled={viewPage}
           >
             <FormLabel component="legend">
-              Making a decision?
+              Are we making any important decisions that need to be notified or displayed?
             </FormLabel>
             <RadioGroup
               aria-label="making-decision"
@@ -443,6 +446,7 @@ const DescribeProcess = ({
               />
             </RadioGroup>
           </FormControl>
+          )}
           {quest6 === 'yes' && (
           <TextField
             variant="outlined"

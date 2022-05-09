@@ -125,6 +125,7 @@ const NewFeatureForm = (props) => {
       setConfirmModalFor(null);
     } else {
       setFormModal(false);
+      dispatch(saveFeatureFormData(null));
       if (location && location.state) {
         history.push(redirectTo);
       }

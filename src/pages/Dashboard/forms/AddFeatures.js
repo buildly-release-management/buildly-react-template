@@ -87,8 +87,8 @@ const AddFeatures = ({
   const [tags, setTags] = useState((editData && editData.tags)
   || (featureFormData && featureFormData.tags) || []);
   const [boardList, setBoardList] = useState([]);
-  const [colList, setColList] = useState([]);
-  const [colID, setColID] = useState((featureFormData && featureFormData.column_id) || '');
+  const [colID, setColID] = useState((featureFormData && featureFormData.column_id) || (editData && editData.feature_detail?.column_id) || '');
+
   const totalEstimate = useInput((editData && editData.total_estimate) || (featureFormData && featureFormData.total_estimate) || '');
   const version = useInput((editData && editData.version) || (featureFormData && featureFormData.version) || '');
   const [formError, setFormError] = useState({});
@@ -98,7 +98,8 @@ const AddFeatures = ({
     'board_list',
   ));
   const boardData = _.find(listB, { column_list: [{ column_id: colID }] });
-  const [boardID, setBoardID] = useState(boardData || '');
+  const [boardID, setBoardID] = useState((editData && boardData) || '');
+  const [colList, setColList] = useState((editData && boardData?.column_list) || []);
 
   let formTitle;
   if (editPage) {
