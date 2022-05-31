@@ -257,13 +257,13 @@ describe('Get All Statuses action', () => {
 // Test Get Status
 describe('Get Status action', () => {
   it('should create an action to get status', () => {
-    const status_uuid = '275ac379-82a2-4937-a434-ce6c2e277c88';
+    const product_uuid = '275ac379-82a2-4937-a434-ce6c2e277c88';
     const expectedAction = {
       type: actions.GET_STATUS,
-      status_uuid,
+      product_uuid,
     };
 
-    expect(actions.getStatus(status_uuid)).toEqual(expectedAction);
+    expect(actions.getStatus(product_uuid)).toEqual(expectedAction);
   });
 });
 

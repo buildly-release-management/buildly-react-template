@@ -928,7 +928,7 @@ describe('Get a status reducer', () => {
 
   it('get a status success reducer', () => {
     const data = {
-      status_uuid: 'kfhwue-y38wgws-3i2wfhv-84gheu',
+      product_uuid: '275ac379-82a2-4937-a434-ce6c2e277c88',
       name: 'Test',
     };
 

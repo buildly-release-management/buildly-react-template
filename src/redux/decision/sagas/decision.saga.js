@@ -3,6 +3,7 @@ import {
 } from 'redux-saga/effects';
 import { httpService } from '@modules/http/http.service';
 import { showAlert } from '@redux/alert/actions/alert.actions';
+import { routes } from '@routes/routesConstants';
 import {
   ALL_DECISIONS,
   ALL_DECISIONS_SUCCESS,
@@ -643,7 +644,7 @@ function* getStatus(payload) {
     const status = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${decisionEndpoint}status/?status_uuid=${payload.status_uuid}`,
+      `${window.env.API_URL}${decisionEndpoint}status/?product_uuid=${payload.product_uuid}`,
     );
     yield put({ type: GET_STATUS_SUCCESS, data: status.data });
   } catch (error) {
@@ -665,13 +666,25 @@ function* getStatus(payload) {
 
 function* createStatus(payload) {
   try {
-    const status = yield call(
-      httpService.makeRequest,
-      'post',
-      `${window.env.API_URL}${decisionEndpoint}status/`,
-      payload.data,
-    );
-    yield put({ type: CREATE_STATUS_SUCCESS, data: status.data });
+    if (payload.data.length > 0) {
+      for (let i = 0; i < payload.data.length; i += 1) {
+        const status = yield call(
+          httpService.makeRequest,
+          'post',
+          `${window.env.API_URL}${decisionEndpoint}status/`,
+          payload.data[i],
+        );
+        yield put({ type: CREATE_STATUS_SUCCESS, data: status.data });
+      }
+    } else {
+      const status = yield call(
+        httpService.makeRequest,
+        'post',
+        `${window.env.API_URL}${decisionEndpoint}status/`,
+        payload.data,
+      );
+      yield put({ type: CREATE_STATUS_SUCCESS, data: status.data });
+    }
   } catch (error) {
     yield [
       yield put(

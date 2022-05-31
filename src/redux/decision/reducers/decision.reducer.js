@@ -347,11 +347,11 @@ export default (state = initialState, action) => {
     case UPDATE_STATUS_SUCCESS: {
       const found = _.find(
         state.statuses,
-        { status_uuid: action.data.status_uuid },
+        { product_uuid: action.data.product_uuid },
       );
       const statuses = found
         ? _.map(state.statuses, (status) => (
-          status.status_uuid === action.data.status_uuid
+          status.product_uuid === action.data.product_uuid
             ? action.data
             : status
         ))

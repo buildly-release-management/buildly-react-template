@@ -281,11 +281,11 @@ export const getAllStatuses = () => ({ type: ALL_STATUSES });
 
 /**
  * Get a Status
- * @param {uuid} status_uuid
+ * @param {uuid} product_uuid
  */
-export const getStatus = (status_uuid) => ({
+export const getStatus = (product_uuid) => ({
   type: GET_STATUS,
-  status_uuid,
+  product_uuid,
 });
 
 /**
