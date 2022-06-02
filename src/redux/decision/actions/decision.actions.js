@@ -115,6 +115,15 @@ export const saveFeatureFormData = (formData) => ({
 });
 
 /**
+ * Save Feature Form Data
+ * @param {Object} formData
+ */
+export const saveFeatureFormData = (formData) => ({
+  type: SAVE_FEATURE_FORM_DATA,
+  formData,
+});
+
+/**
  * Get all Decisions
  */
 export const getAllDecisions = () => ({ type: ALL_DECISIONS });
