@@ -16,6 +16,7 @@ import {
   getAllFeatures,
   getAllIssues,
   getAllStatuses,
+  importTickets,
 } from '@redux/decision/actions/decision.actions';
 import List from '../components/List';
 import Kanban from '../components/Kanban';
@@ -80,7 +81,9 @@ const UserDashboard = (props) => {
     loaded,
     user,
     boards,
+    importLoaded,
   } = props;
+
   const classes = useStyles();
   const subNav = [
     { label: 'List', value: 'list' },
@@ -151,16 +154,17 @@ const UserDashboard = (props) => {
   useEffect(() => {
     dispatch(getAllProducts());
     dispatch(getAllStatuses());
-    if (!features || _.isEmpty(features)) {
-      dispatch(getAllFeatures());
-    }
-    if (!issues || _.isEmpty(issues)) {
-      dispatch(getAllIssues());
-    }
+    dispatch(getAllFeatures());
+    dispatch(getAllIssues());
     if (!credentials || _.isEmpty(credentials)) {
       dispatch(getAllCredentials());
     }
   }, []);
+
+  useEffect(() => {
+    dispatch(getAllFeatures());
+    dispatch(getAllIssues());
+  }, [importLoaded]);
 
   useEffect(() => {
     const currentProd = _.filter(products,
@@ -316,21 +320,78 @@ const UserDashboard = (props) => {
     }
   };
 
+  const repoData = [];
+  for (let i = 0; i < prod?.issue_tool_detail?.repository_list?.length; i += 1) {
+    repoData.push(prod.issue_tool_detail.repository_list[i].name);
+  }
+
+  const importTicket = (e) => {
+    e.preventDefault();
+    if (featCred?.auth_detail?.tool_name !== 'GitHub') {
+      const featData = {
+        ...featCred?.auth_detail,
+        product_uuid: product,
+        board_id: prod?.feature_tool_detail?.board_detail?.board_id,
+      };
+      dispatch(importTickets(featData));
+      const issueData = {
+        ...issueCred?.auth_detail,
+        product_uuid: product,
+        board_id: prod?.feature_tool_detail?.board_detail?.board_id,
+      };
+      if (featCred?.auth_detail?.tool_name !== 'GitHub' && issueCred?.auth_detail?.tool_name === 'GitHub') {
+        issueData.is_repo_issue = true;
+        issueData.repo_list = repoData;
+      }
+      dispatch(importTickets(issueData));
+    } else if (featCred?.auth_detail?.tool_name === 'GitHub' && issueCred?.auth_detail?.tool_name === 'GitHub') {
+      const featData = {
+        ...featCred?.auth_detail,
+        product_uuid: product,
+        board_id: prod?.feature_tool_detail?.board_detail?.board_id,
+        is_repo_issue: false,
+      };
+      dispatch(importTickets(featData));
+    } else {
+      const featData = {
+        ...featCred?.auth_detail,
+        product_uuid: product,
+        board_id: prod?.feature_tool_detail?.board_detail?.board_id,
+        is_repo_issue: false,
+      };
+      dispatch(importTickets(featData));
+      const issueData = {
+        ...issueCred?.auth_detail,
+        product_uuid: product,
+        board_id: prod?.feature_tool_detail?.board_detail?.board_id,
+        is_repo_issue: true,
+        repo_list: repoData,
+      };
+      dispatch(importTickets(issueData));
+    }
+  };
+
   return (
     <div>
       <Grid container alignItems="center" mb={2}>
-        <Grid item xs={8}>
+        <Grid item xs={4}>
           <Typography component="div" variant="h3">
             Dashboard
           </Typography>
         </Grid>
-        {/* <Grid item xs={4}>
-          <Typography component="div" variant="h5">
-            <Link href="/">
-              Configure Project Tool Board
-            </Link>
-          </Typography>
-        </Grid> */}
+        <Grid item xs={4}>
+          {(prod?.feature_tool_detail
+        && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={(e) => importTicket(e)}
+          >
+            Import Tickets
+          </Button>
+        )
+           )}
+        </Grid>
         <Grid item xs={4}>
           <TextField
             variant="outlined"
@@ -529,6 +590,7 @@ const mapStateToProps = (state, ownProps) => ({
   loaded: state.productReducer.loaded && state.decisionReducer.loaded,
   user: state.authReducer.data,
   boards: state.productReducer.boards,
+  importLoaded: state.decisionReducer.importLoaded,
 });
 
 export default connect(mapStateToProps)(UserDashboard);

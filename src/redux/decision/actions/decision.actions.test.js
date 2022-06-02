@@ -306,3 +306,16 @@ describe('Delete Status action', () => {
       .toEqual(expectedAction);
   });
 });
+
+// Import Tickets
+describe('Import Tickets action', () => {
+  it('should create an action to import tickets', () => {
+    const data = { name: 'Import Tickets' };
+    const expectedAction = {
+      type: actions.IMPORT_TICKETS,
+      data,
+    };
+
+    expect(actions.importTickets(data)).toEqual(expectedAction);
+  });
+});

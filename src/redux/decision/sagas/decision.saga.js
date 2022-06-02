@@ -81,6 +81,9 @@ import {
   DELETE_STATUS_SUCCESS,
   DELETE_STATUS_FAILURE,
   saveFeatureFormData,
+  IMPORT_TICKETS,
+  IMPORT_TICKETS_SUCCESS,
+  IMPORT_TICKETS_FAILURE,
 } from '../actions/decision.actions';
 
 const decisionEndpoint = 'decision/';
@@ -754,6 +757,32 @@ function* deleteStatus(payload) {
   }
 }
 
+function* importTickets(payload) {
+  try {
+    const ticket = yield call(
+      httpService.makeRequest,
+      'post',
+      `${window.env.API_URL}${decisionEndpoint}import-project-tickets/`,
+      payload.data,
+    );
+    yield put({ type: IMPORT_TICKETS_SUCCESS, data: ticket.data });
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t import tickets!',
+        }),
+      ),
+      yield put({
+        type: IMPORT_TICKETS_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
 // Watchers
 function* watchGetAllDecisions() {
   yield takeLatest(ALL_DECISIONS, allDecisions);
@@ -855,6 +884,10 @@ function* watchDeleteStatus() {
   yield takeLatest(DELETE_STATUS, deleteStatus);
 }
 
+function* watchImportTickets() {
+  yield takeLatest(IMPORT_TICKETS, importTickets);
+}
+
 export default function* decisionSaga() {
   yield all([
     watchGetAllDecisions(),
@@ -872,6 +905,7 @@ export default function* decisionSaga() {
     watchCreateFeedback(),
     watchCreateIssue(),
     watchCreateStatus(),
+    watchImportTickets(),
     watchUpdateDecision(),
     watchUpdateFeature(),
     watchUpdateFeedback(),

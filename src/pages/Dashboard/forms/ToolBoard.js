@@ -35,14 +35,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const AddIssues = ({
+const ToolBoard = ({
   dispatch,
   history,
   location,
   statuses,
   boards,
 }) => {
- 
   const classes = useStyles();
   const [featOrgList, setFeatOrgList] = useState([]);
   const [issueOrgList, setIssueOrgList] = useState([]);
@@ -147,7 +146,7 @@ const AddIssues = ({
     if (
       (!_.isEmpty(featOrgList)
         && !featOrgID)
-      ||  (!_.isEmpty(featBoardList)
+      || (!_.isEmpty(featBoardList)
       && !featBoardID)
       || (!_.isEmpty(issueOrgList)
       && !issueOrgID)
@@ -314,4 +313,4 @@ const mapStateToProps = (state, ownProps) => ({
   statuses: state.decisionReducer.statuses,
 });
 
-export default connect(mapStateToProps)(AddIssues);
+export default connect(mapStateToProps)(ToolBoard);

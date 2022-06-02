@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const AddIssues = ({
+const StatusBoard = ({
   dispatch,
   history,
   location,
@@ -192,7 +192,7 @@ const AddIssues = ({
                     <TextField
                       {...params}
                       variant="outlined"
-                      label="Status"
+                      label="Select the list of Columns"
                       margin="normal"
                       // onKeyDown={(e) => {
                       //   if (e.key === 13 && e.target.value) {
@@ -245,4 +245,4 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
 });
 
-export default connect(mapStateToProps)(AddIssues);
+export default connect(mapStateToProps)(StatusBoard);

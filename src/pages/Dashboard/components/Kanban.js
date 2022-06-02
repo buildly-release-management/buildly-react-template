@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme) => ({
   },
   container: {
     marginBottom: theme.spacing(4),
+    flexWrap: 'inherit',
   },
   swimlane: {
     backgroundColor: theme.palette.secondary.main,

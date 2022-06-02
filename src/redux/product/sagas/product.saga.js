@@ -90,6 +90,7 @@ import {
   createCredential,
   saveProductFormData,
   clearBoardData,
+  getBoard,
 } from '../actions/product.actions';
 import {
   createStatus,
@@ -755,13 +756,14 @@ function* deleteThirdPartyTool(payload) {
   }
 }
 
-function* getBoard(payload) {
+function* getBoards(payload) {
   try {
     const board = yield call(
       httpService.makeRequest,
       'get',
       `${window.env.API_URL}${productEndpoint}board-list/?product_uuid=${payload.product_uuid}`,
     );
+    yield put(clearBoardData());
     yield put({ type: GET_BOARD_SUCCESS, data: board.data });
   } catch (error) {
     yield [
@@ -789,14 +791,19 @@ function* createBoard(payload) {
       payload.data,
     );
     const prodID = payload.data.product_uuid;
-    const statusData = board.data[0].feature_tool_detail.column_list.map((col) => ({
+    const statusData = board?.data[0]?.feature_tool_detail?.column_list?.map((col) => ({
       product_uuid: prodID,
       name: col.column_name,
       description: col.column_name,
       status_tracking_id: col.column_id,
     }));
-    yield put(clearBoardData());
-    yield put({ type: GET_BOARD_SUCCESS, data: board.data });
+    statusData.push({
+      product_uuid: prodID,
+      name: 'No Status',
+      description: 'No Status',
+      status_tracking_id: null,
+    });
+    yield put(getBoard(payload.data.product_uuid));
     yield put(createStatus(statusData));
   } catch (error) {
     yield [
@@ -917,7 +924,7 @@ function* watchDeleteThirdPartyTool() {
 }
 
 function* watchGetBoard() {
-  yield takeLatest(GET_BOARD, getBoard);
+  yield takeLatest(GET_BOARD, getBoards);
 }
 
 function* watchCreateBoard() {
