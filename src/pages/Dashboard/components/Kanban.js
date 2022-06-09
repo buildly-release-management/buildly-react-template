@@ -33,8 +33,6 @@ import {
   getAllStatuses,
 } from '@redux/decision/actions/decision.actions';
 import { updateFeature, updateIssue } from '@redux/decision/actions/decision.actions';
-import Box from '@mui/material/Box';
-import LinearProgress from '@mui/material/LinearProgress';
 
 const useStyles = makeStyles((theme) => ({
   noProduct: {
@@ -164,19 +162,6 @@ const Kanban = ({
     { product_uuid: product, auth_detail: { tool_type: 'Issue' } },
   );
   const currentStat = _.filter(statuses, { product_uuid: product });
-
-  const setProgress = (item) => {
-    switch (item.status) {
-      case '1eca247d-33c6-4f3a-99a8-4c3f6988c616':
-        return 50;
-      case 'ea69910f-93cf-4591-8cd7-5ea8a781a633':
-        return 75;
-      case '66b23739-7b2a-4bff-bc1a-3ab4609b5ad9':
-        return 100;
-      default:
-        return 25;
-    }
-  };
 
   const onDragEnd = (result, columns, setColumns) => {
     if (!result.destination) return;
@@ -427,9 +412,6 @@ const Kanban = ({
                                         onClick={() => editItem(feat, 'feat', true)}
                                       />
                                     ))}
-                                  <Box sx={{ marginTop: '15px' }}>
-                                    <LinearProgress variant="determinate" value={setProgress(item)} />
-                                  </Box>
                                   <Typography
                                     className={classes.moment}
                                     component="div"
