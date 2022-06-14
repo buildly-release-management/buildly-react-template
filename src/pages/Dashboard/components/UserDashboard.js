@@ -161,7 +161,7 @@ const UserDashboard = (props) => {
     }
   }, []);
 
- useEffect(() => {
+  useEffect(() => {
     dispatch(getAllFeatures());
     dispatch(getAllIssues());
   }, [importLoaded]);
