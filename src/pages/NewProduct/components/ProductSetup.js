@@ -498,6 +498,11 @@ const ProductSetup = ({
                 {featuresTool.value === 'trello' && (
                   <>
                     <Grid item>
+                      <a href="https://docs.google.com/document/d/1QYosDQAyaTGJJ0TbiojPHQptbDEKI5NEvvwWvZI5Rhk/edit" target="_blank" rel="noopener noreferrer">
+                        How to get the access token?
+                      </a>
+                    </Grid>
+                    <Grid item>
                       <TextField
                         required
                         fullWidth
@@ -535,6 +540,11 @@ const ProductSetup = ({
                 )}
                 {featuresTool.value === 'github' && (
                   <>
+                    <Grid item>
+                      <a href="https://docs.google.com/document/d/1T04LhZjsNsS7ufRZmp-ZGBD60iEOAcMR0aAtAAkdxgs/edit" target="_blank" rel="noopener noreferrer">
+                        How to get the access token?
+                      </a>
+                    </Grid>
                     <Grid item>
                       <TextField
                         required
@@ -605,6 +615,11 @@ const ProductSetup = ({
                 </FormControl>
                 {issuesTool.value === 'github' && (
                   <>
+                    <Grid item>
+                      <a href="https://docs.google.com/document/d/1T04LhZjsNsS7ufRZmp-ZGBD60iEOAcMR0aAtAAkdxgs/edit" target="_blank" rel="noopener noreferrer">
+                        How to get the access token?
+                      </a>
+                    </Grid>
                     <Grid item>
                       <TextField
                         required
