@@ -384,7 +384,7 @@ function* getProduct(payload) {
     const product = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}${productEndpoint}product/?organization_uuid=${payload.product_uuid}`,
+      `${window.env.API_URL}${productEndpoint}product/?product_uuid=${payload.product_uuid}`,
     );
     yield put({ type: GET_PRODUCT_SUCCESS, data: product.data });
   } catch (error) {
