@@ -4,7 +4,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Container } from '@mui/material';
 import { UserContext, getUser } from '@context/User.context';
 import TopBar from '@layout/TopBar/TopBar';
-import NavBar from '@layout/NavBar/NavBar';
 import Dashboard from '@pages/Dashboard/Dashboard';
 import UserManagement from '@pages/UserManagement/UserManagement';
 import { routes } from '@routes/routesConstants';
@@ -44,12 +43,6 @@ const ContainerDashboard = ({ location, history }) => {
           location={location}
           history={history}
         />
-        {/* <NavBar
-          navHidden={navHidden}
-          setNavHidden={setNavHidden}
-          location={location}
-          history={history}
-        /> */}
         <Container className={classes.content}>
           <Switch>
             <Route
@@ -61,8 +54,8 @@ const ContainerDashboard = ({ location, history }) => {
             <Route path={routes.USER_MANAGEMENT} component={UserManagement} />
             <Route path={routes.NEW_PRODUCT} component={NewProduct} />
             <Route path={routes.DEVELOPER_FORM} component={DeveloperForm} />
-            {/* <Route exact path={`${routes.RELEASE}/view/:releaseID`} component={ViewRelease} /> */}
-            {/* <Route path={routes.RELEASE} component={Release} /> */}
+            <Route exact path={`${routes.RELEASE}/view/:releaseID`} component={ViewRelease} />
+            <Route path={routes.RELEASE} component={Release} />
           </Switch>
         </Container>
       </UserContext.Provider>

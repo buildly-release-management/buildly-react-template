@@ -1,4 +1,6 @@
 // Decision Action types
+export const SAVE_FEATURE_FORM_DATA = 'DECISION/SAVE_FEATURE_FORM_DATA';
+
 export const ALL_DECISIONS = 'DECISION/ALL_DECISIONS';
 export const ALL_DECISIONS_SUCCESS = 'DECISION/ALL_DECISIONS_SUCCESS';
 export const ALL_DECISIONS_FAILURE = 'DECISION/ALL_DECISIONS_FAILURE';
@@ -99,6 +101,19 @@ export const DELETE_STATUS = 'DECISION/DELETE_STATUS';
 export const DELETE_STATUS_SUCCESS = 'DECISION/DELETE_STATUS_SUCCESS';
 export const DELETE_STATUS_FAILURE = 'DECISION/DELETE_STATUS_FAILURE';
 
+export const IMPORT_TICKETS = 'DECISION/IMPORT_TICKETS';
+export const IMPORT_TICKETS_SUCCESS = 'DECISION/IMPORT_TICKETS_SUCCESS';
+export const IMPORT_TICKETS_FAILURE = 'DECISION/IMPORT_TICKETS_FAILURE';
+
+/**
+ * Save Feature Form Data
+ * @param {Object} formData
+ */
+export const saveFeatureFormData = (formData) => ({
+  type: SAVE_FEATURE_FORM_DATA,
+  formData,
+});
+
 /**
  * Get all Decisions
  */
@@ -176,9 +191,9 @@ export const updateFeature = (data) => ({
  * Delete a Feature
  * @param {uuid} feature_uuid
  */
-export const deleteFeature = (feature_uuid) => ({
+export const deleteFeature = (data) => ({
   type: DELETE_FEATURE,
-  feature_uuid,
+  data,
 });
 
 /**
@@ -258,9 +273,9 @@ export const updateIssue = (data) => ({
  * Delete an Issue
  * @param {uuid} issue_uuid
  */
-export const deleteIssue = (issue_uuid) => ({
+export const deleteIssue = (data) => ({
   type: DELETE_ISSUE,
-  issue_uuid,
+  data,
 });
 
 /**
@@ -270,11 +285,11 @@ export const getAllStatuses = () => ({ type: ALL_STATUSES });
 
 /**
  * Get a Status
- * @param {uuid} status_uuid
+ * @param {uuid} product_uuid
  */
-export const getStatus = (status_uuid) => ({
+export const getStatus = (product_uuid) => ({
   type: GET_STATUS,
-  status_uuid,
+  product_uuid,
 });
 
 /**
@@ -302,4 +317,13 @@ export const updateStatus = (data) => ({
 export const deleteStatus = (status_uuid) => ({
   type: DELETE_STATUS,
   status_uuid,
+});
+
+/**
+ * Import Tickets
+ * @param {Object} data
+ */
+export const importTickets = (data) => ({
+  type: IMPORT_TICKETS,
+  data,
 });

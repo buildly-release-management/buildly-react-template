@@ -22,8 +22,10 @@ import {
   createIssue,
   updateIssue,
 } from '@redux/decision/actions/decision.actions';
+import { getAllCredentials } from '@redux/product/actions/product.actions';
 import { validators } from '@utils/validators';
 import { ISSUETYPES, TAGS } from './formConstants';
+import { routes } from '@routes/routesConstants';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -51,15 +53,14 @@ const AddIssues = ({
   location,
   statuses,
   features,
+  credentials,
+  products,
+  boards,
 }) => {
   const classes = useStyles();
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
   const [productFeatures, setProductFeatures] = useState([]);
-
-  const redirectTo = location.state && location.state.from;
-  const editPage = location.state && location.state.type === 'edit';
-  const convertPage = location.state && location.state.type === 'convert';
   const editData = (
     location.state
     && location.state.type === 'edit'
@@ -71,6 +72,21 @@ const AddIssues = ({
     && location.state.data
   ) || {};
   const product_uuid = location.state && location.state.product_uuid;
+  const prdt = _.find(products, { product_uuid });
+  const [product, setProduct] = useState('');
+  const [prodStatus, setProdStatus] = useState('');
+  const [repo, setRepo] = useState((editData && editData.repository) || '');
+  const repoData = _.map(prdt?.issue_tool_detail?.repository_list);
+  const [repoList, setRepoList] = useState((editData && repoData) || []);
+  const [statusID, setStatusID] = useState((editData && editData.status) || '');
+  const currentStat = _.filter(statuses, { product_uuid });
+  const currentStatData = _.find(currentStat, { status_uuid: statusID });
+  const [status, setStatus] = useState((editData && currentStatData) || '');
+  const [colID, setColID] = useState((editData && currentStatData?.status_tracking_id) || '');
+
+  const redirectTo = location.state && location.state.from;
+  const editPage = location.state && location.state.type === 'edit';
+  const convertPage = location.state && location.state.type === 'convert';
 
   const name = useInput(
     (convertData && convertData.name)
@@ -95,11 +111,6 @@ const AddIssues = ({
   );
   const [endDate, handleEndDateChange] = useState(
     (editData && editData.end_date) || new Date(),
-  );
-  const status = useInput(
-    (convertData && convertData.status)
-    || (editData && editData.status),
-    { required: true },
   );
   const [tags, setTags] = useState(
     (convertData && convertData.tags)
@@ -128,14 +139,31 @@ const AddIssues = ({
     if (!features || _.isEmpty(features)) {
       dispatch(getAllFeatures());
     }
-    if (!statuses || _.isEmpty(statuses)) {
-      dispatch(getAllStatuses());
+    dispatch(getAllStatuses());
+    if (!credentials || _.isEmpty(credentials)) {
+      dispatch(getAllCredentials());
     }
   }, []);
 
   useEffect(() => {
     setProductFeatures(_.filter(features, { product_uuid }));
   }, [features]);
+
+  useEffect(() => {
+    const prd = _.find(products, { product_uuid });
+
+    if (prd && prd.issue_tool_detail
+      && !_.isEmpty(prd.issue_tool_detail)
+    ) {
+      setRepoList(_.map(prd.issue_tool_detail.repository_list));
+    }
+    setProduct(prd);
+  }, [products]);
+
+  useEffect(() => {
+    const sta = _.filter(statuses, { product_uuid });
+    setProdStatus(sta);
+  }, [product]);
 
   const closeFormModal = () => {
     const dataHasChanged = (
@@ -145,12 +173,16 @@ const AddIssues = ({
       || type.hasChanged()
       || (!_.isEmpty(editData) && !_.isEqual(startDate, editData.start_date))
       || (!_.isEmpty(editData) && !_.isEqual(endDate, editData.end_date))
-      || status.hasChanged()
+      || (_.isEmpty(currentStatData) && !_.isEmpty(status))
       || (!_.isEmpty(convertData) && !_.isEqual(tags, convertData.tags))
       || (!_.isEmpty(editData) && !_.isEqual(tags, editData.tags))
       || (_.isEmpty(editData) && !_.isEmpty(tags))
       || estimate.hasChanged()
       || complexity.hasChanged()
+      || (product
+        && product.issue_tool_detail
+        && !_.isEmpty(repoList)
+        && repo !== '')
     );
 
     if (dataHasChanged) {
@@ -158,7 +190,9 @@ const AddIssues = ({
     } else {
       setFormModal(false);
       if (location && location.state) {
-        history.push(redirectTo);
+        history.push(_.includes(location.state.from, 'kanban')
+          ? `${routes.DASHBOARD}/kanban`
+          : `${routes.DASHBOARD}/list`);
       }
     }
   };
@@ -167,7 +201,9 @@ const AddIssues = ({
     setConfirmModal(false);
     setFormModal(false);
     if (location && location.state) {
-      history.push(redirectTo);
+      history.push(_.includes(location.state.from, 'kanban')
+        ? `${routes.DASHBOARD}/kanban`
+        : `${routes.DASHBOARD}/list`);
     }
   };
 
@@ -187,10 +223,13 @@ const AddIssues = ({
     }
   };
 
+  const issueCred = _.find(
+    credentials,
+    { product_uuid, auth_detail: { tool_type: 'Issue' } },
+  );
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-
     const formData = {
       ...editData,
       edit_date: dateTime,
@@ -199,20 +238,26 @@ const AddIssues = ({
       feature_uuid: feature.value,
       issue_type: type.value,
       start_date: startDate,
-      end_data: endDate,
-      status: status.value,
+      end_date: endDate,
+      status: statusID,
       tags,
+      product_uuid,
       estimate: estimate.value,
       complexity: Number(complexity.value),
+      repository: repo,
+      column_id: colID,
+      ...issueCred?.auth_detail,
     };
-
     if (editPage) {
       dispatch(updateIssue(formData));
     } else {
       formData.create_date = dateTime;
+      formData.issue_detail = {};
       dispatch(createIssue(formData));
     }
-    history.push(redirectTo);
+    history.push(_.includes(location.state.from, 'kanban')
+      ? `${routes.DASHBOARD}/kanban`
+      : `${routes.DASHBOARD}/list`);
   };
 
   const handleBlur = (e, validation, input, parentId) => {
@@ -241,7 +286,11 @@ const AddIssues = ({
       || !description.value
       || !feature.value
       || !type.value
-      || !status.value
+      || !statusID
+      || (product
+        && product.issue_tool_detail
+        && !_.isEmpty(repoList)
+        && !repo)
     ) {
       return true;
     }
@@ -387,6 +436,32 @@ const AddIssues = ({
                   ))}
                 </TextField>
               </Grid>
+              {!_.isEmpty(repoList) && (
+                <Grid item xs={12}>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    select
+                    id="repo"
+                    label="Repository"
+                    name="repo"
+                    autoComplete="repo"
+                    value={repo}
+                    onChange={(e) => setRepo(e.target.value)}
+                  >
+                    {_.map(repoList, (rep) => (
+                      <MenuItem
+                        key={`rep-${rep.id}-${rep.name}`}
+                        value={rep.name}
+                      >
+                        {rep.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              )}
               <Grid item xs={12} md={6}>
                 <DatePickerComponent
                   label="Start Date"
@@ -414,22 +489,18 @@ const AddIssues = ({
                   label="Status"
                   name="status"
                   autoComplete="status"
-                  error={
-                    formError.status
-                    && formError.status.error
-                  }
-                  helperText={
-                    formError.status
-                      ? formError.status.message
-                      : ''
-                  }
-                  onBlur={(e) => handleBlur(e, 'required', status)}
-                  {...status.bind}
+                  value={status}
+                  onChange={(e) => {
+                    const stat = e.target.value;
+                    setStatus(stat);
+                    setStatusID(stat.status_uuid);
+                    setColID(stat.status_tracking_id);
+                  }}
                 >
-                  {_.map(statuses, (sts) => (
+                  {_.map(prodStatus, (sts) => (
                     <MenuItem
                       key={`status-${sts.status_uuid}-${sts.name}`}
-                      value={sts.status_uuid}
+                      value={sts}
                     >
                       {sts.name}
                     </MenuItem>
@@ -553,6 +624,8 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
   statuses: state.decisionReducer.statuses,
   features: state.decisionReducer.features,
+  products: state.productReducer.products,
+  credentials: state.productReducer.credentials,
 });
 
 export default connect(mapStateToProps)(AddIssues);

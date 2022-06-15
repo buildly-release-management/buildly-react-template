@@ -26,25 +26,7 @@ const Dashboard = ({
   return (
     <>
       {loading && <Loader open={loading} />}
-      {/* {loaded && user && user.survey_status && <UserDashboard history={history} />} */}
-      {loaded && user && user.survey_status && (
-        <Grid container alignItems="center">
-          <Grid item xs={12}>
-            <Typography component="div" variant="h3">
-              Dashboard
-            </Typography>
-          </Grid>
-          <Grid item xs={12}>
-            <Typography
-              component="div"
-              variant="body1"
-              style={{ margin: '200px auto', textAlign: 'center', fontSize: '1.5rem' }}
-            >
-              Work in progress. Keep checking this space for more updates.
-            </Typography>
-          </Grid>
-        </Grid>
-      )}
+      {loaded && user && user.survey_status && <UserDashboard history={history} />}
     </>
   );
 };
