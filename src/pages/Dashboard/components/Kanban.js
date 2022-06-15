@@ -83,6 +83,9 @@ const useStyles = makeStyles((theme) => ({
     float: 'right',
     cursor: 'pointer',
   },
+  optionButton: {
+    marginRight: theme.spacing(1.4),
+  },
 }));
 
 const options = [
@@ -327,7 +330,7 @@ const Kanban = ({
                                         color="secondary"
                                         aria-expanded
                                         onClick={(e) => handleClick(e, item)}
-
+                                        className={classes.optionButton}
                                       >
                                         <MoreHoriz />
                                       </IconButton>
