@@ -16,6 +16,7 @@ import { routes } from './routes/routesConstants';
 import { PrivateRoute } from './routes/Private.route';
 import theme from './styles/theme';
 import MissingData from '@pages/MissingData/MissingData';
+import Home from '@pages/Home/Home';
 
 const App = () => (
   <Router>
@@ -29,7 +30,7 @@ const App = () => (
             render={() => (oauthService.hasValidAccessToken() ? (
               <Redirect to={routes.DASHBOARD} />
             ) : (
-              <Redirect to={routes.LOGIN} />
+              <Home />
             ))}
           />
           <Route path={routes.LOGIN} component={Login} />
