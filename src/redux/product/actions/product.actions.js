@@ -110,6 +110,10 @@ export const CREATE_BOARD = 'PRODUCT/CREATE_BOARD';
 export const CREATE_BOARD_SUCCESS = 'PRODUCT/CREATE_BOARD_SUCCESS';
 export const CREATE_BOARD_FAILURE = 'PRODUCT/CREATE_BOARD_FAILURE';
 
+export const VALIDATE_CREDENTIAL = 'PRODUCT/VALIDATE_CREDENTIAL';
+export const VALIDATE_CREDENTIAL_SUCCESS = 'PRODUCT/VALIDATE_CREDENTIAL_SUCCESS';
+export const VALIDATE_CREDENTIAL_FAILURE = 'PRODUCT/VALIDATE_CREDENTIAL_FAILURE';
+
 /**
  * Save Product Form Data
  * @param {Object} formData
@@ -347,7 +351,18 @@ export const getBoard = (product_uuid) => ({
  * Create a board
  * @param {Object} data
  */
-export const createBoard = (data) => ({
+export const createBoard = (data, create) => ({
   type: CREATE_BOARD,
   data,
+  create,
+});
+
+/**
+ * Validate tool Credential
+ * @param {Object} data
+ */
+export const validateCredential = (data, valid) => ({
+  type: VALIDATE_CREDENTIAL,
+  data,
+  valid,
 });

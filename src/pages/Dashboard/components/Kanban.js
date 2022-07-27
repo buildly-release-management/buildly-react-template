@@ -47,6 +47,8 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.secondary.main,
     display: 'flex',
     flexDirection: 'column',
+    minWidth: '22%',
+    height: '100%',
   },
   title: {
     borderBottom: `1px solid ${theme.palette.secondary.contrastText}`,
@@ -83,8 +85,9 @@ const useStyles = makeStyles((theme) => ({
     float: 'right',
     cursor: 'pointer',
   },
-  optionButton: {
-    marginRight: theme.spacing(1.4),
+  columnBody: {
+    maxHeight: '56vh',
+    overflowY: 'auto',
   },
 }));
 
@@ -123,7 +126,9 @@ const Kanban = ({
   };
 
   useEffect(() => {
-    dispatch(getAllStatuses());
+    if (!status || _.isEmpty(status)) {
+      dispatch(getAllStatuses());
+    }
   }, []);
 
   useEffect(() => {
@@ -151,6 +156,9 @@ const Kanban = ({
             items: _.orderBy(items, 'create_date', 'desc'),
           },
         };
+        if (sts.name === 'No Status' && !items.length) {
+          delete cols[sts.status_uuid];
+        }
       });
       setColumns(cols);
     }
@@ -267,7 +275,7 @@ const Kanban = ({
                     <AddRounded fontSize="small" />
                   </IconButton>
                 </div>
-                <div>
+                <div className={classes.columnBody}>
                   <Droppable droppableId={columnId} key={columnId}>
                     {(provided, snapshot) => (
                       <div
@@ -297,8 +305,9 @@ const Kanban = ({
                                 {...provided.dragHandleProps}
                                 style={{
                                   userSelect: 'none',
-                                  backgroundColor: snapshot.isDragging
-                                    ? '#F6F8FA'
+                                  backgroundColor: item?.feature_detail?.is_imported
+                                  || item?.issue_detail?.is_imported
+                                    ? '#e0e0e0'
                                     : '#FFFFFF',
                                   ...provided.draggableProps.style,
                                 }}
@@ -330,7 +339,6 @@ const Kanban = ({
                                         color="secondary"
                                         aria-expanded
                                         onClick={(e) => handleClick(e, item)}
-                                        className={classes.optionButton}
                                       >
                                         <MoreHoriz />
                                       </IconButton>

@@ -5,18 +5,19 @@ import _ from 'lodash';
 import { Route } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  Grid, MenuItem, Tab, Tabs, TextField, Typography, Button,
+  Grid, MenuItem, Tab, Tabs, TextField, Typography, Button, IconButton,
 } from '@mui/material';
+import SyncIcon from '@mui/icons-material/Sync';
 import Loader from '@components/Loader/Loader';
 import { routes } from '@routes/routesConstants';
 import { getAllCredentials, getAllProducts, getBoard } from '@redux/product/actions/product.actions';
+import { createBoard } from '@redux/product/actions/product.actions';
 import {
   deleteFeature,
   deleteIssue,
   getAllFeatures,
   getAllIssues,
   getAllStatuses,
-  importTickets,
 } from '@redux/decision/actions/decision.actions';
 import List from '../components/List';
 import Kanban from '../components/Kanban';
@@ -28,6 +29,7 @@ import AddComments from '../forms/AddComments';
 import ConfirmModal from '@components/Modal/ConfirmModal';
 import ToolBoard from '../forms/ToolBoard';
 import StatusBoard from '../forms/StatusBoard';
+import DropColumn from '../forms/DropColumn';
 
 const useStyles = makeStyles((theme) => ({
   product: {
@@ -45,6 +47,8 @@ const useStyles = makeStyles((theme) => ({
     },
     '& .MuiInputBase-input': {
       color: theme.palette.secondary.contrastText,
+      paddingTop: theme.spacing(1.2),
+      paddingBottom: theme.spacing(1.2),
     },
   },
   tabs: {
@@ -64,6 +68,17 @@ const useStyles = makeStyles((theme) => ({
   },
   boardButton: {
     marginTop: theme.spacing(1),
+  },
+  menuRight: {
+    marginLeft: 'auto',
+    display: 'flex',
+  },
+  importButton: {
+    whiteSpace: 'nowrap',
+    margin: theme.spacing(2, 0),
+  },
+  bar: {
+    minWidth: '250px',
   },
 }));
 
@@ -151,6 +166,8 @@ const UserDashboard = (props) => {
       : `${redirectTo}/dashboard/kanban`
     : `${routes.DASHBOARD}/add-comment`;
 
+  const addDropColumnPath = `${routes.DASHBOARD}/select-column`;
+
   useEffect(() => {
     dispatch(getAllProducts());
     dispatch(getAllStatuses());
@@ -173,6 +190,7 @@ const UserDashboard = (props) => {
   }, [products]);
 
   useEffect(() => {
+    dispatch(getAllProducts());
     if (product) {
       dispatch(getBoard(product));
     }
@@ -327,103 +345,92 @@ const UserDashboard = (props) => {
 
   const importTicket = (e) => {
     e.preventDefault();
-    if (featCred?.auth_detail?.tool_name !== 'GitHub') {
-      const featData = {
-        ...featCred?.auth_detail,
-        product_uuid: product,
-        board_id: prod?.feature_tool_detail?.board_detail?.board_id,
-      };
-      if (featCred?.auth_detail) {
-        dispatch(importTickets(featData));
-      }
-      const issueData = {
-        ...issueCred?.auth_detail,
-        product_uuid: product,
-        board_id: prod?.feature_tool_detail?.board_detail?.board_id,
-      };
-      if (featCred?.auth_detail?.tool_name !== 'GitHub' && issueCred?.auth_detail?.tool_name === 'GitHub') {
-        issueData.is_repo_issue = true;
-        issueData.repo_list = repoData;
-      }
-      if (issueCred?.auth_detail) {
-        dispatch(importTickets(issueData));
-      }
-    } else if (featCred?.auth_detail?.tool_name === 'GitHub' && issueCred?.auth_detail?.tool_name === 'GitHub') {
-      const featData = {
-        ...featCred?.auth_detail,
-        product_uuid: product,
-        board_id: prod?.feature_tool_detail?.board_detail?.board_id,
-        is_repo_issue: false,
-      };
-      if (featCred?.auth_detail) {
-        dispatch(importTickets(featData));
-      }
-    } else {
-      const featData = {
-        ...featCred?.auth_detail,
-        product_uuid: product,
-        board_id: prod?.feature_tool_detail?.board_detail?.board_id,
-        is_repo_issue: false,
-      };
-      if (featCred?.auth_detail) {
-        dispatch(importTickets(featData));
-      }
-      const issueData = {
-        ...issueCred?.auth_detail,
-        product_uuid: product,
-        board_id: prod?.feature_tool_detail?.board_detail?.board_id,
-        is_repo_issue: true,
-        repo_list: repoData,
-      };
-      if (issueCred?.auth_detail) {
-        dispatch(importTickets(issueData));
-      }
-    }
+    history.push(addDropColumnPath, {
+      from: redirectTo || location.pathname,
+      product_uuid: product,
+    });
+  };
+
+  const syncData = (e) => {
+    e.preventDefault();
+    const formData = {
+      product_uuid: product,
+      feature_tool_detail: {
+        tool_name: featCred?.auth_detail?.tool_name,
+        tool_type: featCred?.auth_detail?.tool_type,
+        org_id: prod?.feature_tool_detail?.org_id,
+        org_name: prod?.feature_tool_detail?.org_name,
+        board_detail:
+            {
+              ...prod.feature_tool_detail.board_detail,
+            },
+      },
+      issue_tool_detail: {
+        tool_name: issueCred?.auth_detail?.tool_name,
+        tool_type: issueCred?.auth_detail?.tool_type,
+        org_id: prod?.issue_tool_detail?.org_id,
+        org_name: prod?.issue_tool_detail?.org_name,
+        board_detail: {},
+      },
+    };
+    dispatch(createBoard(formData, false));
   };
 
   return (
     <div>
       <Grid container alignItems="center" mb={2}>
-        <Grid item xs={4}>
-          <Typography component="div" variant="h3">
+        <Grid item xs={4} md={3} lg={2}>
+          <Typography component="div" variant="h4">
             Dashboard
           </Typography>
         </Grid>
-        <Grid item xs={4}>
+        <div className={classes.menuRight}>
           {((!_.isEmpty(prod?.third_party_tool)) && (!_.isEmpty(status))
         && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={(e) => importTicket(e)}
-          >
-            Import Tickets
-          </Button>
+          <>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={(e) => importTicket(e)}
+              className={classes.importButton}
+            >
+              Import Tickets
+            </Button>
+            <IconButton
+              aria-label="sync"
+              color="inherit"
+              size="large"
+              onClick={(e) => syncData(e)}
+            >
+              <SyncIcon fontSize="large" className={classes.menuIcon} />
+            </IconButton>
+          </>
         )
            )}
-        </Grid>
-        <Grid item xs={4}>
-          <TextField
-            variant="outlined"
-            margin="normal"
-            fullWidth
-            select
-            id="product"
-            color="primary"
-            label="Product Options"
-            className={classes.product}
-            value={product}
-            onChange={(e) => {
-              if (e.target.value === -1) {
-                history.push(routes.NEW_PRODUCT);
-              } else {
-                setProduct(e.target.value);
-              }
-            }}
-          >
-            <MenuItem value={0}>Select</MenuItem>
-            <MenuItem value={-1}>Create New Product</MenuItem>
-            {currentProducts && !_.isEmpty(currentProducts)
+          <Grid item lg={2} className={classes.bar}>
+            <TextField
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              select
+              id="product"
+              color="primary"
+              label="Product Options"
+              className={classes.product}
+              value={product}
+              onChange={(e) => {
+                if (e.target.value === -1) {
+                  history.push(routes.NEW_PRODUCT, {
+                    from: redirectTo || location.pathname,
+                  });
+                } else {
+                  setProduct(e.target.value);
+                }
+              }}
+            >
+              <MenuItem value={0}>Select</MenuItem>
+              <MenuItem value={-1}>Create New Product</MenuItem>
+              {currentProducts && !_.isEmpty(currentProducts)
               && _.flatMap(_.map(currentProducts, (prd) => (
                 <MenuItem
                   key={`product-${prd.product_uuid}`}
@@ -432,8 +439,9 @@ const UserDashboard = (props) => {
                   {prd.name}
                 </MenuItem>
               )))}
-          </TextField>
-        </Grid>
+            </TextField>
+          </Grid>
+        </div>
       </Grid>
       {((_.isEmpty(status)) && product !== 0
         ? (!_.isEmpty(prod) && (!_.isEmpty(prod.third_party_tool)))
@@ -586,6 +594,7 @@ const UserDashboard = (props) => {
             />
             <Route path={featureToIssuePath} component={AddIssues} />
             <Route path={addCommentPath} component={AddComments} />
+            <Route path={addDropColumnPath} component={DropColumn} />
           </>
         ))}
     </div>

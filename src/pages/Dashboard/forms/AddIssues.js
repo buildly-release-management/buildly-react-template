@@ -80,8 +80,8 @@ const AddIssues = ({
   const [repoList, setRepoList] = useState((editData && repoData) || []);
   const [statusID, setStatusID] = useState((editData && editData.status) || '');
   const currentStat = _.filter(statuses, { product_uuid });
-  const currentStatData = _.find(currentStat, { status_uuid: statusID });
-  const [status, setStatus] = useState((editData && currentStatData) || '');
+  const currentStatData = _.find(currentStat, { status_uuid: editData.status });
+  const [status, setStatus] = useState('');
   const [colID, setColID] = useState((editData && currentStatData?.status_tracking_id) || '');
 
   const redirectTo = location.state && location.state.from;
@@ -123,6 +123,18 @@ const AddIssues = ({
     || '',
   );
   const complexity = useInput((editData && editData.complexity) || 0);
+
+  const editAssigneeData = [];
+  for (let i = 0; i < editData?.issue_detail?.assignees?.length; i += 1) {
+    editAssigneeData.push(editData.issue_detail.assignees[i].username);
+  }
+  const [assignees, setAssignees] = useState((editData && editAssigneeData) || []);
+  const assigneeData = [];
+  for (let i = 0; i < product?.feature_tool_detail?.user_list?.length; i += 1) {
+    assigneeData.push(product.feature_tool_detail.user_list[i].username);
+  }
+  const assigneesList = [...new Set(product?.issue_tool_detail?.user_list
+    ?.filter((element) => assignees?.includes(element?.username)))];
   const [formError, setFormError] = useState({});
 
   const buttonText = convertPage
@@ -163,6 +175,9 @@ const AddIssues = ({
   useEffect(() => {
     const sta = _.filter(statuses, { product_uuid });
     setProdStatus(sta);
+    if (editData) {
+      setStatus(_.find(sta, { status_uuid: editData.status }));
+    }
   }, [product]);
 
   const closeFormModal = () => {
@@ -223,6 +238,21 @@ const AddIssues = ({
     }
   };
 
+  const onAssigneeChange = (value) => {
+    switch (true) {
+      case (value.length > assignees.length):
+        setAssignees([...assignees, _.last(value)]);
+        break;
+
+      case (value.length < assignees.length):
+        setAssignees(value);
+        break;
+
+      default:
+        break;
+    }
+  };
+
   const issueCred = _.find(
     credentials,
     { product_uuid, auth_detail: { tool_type: 'Issue' } },
@@ -249,10 +279,13 @@ const AddIssues = ({
       ...issueCred?.auth_detail,
     };
     if (editPage) {
+      editData.issue_detail.assignees = assigneesList;
       dispatch(updateIssue(formData));
     } else {
+      formData.issue_detail = {
+        assignees: assigneesList,
+      };
       formData.create_date = dateTime;
-      formData.issue_detail = {};
       dispatch(createIssue(formData));
     }
     history.push(_.includes(location.state.from, 'kanban')
@@ -535,6 +568,36 @@ const AddIssues = ({
                   )}
                 />
               </Grid>
+              {!_.isEmpty(product?.issue_tool_detail?.user_list) && (
+              <Grid item xs={12}>
+                <Autocomplete
+                  fullWidth
+                  multiple
+                  filterSelectedOptions
+                  id="assignees"
+                  options={assigneeData}
+                  value={assignees}
+                  onChange={(e, newValue) => onAssigneeChange(newValue)}
+                  renderTags={(value, getAssigneeProps) => (
+                    _.map(value, (option, index) => (
+                      <Chip
+                        variant="default"
+                        label={option}
+                        {...getAssigneeProps({ index })}
+                      />
+                    ))
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      label="Assignees"
+                      margin="normal"
+                    />
+                  )}
+                />
+              </Grid>
+              )}
               <Grid item xs={12}>
                 <TextField
                   variant="outlined"

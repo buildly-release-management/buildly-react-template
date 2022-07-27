@@ -83,6 +83,9 @@ import {
   DELETE_THIRD_PARTY_TOOL,
   DELETE_THIRD_PARTY_TOOL_SUCCESS,
   DELETE_THIRD_PARTY_TOOL_FAILURE,
+  VALIDATE_CREDENTIAL,
+  VALIDATE_CREDENTIAL_SUCCESS,
+  VALIDATE_CREDENTIAL_FAILURE,
 } from '../actions/product.actions';
 
 const initialState = {
@@ -139,6 +142,7 @@ export default (state = initialState, action) => {
     case DELETE_PRODUCT:
     case DELETE_RELEASE:
     case DELETE_THIRD_PARTY_TOOL:
+    case VALIDATE_CREDENTIAL:
       return {
         ...state,
         loading: true,
@@ -173,6 +177,7 @@ export default (state = initialState, action) => {
     case DELETE_PRODUCT_FAILURE:
     case DELETE_RELEASE_FAILURE:
     case DELETE_THIRD_PARTY_TOOL_FAILURE:
+    case VALIDATE_CREDENTIAL_FAILURE:
       return {
         ...state,
         loading: false,
@@ -423,6 +428,14 @@ export default (state = initialState, action) => {
         loading: false,
         loaded: true,
         boards,
+      };
+    }
+
+    case VALIDATE_CREDENTIAL_SUCCESS: {
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
       };
     }
 

@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
   },
   logo: {
-    maxWidth: 130,
+    maxWidth: 144,
     objectFit: 'contain',
   },
   menuButton: {
@@ -195,15 +195,17 @@ const TopBar = ({
               >
                 Dashboard
               </MenuItem>
+              {isAdmin && (
               <MenuItem
-                disabled={location.pathname === routes.RELEASE}
+                disabled={location.pathname === routes.PRODUCTS}
                 onClick={() => {
                   setAnchorEl(null);
-                  history.push(routes.RELEASE);
+                  history.push(routes.PRODUCTS);
                 }}
               >
-                Releases
+                Products
               </MenuItem>
+              )}
             </StyledMenu>
           </>
           {isAdmin && (
