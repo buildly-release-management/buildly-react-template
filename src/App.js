@@ -27,10 +27,11 @@ const App = () => (
           <Route
             exact
             path="/"
+            // eslint-disable-next-line no-nested-ternary
             render={() => (oauthService.hasValidAccessToken() ? (
               <Redirect to={routes.DASHBOARD} />
             ) : (
-              <Home />
+              window.env.PRODUCTION ? <Home /> : <Redirect to={routes.LOGIN} />
             ))}
           />
           <Route path={routes.LOGIN} component={Login} />

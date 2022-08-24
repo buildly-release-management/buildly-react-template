@@ -12,7 +12,7 @@ export const PrivateRoute = ({ component: Component, ...rest }) => (
       <Component {...props} />
     ) : (
       <Redirect
-        to={{ pathname: '/', state: { from: props.location } }}
+        to={{ pathname: window.env.PRODUCTION ? '/' : '/login', state: { from: props.location } }}
       />
     ))}
   />
