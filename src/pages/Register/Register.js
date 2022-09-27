@@ -121,6 +121,7 @@ const Register = ({
       script.src = '//fw-cdn.com/1900654/2696977.js';
       script.chat = true;
       document.body.appendChild(script);
+
       return () => {
         document.body.removeChild(script);
       };

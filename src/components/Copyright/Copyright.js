@@ -51,15 +51,17 @@ const Copyright = () => {
     <AppBar position="fixed" className={classes.root}>
       <Toolbar className={classes.toolbar}>
         <div className={classes.navs}>
-          <Button
-            aria-controls="buildly-login"
-            color="primary"
-            variant="contained"
-            className={classes.login}
-            href={routes.LOGIN}
-          >
-            Insights Login
-          </Button>
+          {window.env.PRODUCTION && (
+            <Button
+              aria-controls="buildly-login"
+              color="primary"
+              variant="contained"
+              className={classes.login}
+              href={routes.LOGIN}
+            >
+              Insights Login
+            </Button>
+          )}
           <Support />
           <Services />
         </div>
