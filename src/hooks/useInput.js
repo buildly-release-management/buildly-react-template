@@ -17,7 +17,6 @@ export const useInput = (initialValue = '', validators = {}) => {
     },
     clear: () => setValue(''),
     reset: () => setValue(initialValue),
-    setNewValue: (newValue) => setValue(newValue),
     hasChanged: () => {
       let newValue = value;
       if (typeof (initialValue) === 'number') {

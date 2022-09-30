@@ -130,6 +130,13 @@ const ProductSetup = ({
   || (productFormData && productFormData.start_date) || new Date());
   const [endDate, handleEndDateChange] = useState((editData && editData.end_date)
   || (productFormData && productFormData.end_date) || new Date());
+  const [useBuildlyArch, setUseBuildlyArch] = useState((editData
+    && editData.product_info
+    && editData.product_info.use_buildly_architecture
+  ) || (productFormData
+      && productFormData.product_info
+      && productFormData.product_info.use_buildly_arch
+  ) || true);
   const [formError, setFormError] = useState({});
 
   const editCreds = [];
@@ -297,6 +304,10 @@ const ProductSetup = ({
     || (productFormData
       && productFormData.end_date
       && (endDate !== productFormData.end_date))
+    || (productFormData
+      && productFormData.product_info
+      && productFormData.product_info.use_buildly_architecture
+      && (useBuildlyArch !== productFormData.product_info.use_buildly_architecture))
   );
 
   const handleFeatureCredential = (event) => {
@@ -485,6 +496,7 @@ const ProductSetup = ({
       third_party_tool: tools,
       product_info: {
         ...productFormData?.product_info,
+        use_buildly_architecture: useBuildlyArch,
       },
       creds,
       changedData,
