@@ -13,9 +13,10 @@ export const httpService = {
  * @param {boolean} useJwt - boolean to check if we want to use JWT or not
  * @param {string} contentType - type of content to be requested
  * @param {string} responseType - the expected response type from the server
+ * @param customHeaders - custom headers to be sent with the request
  * @returns {Observable} - response of the request or error
  */
-function makeRequest(method, url, body, useJwt, contentType, responseType) {
+function makeRequest(method, url, body, useJwt, contentType, responseType, customHeaders) {
   let token;
   let tokenType;
   if (useJwt) {
@@ -25,13 +26,16 @@ function makeRequest(method, url, body, useJwt, contentType, responseType) {
     tokenType = 'Bearer';
     token = oauthService.getAccessToken();
   }
-  const headers = {
+  let headers;
+
+  headers = {
     Authorization: `${tokenType} ${token}`,
     // 'Content-Type': contentType || 'application/json', // Commenting to make it work for GCP
   };
   if (method === 'POST' || method === 'post' || method === 'PUT' || method === 'put' || method === 'DELETE' || method === 'delete') {
     headers['Content-Type'] = 'application/json';
   }
+
   const options = {
     method,
     data: body,

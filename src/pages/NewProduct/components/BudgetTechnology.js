@@ -94,7 +94,7 @@ const BudgetTechnology = ({
   || (productFormData
       && productFormData.product_info
       && productFormData.product_info.hosting)
-    || 'No Preference',
+    || 'GCP',
   { required: true });
 
   const language = useInput((editData
@@ -103,7 +103,7 @@ const BudgetTechnology = ({
   || (productFormData
       && productFormData.product_info
       && productFormData.product_info.language)
-    || 'No Preference',
+    || 'JavaScript',
   { required: true });
 
   const database = useInput((editData
@@ -112,7 +112,7 @@ const BudgetTechnology = ({
   || (productFormData
       && productFormData.product_info
       && productFormData.product_info.database)
-    || 'No Preference',
+    || 'Postgres',
   { required: true });
 
   const storage = useInput((editData
@@ -121,7 +121,7 @@ const BudgetTechnology = ({
   || (productFormData
       && productFormData.product_info
       && productFormData.product_info.storage)
-    || 'No Preference',
+    || 'AWS',
   { required: true });
 
   const deployment = useInput((editData
@@ -130,7 +130,7 @@ const BudgetTechnology = ({
   || (productFormData
       && productFormData.product_info
       && productFormData.product_info.deployment)
-    || 'No Preference',
+    || 'AWS',
   { required: true });
 
   const [formError, setFormError] = useState({});

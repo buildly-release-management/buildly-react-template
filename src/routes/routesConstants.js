@@ -17,6 +17,7 @@ export const routes = {
   MISSING_DATA: '/missing-data',
   NEW_PRODUCT: '/app/new-product',
   RELEASE: '/app/release',
+  MILESTONE: '/app/milestone',
   DEVELOPER_FORM: '/app/developer-form',
   PRODUCTS: '/app/products',
 };

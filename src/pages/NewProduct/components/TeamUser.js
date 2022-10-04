@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
@@ -37,6 +36,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { PictureAsPdf as PictureAsPdfIcon } from '@mui/icons-material';
 import { useInput } from '@hooks/useInput';
+import { validators } from '@utils/validators';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { saveProductFormData, docIdentifier } from '@redux/product/actions/product.actions';
@@ -60,8 +60,8 @@ const useStyles = makeStyles((theme) => ({
     textAlign: 'center',
   },
   buttonContainer: {
-    display: 'flex',
-    alignItems: 'center',
+    margin: theme.spacing(8, 0),
+    textAlign: 'center',
     justifyContent: 'center',
   },
   buttonProgress: {
@@ -128,6 +128,22 @@ const TeamUser = ({
 
   // const [existingLinks, setExistingLinks] = useState([]);
 
+  const [formError, setFormError] = useState({});
+
+  const onBackClick = (event) => {
+    // if (checkIfProductInfoEdited() === true) {
+    //   handleSubmit(event);
+    // }
+    handleBack();
+  };
+
+  const onNextClick = (event) => {
+    // if (checkIfProductInfoEdited() === true) {
+    //   handleSubmit(event);
+    // }
+    handleNext();
+  };
+
   const submitDisabled = () => {
     let countNum = 0;
     _.forEach(roleCount, (roleCountObject) => {
@@ -141,15 +157,7 @@ const TeamUser = ({
     return false;
   };
 
-  checkIfTeamUserEdited = () => (
-    teamSize.hasChanged()
-    || (productFormData
-      && productFormData.product_info
-      && productFormData.product_info.role_count
-      && !_.isEqual(roleCount,
-        productFormData.product_info.role_count))
-    || existingFeatures.hasChanged()
-  );
+  checkIfTeamUserEdited = () => teamSize.hasChanged();
 
   // const removeFile = (filename) => {
   //   setFiles(files.filter((file) => file.name !== filename));
@@ -254,7 +262,6 @@ const TeamUser = ({
                         </TableCell>
                         <TableCell style={{ width: '30%' }}>
                           <TextField
-                            disabled
                             onChange={(e) => {
                               setRoleCount((pvrc) => {
                                 pvrc[index].count += parseInt(
@@ -314,7 +321,7 @@ const TeamUser = ({
                 // multiple
                 type="file"
                 id="existingFeatures"
-                label="Existing Features"
+                label="existing features"
                 name="existingFeatures"
                 autoComplete="existingFeatures"
                 inputProps={{ multiple: true }}
@@ -348,11 +355,11 @@ const TeamUser = ({
           <Grid container spacing={3} className={classes.buttonContainer}>
             <Grid item xs={12} sm={4}>
               <Button
-                type="button"
                 variant="contained"
                 color="primary"
                 fullWidth
-                onClick={handleBack}
+                onClick={onBackClick}
+                // disabled={productFormData === null}
                 className={classes.submit}
               >
                 Back
@@ -360,14 +367,14 @@ const TeamUser = ({
             </Grid>
             <Grid item xs={12} sm={4}>
               <Button
-                type="submit"
                 variant="contained"
                 color="primary"
                 fullWidth
+                onClick={onNextClick}
                 disabled={submitDisabled()}
                 className={classes.submit}
               >
-                Next
+                Save & Next
               </Button>
             </Grid>
           </Grid>
@@ -379,7 +386,6 @@ const TeamUser = ({
 
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
-  productFormData: state.productReducer.productFormData,
 });
 
 export default connect(mapStateToProps)(TeamUser);
