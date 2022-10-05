@@ -376,8 +376,9 @@ export const validateCredential = (data, valid) => ({
  * @param {FormData} data
  */
 export const docIdentifier = (
-  uploadFile,
+  uploadFile, formData,
 ) => ({
   type: ADD_DOC_IDENTIFIER,
- uploadFile,
+  uploadFile,
+  formData,
 });

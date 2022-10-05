@@ -243,6 +243,7 @@ const NewProductForm = (props) => {
       setConfirmModal(true);
       setConfirmModalFor(null);
     } else {
+      dispatch(saveProductFormData(null));
       setFormModal(false);
       history.push(redirectTo);
     }

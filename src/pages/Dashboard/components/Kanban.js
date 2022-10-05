@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme) => ({
     flexWrap: 'inherit',
   },
   swimlane: {
-    backgroundColor: theme.palette.contrast.main,
+    backgroundColor: theme.palette.secondary.main,
     display: 'flex',
     flexDirection: 'column',
     minWidth: '22%',

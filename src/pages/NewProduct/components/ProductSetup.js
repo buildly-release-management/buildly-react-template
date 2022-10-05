@@ -22,7 +22,7 @@ import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
 import { getOrganization } from '@context/User.context';
 import {
-  saveProductFormData, getAllThirdPartyTools, getAllCredentials, validateCredential,
+  saveProductFormData, getAllThirdPartyTools, validateCredential,
 } from '@redux/product/actions/product.actions';
 
 const useStyles = makeStyles((theme) => ({
