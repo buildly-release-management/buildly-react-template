@@ -59,10 +59,8 @@ const Products = ({
       { organization_uuid: user.organization.organization_uuid },
     );
 
-    if (filteredProducts && !_.isEmpty(filteredProducts)) {
-      const sorted_products = _.orderBy(getProductsData(filteredProducts), 'create_date', 'desc');
-      setRows(sorted_products);
-    }
+    const sorted_products = _.orderBy(getProductsData(filteredProducts), 'create_date', 'desc');
+    setRows(sorted_products);
   }, [products]);
 
   const onAddButtonClick = () => {

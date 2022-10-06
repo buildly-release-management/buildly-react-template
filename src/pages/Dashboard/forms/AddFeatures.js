@@ -124,10 +124,10 @@ const AddFeatures = ({
   checkIfAddFeaturesEdited = () => (
     name.hasChanged()
       || description.hasChanged()
-      || priority.hasChanged()
-      || (_.isEmpty(currentStatData) && !_.isEmpty(status))
-      || (!_.isEmpty(editData) && !_.isEqual(tags, editData.tags))
-      || (_.isEmpty(editData) && !_.isEmpty(tags))
+      || (editPage && priority.hasChanged())
+      || (editPage && _.isEmpty(currentStatData) && !_.isEmpty(status))
+      || (editPage && !_.isEmpty(editData) && !_.isEqual(tags, editData.tags))
+      || (editPage && _.isEmpty(editData) && !_.isEmpty(tags))
   );
 
   // Handle tags list
@@ -174,11 +174,7 @@ const AddFeatures = ({
       edit_date: dateTime,
       name: name.value,
       description: description.value,
-      status: statusID,
-      tags,
       product_uuid,
-      priority: priority.value,
-      column_id: colID,
       ...featCred?.auth_detail,
       assignees: product && product.feature_tool_detail && product.feature_tool_detail.user_list
         && _.filter(product.feature_tool_detail.user_list, (user) => (
@@ -187,6 +183,10 @@ const AddFeatures = ({
     };
 
     if (editPage) {
+      formData.status = statusID;
+      formData.tags = tags;
+      formData.priority = priority.value;
+      formData.column_id = colID;
       dispatch(saveFeatureFormData(formData));
     } else {
       formData.create_date = dateTime;
@@ -218,8 +218,8 @@ const AddFeatures = ({
     const errorKeys = Object.keys(formError);
     if (!name.value
       || !description.value
-      || !statusID
-      || !priority.value
+      || (editPage && !statusID)
+      || (editPage && !priority.value)
       || !assignees
     ) {
       return true;
@@ -295,103 +295,107 @@ const AddFeatures = ({
           </Grid>
         </Grid>
 
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              select
-              id="status"
-              label="Status"
-              name="status"
-              value={status}
-              autoComplete="status"
-              disabled={viewPage}
-              onChange={(e) => {
-                const stat = e.target.value;
-                setStatus(stat);
-                setStatusID(stat.status_uuid);
-                setColID(stat.status_tracking_id);
-              }}
-            >
-              {_.map(prodStatus, (sts) => (
-                <MenuItem
-                  key={`status-${sts.status_uuid}-${sts.name}`}
-                  value={sts}
-                >
-                  {sts.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              select
-              id="priority "
-              label="Priority"
-              name="priority"
-              autoComplete="priority"
-              error={
-                formError.priority
-                && formError.priority.error
-              }
-              helperText={
-                formError.priority
-                  ? formError.priority.message
-                  : ''
-              }
-              onBlur={(e) => handleBlur(e, 'required', priority)}
-              {...priority.bind}
-              disabled={viewPage}
-            >
-              {_.map(PRIORITIES, (prty, idx) => (
-                <MenuItem
-                  key={`priority-${idx}`}
-                  value={prty}
-                >
-                  {prty}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Autocomplete
-            fullWidth
-            multiple
-            filterSelectedOptions
-            id="tags"
-            options={TAGS}
-            value={tags}
-            onChange={(e, newValue) => onTagsChange(newValue)}
-            renderTags={(value, getTagProps) => (
-              _.map(value, (option, index) => (
-                <Chip
-                  variant="default"
-                  label={option}
-                  {...getTagProps({ index })}
-                />
-              ))
-            )}
-            renderInput={(params) => (
+        {editPage && (
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={8}>
               <TextField
-                {...params}
                 variant="outlined"
-                label="Tags"
                 margin="normal"
-              />
-            )}
-            disabled={viewPage}
-          />
-        </Grid>
+                required
+                fullWidth
+                select
+                id="status"
+                label="Status"
+                name="status"
+                value={status}
+                autoComplete="status"
+                disabled={viewPage}
+                onChange={(e) => {
+                  const stat = e.target.value;
+                  setStatus(stat);
+                  setStatusID(stat.status_uuid);
+                  setColID(stat.status_tracking_id);
+                }}
+              >
+                {_.map(prodStatus, (sts) => (
+                  <MenuItem
+                    key={`status-${sts.status_uuid}-${sts.name}`}
+                    value={sts}
+                  >
+                    {sts.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                select
+                id="priority "
+                label="Priority"
+                name="priority"
+                autoComplete="priority"
+                error={
+                  formError.priority
+                  && formError.priority.error
+                }
+                helperText={
+                  formError.priority
+                    ? formError.priority.message
+                    : ''
+                }
+                onBlur={(e) => handleBlur(e, 'required', priority)}
+                {...priority.bind}
+                disabled={viewPage}
+              >
+                {_.map(PRIORITIES, (prty, idx) => (
+                  <MenuItem
+                    key={`priority-${idx}`}
+                    value={prty}
+                  >
+                    {prty}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+          </Grid>
+        )}
+
+        {editPage && (
+          <Grid item xs={12}>
+            <Autocomplete
+              fullWidth
+              multiple
+              filterSelectedOptions
+              id="tags"
+              options={TAGS}
+              value={tags}
+              onChange={(e, newValue) => onTagsChange(newValue)}
+              renderTags={(value, getTagProps) => (
+                _.map(value, (option, index) => (
+                  <Chip
+                    variant="default"
+                    label={option}
+                    {...getTagProps({ index })}
+                  />
+                ))
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="Tags"
+                  margin="normal"
+                />
+              )}
+              disabled={viewPage}
+            />
+          </Grid>
+        )}
 
         {!_.isEmpty(product?.feature_tool_detail?.user_list) && (
           <Grid item xs={12} md={8}>
