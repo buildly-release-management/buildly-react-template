@@ -161,6 +161,7 @@ const TeamUser = ({
         ...productFormData.product_info,
         team_size: teamSize.value,
         role_count: roleCount,
+        doc_file: doc_file.value,
       },
       edit_date: new Date(),
     };

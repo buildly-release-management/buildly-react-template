@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
-import { styled } from '@mui/material/styles';
 import {
   Grid, Paper, Popover, Typography,
 } from '@mui/material';
@@ -12,10 +11,6 @@ import {
   TrendingFlatRounded as TrendingFlatRoundedIcon,
   Info as InfoIcon,
 } from '@mui/icons-material';
-import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
-import MuiAccordion from '@mui/material/Accordion';
-import MuiAccordionSummary from '@mui/material/AccordionSummary';
-import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import {
   Chip,
 } from '@mui/material';
@@ -97,39 +92,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Accordion = styled((props) => (
-  <MuiAccordion disableGutters elevation={0} square {...props} />
-))(({ theme }) => ({
-  border: `1px solid ${theme.palette.divider}`,
-  '&:not(:last-child)': {
-    borderBottom: 0,
-  },
-  '&:before': {
-    display: 'none',
-  },
-}));
-
-const AccordionSummary = styled((props) => (
-  <MuiAccordionSummary
-    expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />}
-    {...props}
-  />
-))(({ theme }) => ({
-  backgroundColor: theme.palette.contrast.main,
-  flexDirection: 'row-reverse',
-  '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
-    transform: 'rotate(90deg)',
-  },
-  '& .MuiAccordionSummary-content': {
-    marginLeft: theme.spacing(1),
-  },
-}));
-
-const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
-  borderTop: '1px solid rgba(0, 0, 0, 0.125)',
-  padding: '8px 8px 0px 8px',
-}));
-
 const List = ({
   product,
   productFeatures,
@@ -153,15 +115,6 @@ const List = ({
   const handleIssueDetailsCloseClick = () => {
     setIssueDetailsAnchorEl(null);
     setSelectedIssue(null);
-  };
-
-  const open = Boolean(issueDetailsAnchorEl);
-  const id = open ? 'issue-details-popover' : undefined;
-
-  const [expanded, setExpanded] = React.useState('');
-
-  const handleChange = (panel) => (event, newExpanded) => {
-    setExpanded(newExpanded ? panel : false);
   };
 
   return (
@@ -299,7 +252,11 @@ const List = ({
                     <InfoIcon
                       className={classes.entryIcon}
                       onClick={(e) => handleIssueDetailsOpenClick(e, issue)}
-                      aria-describedby={id}
+                      aria-describedby={
+                        issueDetailsAnchorEl && Boolean(issueDetailsAnchorEl)
+                          ? 'issue-details-popover'
+                          : undefined
+                      }
                     />
                   </div>
                 ))}
@@ -311,7 +268,11 @@ const List = ({
           selectedIssue
           && (
           <Popover
-            id={id}
+            id={
+              issueDetailsAnchorEl && Boolean(issueDetailsAnchorEl)
+                ? 'issue-details-popover'
+                : undefined
+            }
             open={open}
             anchorEl={issueDetailsAnchorEl}
             onClose={handleIssueDetailsCloseClick}

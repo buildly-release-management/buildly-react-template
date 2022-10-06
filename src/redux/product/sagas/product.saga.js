@@ -467,7 +467,7 @@ function* updateProduct(payload) {
     const product = yield call(
       httpService.makeRequest,
       'put',
-      `${window.env.API_URL}${productEndpoint}product/${payload.data.product_uuid}`,
+      `${window.env.API_URL}${productEndpoint}product/${payload.data.product_uuid}/`,
       payload.data,
     );
 
@@ -556,7 +556,10 @@ function* updateProduct(payload) {
     }
 
     yield [
-      yield put({ type: UPDATE_PRODUCT_SUCCESS, data: product.data }),
+      yield put({
+        type: UPDATE_PRODUCT_SUCCESS,
+        data: { ...product.data, product_uuid: payload.data.product_uuid },
+      }),
       yield put(
         showAlert({
           type: 'success',
@@ -999,20 +1002,27 @@ function* docIdentifier(payload) {
     );
 
     if (response && response.data) {
-      yield put({
-        type: ADD_DOC_IDENTIFIER_SUCCESS,
-        response,
-      });
+      let productFormData = payload.formData;
+
       if (response.data.cloud_url && !_.isEmpty(response.data.cloud_url)) {
-        const data = {
-          ...payload.formData,
+        const doc_file = productFormData.product_info.doc_file
+        && !_.isEmpty(productFormData.product_info.doc_file)
+          ? [...productFormData.product_info.doc_file, ...response.data.cloud_url]
+          : response.data.cloud_url;
+
+        productFormData = {
+          ...productFormData,
           product_info: {
-            ...payload.formData.product_info,
-            doc_file: response.data.cloud_url,
+            ...productFormData.product_info,
+            doc_file,
           },
         };
-        yield put(saveProductFormData(data));
       }
+
+      yield put({
+        type: ADD_DOC_IDENTIFIER_SUCCESS,
+        productFormData,
+      });
     }
   } catch (error) {
     yield [

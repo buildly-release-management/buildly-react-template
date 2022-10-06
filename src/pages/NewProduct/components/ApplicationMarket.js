@@ -118,11 +118,11 @@ const ApplicationMarket = ({
     applicationType.hasChanged()
     || primaryUsers.hasChanged()
     || secondaryUsers.hasChanged()
-    || (productFormData
-      && productFormData.product_info
+    || Boolean(editData && editData.product_info && editData.product_info.bussiness_segment
+      && !_.isEqual(bussinessSegment, editData.product_info.bussiness_segment))
+    || Boolean(productFormData && productFormData.product_info
       && productFormData.product_info.bussiness_segment
-      && !_.isEqual(bussinessSegment,
-        productFormData.product_info.bussiness_segment))
+      && !_.isEqual(bussinessSegment, productFormData.product_info.bussiness_segment))
   );
 
   /**

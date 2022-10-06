@@ -45,22 +45,21 @@ const StatusBoard = ({
   location,
 }) => {
   const classes = useStyles();
-  const [openFormModal, setFormModal] = useState(true);
-  const [openConfirmModal, setConfirmModal] = useState(false);
   const editData = (
     location.state
     && location.state.type === 'edit'
     && location.state.data
   ) || {};
   const product_uuid = location.state && location.state.product_uuid;
-
   const redirectTo = location.state && location.state.from;
-
-  const [status, setStatus] = useState([]);
-  const [formError, setFormError] = useState({});
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
+
+  const [openFormModal, setFormModal] = useState(true);
+  const [openConfirmModal, setConfirmModal] = useState(false);
+  const [status, setStatus] = useState([]);
+  const [formError, setFormError] = useState({});
 
   const closeFormModal = () => {
     const dataHasChanged = (
