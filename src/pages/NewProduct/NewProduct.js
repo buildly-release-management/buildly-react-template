@@ -22,9 +22,6 @@ import BudgetTechnology, {
 } from './components/BudgetTechnology';
 import TeamUser, { checkIfTeamUserEdited } from './components/TeamUser';
 import UseInfo, { checkIfUseInfoEdited } from './components/UseInfo';
-import MinimalFunctionality, {
-  checkIfMinimalFuncEdited,
-} from './components/MinimalFunctionality';
 import ViewDetailsWrapper from './components/ViewDetailsWrapper';
 import { getAllStatuses } from '@redux/decision/actions/decision.actions';
 
@@ -48,7 +45,6 @@ const getSteps = () => [
   'Budget & Technology',
   'Team & Users',
   'Users Information',
-  'Minimal Functionality',
 ];
 
 const getStepContent = (
@@ -154,25 +150,6 @@ const getStepContent = (
           activeStep={stepIndex}
         >
           <UseInfo
-            {...props}
-            location={props.location}
-            handleNext={handleNext}
-            handleBack={handleBack}
-            editData={editData}
-          />
-        </ViewDetailsWrapper>
-      );
-
-    case 5:
-      return (
-        <ViewDetailsWrapper
-          {...props}
-          handleBack={handleBack}
-          title="New Product Setup"
-          maxSteps={maxSteps}
-          activeStep={stepIndex}
-        >
-          <MinimalFunctionality
             {...props}
             location={props.location}
             handleBack={handleBack}
@@ -289,9 +266,6 @@ const NewProductForm = (props) => {
 
       case 4:
         return checkIfUseInfoEdited();
-
-      case 5:
-        return checkIfMinimalFuncEdited();
 
       default:
         return false;
