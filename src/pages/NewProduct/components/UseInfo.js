@@ -213,10 +213,10 @@ const UseInfo = ({
     if (editPage) {
       formData.product_uuid = product_uuid;
       dispatch(updateProduct(formData));
+      history.push(redirectTo);
     } else {
-      dispatch(createProduct(formData));
+      dispatch(createProduct(formData, history));
     }
-    history.push(redirectTo);
   };
 
   return (

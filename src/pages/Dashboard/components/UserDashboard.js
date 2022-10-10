@@ -164,6 +164,12 @@ const UserDashboard = (props) => {
   const addDropColumnPath = `${routes.DASHBOARD}/select-column`;
 
   useEffect(() => {
+    const selected_product = history && history.location
+      && history.location.state && history.location.state.selected_product;
+    if (selected_product) {
+      setProduct(selected_product);
+    }
+
     dispatch(getAllProducts());
     dispatch(getAllStatuses());
     dispatch(getAllFeatures());

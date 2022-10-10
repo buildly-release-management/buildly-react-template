@@ -109,6 +109,13 @@ const StatusBoard = ({
       description: col,
       status_tracking_id: null,
     }));
+    statusData.push({
+      product_uuid,
+      name: 'No Status',
+      description: 'No Status',
+      status_tracking_id: null,
+    });
+
     dispatch(createStatus(statusData));
     history.push(redirectTo);
   };

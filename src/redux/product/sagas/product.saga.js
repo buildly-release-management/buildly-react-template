@@ -443,7 +443,7 @@ function* createProduct(payload) {
       ),
     ];
     if (history) {
-      history.push(routes.DASHBOARD);
+      history.push(routes.DASHBOARD, { selected_product: product.data.product_uuid });
     }
   } catch (error) {
     yield [

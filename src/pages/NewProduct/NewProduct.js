@@ -10,7 +10,8 @@ import {
   Grid,
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
-import { clearValidateData, saveProductFormData, getAllCredentials } from '@redux/product/actions/product.actions';
+import { getAllStatuses } from '@redux/decision/actions/decision.actions';
+import { saveProductFormData, getAllCredentials } from '@redux/product/actions/product.actions';
 import ProductSetup, {
   checkIfProductSetupEdited,
 } from './components/ProductSetup';
@@ -23,7 +24,6 @@ import BudgetTechnology, {
 import TeamUser, { checkIfTeamUserEdited } from './components/TeamUser';
 import UseInfo, { checkIfUseInfoEdited } from './components/UseInfo';
 import ViewDetailsWrapper from './components/ViewDetailsWrapper';
-import { getAllStatuses } from '@redux/decision/actions/decision.actions';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -243,7 +243,6 @@ const NewProductForm = (props) => {
 
   useEffect(() => {
     dispatch(getAllStatuses());
-    // dispatch(clearValidateData());
   }, []);
 
   useEffect(() => {
