@@ -19,6 +19,7 @@ import {
   Typography,
   Menu,
   MenuItem,
+  FormHelperText,
 } from '@mui/material';
 import UpdateIcon from '@mui/icons-material/Update';
 import AltRouteIcon from '@mui/icons-material/AltRoute';
@@ -40,8 +41,9 @@ const useStyles = makeStyles((theme) => ({
     textAlign: 'center',
   },
   container: {
-    marginBottom: theme.spacing(4),
-    flexWrap: 'inherit',
+    flexWrap: 'nowrap',
+    overflowX: 'auto',
+    paddingBottom: theme.spacing(4),
   },
   swimlane: {
     backgroundColor: theme.palette.secondary.main,
@@ -85,7 +87,7 @@ const useStyles = makeStyles((theme) => ({
     cursor: 'pointer',
   },
   columnBody: {
-    maxHeight: '56vh',
+    maxHeight: '64vh',
     overflowY: 'auto',
   },
 }));
@@ -107,6 +109,7 @@ const Kanban = ({
   commentItem,
   dispatch,
   credentials,
+  upgrade,
 }) => {
   const classes = useStyles();
   const [columns, setColumns] = useState({});
@@ -241,6 +244,12 @@ const Kanban = ({
         </Typography>
       )}
 
+      {!!product && upgrade && (
+        <FormHelperText error style={{ marginBottom: '16px' }}>
+          Upgrade to be able to create more features
+        </FormHelperText>
+      )}
+
       {!!product && (
         <DragDropContext
           onDragEnd={(result) => {
@@ -250,7 +259,7 @@ const Kanban = ({
           <Grid
             container
             rowGap={2}
-            columnGap={2}
+            columnGap={4}
             className={classes.container}
           >
             {_.map(Object.entries(columns), ([columnId, column], index) => (

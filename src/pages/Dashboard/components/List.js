@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
+  FormHelperText,
   Grid, Paper, Popover, Typography,
 } from '@mui/material';
 import {
@@ -101,6 +102,7 @@ const List = ({
   deleteItem,
   commentItem,
   issueSuggestions,
+  upgrade,
 }) => {
   const classes = useStyles();
 
@@ -128,10 +130,15 @@ const List = ({
             >
               Features
             </Typography>
+            {!!product && upgrade && (
+              <FormHelperText error>
+                Upgrade to be able to create more features
+              </FormHelperText>
+            )}
           </div>
           <div className={classes.section3}>
             <div className={classes.boxSection}>
-              {product !== 0 && (
+              {!!product && !upgrade && (
               <AddRoundedIcon
                 className={classes.addIcon}
                 fontSize="large"
@@ -147,7 +154,7 @@ const List = ({
                 No Product selected. Please select the product.
               </Typography>
               )}
-              {product !== 0 && productFeatures && productFeatures.length === 0 && (
+              {!!product && productFeatures && productFeatures.length === 0 && (
               <Typography
                 className={classes.noData}
                 variant="body1"
@@ -155,7 +162,7 @@ const List = ({
                 No features yet.
               </Typography>
               )}
-              {product !== 0 && productFeatures && productFeatures.length > 0
+              {!!product && productFeatures && productFeatures.length > 0
                   && _.map(productFeatures, (feat) => (
                     <div
                       key={`feature-${feat.product_uuid}-${feat.feature_uuid}`}
@@ -167,13 +174,13 @@ const List = ({
                       >
                         {feat.name}
                       </Typography>
-                      {_.filter(productIssues, (issue) => (
-                        issue.feature_uuid === feat.feature_uuid)).length === 0
-                      && (
-                      <TrendingFlatRoundedIcon
-                        className={classes.entryIcon}
-                        onClick={(e) => issueSuggestions(feat, 'show')}
-                      />
+                      {_.size(_.filter(productIssues, (issue) => (
+                        issue.feature_uuid === feat.feature_uuid
+                      ))) === 0 && (
+                        <TrendingFlatRoundedIcon
+                          className={classes.entryIcon}
+                          onClick={(e) => issueSuggestions(feat, 'show')}
+                        />
                       )}
                       <EditRoundedIcon
                         className={classes.entryIcon}
@@ -200,7 +207,7 @@ const List = ({
           </div>
           <div className={classes.section3}>
             <div className={classes.boxSection}>
-              {product !== 0 && (
+              {!!product && (
               <AddRoundedIcon
                 className={classes.addIcon}
                 fontSize="large"
@@ -216,7 +223,7 @@ const List = ({
                 No Product selected. Please select the product.
               </Typography>
               )}
-              {product !== 0 && productIssues && productIssues.length === 0 && (
+              {!!product && productIssues && productIssues.length === 0 && (
               <Typography
                 className={classes.noData}
                 variant="body1"
@@ -225,7 +232,7 @@ const List = ({
               </Typography>
               )}
               <div>
-                {product !== 0 && productIssues && productIssues.length > 0
+                {!!product && productIssues && productIssues.length > 0
                 && _.map(productIssues, (issue) => (
                   <div
                     key={`issue-${issue.product_uuid}-${issue.issue_uuid}`}

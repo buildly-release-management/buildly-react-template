@@ -112,6 +112,7 @@ const UserDashboard = (props) => {
   const [productIssues, setProductIssues] = useState([]);
   const [openDeleteModal, setDeleteModal] = useState(false);
   const [toDeleteItem, setDeleteItem] = useState({ id: 0, type: 'feat' });
+  const [upgrade, setUpgrade] = useState(false);
 
   const addFeatPath = redirectTo
     ? _.includes(location.pathname, 'list')
@@ -216,9 +217,16 @@ const UserDashboard = (props) => {
       { product_uuid: product },
     );
 
+    if ((_.size(feats) >= 5) && user && user.organization
+    && !user.organization.unlimited_free_plan) {
+      setUpgrade(true);
+    } else {
+      setUpgrade(false);
+    }
+
     setProductFeatures(_.orderBy(feats, 'create_date', 'desc'));
     setProductIssues(_.orderBy(iss, 'create_date', 'desc'));
-  }, [product, JSON.stringify(features), JSON.stringify(issues)]);
+  }, [product, features, issues]);
 
   const viewTabClicked = (event, vw) => {
     setView(vw);
@@ -596,6 +604,7 @@ const UserDashboard = (props) => {
                   deleteItem={deleteItem}
                   commentItem={commentItem}
                   issueSuggestions={issueSuggestions}
+                  upgrade={upgrade}
                 />
               )}
             />
@@ -614,6 +623,7 @@ const UserDashboard = (props) => {
                   deleteItem={deleteItem}
                   commentItem={commentItem}
                   dispatch={dispatch}
+                  upgrade={upgrade}
                 />
               )}
             />
@@ -667,7 +677,7 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
   ...state.productReducer,
   ...state.decisionReducer,
-  loading: state.productReducer.loading && state.decisionReducer.loading,
+  loading: state.productReducer.loading || state.decisionReducer.loading,
   user: state.authReducer.data,
   boards: state.productReducer.boards,
   importLoaded: state.decisionReducer.importLoaded,
