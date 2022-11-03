@@ -23,6 +23,7 @@ import { useInput } from '@hooks/useInput';
 import {
   register,
   loadOrgNames,
+  loadStripeProducts,
 } from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
@@ -88,7 +89,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Register = ({
-  dispatch, loading, history, socialLogin, orgNames,
+  dispatch, loading, history, socialLogin, orgNames, stripeProducts,
 }) => {
   const classes = useStyles();
 
@@ -125,7 +126,20 @@ const Register = ({
     if (!orgNames) {
       dispatch(loadOrgNames());
     }
+    if (window.env.STRIPE_KEY && !stripeProducts) {
+      dispatch(loadStripeProducts());
+    }
   }, []);
+
+  useEffect(() => {
+    if (!orgName || _.isEmpty(orgNames)
+      || (orgName && _.includes(orgNames, _.lowerCase(orgName)))
+    ) {
+      setShowProducts(false);
+    } else {
+      setShowProducts(true);
+    }
+  }, [orgName, orgNames]);
 
   /**
    * Submit the form to the backend and attempts to authenticate
@@ -184,6 +198,11 @@ const Register = ({
       || !orgName
       || !userType.value
       || !first_name.value
+      || (showProducts && !product.value)
+      || (showProducts && cardError)
+      || (showProducts && !elements)
+      // eslint-disable-next-line no-underscore-dangle
+      || (showProducts && elements && elements.getElement('card')._empty)
     ) return true;
     errorKeys.forEach((key) => {
       if (formError[key].error) errorExists = true;

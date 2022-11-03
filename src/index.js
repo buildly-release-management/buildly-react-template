@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
+import { Elements } from '@stripe/react-stripe-js';
 import App from './App';
 import './i18n';
 import configureStore from './redux/store';
@@ -26,7 +27,9 @@ const store = configureStore();
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <Elements stripe={stripePromise}>
+      <App />
+    </Elements>
   </Provider>,
   document.getElementById('root'),
 );

@@ -54,6 +54,7 @@ const DropColumn = ({
 
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
+
   const [product, setProduct] = useState('');
   const [prodStatus, setProdStatus] = useState('');
   const [statusID, setStatusID] = useState(null);
