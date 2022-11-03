@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Route, Redirect, Switch } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
-import { Container, Typography } from '@mui/material';
+import { Container } from '@mui/material';
 import { UserContext, getUser } from '@context/User.context';
 import TopBar from '@layout/TopBar/TopBar';
 import Dashboard from '@pages/Dashboard/Dashboard';

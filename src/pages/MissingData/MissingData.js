@@ -20,6 +20,7 @@ import { useInput } from '@hooks/useInput';
 import {
   loadOrgNames,
   addOrgSocialUser,
+  loadStripeProducts,
 } from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
@@ -59,6 +60,7 @@ const MissingData = ({
   const email = useInput('', { required: true });
   const [radioValue, setRadioValue] = useState(null);
   const [orgName, setOrgName] = useState('');
+  const product = useInput('', { required: true });
   const [formError, setFormError] = useState({});
 
   useEffect(() => {
@@ -88,9 +90,28 @@ const MissingData = ({
       updateForm.email = email.value;
     }
 
-    dispatch(
-      addOrgSocialUser(updateForm, _.includes(orgNames, orgName), history),
-    );
+    if (showProducts) {
+      const { error, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: elements.getElement('card'),
+        billing_details: {
+          email: email.value,
+          name: orgName,
+        },
+      });
+      anyError = error;
+      updateForm = {
+        ...updateForm,
+        product: product.value,
+        card: paymentMethod?.id,
+      };
+    }
+
+    if (!anyError) {
+      dispatch(
+        addOrgSocialUser(updateForm, _.includes(orgNames, orgName), history),
+      );
+    }
   };
 
   /**
@@ -127,6 +148,11 @@ const MissingData = ({
       || !userType.value
       || !radioValue
       || (radioValue === 'no' && !orgName)
+      || (showProducts && !product.value)
+      || (showProducts && cardError)
+      || (showProducts && !elements)
+      // eslint-disable-next-line no-underscore-dangle
+      || (showProducts && elements && elements.getElement('card')._empty)
     ) return true;
     errorKeys.forEach((key) => {
       if (formError[key].error) errorExists = true;
@@ -247,6 +273,44 @@ const MissingData = ({
                         className={classes.textField}
                       />
                     )}
+                  />
+                </Grid>
+              )}
+              {radioValue === 'no' && (
+                <Grid className={showProducts ? '' : classes.hidden} item xs={12}>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    select
+                    id="product"
+                    name="product"
+                    label="Subscription to Product"
+                    autoComplete="product"
+                    error={formError.product && formError.product.error}
+                    helperText={
+                      formError.product ? formError.product.message : ''
+                    }
+                    className={classes.textField}
+                    onBlur={(e) => handleBlur(e, 'required', product)}
+                    {...product.bind}
+                  >
+                    <MenuItem value="">----------</MenuItem>
+                    {stripeProducts && !_.isEmpty(stripeProducts)
+                    && _.map(stripeProducts, (prd) => (
+                      <MenuItem key={`sub-product-${prd.id}`} value={prd.id}>
+                        {`${prd.name} - ${prd.description}`}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              )}
+              {radioValue === 'no' && (
+                <Grid className={showProducts ? '' : classes.hidden} item xs={12}>
+                  <StripeCard
+                    cardError={cardError}
+                    setCardError={setCardError}
                   />
                 </Grid>
               )}

@@ -106,7 +106,6 @@ export default (state = initialState, action) => {
         ...state,
         featureFormData: action.formData,
       };
-
     case ALL_DECISIONS:
     case ALL_FEATURES:
     case ALL_FEEDBACKS:

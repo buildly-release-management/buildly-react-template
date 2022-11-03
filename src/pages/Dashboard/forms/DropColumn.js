@@ -54,6 +54,7 @@ const DropColumn = ({
 
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
+
   const [product, setProduct] = useState('');
   const [prodStatus, setProdStatus] = useState('');
   const [statusID, setStatusID] = useState(null);
@@ -223,7 +224,6 @@ const DropColumn = ({
                 </TextField>
               </Grid>
             </Grid>
-
             <Grid
               container
               spacing={isDesktop ? 3 : 0}

@@ -96,7 +96,6 @@ const IssueSuggestions = ({
       ...issueCred?.auth_detail,
       issue_detail: {},
     };
-
     const issueSuggestionsData = showData.issue_suggestion.map((issue) => ({
       ...formData,
       name: issue.name,

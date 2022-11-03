@@ -79,7 +79,6 @@ const ApplicationMarket = ({
       && productFormData.product_info.application_type)
     || 'desktop',
   { required: true });
-
   const primaryUsers = useInput((editData
     && editData.product_info
     && editData.product_info.primary_users)

@@ -94,6 +94,32 @@ const useStyles = makeStyles((theme) => ({
     },
     overflowY: 'auto',
   },
+  chip: {
+    marginRight: theme.spacing(0.5),
+    marginBottom: theme.spacing(0.5),
+  },
+  tag: {
+    marginRight: theme.spacing(0.5),
+    marginBottom: theme.spacing(0.5),
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+  },
+  moment: {
+    marginTop: theme.spacing(3),
+    textAlign: 'left',
+  },
+  iconButton: {
+    padding: 0,
+    marginLeft: theme.spacing(1),
+  },
+  comment: {
+    float: 'right',
+    cursor: 'pointer',
+  },
+  columnBody: {
+    maxHeight: '56vh',
+    overflowY: 'auto',
+  },
 }));
 
 const options = [
@@ -369,7 +395,6 @@ const Kanban = ({
                                           <TrendingFlatRoundedIcon fontSize="small" />
                                         </IconButton>
                                       )}
-
                                       <IconButton
                                         id="menu-button"
                                         aria-label="column-options"
@@ -381,7 +406,6 @@ const Kanban = ({
                                       >
                                         <MoreHorizIcon />
                                       </IconButton>
-
                                       <Menu
                                         id="long-menu"
                                         MenuListProps={{

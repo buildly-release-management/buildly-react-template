@@ -546,7 +546,6 @@ const UserDashboard = (props) => {
           </Grid>
         </div>
       </Grid>
-
       {((_.isEmpty(status)) && product !== 0
         ? (!_.isEmpty(prod) && (!_.isEmpty(prod.third_party_tool)))
           ? (

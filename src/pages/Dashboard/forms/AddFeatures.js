@@ -224,14 +224,12 @@ const AddFeatures = ({
     ) {
       return true;
     }
-
     let errorExists = false;
     _.forEach(errorKeys, (key) => {
       if (formError[key].error) {
         errorExists = true;
       }
     });
-
     return errorExists;
   };
 
@@ -267,7 +265,6 @@ const AddFeatures = ({
               disabled={viewPage}
             />
           </Grid>
-
           <Grid item xs={12}>
             <TextField
               variant="outlined"

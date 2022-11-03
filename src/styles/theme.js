@@ -44,6 +44,14 @@ const theme = createTheme(({
         },
       },
     },
+    MuiSnackbarContent: {
+      styleOverrides: {
+        root: {
+          color: '#000',
+          backgroundColor: 'transparent',
+        },
+      },
+    },
   },
 }));
 

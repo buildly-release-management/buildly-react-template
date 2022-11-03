@@ -276,7 +276,6 @@ const AddIssues = ({
       },
       ...issueCred?.auth_detail,
     };
-
     if (editPage) {
       dispatch(updateIssue(formData));
     } else {

@@ -180,7 +180,6 @@ const TeamUser = ({
                 What is the size of your current team and backgrounds/roles?
               </Typography>
             </Grid>
-
             <Grid item xs={12} sm={12}>
               <FormControl component="fieldset">
                 <RadioGroup
@@ -207,7 +206,6 @@ const TeamUser = ({
                 </RadioGroup>
               </FormControl>
             </Grid>
-
             <Grid item xs={12}>
               <TableContainer component={Paper}>
                 <Table aria-label="simple table">
@@ -276,13 +274,11 @@ const TeamUser = ({
                 </Table>
               </TableContainer>
             </Grid>
-
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom component="div">
                 Do you have any existing requirements documents, mockups,
                 designs etc.?
               </Typography>
-
               <TextField
                 variant="outlined"
                 margin="normal"
@@ -338,7 +334,6 @@ const TeamUser = ({
                 Back
               </Button>
             </Grid>
-
             <Grid item xs={12} sm={4}>
               <Button
                 type="submit"
