@@ -49,7 +49,6 @@ const initialState = {
   organizationData: null,
   socialLogin: null,
   orgNames: null,
-  stripeProducts: null,
 };
 
 // Reducer

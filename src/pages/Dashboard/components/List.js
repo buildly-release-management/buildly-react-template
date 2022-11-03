@@ -23,13 +23,6 @@ import {
   TrendingFlatRounded as TrendingFlatRoundedIcon,
   Update as UpdateIcon,
 } from '@mui/icons-material';
-import {
-  Chip,
-} from '@mui/material';
-import UpdateIcon from '@mui/icons-material/Update';
-import DateRangeIcon from '@mui/icons-material/DateRange';
-import CommentIcon from '@mui/icons-material/Comment';
-import AltRouteIcon from '@mui/icons-material/AltRoute';
 
 const useStyles = makeStyles((theme) => ({
   gridItem: {

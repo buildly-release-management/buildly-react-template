@@ -8,7 +8,6 @@ const initialState = {
   error: null,
   socialLogin: null,
   orgNames: null,
-  stripeProducts: null,
 };
 
 describe('Empty reducer', () => {

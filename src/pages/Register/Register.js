@@ -23,7 +23,6 @@ import { useInput } from '@hooks/useInput';
 import {
   register,
   loadOrgNames,
-  loadStripeProducts,
 } from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
@@ -366,6 +365,78 @@ const Register = ({
                   </Grid>
                 </Grid>
 
+                <Grid container spacing={isMobile() ? 0 : 3}>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      select
+                      id="userType"
+                      name="userType"
+                      label="User Type"
+                      autoComplete="userType"
+                      error={formError.userType && formError.userType.error}
+                      helperText={
+                        formError.userType ? formError.userType.message : ''
+                      }
+                      className={classes.textField}
+                      onBlur={(e) => handleBlur(e, 'required', userType)}
+                      {...userType.bind}
+                    >
+                      <MenuItem value="">----------</MenuItem>
+                      <MenuItem value="Developer">Developer</MenuItem>
+                      <MenuItem value="Product Team">Product Team</MenuItem>
+                    </TextField>
+                  </Grid>
+                </Grid>
+                <Grid
+                  className={showProducts ? '' : classes.hidden}
+                  container
+                  spacing={isMobile() ? 0 : 3}
+                >
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      select
+                      id="product"
+                      name="product"
+                      label="Subscription to Product"
+                      autoComplete="product"
+                      error={formError.product && formError.product.error}
+                      helperText={
+                        formError.product ? formError.product.message : ''
+                      }
+                      className={classes.textField}
+                      onBlur={(e) => handleBlur(e, 'required', product)}
+                      {...product.bind}
+                    >
+                      <MenuItem value="">----------</MenuItem>
+                      {stripeProducts && !_.isEmpty(stripeProducts)
+                      && _.map(stripeProducts, (prd) => (
+                        <MenuItem key={`sub-product-${prd.id}`} value={prd.id}>
+                          {`${prd.name} - ${prd.description}`}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                </Grid>
+                <Grid
+                  className={showProducts ? '' : classes.hidden}
+                  container
+                  spacing={isMobile() ? 0 : 3}
+                >
+                  <Grid item xs={12}>
+                    <StripeCard
+                      cardError={cardError}
+                      setCardError={setCardError}
+                    />
+                  </Grid>
+                </Grid>
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12} md={6}>
                     <TextField
