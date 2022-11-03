@@ -25,25 +25,9 @@ const useStyles = makeStyles((theme) => ({
   form: {
     width: '100%',
     marginTop: theme.spacing(1),
-    color: '#fff',
     [theme.breakpoints.up('sm')]: {
       width: '70%',
       margin: 'auto',
-    },
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: theme.palette.secondary.contrastText,
-    },
-    '& .MuiOutlinedInput-root:hover > .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'rgb(255, 255, 255, 0.23)',
-    },
-    '& .MuiInputLabel-root': {
-      color: theme.palette.secondary.contrastText,
-    },
-    '& .MuiSelect-icon': {
-      color: theme.palette.secondary.contrastText,
-    },
-    '& .MuiInputBase-input': {
-      color: theme.palette.secondary.contrastText,
     },
   },
   submit: {
@@ -54,7 +38,6 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 'bold',
     marginTop: '1em',
     textAlign: 'center',
-    color: theme.palette.primary.contrastText,
   },
   buttonContainer: {
     display: 'flex',
@@ -111,7 +94,7 @@ const BudgetTechnology = ({
   || (productFormData
       && productFormData.product_info
       && productFormData.product_info.hosting)
-    || 'GCP',
+    || 'No Preference',
   { required: true });
 
   const language = useInput((editData
@@ -120,7 +103,7 @@ const BudgetTechnology = ({
   || (productFormData
       && productFormData.product_info
       && productFormData.product_info.language)
-    || 'JavaScript',
+    || 'No Preference',
   { required: true });
 
   const database = useInput((editData
@@ -129,7 +112,7 @@ const BudgetTechnology = ({
   || (productFormData
       && productFormData.product_info
       && productFormData.product_info.database)
-    || 'Postgres',
+    || 'No Preference',
   { required: true });
 
   const storage = useInput((editData
@@ -138,7 +121,7 @@ const BudgetTechnology = ({
   || (productFormData
       && productFormData.product_info
       && productFormData.product_info.storage)
-    || 'AWS',
+    || 'No Preference',
   { required: true });
 
   const deployment = useInput((editData
@@ -147,7 +130,7 @@ const BudgetTechnology = ({
   || (productFormData
       && productFormData.product_info
       && productFormData.product_info.deployment)
-    || 'AWS',
+    || 'No Preference',
   { required: true });
 
   const [formError, setFormError] = useState({});
@@ -178,11 +161,11 @@ const BudgetTechnology = ({
   };
 
   checkIfBudgetTechnologyEdited = () => (
-    (productFormData
+    !!(productFormData
       && productFormData.product_info
       && productFormData.product_info.first_user_date
       && (firstUserDate !== productFormData.product_info.first_user_date))
-    || (productFormData
+    || !!(productFormData
       && productFormData.product_info
       && productFormData.product_info.approx_budget
       && !_.isEqual(approxBudget,

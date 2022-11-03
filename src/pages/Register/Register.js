@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
-import { useElements, useStripe } from '@stripe/react-stripe-js';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Button,
@@ -31,7 +30,6 @@ import { validators } from '@utils/validators';
 import { isMobile } from '@utils/mediaQuery';
 import { providers } from '@utils/socialLogin';
 import Loader from '@components/Loader/Loader';
-import StripeCard from '@components/StripeCard/StripeCard';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {
@@ -94,10 +92,6 @@ const Register = ({
   dispatch, loading, history, socialLogin, orgNames, stripeProducts,
 }) => {
   const classes = useStyles();
-  const stripe = useStripe();
-  const elements = useElements();
-  const [cardError, setCardError] = useState(false);
-  const [showProducts, setShowProducts] = useState(false);
 
   const email = useInput('', { required: true });
   const username = useInput('', { required: true });
@@ -111,8 +105,22 @@ const Register = ({
   const userType = useInput('', { required: true });
   const first_name = useInput('', { required: true });
   const last_name = useInput('');
-  const product = useInput('', { required: true });
+  const coupon_code = useInput(window.env.FREE_COUPON_CODE || '');
   const [formError, setFormError] = useState({});
+
+  // eslint-disable-next-line consistent-return
+  useEffect(() => {
+    if (window.env.PRODUCTION) {
+      const script = document.createElement('script');
+      script.src = '//fw-cdn.com/1900654/2696977.js';
+      script.chat = true;
+      document.body.appendChild(script);
+
+      return () => {
+        document.body.removeChild(script);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     if (!orgNames) {
@@ -139,8 +147,7 @@ const Register = ({
    */
   const handleSubmit = async (event) => {
     event.preventDefault();
-    let anyError = '';
-    let registerFormValue = {
+    const registerFormValue = {
       username: username.value,
       email: email.value,
       password: password.value,
@@ -148,28 +155,10 @@ const Register = ({
       user_type: userType.value,
       first_name: first_name.value,
       last_name: last_name.value,
+      coupon_code: coupon_code.value,
     };
 
-    if (showProducts) {
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: elements.getElement('card'),
-        billing_details: {
-          email: email.value,
-          name: orgName,
-        },
-      });
-      anyError = error;
-      registerFormValue = {
-        ...registerFormValue,
-        product: product.value,
-        card: paymentMethod?.id,
-      };
-    }
-
-    if (!anyError) {
-      dispatch(register(registerFormValue, history));
-    }
+    dispatch(register(registerFormValue, history));
   };
 
   /**
@@ -235,6 +224,7 @@ const Register = ({
               <Typography component="h1" variant="h5">
                 Register
               </Typography>
+
               <form className={classes.form} noValidate onSubmit={handleSubmit}>
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12} md={6}>
@@ -256,6 +246,7 @@ const Register = ({
                       {...first_name.bind}
                     />
                   </Grid>
+
                   <Grid item xs={12} md={6}>
                     <TextField
                       variant="outlined"
@@ -275,6 +266,7 @@ const Register = ({
                     />
                   </Grid>
                 </Grid>
+
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12} md={6}>
                     <TextField
@@ -295,6 +287,7 @@ const Register = ({
                       {...username.bind}
                     />
                   </Grid>
+
                   <Grid item xs={12} md={6}>
                     <TextField
                       variant="outlined"
@@ -316,6 +309,7 @@ const Register = ({
                     />
                   </Grid>
                 </Grid>
+
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12}>
                     <Autocomplete
@@ -344,6 +338,34 @@ const Register = ({
                     />
                   </Grid>
                 </Grid>
+
+                <Grid container spacing={isMobile() ? 0 : 3}>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      select
+                      id="userType"
+                      name="userType"
+                      label="User Type"
+                      autoComplete="userType"
+                      error={formError.userType && formError.userType.error}
+                      helperText={
+                        formError.userType ? formError.userType.message : ''
+                      }
+                      className={classes.textField}
+                      onBlur={(e) => handleBlur(e, 'required', userType)}
+                      {...userType.bind}
+                    >
+                      <MenuItem value="">----------</MenuItem>
+                      <MenuItem value="Developer">Developer</MenuItem>
+                      <MenuItem value="Product Team">Product Team</MenuItem>
+                    </TextField>
+                  </Grid>
+                </Grid>
+
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12}>
                     <TextField
@@ -463,6 +485,29 @@ const Register = ({
                     />
                   </Grid>
                 </Grid>
+
+                <Grid container spacing={isMobile() ? 0 : 3}>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      fullWidth
+                      disabled
+                      id="coupon_code"
+                      label="Coupon Code"
+                      name="coupon_code"
+                      autoComplete="coupon_code"
+                      error={formError.coupon_code && formError.coupon_code.error}
+                      helperText={
+                        formError.coupon_code ? formError.coupon_code.message : ''
+                      }
+                      className={classes.textField}
+                      onBlur={(e) => handleBlur(e, '', coupon_code)}
+                      {...coupon_code.bind}
+                    />
+                  </Grid>
+                </Grid>
+
                 <div className={classes.loadingWrapper}>
                   <Button
                     type="submit"
@@ -482,16 +527,19 @@ const Register = ({
                   )}
                 </div>
               </form>
+
               <Grid container>
                 <Grid item xs={12} className={classes.or}>
                   <Typography variant="body1">----OR----</Typography>
                 </Grid>
+
                 <Grid item xs={12} className={classes.socialAuth}>
                   <GithubLogin
                     dispatch={dispatch}
                     history={history}
                     disabled={loading && socialLogin}
                   />
+
                   {loading
                     && socialLogin
                     && socialLogin === providers.github && (
@@ -501,8 +549,9 @@ const Register = ({
                       />
                   )}
                 </Grid>
+
                 <Grid item className={classes.link}>
-                  <Link href={routes.LOGIN} variant="body2" color="primary">
+                  <Link href={routes.LOGIN} variant="body2" color="secondary">
                     Already have an account? Sign in
                   </Link>
                 </Grid>

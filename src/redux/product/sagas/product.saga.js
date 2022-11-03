@@ -95,6 +95,9 @@ import {
   VALIDATE_CREDENTIAL,
   VALIDATE_CREDENTIAL_SUCCESS,
   VALIDATE_CREDENTIAL_FAILURE,
+  ADD_DOC_IDENTIFIER,
+  ADD_DOC_IDENTIFIER_SUCCESS,
+  ADD_DOC_IDENTIFIER_FAILURE,
 } from '../actions/product.actions';
 import {
   createStatus,
@@ -431,9 +434,16 @@ function* createProduct(payload) {
     yield [
       yield put({ type: CREATE_PRODUCT_SUCCESS, data: product.data }),
       yield put(saveProductFormData(null)),
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: 'Created product successfully',
+        }),
+      ),
     ];
     if (history) {
-      history.push(routes.DASHBOARD);
+      history.push(routes.DASHBOARD, { selected_product: product.data.product_uuid });
     }
   } catch (error) {
     yield [
@@ -457,9 +467,10 @@ function* updateProduct(payload) {
     const product = yield call(
       httpService.makeRequest,
       'put',
-      `${window.env.API_URL}${productEndpoint}product/${payload.data.product_uuid}`,
+      `${window.env.API_URL}${productEndpoint}product/${payload.data.product_uuid}/`,
       payload.data,
     );
+
     if (product && product.data) {
       if ((payload.data.changedData[0].changeTool === true
         && payload.data.changedData[0].auth_detail)
@@ -543,7 +554,20 @@ function* updateProduct(payload) {
         yield put(updateCredential(credData));
       }
     }
-    yield put({ type: UPDATE_PRODUCT_SUCCESS, data: product.data });
+
+    yield [
+      yield put({
+        type: UPDATE_PRODUCT_SUCCESS,
+        data: { ...product.data, product_uuid: payload.data.product_uuid },
+      }),
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: 'Updated product successfully',
+        }),
+      ),
+    ];
   } catch (error) {
     yield [
       yield put(
@@ -569,7 +593,16 @@ function* deleteProduct(payload) {
       'delete',
       `${window.env.API_URL}${productEndpoint}product/${product_uuid}`,
     );
-    yield put({ type: DELETE_PRODUCT_SUCCESS, product_uuid });
+    yield [
+      yield put({ type: DELETE_PRODUCT_SUCCESS, product_uuid }),
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: 'Deleted product successfully',
+        }),
+      ),
+    ];
   } catch (error) {
     yield [
       yield put(
@@ -895,7 +928,16 @@ function* createBoard(payload) {
         yield put(createStatus(statusData));
       }
     }
-    yield put({ type: CREATE_BOARD_SUCCESS, data: board.data });
+    yield [
+      yield put({ type: CREATE_BOARD_SUCCESS, data: board.data }),
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: payload.create ? 'Created board successfully' : 'Data synced successfully',
+        }),
+      ),
+    ];
   } catch (error) {
     yield [
       yield put(
@@ -942,6 +984,57 @@ function* validateCredential(payload) {
       ),
       yield put({
         type: VALIDATE_CREDENTIAL_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* docIdentifier(payload) {
+  try {
+    const response = yield call(
+      httpService.makeRequest,
+      'post',
+      `${window.env.PRODUCT_SERVICE_URL}upload_file/`,
+      payload.uploadFile,
+      '',
+      'multipart/form-data',
+    );
+
+    if (response && response.data) {
+      let productFormData = payload.formData;
+
+      if (response.data.cloud_url && !_.isEmpty(response.data.cloud_url)) {
+        const doc_file = productFormData.product_info.doc_file
+        && !_.isEmpty(productFormData.product_info.doc_file)
+          ? [...productFormData.product_info.doc_file, ...response.data.cloud_url]
+          : response.data.cloud_url;
+
+        productFormData = {
+          ...productFormData,
+          product_info: {
+            ...productFormData.product_info,
+            doc_file,
+          },
+        };
+      }
+
+      yield put({
+        type: ADD_DOC_IDENTIFIER_SUCCESS,
+        productFormData,
+      });
+    }
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t Upload File!',
+        }),
+      ),
+      yield put({
+        type: ADD_DOC_IDENTIFIER_FAILURE,
         error,
       }),
     ];
@@ -1061,6 +1154,10 @@ function* watchValidateCredential() {
   yield takeLatest(VALIDATE_CREDENTIAL, validateCredential);
 }
 
+function* watchdocIdentifier() {
+  yield takeLatest(ADD_DOC_IDENTIFIER, docIdentifier);
+}
+
 export default function* productSaga() {
   yield all([
     watchGetAllCredentials(),
@@ -1091,5 +1188,6 @@ export default function* productSaga() {
     watchDeleteRelease(),
     watchDeleteThirdPartyTool(),
     watchValidateCredential(),
+    watchdocIdentifier(),
   ]);
 }

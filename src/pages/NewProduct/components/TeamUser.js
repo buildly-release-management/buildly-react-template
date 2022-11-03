@@ -21,46 +21,31 @@ import {
   IconButton,
   TextField,
   Button,
+  ImageList,
+  ImageListItem,
 } from '@mui/material';
 import { useInput } from '@hooks/useInput';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import { saveProductFormData } from '@redux/product/actions/product.actions';
+import { docIdentifier } from '@redux/product/actions/product.actions';
 
 const useStyles = makeStyles((theme) => ({
   form: {
     width: '100%',
     marginTop: theme.spacing(1),
-    color: '#fff',
     [theme.breakpoints.up('sm')]: {
       width: '70%',
       margin: 'auto',
     },
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: theme.palette.secondary.contrastText,
-    },
-    '& .MuiOutlinedInput-root:hover > .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'rgb(255, 255, 255, 0.23)',
-    },
-    '& .MuiInputLabel-root': {
-      color: theme.palette.secondary.contrastText,
-    },
-    '& .MuiSelect-icon': {
-      color: theme.palette.secondary.contrastText,
-    },
-    '& .MuiInputBase-input': {
-      color: theme.palette.secondary.contrastText,
-    },
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
-    borderRadius: '18px',
+    borderRadius: theme.spacing(2.25),
   },
   formTitle: {
     fontWeight: 'bold',
     marginTop: '1em',
     textAlign: 'center',
-    color: theme.palette.primary.contrastText,
   },
   buttonContainer: {
     display: 'flex',
@@ -81,54 +66,15 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
   },
-  icon: {
-    borderRadius: '50%',
-    width: 16,
-    height: 16,
-    boxShadow:
-      'inset 0 0 0 1px rgba(16,22,26,.2), inset 0 -1px 0 rgba(16,22,26,.1)',
-    backgroundColor: '#f5f8fa',
-    backgroundImage:
-      'linear-gradient(180deg,hsla(0,0%,100%,.8),hsla(0,0%,100%,0))',
-    'input:hover ~ &': {
-      backgroundColor: '#ebf1f5',
-    },
-    'input:disabled ~ &': {
-      boxShadow: 'none',
-      background: 'rgba(206,217,224,.5)',
-    },
+  filesText: {
+    marginTop: theme.spacing(2),
   },
-  checkedIcon: {
-    backgroundColor: '#137cbd',
-    backgroundImage:
-      'linear-gradient(180deg,hsla(0,0%,100%,.1),hsla(0,0%,100%,0))',
-    '&:before': {
-      display: 'block',
-      width: 16,
-      height: 16,
-      backgroundImage: 'radial-gradient(#fff,#fff 28%,transparent 32%)',
-      content: '""',
-    },
-    'input:hover ~ &': {
-      backgroundColor: '#106ba3',
-    },
+  uploadedFiles: {
+    border: `1px solid ${theme.palette.neutral.text}`,
   },
 }));
 
-const StyledRadio = (props) => {
-  const classes = useStyles();
-
-  return (
-    <Radio
-      color="primary"
-      checkedIcon={
-        <span className={`${classes.icon} ${classes.checkedIcon}`} />
-      }
-      icon={<span className={classes.icon} />}
-      {...props}
-    />
-  );
-};
+const StyledRadio = (props) => <Radio color="info" {...props} />;
 
 // eslint-disable-next-line import/no-mutable-exports
 export let checkIfTeamUserEdited;
@@ -137,6 +83,7 @@ const TeamUser = ({
   productFormData, handleNext, handleBack, dispatch, editData,
 }) => {
   const classes = useStyles();
+  const [filesUpload, setFilesUpload] = useState([]);
 
   const teamSize = useInput((editData
     && editData.product_info
@@ -163,14 +110,13 @@ const TeamUser = ({
       { role: 'Others', count: 0 },
     ]);
 
-  const existingFeatures = useInput((editData
+  const doc_file = useInput((editData
     && editData.product_info
-    && editData.product_info.existing_features)
+    && editData.product_info.doc_file)
   || (productFormData
-      && productFormData.product_info
-      && productFormData.product_info.existing_features)
-    || '',
-  { required: true });
+    && productFormData.product_info
+    && productFormData.product_info.doc_file)
+  || []);
 
   const submitDisabled = () => {
     let countNum = 0;
@@ -187,13 +133,17 @@ const TeamUser = ({
 
   checkIfTeamUserEdited = () => (
     teamSize.hasChanged()
-    || (productFormData
+    || !!(productFormData
       && productFormData.product_info
       && productFormData.product_info.role_count
       && !_.isEqual(roleCount,
         productFormData.product_info.role_count))
-    || existingFeatures.hasChanged()
+    || !!(filesUpload && !_.isEmpty(filesUpload))
   );
+
+  const fileChange = (event) => {
+    setFilesUpload(event.target.files);
+  };
 
   /**
    * Submit The form and add/edit custodian
@@ -201,17 +151,22 @@ const TeamUser = ({
    */
   const handleSubmit = (event) => {
     event.preventDefault();
+    const uploadFile = new FormData();
+    _.mapKeys(filesUpload, (value, key) => {
+      uploadFile.append('file', value);
+    });
     const formData = {
       ...productFormData,
       product_info: {
         ...productFormData.product_info,
         team_size: teamSize.value,
         role_count: roleCount,
-        existing_features: existingFeatures.value,
+        doc_file: doc_file.value,
       },
       edit_date: new Date(),
     };
-    dispatch(saveProductFormData(formData));
+
+    dispatch(docIdentifier(uploadFile, formData));
     handleNext();
   };
 
@@ -324,22 +279,48 @@ const TeamUser = ({
                 Do you have any existing requirements documents, mockups,
                 designs etc.?
               </Typography>
-            </Grid>
-            <Grid item xs={12}>
               <TextField
                 variant="outlined"
                 margin="normal"
                 fullWidth
-                multiline
-                rows={6}
-                id="existingFeatures"
-                label="Existing Features"
-                name="existingFeatures"
-                autoComplete="existingFeatures"
-                {...existingFeatures.bind}
+                type="file"
+                id="uploadFiles"
+                label="Upload Files"
+                name="uploadFiles"
+                autoComplete="uploadFiles"
+                inputProps={{ multiple: true }}
+                InputLabelProps={{ shrink: true }}
+                onChange={fileChange}
               />
             </Grid>
           </Grid>
+
+          {doc_file.value && !_.isEmpty(doc_file.value) && (
+            <>
+              <Grid item xs={12} className={classes.filesText}>
+                <Typography variant="body1" gutterBottom component="div">
+                  Already uploaded files
+                </Typography>
+              </Grid>
+
+              <ImageList sx={{ width: '100%', height: 200 }} cols={4} rowHeight={200} gap={40}>
+                {_.map(doc_file.value, (file, index) => (
+                  <ImageListItem key={`${index}-${file}`}>
+                    <a href={file} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={`${file}?w=164&h=164&fit=crop&auto=format`}
+                        srcSet={`${file}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                        alt={`Uploaded file ${index + 1}`}
+                        loading="lazy"
+                        className={classes.uploadedFiles}
+                      />
+                    </a>
+                  </ImageListItem>
+                ))}
+              </ImageList>
+            </>
+          )}
+
           <Grid container spacing={3} className={classes.buttonContainer}>
             <Grid item xs={12} sm={4}>
               <Button

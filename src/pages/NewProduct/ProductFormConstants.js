@@ -1,12 +1,3 @@
-export const SPECIFIC_PROBLEMS = [
-  'Small Business User',
-  'Enterprise User (Big Companies)',
-  'Government User',
-  'Consumer',
-  'Developer',
-  'Other',
-];
-
 export const PRIMARY_USERS = [
   'Customer 1',
   'Customer 2 (Power User)',
@@ -27,16 +18,7 @@ export const BUSSINESS_SEGMENTS = [
 ];
 
 export const HOSTING = [
-  // 'Hostinger',
-  // 'Bluehost',
-  // 'Dreamhost',
-  // 'Hostgator',
-  // 'GreenGeeks',
-  // 'SiteGround',
-  // 'A2 Hosting',
-  // 'InMotion',
-  // 'WPEngine',
-  // 'Nexcess',
+  'No Preference',
   'GCP',
   'AWS',
   'Digital Ocean',
@@ -45,6 +27,7 @@ export const HOSTING = [
 ];
 
 export const LANGUAGES = [
+  'No Preference',
   'JavaScript',
   'Python',
   'Java',
@@ -58,18 +41,21 @@ export const LANGUAGES = [
 ];
 
 export const DATABASES = [
+  'No Preference',
   'Postgres',
   'MySQL',
   'MongoDB',
 ];
 
 export const STORAGES = [
+  'No Preference',
   'AWS',
   'GCP',
   'Digital Ocean',
 ];
 
 export const DEPLOYMENTS = [
+  'No Preference',
   'AWS',
   'GCP',
   'Digital Ocean',
@@ -80,3 +66,40 @@ export const EXAMPLELIST = [
   "Example 2: An administrative user should be able to approve every user's access and level, as well as fix any problem for a general user that does not require direct access to the code or data.",
   'Example 3: A power user should be able to download a report of the previous quarters activity in the application with no more than 3 clicks.',
 ];
+
+export const PRODUCT_SETUP = [
+  { value: '', text: '--------------------------------' },
+  { value: 'new', text: 'Create new software from Scratch' },
+  { value: 'modify', text: 'Modify existing Software' },
+  { value: 'migrate', text: 'Migrate Software from Legacy Application' },
+];
+
+export const INTEGRATION_TYPES = [
+  { value: 'login', text: 'Login/Authentication Service (Single Sign On or Social Auth)' },
+  { value: 'erp', text: 'ERP data system' },
+  { value: 'hr', text: 'HR system' },
+  { value: 'accounting', text: 'Accounting/Bookeeping' },
+  { value: 'sales', text: 'Sales (SalesForce)' },
+  { value: 'other', text: 'Other' },
+];
+
+export const PRODUCT_TYPE = [
+  { value: '', text: '---' },
+  { value: 'b2c', text: 'B2C' },
+  { value: 'b2b', text: 'B2B' },
+];
+
+export const EXPECTED_TRAFFIC = {
+  b2c: [
+    '1000 - 10000 a month',
+    '10000 - 100000 a month',
+    '100000 - 1000000 a month',
+    '2.5 Billion a month - The next Amazon',
+  ],
+  b2b: [
+    '100 - 1000 a month',
+    '1000 - 10000 a month',
+    '10000 - 100000 a month',
+    '2.5 Million a month - I work at Apple',
+  ],
+};

@@ -95,7 +95,7 @@ const initialState = {
   statuses: [],
   tickets: [],
   importLoaded: false,
-  productFormData: null,
+  featureFormData: null,
 };
 
 // Reducer

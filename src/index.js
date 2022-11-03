@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
 import App from './App';
 import './i18n';
 import configureStore from './redux/store';
@@ -25,9 +24,6 @@ if (window.env.PRODUCTION) {
 }
 
 const store = configureStore();
-// Make sure to call `loadStripe` outside of a component’s render to avoid
-// recreating the `Stripe` object on every render.
-const stripePromise = loadStripe(window.env.STRIPE_KEY);
 
 ReactDOM.render(
   <Provider store={store}>

@@ -1186,3 +1186,39 @@ describe('Validate credential reducer', () => {
     );
   });
 });
+
+describe('Add PDF Identifier reducer', () => {
+  it('Empty Reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.ADD_DOC_IDENTIFIER },
+    )).toEqual({
+      ...initialState,
+      loading: true,
+    });
+  });
+
+  it('Add PDF Identifier success Reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.ADD_DOC_IDENTIFIER_SUCCESS, productFormData: initialState.productFormData },
+    )).toEqual({
+      ...initialState,
+      loaded: true,
+      loading: false,
+      productFormData: initialState.productFormData,
+    });
+  });
+
+  it('Add PDF Identifier fail Reducer', () => {
+    expect(reducer.default(
+      initialState,
+      { type: actions.ADD_DOC_IDENTIFIER_FAILURE },
+    )).toEqual({
+      ...initialState,
+      error: undefined,
+      loaded: true,
+      loading: false,
+    });
+  });
+});

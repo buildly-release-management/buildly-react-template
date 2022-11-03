@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 import { connect } from 'react-redux';
-import { useElements, useStripe } from '@stripe/react-stripe-js';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Backdrop,
@@ -26,7 +25,6 @@ import {
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
 import Loader from '@components/Loader/Loader';
-import StripeCard from '@components/StripeCard/StripeCard';
 
 const useStyles = makeStyles((theme) => ({
   backdrop: {
@@ -54,13 +52,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const MissingData = ({
-  user, dispatch, loading, history, orgNames, stripeProducts,
+  user, dispatch, loading, history, orgNames,
 }) => {
   const classes = useStyles();
-  const stripe = useStripe();
-  const elements = useElements();
-  const [cardError, setCardError] = useState(false);
-  const [showProducts, setShowProducts] = useState(false);
 
   const userType = useInput('', { required: true });
   const email = useInput('', { required: true });
@@ -73,9 +67,6 @@ const MissingData = ({
     if (!orgNames) {
       dispatch(loadOrgNames());
     }
-    if (window.env.STRIPE_KEY && !stripeProducts) {
-      dispatch(loadStripeProducts());
-    }
   }, []);
 
   useEffect(() => {
@@ -84,23 +75,12 @@ const MissingData = ({
     }
   }, [user]);
 
-  useEffect(() => {
-    if (!orgName || _.isEmpty(orgNames)
-      || (orgName && _.includes(orgNames, _.lowerCase(orgName)))
-    ) {
-      setShowProducts(false);
-    } else {
-      setShowProducts(true);
-    }
-  }, [orgName, orgNames]);
-
   /**
    * Submit the form to the backend and attempts to authenticate
    * @param {Event} event the default submit event
    */
   const handleSubmit = async (event) => {
     event.preventDefault();
-    let anyError = '';
     let updateForm = {
       id: !!user && user.id,
       organization_name: orgName,

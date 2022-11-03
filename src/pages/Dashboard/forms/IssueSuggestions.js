@@ -13,11 +13,6 @@ import {
   createIssue,
 } from '@redux/decision/actions/decision.actions';
 import { getAllCredentials } from '@redux/product/actions/product.actions';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import Divider from '@mui/material/Divider';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -48,10 +43,6 @@ const IssueSuggestions = ({
   convertIssue,
 }) => {
   const classes = useStyles();
-  const [openFormModal, setFormModal] = useState(true);
-  const [openConfirmModal, setConfirmModal] = useState(false);
-  const [product, setProduct] = useState('');
-
   const redirectTo = location.state && location.state.from;
   const editData = (
     location.state
@@ -68,6 +59,10 @@ const IssueSuggestions = ({
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
 
+  const [openFormModal, setFormModal] = useState(true);
+  const [openConfirmModal, setConfirmModal] = useState(false);
+  const [product, setProduct] = useState('');
+
   useEffect(() => {
     const prd = _.find(products, { product_uuid });
     setProduct(prd);
@@ -76,13 +71,14 @@ const IssueSuggestions = ({
     }
   }, []);
 
-  const issueCred = _.find(
-    credentials,
-    { product_uuid, auth_detail: { tool_type: 'Issue' } },
-  );
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
+    const issueCred = _.find(
+      credentials,
+      { product_uuid, auth_detail: { tool_type: 'Issue' } },
+    );
+
     const formData = {
       ...editData,
       edit_date: dateTime,
@@ -145,20 +141,18 @@ const IssueSuggestions = ({
             noValidate
             onSubmit={handleSubmit}
           >
-            <Grid container spacing={isDesktop ? 2 : 0}>
-              <List>
-                {_.map(showData.issue_suggestion, (issue, index) => (
-                  <ListItem key={index}>
-                    <ListItemButton>
-                      <ListItemText
-                        primary={issue.name}
-                        secondary={`${issue.ticket_type} ticket`}
-                      />
-                    </ListItemButton>
-                    <Divider />
-                  </ListItem>
-                ))}
-              </List>
+            <Grid container rowGap={2}>
+              {_.map(showData.issue_suggestion, (issue, index) => (
+                <Button
+                  key={`${issue.name}-${index}`}
+                  style={{ cursor: 'text' }}
+                  fullWidth
+                  variant="outlined"
+                  color="secondary"
+                >
+                  {`${issue.name} (${issue.ticket_type} ticket)`}
+                </Button>
+              ))}
             </Grid>
             <Grid
               container

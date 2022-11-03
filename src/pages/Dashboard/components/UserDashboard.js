@@ -10,18 +10,21 @@ import {
 import SyncIcon from '@mui/icons-material/Sync';
 import Loader from '@components/Loader/Loader';
 import { routes } from '@routes/routesConstants';
-import { getAllCredentials, getAllProducts, getBoard } from '@redux/product/actions/product.actions';
+import {
+  getAllCredentials, getAllProducts, getBoard, updateProduct,
+} from '@redux/product/actions/product.actions';
 import { createBoard } from '@redux/product/actions/product.actions';
 import {
+  createFeature,
   deleteFeature,
   deleteIssue,
   getAllFeatures,
   getAllIssues,
   getAllStatuses,
+  importTickets,
 } from '@redux/decision/actions/decision.actions';
 import List from '../components/List';
 import Kanban from '../components/Kanban';
-import AddFeatures from '../forms/AddFeatures';
 import NewFeatureForm from '../forms/NewFeatureForm';
 import AddIssues from '../forms/AddIssues';
 import IssueSuggestions from '../forms/IssueSuggestions';
@@ -32,33 +35,26 @@ import StatusBoard from '../forms/StatusBoard';
 import DropColumn from '../forms/DropColumn';
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    marginTop: theme.spacing(2),
+  },
   product: {
     '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: theme.palette.secondary.contrastText,
-    },
-    '& .MuiOutlinedInput-root:hover > .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'rgb(255, 255, 255, 0.23)',
-    },
-    '& .MuiInputLabel-root': {
-      color: theme.palette.secondary.contrastText,
-    },
-    '& .MuiSelect-icon': {
-      color: theme.palette.secondary.contrastText,
+      borderColor: theme.palette.primary.main,
     },
     '& .MuiInputBase-input': {
-      color: theme.palette.secondary.contrastText,
       paddingTop: theme.spacing(1.2),
       paddingBottom: theme.spacing(1.2),
     },
   },
   tabs: {
     '& .MuiTabs-root': {
-      color: theme.palette.secondary.contrastText,
+      color: theme.palette.contrast.text,
       '& .Mui-selected': {
-        color: theme.palette.primary.main,
+        color: theme.palette.secondary.main,
       },
       '& .MuiTabs-indicator': {
-        backgroundColor: theme.palette.secondary.light,
+        backgroundColor: theme.palette.secondary.main,
       },
     },
   },
@@ -109,7 +105,8 @@ const UserDashboard = (props) => {
   ).value;
   const [view, setView] = useState(viewPath);
 
-  const [product, setProduct] = useState(0);
+  const [product, setProduct] = useState((history && history.location && history.location.state
+    && history.location.state.selected_product) || 0);
   const [currentProducts, setCurrentProducts] = useState([]);
   const [prod, setProd] = useState('');
   const [status, setStatus] = useState('');
@@ -117,6 +114,7 @@ const UserDashboard = (props) => {
   const [productIssues, setProductIssues] = useState([]);
   const [openDeleteModal, setDeleteModal] = useState(false);
   const [toDeleteItem, setDeleteItem] = useState({ id: 0, type: 'feat' });
+  const [upgrade, setUpgrade] = useState(false);
 
   const addFeatPath = redirectTo
     ? _.includes(location.pathname, 'list')
@@ -194,7 +192,7 @@ const UserDashboard = (props) => {
     if (product) {
       dispatch(getBoard(product));
     }
-    const prd = _.find(products, { product_uuid: product });
+    let prd = _.find(products, { product_uuid: product });
     setProd(prd);
     const sta = _.filter(statuses, { product_uuid: product });
     setStatus(sta);
@@ -215,9 +213,16 @@ const UserDashboard = (props) => {
       { product_uuid: product },
     );
 
+    if ((_.size(feats) >= 5) && user && user.organization
+    && !user.organization.unlimited_free_plan) {
+      setUpgrade(true);
+    } else {
+      setUpgrade(false);
+    }
+
     setProductFeatures(_.orderBy(feats, 'create_date', 'desc'));
     setProductIssues(_.orderBy(iss, 'create_date', 'desc'));
-  }, [product, JSON.stringify(features), JSON.stringify(issues)]);
+  }, [product, features, issues]);
 
   const viewTabClicked = (event, vw) => {
     setView(vw);
@@ -345,10 +350,70 @@ const UserDashboard = (props) => {
 
   const importTicket = (e) => {
     e.preventDefault();
-    history.push(addDropColumnPath, {
-      from: redirectTo || location.pathname,
-      product_uuid: product,
-    });
+    if (prod?.feature_tool_detail == null) {
+      if (featCred?.auth_detail?.tool_name !== 'GitHub') {
+        const featData = {
+          ...featCred?.auth_detail,
+          product_uuid: product,
+          board_id: prod?.feature_tool_detail?.board_detail?.board_id,
+          drop_col_name: null,
+        };
+        if (featCred?.auth_detail) {
+          dispatch(importTickets(featData));
+        }
+        const issueData = {
+          ...issueCred?.auth_detail,
+          product_uuid: product,
+          board_id: prod?.feature_tool_detail?.board_detail?.board_id,
+          drop_col_name: null,
+        };
+        if (featCred?.auth_detail?.tool_name !== 'GitHub' && issueCred?.auth_detail?.tool_name === 'GitHub') {
+          issueData.is_repo_issue = true;
+          issueData.repo_list = repoData;
+        }
+        if (issueCred?.auth_detail) {
+          dispatch(importTickets(issueData));
+        }
+      } else if (featCred?.auth_detail?.tool_name === 'GitHub' && issueCred?.auth_detail?.tool_name === 'GitHub') {
+        const featData = {
+          ...featCred?.auth_detail,
+          product_uuid: product,
+          board_id: prod?.feature_tool_detail?.board_detail?.board_id,
+          is_repo_issue: false,
+          drop_col_name: null,
+        };
+        if (featCred?.auth_detail) {
+          dispatch(importTickets(featData));
+        }
+      } else {
+        const featData = {
+          ...featCred?.auth_detail,
+          product_uuid: product,
+          board_id: prod?.feature_tool_detail?.board_detail?.board_id,
+          is_repo_issue: false,
+          drop_col_name: null,
+        };
+        if (featCred?.auth_detail) {
+          dispatch(importTickets(featData));
+        }
+        const issueData = {
+          ...issueCred?.auth_detail,
+          product_uuid: product,
+          board_id: prod?.feature_tool_detail?.board_detail?.board_id,
+          is_repo_issue: true,
+          repo_list: repoData,
+          drop_col_name: null,
+        };
+        if (issueCred?.auth_detail) {
+          dispatch(importTickets(issueData));
+        }
+      }
+    } else {
+      history.push(addDropColumnPath, {
+        from: redirectTo || location.pathname,
+        product_uuid: product,
+      });
+    }
   };
 
   const syncData = (e) => {
@@ -376,8 +441,46 @@ const UserDashboard = (props) => {
     dispatch(createBoard(formData, false));
   };
 
+  const createSuggestedFeature = (suggestion) => {
+    const datetime = new Date();
+
+    const formData = {
+      create_date: datetime,
+      edit_date: datetime,
+      name: suggestion.suggested_feature,
+      description: suggestion.suggested_feature,
+      product_uuid: product,
+      ...featCred?.auth_detail,
+      feature_detail: {},
+    };
+
+    if (suggestion.suggested_issue) {
+      formData.suggestions = [{
+        name: suggestion.suggested_issue,
+        description: suggestion.suggested_issue,
+        ticket_type: suggestion.issue_repo_type,
+      }];
+    }
+
+    dispatch(createFeature(formData));
+    removeSuggestedFeature(suggestion);
+  };
+
+  const removeSuggestedFeature = (suggestion) => {
+    const formData = {
+      ...prod,
+      product_info: {
+        ...prod.product_info,
+        suggestions: _.without(prod.product_info.suggestions, suggestion),
+      },
+    };
+
+    dispatch(updateProduct(formData));
+  };
+
   return (
-    <div>
+    <div className={classes.root}>
+      {loading && <Loader open={loading} />}
       <Grid container alignItems="center" mb={2}>
         <Grid item xs={4} md={3} lg={2}>
           <Typography component="div" variant="h4">
@@ -386,27 +489,27 @@ const UserDashboard = (props) => {
         </Grid>
         <div className={classes.menuRight}>
           {((!_.isEmpty(prod?.third_party_tool)) && (!_.isEmpty(status))
-        && (
-          <>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={(e) => importTicket(e)}
-              className={classes.importButton}
-            >
-              Import Tickets
-            </Button>
-            <IconButton
-              aria-label="sync"
-              color="inherit"
-              size="large"
-              onClick={(e) => syncData(e)}
-            >
-              <SyncIcon fontSize="large" className={classes.menuIcon} />
-            </IconButton>
-          </>
-        )
-           )}
+          && (
+            <>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={(e) => importTicket(e)}
+                className={classes.importButton}
+              >
+                Import Tickets
+              </Button>
+              <IconButton
+                aria-label="sync"
+                color="inherit"
+                size="large"
+                onClick={(e) => syncData(e)}
+              >
+                <SyncIcon fontSize="large" className={classes.menuIcon} />
+              </IconButton>
+            </>
+          ))}
+
           <Grid item lg={2} className={classes.bar}>
             <TextField
               variant="outlined"
@@ -504,7 +607,6 @@ const UserDashboard = (props) => {
           )
         : (
           <>
-            {!loaded && <Loader open={!loaded} /> }
             <Grid mb={3} container justifyContent="center">
               <Grid item className={classes.tabs}>
                 <Tabs value={view} onChange={viewTabClicked}>
@@ -534,6 +636,10 @@ const UserDashboard = (props) => {
                   deleteItem={deleteItem}
                   commentItem={commentItem}
                   issueSuggestions={issueSuggestions}
+                  upgrade={upgrade}
+                  productSuggestions={prod && prod.product_info && prod.product_info.suggestions}
+                  createSuggestedFeature={createSuggestedFeature}
+                  removeSuggestedFeature={removeSuggestedFeature}
                 />
               )}
             />
@@ -552,6 +658,10 @@ const UserDashboard = (props) => {
                   deleteItem={deleteItem}
                   commentItem={commentItem}
                   dispatch={dispatch}
+                  upgrade={upgrade}
+                  productSuggestions={prod && prod.product_info && prod.product_info.suggestions}
+                  createSuggestedFeature={createSuggestedFeature}
+                  removeSuggestedFeature={removeSuggestedFeature}
                 />
               )}
             />
@@ -605,8 +715,7 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
   ...state.productReducer,
   ...state.decisionReducer,
-  loading: state.productReducer.loading && state.decisionReducer.loading,
-  loaded: state.productReducer.loaded && state.decisionReducer.loaded,
+  loading: state.productReducer.loading || state.decisionReducer.loading,
   user: state.authReducer.data,
   boards: state.productReducer.boards,
   importLoaded: state.decisionReducer.importLoaded,

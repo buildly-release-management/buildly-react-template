@@ -11,7 +11,6 @@ import {
   MenuItem,
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
-import { useInput } from '@hooks/useInput';
 import {
   getAllStatuses,
   importTickets,
@@ -47,19 +46,19 @@ const DropColumn = ({
   products,
 }) => {
   const classes = useStyles();
+  const redirectTo = location.state && location.state.from;
+  const product_uuid = location.state && location.state.product_uuid;
+
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
+
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
-  const product_uuid = location.state && location.state.product_uuid;
+
   const [product, setProduct] = useState('');
   const [prodStatus, setProdStatus] = useState('');
   const [statusID, setStatusID] = useState(null);
   const [status, setStatus] = useState('');
-
-  const redirectTo = location.state && location.state.from;
-  const [formError, setFormError] = useState({});
-
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
 
   useEffect(() => {
     if (!status || _.isEmpty(status)) {
@@ -101,20 +100,21 @@ const DropColumn = ({
     }
   };
 
-  const featCred = _.find(
-    credentials,
-    { product_uuid, auth_detail: { tool_type: 'Feature' } },
-  );
-  const issueCred = _.find(
-    credentials,
-    { product_uuid, auth_detail: { tool_type: 'Issue' } },
-  );
-  const repoData = [];
-  for (let i = 0; i < product?.issue_tool_detail?.repository_list?.length; i += 1) {
-    repoData.push(product.issue_tool_detail.repository_list[i].name);
-  }
   const handleSubmit = (event) => {
     event.preventDefault();
+    const featCred = _.find(
+      credentials,
+      { product_uuid, auth_detail: { tool_type: 'Feature' } },
+    );
+    const issueCred = _.find(
+      credentials,
+      { product_uuid, auth_detail: { tool_type: 'Issue' } },
+    );
+    const repoData = product && product.issue_tool_detail
+      && product.issue_tool_detail.repository_list
+      && !_.isEmpty(product.issue_tool_detail.repository_list)
+      && _.map(product.issue_tool_detail.repository_list, 'name');
+
     if (featCred?.auth_detail?.tool_name !== 'GitHub') {
       const featData = {
         ...featCred?.auth_detail,
@@ -125,6 +125,7 @@ const DropColumn = ({
       if (featCred?.auth_detail) {
         dispatch(importTickets(featData));
       }
+
       const issueData = {
         ...issueCred?.auth_detail,
         product_uuid,
@@ -199,7 +200,6 @@ const DropColumn = ({
                 <TextField
                   variant="outlined"
                   margin="normal"
-                  // required
                   fullWidth
                   select
                   id="status"
@@ -236,11 +236,11 @@ const DropColumn = ({
                   variant="contained"
                   color="primary"
                   className={classes.submit}
-                  // disabled={submitDisabled()}
                 >
                   Submit
                 </Button>
               </Grid>
+
               <Grid item xs={12} sm={4}>
                 <Button
                   type="button"
