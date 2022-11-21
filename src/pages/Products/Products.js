@@ -48,19 +48,11 @@ const Products = ({
   };
 
   useEffect(() => {
-    if (!products || _.isEmpty(products)) {
-      dispatch(getAllProducts());
-    }
-  }, []);
+    dispatch(getAllProducts(user.organization.organization_uuid));
+  }, [user]);
 
   useEffect(() => {
-    const filteredProducts = _.filter(
-      products,
-      { organization_uuid: user.organization.organization_uuid },
-    );
-
-    const sorted_products = _.orderBy(getProductsData(filteredProducts), 'create_date', 'desc');
-    setRows(sorted_products);
+    setRows(_.orderBy(getProductsData(products), 'create_date', 'desc'));
   }, [products]);
 
   const onAddButtonClick = () => {

@@ -110,8 +110,6 @@ import {
   deleteProduct, getProduct,
 } from '../../product/actions/product.actions';
 
-const releaseEndpoint = 'release/';
-
 function* allReleases(payload) {
   try {
     const releases = yield call(
@@ -167,7 +165,7 @@ function* createRelease(payload) {
     const release = yield call(
       httpService.makeRequest,
       'post',
-      `${window.env.API_URL}/release/release/`,
+      `${window.env.API_URL}release/release/`,
       payload.data,
     );
     yield put({ type: CREATE_RELEASE_SUCCESS, data: release.data });
@@ -1055,7 +1053,7 @@ function* resyncBoardData(payload) {
         }),
       ),
       yield put({
-        type: CLEAR_PRODUCT_DATA_FAILURE,
+        type: RESYNC_BOARD_DATA_FAILURE,
         error,
       }),
     ];
