@@ -27,13 +27,12 @@ import {
 } from '@redux/release/actions/release.actions';
 import Kanban from './components/Kanban';
 import Tabular from './components/Tabular';
+import AddFeatures from './forms/AddFeatures';
 import AddIssues from './forms/AddIssues';
-import AddComments from './forms/AddComments';
-import IgnoreColumns from './forms/IgnoreColumns';
 import IssueSuggestions from './forms/IssueSuggestions';
-import NewFeatureForm from './forms/NewFeatureForm';
 import StatusBoard from './forms/StatusBoard';
 import ToolBoard from './forms/ToolBoard';
+import Comments from './components/Comments';
 
 const useStyles = makeStyles((theme) => ({
   firstTimeMessage: {
@@ -104,11 +103,11 @@ const Dashboard = ({
   const subNav = [
     {
       label: 'Tabular',
-      value: 'tabular'
+      value: 'tabular',
     },
     {
       label: 'Kanban',
-      value: 'kanban'
+      value: 'kanban',
     },
   ];
   const viewPath = (
@@ -122,20 +121,8 @@ const Dashboard = ({
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [deleteItemID, setDeleteItemID] = useState({
     id: 0,
-    type: 'feat'
+    type: 'feat',
   });
-
-  const addFeatPath = `${routes.DASHBOARD}/add-feature/`;
-  const editFeatPath = `${routes.DASHBOARD}/edit-feature/`;
-  const viewFeatPath = `${routes.DASHBOARD}/view-feature/`;
-  const addIssuePath = `${routes.DASHBOARD}/add-issue/`;
-  const editIssuePath = `${routes.DASHBOARD}/edit-issue/`;
-  const addCommentPath = `${routes.DASHBOARD}/add-comment`;
-  const issueSuggestionsPath = `${routes.DASHBOARD}/issue-suggestions`;
-  const featureToIssuePath = `${routes.DASHBOARD}/convert-issue`;
-  const ignoreColumnsPath = `${routes.DASHBOARD}/ignore-columns`;
-  const statusBoardPath = `${routes.DASHBOARD}/tool-status`;
-  const toolBoardPath = `${routes.DASHBOARD}/tool-board`;
 
   // this will be triggered whenever the content switcher is clicked to change the view
   useEffect(() => {
@@ -190,9 +177,9 @@ const Dashboard = ({
   const addItem = (type) => {
     let path;
     if (type === 'feat') {
-      path = addFeatPath;
+      path = routes.ADD_FEATURE;
     } else if (type === 'issue') {
-      path = addIssuePath;
+      path = routes.ADD_ISSUE;
     }
 
     history.push(path, {
@@ -204,9 +191,9 @@ const Dashboard = ({
   const editItem = (item, type, viewOnly = false) => {
     let path;
     if (type === 'feat') {
-      path = `${viewOnly ? viewFeatPath : editFeatPath}:${item.feature_uuid}`;
+      path = `${viewOnly ? routes.VIEW_FEATURE : routes.EDIT_FEATURE}:${item.feature_uuid}`;
     } else if (type === 'issue') {
-      path = `${editIssuePath}:${item.issue_uuid}`;
+      path = `${routes.EDIT_ISSUE}:${item.issue_uuid}`;
     }
 
     history.push(path, {
@@ -255,14 +242,11 @@ const Dashboard = ({
   };
 
   const commentItem = () => {
-    history.push(addCommentPath, {
-      from: location.pathname,
-      product_uuid: selectedProduct,
-    });
+    history.push(`${routes.COMMENTS}/${selectedProduct}`, { from: location.pathname });
   };
 
   const issueSuggestions = (item) => {
-    history.push(issueSuggestionsPath, {
+    history.push(routes.ISSUE_SUGGESTIONS, {
       type: 'show',
       from: location.pathname,
       product_uuid: selectedProduct,
@@ -273,7 +257,7 @@ const Dashboard = ({
   const convertIssue = (item, type) => {
     let path;
     if (type === 'convert') {
-      path = featureToIssuePath;
+      path = routes.FEATURE_TO_ISSUE;
     }
 
     history.push(path, {
@@ -323,14 +307,14 @@ const Dashboard = ({
   };
 
   const configureBoard = () => {
-    history.push(toolBoardPath, {
+    history.push(routes.TOOL_BOARD, {
       from: location.pathname,
       product_uuid: selectedProduct,
     });
   };
 
   const configureStatus = () => {
-    history.push(statusBoardPath, {
+    history.push(routes.STATUS_BOARD, {
       from: location.pathname,
       product_uuid: selectedProduct,
     });
@@ -343,104 +327,52 @@ const Dashboard = ({
     const repoList = _.map(product.issue_tool_detail?.repository_list, 'name');
 
     if (_.isEmpty(features) && _.isEmpty(issues)) {
-      if (product && !_.isEmpty(product.feature_tool_detail)) {
-        if (featCred?.auth_detail?.tool_name !== 'GitHub') {
-          const featData = {
-            ...featCred?.auth_detail,
-            product_uuid: selectedProduct,
-            board_id: product.feature_tool_detail.board_detail?.board_id,
-            drop_col_name: null,
-          };
+      if (product && (!_.isEmpty(product.feature_tool_detail)
+        || !_.isEmpty(product.issue_tool_detail))) {
+        let featData;
+        let issueData;
 
-          if (featCred?.auth_detail) {
-            dispatch(importTickets(featData));
-          }
-
-          const issueData = {
-            ...issueCred?.auth_detail,
-            product_uuid: selectedProduct,
-            board_id: product.feature_tool_detail.board_detail?.board_id,
-            drop_col_name: null,
-          };
-
-          if (featCred?.auth_detail?.tool_name !== 'GitHub' && issueCred?.auth_detail?.tool_name === 'GitHub') {
-            issueData.is_repo_issue = true;
-            issueData.repo_list = repoList;
-          }
-
-          if (issueCred?.auth_detail) {
-            dispatch(importTickets(issueData));
-          }
-        } else if (featCred?.auth_detail?.tool_name === 'GitHub' && issueCred?.auth_detail?.tool_name === 'GitHub') {
-          const featData = {
+        if (product.feature_tool_detail && !_.isEmpty(product.feature_tool_detail)) {
+          featData = {
             ...featCred?.auth_detail,
             product_uuid: selectedProduct,
             board_id: product.feature_tool_detail.board_detail?.board_id,
             is_repo_issue: false,
             drop_col_name: null,
           };
+        }
 
-          if (featCred?.auth_detail) {
-            dispatch(importTickets(featData));
-          }
-        } else {
-          const featData = {
-            ...featCred?.auth_detail,
-            product_uuid: selectedProduct,
-            board_id: product.feature_tool_detail.board_detail?.board_id,
-            is_repo_issue: false,
-            drop_col_name: null,
-          };
-
-          if (featCred?.auth_detail) {
-            dispatch(importTickets(featData));
-          }
-
-          const issueData = {
+        if (product.issue_tool_detail && !_.isEmpty(product.issue_tool_detail)) {
+          issueData = {
             ...issueCred?.auth_detail,
             product_uuid: selectedProduct,
-            board_id: product.feature_tool_detail.board_detail?.board_id,
+            board_id: product.issue_tool_detail.board_detail?.board_id,
             is_repo_issue: true,
             repo_list: repoList,
             drop_col_name: null,
           };
-
-          if (issueCred?.auth_detail) {
-            dispatch(importTickets(issueData));
-          }
         }
-      } else {
-        history.push(ignoreColumnsPath, {
-          from: location.pathname,
-          product_uuid: selectedProduct,
-        });
+
+        dispatch(importTickets(featData, issueData));
       }
     } else {
       const featData = {
         ...featCred?.auth_detail,
         product_uuid: selectedProduct,
       };
-      console.log('Feat Data::', featData);
-      console.log('Feat Cred::', featData);
-
-      if (featCred?.auth_detail) {
-        dispatch(resyncBoard(featData));
-      }
 
       const issueData = {
         ...issueCred?.auth_detail,
         product_uuid: selectedProduct,
       };
 
-      if (issueCred?.auth_detail) {
-        dispatch(resyncBoard(issueData));
-      }
+      dispatch(resyncBoard(featData, issueData));
     }
   };
 
   return (
     <>
-      {loading && <Loader open={loading}/>}
+      {loading && <Loader open={loading} />}
 
       {loaded && user && !user.survey_status && (
         <div className={classes.firstTimeMessage}>
@@ -512,71 +444,71 @@ const Dashboard = ({
                       onClick={syncBoard}
                       className={classes.syncBoard}
                     >
-                      <SyncIcon/>
+                      <SyncIcon />
                       {' '}
                       Sync Board
                     </Button>
-                  ))
+                ))
               }
             </Grid>
           </Grid>
 
           {loaded && _.isEmpty(statuses) && !!selectedProduct
             ? (product && !_.isEmpty(product.third_party_tool)
-                ? (
-                  <>
-                    <Grid item xs={4} className={classes.configBoard}>
-                      <Typography component="div" variant="h4" align="center">
-                        Configure Project Board
-                      </Typography>
+              ? (
+                <>
+                  <Grid item xs={4} className={classes.configBoard}>
+                    <Typography component="div" variant="h4" align="center">
+                      Configure Project Board
+                    </Typography>
 
-                      <Typography variant="subtitle1" align="center">
-                        Add a configuration to get started
-                      </Typography>
+                    <Typography variant="subtitle1" align="center">
+                      Add a configuration to get started
+                    </Typography>
 
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={configureBoard}
-                        className={classes.configBoardButton}
-                      >
-                        Add Configuration
-                      </Button>
-                    </Grid>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={configureBoard}
+                      className={classes.configBoardButton}
+                    >
+                      Add Configuration
+                    </Button>
+                  </Grid>
 
-                    <Route path={toolBoardPath} component={ToolBoard}/>
-                  </>
-                ) : (
-                  <>
-                    <Grid item xs={4} className={classes.configBoard}>
-                      <Typography component="div" variant="h4" align="center">
-                        Configure Project Board
-                      </Typography>
+                  <Route path={routes.TOOL_BOARD} component={ToolBoard} />
+                </>
+              ) : (
+                <>
+                  <Grid item xs={4} className={classes.configBoard}>
+                    <Typography component="div" variant="h4" align="center">
+                      Configure Project Board
+                    </Typography>
 
-                      <Typography variant="subtitle1" align="center">
-                        Add a configuration to get started
-                      </Typography>
+                    <Typography variant="subtitle1" align="center">
+                      Add a configuration to get started
+                    </Typography>
 
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={configureStatus}
-                        className={classes.configBoardButton}
-                      >
-                        Add Configuration
-                      </Button>
-                    </Grid>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={configureStatus}
+                      className={classes.configBoardButton}
+                    >
+                      Add Configuration
+                    </Button>
+                  </Grid>
 
-                    <Route path={statusBoardPath} component={StatusBoard}/>
-                  </>
-                )
+                  <Route path={routes.STATUS_BOARD} component={StatusBoard} />
+                </>
+              )
             ) : (
               <>
                 <Grid mb={3} container justifyContent="center">
                   <Grid item className={classes.viewTabs}>
                     <Tabs value={view} onChange={(event, vw) => setView(vw)}>
                       {subNav.map((itemProps, index) => (
-                        <Tab {...itemProps} key={`tab${index}:${itemProps.value}`}/>
+                        <Tab {...itemProps} key={`tab${index}:${itemProps.value}`} />
                       ))}
                     </Tabs>
                   </Grid>
@@ -630,18 +562,17 @@ const Dashboard = ({
                     />
                   )}
                 />
-                <Route path={addFeatPath} component={NewFeatureForm}/>
-                <Route path={editFeatPath} component={NewFeatureForm}/>
-                <Route path={viewFeatPath} component={NewFeatureForm}/>
-                <Route path={addIssuePath} component={AddIssues}/>
-                <Route path={editIssuePath} component={AddIssues}/>
-                <Route path={addCommentPath} component={AddComments}/>
-                <Route path={featureToIssuePath} component={AddIssues}/>
-                <Route path={ignoreColumnsPath} component={IgnoreColumns}/>
+                <Route path={routes.ADD_FEATURE} component={AddFeatures} />
+                <Route path={routes.EDIT_FEATURE} component={AddFeatures} />
+                <Route path={routes.VIEW_FEATURE} component={AddFeatures} />
+                <Route path={routes.ADD_ISSUE} component={AddIssues} />
+                <Route path={routes.EDIT_ISSUE} component={AddIssues} />
+                <Route exact path={`${routes.COMMENTS}/:productID`} component={Comments} />
+                <Route path={routes.FEATURE_TO_ISSUE} component={AddIssues} />
                 <Route
-                  path={issueSuggestionsPath}
+                  path={routes.ISSUE_SUGGESTIONS}
                   render={(renderProps) => (
-                    <IssueSuggestions {...renderProps} convertIssue={convertIssue}/>
+                    <IssueSuggestions {...renderProps} convertIssue={convertIssue} />
                   )}
                 />
               </>

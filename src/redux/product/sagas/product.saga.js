@@ -72,8 +72,6 @@ import {
   DELETE_THIRD_PARTY_TOOL,
   DELETE_THIRD_PARTY_TOOL_SUCCESS,
   DELETE_THIRD_PARTY_TOOL_FAILURE,
-  createCredential,
-  updateCredential,
   saveProductFormData,
   VALIDATE_CREDENTIAL,
   VALIDATE_CREDENTIAL_SUCCESS,
@@ -401,25 +399,6 @@ function* createProduct(payload) {
       `${window.env.API_URL}product/product/`,
       data,
     );
-    if (product && product.data) {
-      const dateTime = new Date();
-      if (data.featureCreds) {
-        yield put(createCredential({
-          ...data.featureCreds,
-          product_uuid: product.data.product_uuid,
-          create_date: dateTime,
-          edit_date: dateTime,
-        }));
-      }
-      if (data.issueCreds) {
-        yield put(createCredential({
-          ...data.issueCreds,
-          product_uuid: product.data.product_uuid,
-          create_date: dateTime,
-          edit_date: dateTime,
-        }));
-      }
-    }
     yield [
       yield put({ type: CREATE_PRODUCT_SUCCESS, data: product.data }),
       yield put(saveProductFormData(null)),
@@ -459,26 +438,6 @@ function* updateProduct(payload) {
       `${window.env.API_URL}product/product/${payload.data.product_uuid}/`,
       payload.data,
     );
-
-    if (product && product.data) {
-      const dateTime = new Date();
-      if (payload.data.featureCreds && payload.data.featureCreds.credential_uuid) {
-        yield put(updateCredential({
-          ...payload.data.featureCreds,
-          product_uuid: product.data.product_uuid,
-          create_date: dateTime,
-          edit_date: dateTime,
-        }));
-      }
-      if (payload.data.issueCreds && payload.data.issueCreds.credential_uuid) {
-        yield put(updateCredential({
-          ...payload.data.issueCreds,
-          product_uuid: product.data.product_uuid,
-          create_date: dateTime,
-          edit_date: dateTime,
-        }));
-      }
-    }
 
     yield [
       yield put({

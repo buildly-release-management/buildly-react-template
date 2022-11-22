@@ -372,13 +372,15 @@ describe('Delete Status action', () => {
 // Import Tickets
 describe('Import Tickets action', () => {
   it('should create an action to import tickets', () => {
-    const data = { name: 'Import Tickets' };
+    const featData = { name: 'Import features' };
+    const issueData = { name: 'Import issues' };
     const expectedAction = {
       type: actions.IMPORT_TICKETS,
-      data,
+      featData,
+      issueData,
     };
 
-    expect(actions.importTickets(data)).toEqual(expectedAction);
+    expect(actions.importTickets(featData, issueData)).toEqual(expectedAction);
   });
 });
 
@@ -399,12 +401,14 @@ describe('Clear product action', () => {
 // Resync board data
 describe('Resync board data action', () => {
   it('should create an action to import tickets', () => {
-    const data = { name: 'resync board' };
+    const featData = { name: 'Resync features' };
+    const issueData = { name: 'Resync issues' };
     const expectedAction = {
       type: actions.RESYNC_BOARD_DATA,
-      data,
+      featData,
+      issueData,
     };
 
-    expect(actions.resyncBoard(data)).toEqual(expectedAction);
+    expect(actions.resyncBoard(featData, issueData)).toEqual(expectedAction);
   });
 });

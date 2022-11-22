@@ -95,7 +95,6 @@ import {
   DELETE_STATUS,
   DELETE_STATUS_SUCCESS,
   DELETE_STATUS_FAILURE,
-  saveFeatureFormData,
   IMPORT_TICKETS,
   IMPORT_TICKETS_SUCCESS,
   IMPORT_TICKETS_FAILURE,
@@ -426,7 +425,6 @@ function* createFeature(payload) {
     );
     yield [
       yield put({ type: CREATE_FEATURE_SUCCESS, data: feature.data }),
-      yield put(saveFeatureFormData(null)),
       yield put(
         showAlert({
           type: 'success',
@@ -964,20 +962,31 @@ function* deleteStatus(payload) {
 }
 
 function* importTickets(payload) {
+  const { featData, issueData } = payload;
   try {
-    const ticket = yield call(
-      httpService.makeRequest,
-      'post',
-      `${window.env.API_URL}release/import-project-tickets/`,
-      payload.data,
-    );
+    if (featData) {
+      const features = yield call(
+        httpService.makeRequest,
+        'post',
+        `${window.env.API_URL}release/import-project-tickets/`,
+        featData,
+      );
+    }
+    if (issueData) {
+      const features = yield call(
+        httpService.makeRequest,
+        'post',
+        `${window.env.API_URL}release/import-project-tickets/`,
+        issueData,
+      );
+    }
     yield [
-      yield put({ type: IMPORT_TICKETS_SUCCESS, data: ticket.data }),
+      yield put({ type: IMPORT_TICKETS_SUCCESS }),
       yield put(
         showAlert({
           type: 'success',
           open: true,
-          message: 'Imported tickets successfully',
+          message: 'Imported data from board(s) successfully',
         }),
       ),
     ];
@@ -1026,20 +1035,31 @@ function* clearProductData(payload) {
 }
 
 function* resyncBoardData(payload) {
+  const { featData, issueData } = payload;
   try {
-    const resyncStatus = yield call(
-      httpService.makeRequest,
-      'post',
-      `${window.env.API_URL}release/update-dashboard-card/`,
-      payload.data,
-    );
+    if (featData) {
+      const resyncFeatures = yield call(
+        httpService.makeRequest,
+        'post',
+        `${window.env.API_URL}release/update-dashboard-card/`,
+        featData,
+      );
+    }
+    if (issueData) {
+      const resyncFeatures = yield call(
+        httpService.makeRequest,
+        'post',
+        `${window.env.API_URL}release/update-dashboard-card/`,
+        issueData,
+      );
+    }
     yield [
       yield put({ type: RESYNC_BOARD_DATA_SUCCESS }),
       yield put(
         showAlert({
           type: 'success',
           open: true,
-          message: resyncStatus.data.message,
+          message: 'Resynced data successfully',
         }),
       ),
     ];

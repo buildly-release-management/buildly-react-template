@@ -12,21 +12,7 @@ const initialState = {
   issues: [],
   statuses: [],
   importLoaded: false,
-  featureFormData: null,
 };
-
-describe('Save Feature Form reducer', () => {
-  it('should save feature form data', () => {
-    const formData = { name: 'Test' };
-    expect(reducer.default(
-      initialState,
-      { type: actions.SAVE_FEATURE_FORM_DATA, formData },
-    )).toEqual({
-      ...initialState,
-      featureFormData: formData,
-    });
-  });
-});
 
 describe('Get all releases reducer', () => {
   it('Empty reducer', () => {

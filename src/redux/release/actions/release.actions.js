@@ -1,5 +1,4 @@
 // Release Action types
-export const SAVE_FEATURE_FORM_DATA = 'RELEASE/SAVE_FEATURE_FORM_DATA';
 export const CLEAR_PRODUCT_RELATED_RELEASE_DATA = 'RELEASE/CLEAR_PRODUCT_RELATED_RELEASE_DATA';
 
 export const ALL_RELEASES = 'RELEASE/ALL_RELEASES';
@@ -133,15 +132,6 @@ export const CLEAR_PRODUCT_DATA_FAILURE = 'RELEASE/CLEAR_PRODUCT_DATA_FAILURE';
 export const RESYNC_BOARD_DATA = 'RELEASE/RESYNC_BORAD_DATA';
 export const RESYNC_BOARD_DATA_SUCCESS = 'RELEASE/RESYNC_BORAD_DATA_SUCCESS';
 export const RESYNC_BOARD_DATA_FAILURE = 'RELEASE/RESYNC_BORAD_DATA_FAILURE';
-
-/**
- * Save Feature Form Data
- * @param {Object} formData
- */
-export const saveFeatureFormData = (formData) => ({
-  type: SAVE_FEATURE_FORM_DATA,
-  formData,
-});
 
 /**
  * Get all Releases
@@ -407,11 +397,13 @@ export const deleteStatus = (status_uuid) => ({
 
 /**
  * Import Tickets
- * @param {Object} data
+ * @param {Object} featData
+ * @param {Object} issueData
  */
-export const importTickets = (data) => ({
+export const importTickets = (featData, issueData) => ({
   type: IMPORT_TICKETS,
-  data,
+  featData,
+  issueData,
 });
 
 /**
@@ -432,6 +424,11 @@ export const clearProductRelatedReleaseData = () => ({
 
 /**
  * Resync board data
- * @param {Object} data
+ * @param {Object} featData
+ * @param {Object} issueData
  */
-export const resyncBoard = (data) => ({ type: RESYNC_BOARD_DATA, data });
+export const resyncBoard = (featData, issueData) => ({
+  type: RESYNC_BOARD_DATA,
+  featData,
+  issueData,
+});

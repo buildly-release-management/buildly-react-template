@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import {
-  SAVE_FEATURE_FORM_DATA,
   CLEAR_PRODUCT_RELATED_RELEASE_DATA,
   ALL_RELEASES,
   ALL_RELEASES_SUCCESS,
@@ -114,20 +113,11 @@ const initialState = {
   issues: [],
   statuses: [],
   importLoaded: false,
-  featureFormData: null,
 };
 
 // Reducer
 export default (state = initialState, action) => {
   switch (action.type) {
-    case SAVE_FEATURE_FORM_DATA:
-      return {
-        ...state,
-        loading: false,
-        loaded: true,
-        featureFormData: action.formData,
-      };
-
     case CLEAR_PRODUCT_RELATED_RELEASE_DATA:
       return {
         ...state,

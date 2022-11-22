@@ -390,8 +390,8 @@ const ProductSetup = ({
 
     const formData = {
       ...productFormData,
-      product_name: name.value,
-      product_description: description.value,
+      name: name.value,
+      description: description.value,
       start_date: startDate,
       end_date: endDate,
       create_date: dateTime,
