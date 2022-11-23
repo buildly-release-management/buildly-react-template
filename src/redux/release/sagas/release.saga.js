@@ -95,15 +95,12 @@ import {
   DELETE_STATUS,
   DELETE_STATUS_SUCCESS,
   DELETE_STATUS_FAILURE,
-  IMPORT_TICKETS,
-  IMPORT_TICKETS_SUCCESS,
-  IMPORT_TICKETS_FAILURE,
   CLEAR_PRODUCT_DATA,
   CLEAR_PRODUCT_DATA_SUCCESS,
   CLEAR_PRODUCT_DATA_FAILURE,
-  RESYNC_BOARD_DATA,
-  RESYNC_BOARD_DATA_SUCCESS,
-  RESYNC_BOARD_DATA_FAILURE,
+  THIRD_PARTY_TOOL_SYNC,
+  THIRD_PARTY_TOOL_SYNC_SUCCESS,
+  THIRD_PARTY_TOOL_SYNC_FAILURE,
 } from '../actions/release.actions';
 import {
   deleteProduct, getProduct,
@@ -961,52 +958,6 @@ function* deleteStatus(payload) {
   }
 }
 
-function* importTickets(payload) {
-  const { featData, issueData } = payload;
-  try {
-    if (featData) {
-      const features = yield call(
-        httpService.makeRequest,
-        'post',
-        `${window.env.API_URL}release/import-project-tickets/`,
-        featData,
-      );
-    }
-    if (issueData) {
-      const features = yield call(
-        httpService.makeRequest,
-        'post',
-        `${window.env.API_URL}release/import-project-tickets/`,
-        issueData,
-      );
-    }
-    yield [
-      yield put({ type: IMPORT_TICKETS_SUCCESS }),
-      yield put(
-        showAlert({
-          type: 'success',
-          open: true,
-          message: 'Imported data from board(s) successfully',
-        }),
-      ),
-    ];
-  } catch (error) {
-    yield [
-      yield put(
-        showAlert({
-          type: 'error',
-          open: true,
-          message: 'Couldn\'t import tickets!',
-        }),
-      ),
-      yield put({
-        type: IMPORT_TICKETS_FAILURE,
-        error,
-      }),
-    ];
-  }
-}
-
 function* clearProductData(payload) {
   try {
     const product = yield call(
@@ -1034,48 +985,61 @@ function* clearProductData(payload) {
   }
 }
 
-function* resyncBoardData(payload) {
-  const { featData, issueData } = payload;
+function* thirdPartyToolSync(payload) {
+  const { creds } = payload;
   try {
-    if (featData) {
-      const resyncFeatures = yield call(
-        httpService.makeRequest,
-        'post',
-        `${window.env.API_URL}release/update-dashboard-card/`,
-        featData,
-      );
+    const toolSyncResponse = yield call(
+      httpService.makeRequest,
+      'post',
+      `${window.env.API_URL}release/third_party_tool_sync/`,
+      creds,
+    );
+    if (toolSyncResponse && toolSyncResponse.data) {
+      let status = true;
+      _.forEach(toolSyncResponse.data, (tool) => {
+        status = status && !_.isEmpty(tool) && _.isEmpty(tool.details);
+      });
+
+      if (status) {
+        yield [
+          yield put({ type: THIRD_PARTY_TOOL_SYNC_SUCCESS }),
+          yield put(
+            showAlert({
+              type: 'success',
+              open: true,
+              message: 'Third party tool(s) data synced successfully',
+            }),
+          ),
+        ];
+      } else {
+        yield [
+          yield put({
+            type: THIRD_PARTY_TOOL_SYNC_FAILURE,
+            error: 'Couldn\'t sync third party tool(s) data!',
+          }),
+          yield put(
+            showAlert({
+              type: 'success',
+              open: true,
+              message: 'Couldn\'t sync third party tool(s) data!',
+            }),
+          ),
+        ];
+      }
     }
-    if (issueData) {
-      const resyncFeatures = yield call(
-        httpService.makeRequest,
-        'post',
-        `${window.env.API_URL}release/update-dashboard-card/`,
-        issueData,
-      );
-    }
-    yield [
-      yield put({ type: RESYNC_BOARD_DATA_SUCCESS }),
-      yield put(
-        showAlert({
-          type: 'success',
-          open: true,
-          message: 'Resynced data successfully',
-        }),
-      ),
-    ];
   } catch (error) {
     yield [
+      yield put({
+        type: THIRD_PARTY_TOOL_SYNC_FAILURE,
+        error,
+      }),
       yield put(
         showAlert({
           type: 'error',
           open: true,
-          message: 'Couldn\'t resync board data!',
+          message: 'Couldn\'t sync third party tool(s) data!',
         }),
       ),
-      yield put({
-        type: RESYNC_BOARD_DATA_FAILURE,
-        error,
-      }),
     ];
   }
 }
@@ -1201,16 +1165,12 @@ function* watchDeleteStatus() {
   yield takeLatest(DELETE_STATUS, deleteStatus);
 }
 
-function* watchImportTickets() {
-  yield takeLatest(IMPORT_TICKETS, importTickets);
-}
-
 function* watchClearProductData() {
   yield takeLatest(CLEAR_PRODUCT_DATA, clearProductData);
 }
 
-function* watchResyncBoardData() {
-  yield takeLatest(RESYNC_BOARD_DATA, resyncBoardData);
+function* watchThirdPartyToolSync() {
+  yield takeLatest(THIRD_PARTY_TOOL_SYNC, thirdPartyToolSync);
 }
 
 export default function* releaseSaga() {
@@ -1233,7 +1193,6 @@ export default function* releaseSaga() {
     watchCreateFeedback(),
     watchCreateIssue(),
     watchCreateStatus(),
-    watchImportTickets(),
     watchUpdateRelease(),
     watchUpdateComment(),
     watchUpdateFeature(),
@@ -1247,6 +1206,6 @@ export default function* releaseSaga() {
     watchDeleteIssue(),
     watchDeleteStatus(),
     watchClearProductData(),
-    watchResyncBoardData(),
+    watchThirdPartyToolSync(),
   ]);
 }

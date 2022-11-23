@@ -369,21 +369,6 @@ describe('Delete Status action', () => {
   });
 });
 
-// Import Tickets
-describe('Import Tickets action', () => {
-  it('should create an action to import tickets', () => {
-    const featData = { name: 'Import features' };
-    const issueData = { name: 'Import issues' };
-    const expectedAction = {
-      type: actions.IMPORT_TICKETS,
-      featData,
-      issueData,
-    };
-
-    expect(actions.importTickets(featData, issueData)).toEqual(expectedAction);
-  });
-});
-
 // Test Delete Features and Issues
 describe('Clear product action', () => {
   it('should create an action to clear product', () => {
@@ -398,17 +383,15 @@ describe('Clear product action', () => {
   });
 });
 
-// Resync board data
-describe('Resync board data action', () => {
-  it('should create an action to import tickets', () => {
-    const featData = { name: 'Resync features' };
-    const issueData = { name: 'Resync issues' };
+// Third party tool sync
+describe('Sync data from third party tool(s) action', () => {
+  it('should create an action to sync data from third party tool(s)', () => {
+    const creds = [{ tool_type: 'Feature' }, { tool_type: 'Issue' }];
     const expectedAction = {
-      type: actions.RESYNC_BOARD_DATA,
-      featData,
-      issueData,
+      type: actions.THIRD_PARTY_TOOL_SYNC,
+      creds,
     };
 
-    expect(actions.resyncBoard(featData, issueData)).toEqual(expectedAction);
+    expect(actions.thirdPartyToolSync(creds)).toEqual(expectedAction);
   });
 });

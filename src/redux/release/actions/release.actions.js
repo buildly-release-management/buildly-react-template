@@ -121,17 +121,13 @@ export const DELETE_STATUS = 'RELEASE/DELETE_STATUS';
 export const DELETE_STATUS_SUCCESS = 'RELEASE/DELETE_STATUS_SUCCESS';
 export const DELETE_STATUS_FAILURE = 'RELEASE/DELETE_STATUS_FAILURE';
 
-export const IMPORT_TICKETS = 'RELEASE/IMPORT_TICKETS';
-export const IMPORT_TICKETS_SUCCESS = 'RELEASE/IMPORT_TICKETS_SUCCESS';
-export const IMPORT_TICKETS_FAILURE = 'RELEASE/IMPORT_TICKETS_FAILURE';
-
 export const CLEAR_PRODUCT_DATA = 'RELEASE/CLEAR_PRODUCT_DATA';
 export const CLEAR_PRODUCT_DATA_SUCCESS = 'RELEASE/CLEAR_PRODUCT_DATA_SUCCESS';
 export const CLEAR_PRODUCT_DATA_FAILURE = 'RELEASE/CLEAR_PRODUCT_DATA_FAILURE';
 
-export const RESYNC_BOARD_DATA = 'RELEASE/RESYNC_BORAD_DATA';
-export const RESYNC_BOARD_DATA_SUCCESS = 'RELEASE/RESYNC_BORAD_DATA_SUCCESS';
-export const RESYNC_BOARD_DATA_FAILURE = 'RELEASE/RESYNC_BORAD_DATA_FAILURE';
+export const THIRD_PARTY_TOOL_SYNC = 'RELEASE/THIRD_PARTY_TOOL_SYNC';
+export const THIRD_PARTY_TOOL_SYNC_SUCCESS = 'RELEASE/THIRD_PARTY_TOOL_SYNC_SUCCESS';
+export const THIRD_PARTY_TOOL_SYNC_FAILURE = 'RELEASE/THIRD_PARTY_TOOL_SYNC_FAILURE';
 
 /**
  * Get all Releases
@@ -396,17 +392,6 @@ export const deleteStatus = (status_uuid) => ({
 });
 
 /**
- * Import Tickets
- * @param {Object} featData
- * @param {Object} issueData
- */
-export const importTickets = (featData, issueData) => ({
-  type: IMPORT_TICKETS,
-  featData,
-  issueData,
-});
-
-/**
  * Clear Product Features and Issues
  * @param {Object} data
  */
@@ -423,12 +408,10 @@ export const clearProductRelatedReleaseData = () => ({
 });
 
 /**
- * Resync board data
- * @param {Object} featData
- * @param {Object} issueData
+ * Sync data from third party tool(s)
+ * @param {Array} creds
  */
-export const resyncBoard = (featData, issueData) => ({
-  type: RESYNC_BOARD_DATA,
-  featData,
-  issueData,
+export const thirdPartyToolSync = (creds) => ({
+  type: THIRD_PARTY_TOOL_SYNC,
+  creds,
 });

@@ -22,8 +22,7 @@ import {
   getAllFeatures,
   getAllIssues,
   getAllStatuses,
-  importTickets,
-  resyncBoard,
+  thirdPartyToolSync,
 } from '@redux/release/actions/release.actions';
 import Kanban from './components/Kanban';
 import Tabular from './components/Tabular';
@@ -79,7 +78,7 @@ const useStyles = makeStyles((theme) => ({
   configBoardButton: {
     marginTop: theme.spacing(1),
   },
-  syncBoard: {
+  syncDataFromTools: {
     height: theme.spacing(6),
     marginRight: theme.spacing(2),
   },
@@ -96,7 +95,6 @@ const Dashboard = ({
   credentials,
   statuses,
   importLoaded,
-  issues,
 }) => {
   const classes = useStyles();
   const [route, setRoute] = useState(routes.DASHBOARD);
@@ -327,53 +325,38 @@ const Dashboard = ({
     });
   };
 
-  const syncBoard = (e) => {
+  const syncDataFromTools = (e) => {
     e.preventDefault();
     const featCred = _.find(credentials, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'feature'));
     const issueCred = _.find(credentials, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'issue'));
-    const repoList = _.map(product.issue_tool_detail?.repository_list, 'name');
 
-    if (_.isEmpty(features) && _.isEmpty(issues)) {
-      if (product && (!_.isEmpty(product.feature_tool_detail)
-        || !_.isEmpty(product.issue_tool_detail))) {
-        let featData;
-        let issueData;
+    if (!_.isEmpty(product) && (!_.isEmpty(featCred) || !_.isEmpty(issueCred))) {
+      let creds = [];
 
-        if (product.feature_tool_detail && !_.isEmpty(product.feature_tool_detail)) {
-          featData = {
+      if (!_.isEmpty(product.feature_tool_detail) && !_.isEmpty(featCred)) {
+        creds = [
+          ...creds,
+          {
             ...featCred?.auth_detail,
             product_uuid: selectedProduct,
             board_id: product.feature_tool_detail.board_detail?.board_id,
-            is_repo_issue: false,
-            drop_col_name: null,
-          };
-        }
+          },
+        ];
+      }
 
-        if (product.issue_tool_detail && !_.isEmpty(product.issue_tool_detail)) {
-          issueData = {
+      if (!_.isEmpty(product.issue_tool_detail) && !_.isEmpty(issueCred)) {
+        creds = [
+          ...creds,
+          {
             ...issueCred?.auth_detail,
             product_uuid: selectedProduct,
             board_id: product.issue_tool_detail.board_detail?.board_id,
-            is_repo_issue: true,
-            repo_list: repoList,
-            drop_col_name: null,
-          };
-        }
-
-        dispatch(importTickets(featData, issueData));
+            repo_list: _.map(product.issue_tool_detail.repository_list, 'name'),
+          },
+        ];
       }
-    } else {
-      const featData = {
-        ...featCred?.auth_detail,
-        product_uuid: selectedProduct,
-      };
 
-      const issueData = {
-        ...issueCred?.auth_detail,
-        product_uuid: selectedProduct,
-      };
-
-      dispatch(resyncBoard(featData, issueData));
+      dispatch(thirdPartyToolSync(creds));
     }
   };
 
@@ -448,12 +431,12 @@ const Dashboard = ({
                     <Button
                       variant="contained"
                       color="primary"
-                      onClick={syncBoard}
-                      className={classes.syncBoard}
+                      onClick={syncDataFromTools}
+                      className={classes.syncDataFromTools}
                     >
                       <SyncIcon />
                       {' '}
-                      Sync Board
+                      Sync Data from Tool(s)
                     </Button>
                 ))
               }
@@ -601,7 +584,6 @@ const mapStateToProps = (state, ownProps) => ({
   credentials: state.productReducer.credentials,
   statuses: state.releaseReducer.statuses,
   importLoaded: state.releaseReducer.importLoaded,
-  issues: state.releaseReducer.issues,
 });
 
 export default connect(mapStateToProps)(Dashboard);
