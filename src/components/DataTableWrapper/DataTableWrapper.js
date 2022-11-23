@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import MUIDataTable from 'mui-datatables';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -55,16 +55,17 @@ const DataTableWrapper = ({
   noCustomTheme,
   noSpace,
   noOptionsIcon,
+  menuIndex,
+  setMenuIndex,
 }) => {
   const classes = useStyles();
   // dropdown menu variables
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-  const [rowIndex, setRowIndex] = useState(0);
 
   const handleClick = (event, dataIndex) => {
     setAnchorEl(event.currentTarget);
-    setRowIndex(dataIndex);
+    setMenuIndex(dataIndex);
   };
 
   const handleClose = () => {
@@ -135,7 +136,7 @@ const DataTableWrapper = ({
               >
                 {
                   editAction && (
-                    <MenuItem onClick={(e) => editAction(rows[rowIndex])}>
+                    <MenuItem onClick={(e) => editAction(rows[menuIndex])}>
                       <ListItemIcon>
                         <EditIcon fontSize="small" />
                       </ListItemIcon>
@@ -148,7 +149,7 @@ const DataTableWrapper = ({
                   deleteAction && (
                     <div>
                       <Divider />
-                      <MenuItem onClick={() => deleteAction(rows[rowIndex])}>
+                      <MenuItem onClick={() => deleteAction(rows[menuIndex])}>
                         <ListItemIcon>
                           <DeleteIcon style={{ color: 'red' }} fontSize="small" />
                         </ListItemIcon>

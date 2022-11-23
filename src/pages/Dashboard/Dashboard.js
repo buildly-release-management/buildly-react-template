@@ -241,8 +241,15 @@ const Dashboard = ({
     setOpenDeleteModal(false);
   };
 
-  const commentItem = () => {
-    history.push(`${routes.COMMENTS}/${selectedProduct}`, { from: location.pathname });
+  const commentItem = (item) => {
+    let data = { from: location.pathname };
+    if (item.issue_uuid) {
+      data = { ...data, issue_uuid: item.issue_uuid };
+    } else {
+      data = { ...data, feature_uuid: item.feature_uuid };
+    }
+
+    history.push(routes.COMMENTS, { ...data });
   };
 
   const issueSuggestions = (item) => {
