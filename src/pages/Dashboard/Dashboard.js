@@ -19,6 +19,7 @@ import {
   createFeature,
   deleteFeature,
   deleteIssue,
+  getAllComments,
   getAllFeatures,
   getAllIssues,
   getAllStatuses,
@@ -28,10 +29,10 @@ import Kanban from './components/Kanban';
 import Tabular from './components/Tabular';
 import AddFeatures from './forms/AddFeatures';
 import AddIssues from './forms/AddIssues';
+import Comments from './forms/Comments';
 import IssueSuggestions from './forms/IssueSuggestions';
 import StatusBoard from './forms/StatusBoard';
 import ToolBoard from './forms/ToolBoard';
-import Comments from './components/Comments';
 
 const useStyles = makeStyles((theme) => ({
   firstTimeMessage: {
@@ -241,12 +242,16 @@ const Dashboard = ({
 
   const commentItem = (item) => {
     let data = { from: location.pathname };
+    let query;
     if (item.issue_uuid) {
-      data = { ...data, issue_uuid: item.issue_uuid };
+      data = { ...data, issue: item };
+      query = `issue=${item.issue_uuid}`;
     } else {
-      data = { ...data, feature_uuid: item.feature_uuid };
+      data = { ...data, feature: item };
+      query = `feature=${item.feature_uuid}`;
     }
 
+    dispatch(getAllComments(query));
     history.push(routes.COMMENTS, { ...data });
   };
 
@@ -557,8 +562,8 @@ const Dashboard = ({
                 <Route path={routes.VIEW_FEATURE} component={AddFeatures} />
                 <Route path={routes.ADD_ISSUE} component={AddIssues} />
                 <Route path={routes.EDIT_ISSUE} component={AddIssues} />
-                <Route exact path={`${routes.COMMENTS}/:productID`} component={Comments} />
                 <Route path={routes.FEATURE_TO_ISSUE} component={AddIssues} />
+                <Route path={routes.COMMENTS} component={Comments} />
                 <Route
                   path={routes.ISSUE_SUGGESTIONS}
                   render={(renderProps) => (

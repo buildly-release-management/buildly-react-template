@@ -254,7 +254,7 @@ export default (state = initialState, action) => {
         ...state,
         loading: false,
         loaded: true,
-        comments: action.data,
+        comments: _.orderBy(action.data, 'create_date', 'asc'),
       };
 
     case GET_COMMENT_SUCCESS:

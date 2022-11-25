@@ -28,5 +28,5 @@ export const routes = {
   FEATURE_TO_ISSUE: '/app/dashboard/convert-issue',
   STATUS_BOARD: '/app/dashboard/tool-status',
   TOOL_BOARD: '/app/dashboard/tool-board',
-  COMMENTS: '/app/comments',
+  COMMENTS: '/app/dashboard/comments',
 };

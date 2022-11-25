@@ -239,7 +239,7 @@ function* allComments(payload) {
     const comments = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}release/comment/?product_uuid=${payload.product_uuid}`,
+      `${window.env.API_URL}release/comment/?${payload.searchQuery}`,
     );
     yield put({ type: ALL_COMMENTS_SUCCESS, data: comments.data });
   } catch (error) {
@@ -292,7 +292,16 @@ function* createComment(payload) {
       `${window.env.API_URL}release/comment/`,
       payload.data,
     );
-    yield put({ type: CREATE_COMMENT_SUCCESS, data: comment.data });
+    yield [
+      yield put({ type: CREATE_COMMENT_SUCCESS, data: comment.data }),
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: 'Succesfully commented on the feature/issue',
+        }),
+      ),
+    ];
   } catch (error) {
     yield [
       yield put(
