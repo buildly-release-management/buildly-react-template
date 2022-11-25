@@ -86,10 +86,10 @@ const Comments = ({
       ...authDetail,
       comment: commentText.value,
       product_uuid: feature?.product_uuid || issue?.product_uuid,
-      feature: feature?.feature_uuid || null,
-      issue: issue?.issue_uuid || null,
-      card_number: feature?.feature_tracker_id || issue?.issue_tracker_id || null,
-      repository: issue?.repository || null,
+      feature: feature?.feature_uuid,
+      issue: issue?.issue_uuid,
+      card_number: feature?.feature_tracker_id || issue?.issue_number,
+      repository: issue?.repository,
     };
 
     dispatch(createComment(commentData));
