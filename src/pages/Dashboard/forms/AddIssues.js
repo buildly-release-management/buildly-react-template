@@ -23,7 +23,7 @@ import {
   updateIssue,
 } from '@redux/release/actions/release.actions';
 import { validators } from '@utils/validators';
-import { ISSUETYPES, TAGS } from '../DashboardConstants';
+import { ISSUETYPES } from '../DashboardConstants';
 import { routes } from '@routes/routesConstants';
 import SmartInput from '@components/SmartInput/SmartInput';
 
@@ -81,6 +81,7 @@ const AddIssues = ({
   const [endDate, handleEndDateChange] = useState(moment(
     (editData && editData.end_date) || moment(),
   ));
+  const [tagList, setTagList] = useState([]);
   const [tags, setTags] = useState((editData && editData.tags) || []);
   const estimate = useInput((editData && editData.estimate) || '');
   const complexity = useInput((editData && editData.complexity) || 0);
@@ -98,7 +99,7 @@ const AddIssues = ({
 
   useEffect(() => {
     const prod = _.find(products, { product_uuid });
-    const assigneeOptions = _.map(prod?.feature_tool_detail?.user_list, 'username') || [];
+    const assigneeOptions = _.map(prod?.issue_tool_detail?.user_list, 'username') || [];
 
     setRepoList(prod?.issue_tool_detail?.repository_list || []);
     setAssigneeData(assigneeOptions);
@@ -361,12 +362,17 @@ const AddIssues = ({
                     label="Repository"
                     name="repo"
                     autoComplete="repo"
-                    {...repo.bind}
+                    value={repo.value}
+                    onChange={(e) => {
+                      const repository = e.target.value;
+                      repo.setNewValue(repository.name);
+                      setTagList(repository.labels || []);
+                    }}
                   >
                     {_.map(repoList, (rep) => (
                       <MenuItem
                         key={`rep-${rep.id}-${rep.name}`}
-                        value={rep.name}
+                        value={rep}
                       >
                         {rep.name}
                       </MenuItem>
@@ -423,34 +429,36 @@ const AddIssues = ({
                 </TextField>
               </Grid>
 
-              <Grid item xs={12}>
-                <Autocomplete
-                  fullWidth
-                  multiple
-                  filterSelectedOptions
-                  id="tags"
-                  options={TAGS}
-                  value={tags}
-                  onChange={(e, newValue) => setTags(newValue)}
-                  renderTags={(value, getTagProps) => (
-                    _.map(value, (option, index) => (
-                      <Chip
-                        variant="default"
-                        label={option}
-                        {...getTagProps({ index })}
+              {!_.isEmpty(repo) && (
+                <Grid item xs={12}>
+                  <Autocomplete
+                    fullWidth
+                    multiple
+                    filterSelectedOptions
+                    id="tags"
+                    options={tagList}
+                    value={tags}
+                    onChange={(e, newValue) => setTags(newValue)}
+                    renderTags={(value, getTagProps) => (
+                      _.map(value, (option, index) => (
+                        <Chip
+                          variant="default"
+                          label={option}
+                          {...getTagProps({ index })}
+                        />
+                      ))
+                    )}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="outlined"
+                        label="Tags"
+                        margin="normal"
                       />
-                    ))
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      label="Tags"
-                      margin="normal"
-                    />
-                  )}
-                />
-              </Grid>
+                    )}
+                  />
+                </Grid>
+              )}
 
               {!_.isEmpty(assigneeData) && (
               <Grid item xs={12}>

@@ -128,20 +128,6 @@ export const PRIORITIES = [
   'Urgent',
 ];
 
-export const TAGS = [
-  'enhancement',
-  'bug',
-  'documentation',
-  'deployment',
-  'duplicate',
-  'good first issue',
-  'help wanted',
-  'invalid',
-  'question',
-  'wontfix',
-  'Story/Sub-Feature',
-];
-
 export const ISSUETYPES = [
   'FE',
   'BE',

@@ -23,7 +23,7 @@ import SmartInput from '@components/SmartInput/SmartInput';
 import { useInput } from '@hooks/useInput';
 import { createFeature, updateFeature } from '@redux/release/actions/release.actions';
 import { validators } from '@utils/validators';
-import { PRIORITIES, TAGS } from '../DashboardConstants';
+import { PRIORITIES } from '../DashboardConstants';
 
 const useStyles = makeStyles((theme) => ({
   formTitle: {
@@ -87,6 +87,8 @@ const AddFeatures = ({
   const name = useInput((editData && editData.name) || '', { required: true, productFeatures: features });
   const description = useInput((editData && editData.description) || '');
   const priority = useInput((editData && editData.priority) || '', { required: true });
+
+  const [tagList, setTagList] = useState([]);
   const [tags, setTags] = useState((editData && editData.tags) || []);
 
   const statusID = useInput((editData && editData.status) || '');
@@ -113,6 +115,7 @@ const AddFeatures = ({
     const assigneeOptions = _.map(prod?.feature_tool_detail?.user_list, 'username') || [];
 
     setAssigneeData(assigneeOptions);
+    setTagList(prod?.feature_tool_detail?.labels || []);
   }, [products]);
 
   useEffect(() => {
@@ -223,9 +226,9 @@ const AddFeatures = ({
     || quest7.hasChanged()
     || quest8.hasChanged()
     || quest9.hasChanged()
-    || (!editPage && !_.isEmpty(assignees))
-    || (editPage && priority.hasChanged())
-    || (editPage && statusID.hasChanged())
+    || priority.hasChanged()
+    || statusID.hasChanged()
+    || (!editPage && (!_.isEmpty(tags) || !_.isEmpty(assignees)))
     || !!(editPage && editData && !_.isEqual((editData.tags || []), tags))
     || !!(editPage && editData && editData.feature_detail
       && !_.isEqual(_.map(editData.feature_detail.assigneees, 'username'), assignees))
@@ -290,84 +293,82 @@ const AddFeatures = ({
               </Grid>
             </Grid>
 
-            {editPage && (
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={8}>
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    select
-                    id="status"
-                    label="Status"
-                    name="status"
-                    value={status}
-                    autoComplete="status"
-                    disabled={viewPage}
-                    onChange={(e) => {
-                      const stat = e.target.value;
-                      setStatus(stat);
-                      statusID.setNewValue(stat.status_uuid);
-                      setColID(stat.status_tracking_id);
-                    }}
-                  >
-                    {_.map(statuses, (sts) => (
-                      <MenuItem
-                        key={`status-${sts.status_uuid}-${sts.name}`}
-                        value={sts}
-                      >
-                        {sts.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    select
-                    id="priority "
-                    label="Priority"
-                    name="priority"
-                    autoComplete="priority"
-                    error={
-                      formError.priority
-                      && formError.priority.error
-                    }
-                    helperText={
-                      formError.priority
-                        ? formError.priority.message
-                        : ''
-                    }
-                    onBlur={(e) => handleBlur(e, 'required', priority)}
-                    {...priority.bind}
-                    disabled={viewPage}
-                  >
-                    {_.map(PRIORITIES, (prty, idx) => (
-                      <MenuItem
-                        key={`priority-${idx}`}
-                        value={prty}
-                      >
-                        {prty}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={8}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  select
+                  id="status"
+                  label="Status"
+                  name="status"
+                  value={status}
+                  autoComplete="status"
+                  disabled={viewPage}
+                  onChange={(e) => {
+                    const stat = e.target.value;
+                    setStatus(stat);
+                    statusID.setNewValue(stat.status_uuid);
+                    setColID(stat.status_tracking_id);
+                  }}
+                >
+                  {_.map(statuses, (sts) => (
+                    <MenuItem
+                      key={`status-${sts.status_uuid}-${sts.name}`}
+                      value={sts}
+                    >
+                      {sts.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
-            )}
 
-            {editPage && (
+              <Grid item xs={12} md={4}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  select
+                  id="priority "
+                  label="Priority"
+                  name="priority"
+                  autoComplete="priority"
+                  error={
+                    formError.priority
+                    && formError.priority.error
+                  }
+                  helperText={
+                    formError.priority
+                      ? formError.priority.message
+                      : ''
+                  }
+                  onBlur={(e) => handleBlur(e, 'required', priority)}
+                  {...priority.bind}
+                  disabled={viewPage}
+                >
+                  {_.map(PRIORITIES, (prty, idx) => (
+                    <MenuItem
+                      key={`priority-${idx}`}
+                      value={prty}
+                    >
+                      {prty}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            </Grid>
+
+            {!_.isEmpty(tagList) && (
               <Grid item xs={12}>
                 <Autocomplete
                   fullWidth
                   multiple
                   filterSelectedOptions
                   id="tags"
-                  options={TAGS}
+                  options={tagList}
                   value={tags}
                   onChange={(e, newValue) => setTags(newValue)}
                   renderTags={(value, getTagProps) => (
