@@ -112,8 +112,14 @@ const Register = ({
   const first_name = useInput('', { required: true });
   const last_name = useInput('');
   const coupon_code = useInput(window.env.FREE_COUPON_CODE || '');
+  const privacy_disclaimer_accepted = useInput(false, { required: true });
+  const terms_of_service = useInput(false, { required: true });
+
   const [formError, setFormError] = useState({});
-  const [checked, setChecked] = React.useState(false);
+  const checkboxes = ['privacy_disclaimer_accepted', 'terms_of_service'];
+  const [checkedState, setCheckedState] = useState(
+    new Array(checkboxes.length).fill(false),
+  );
 
   // eslint-disable-next-line consistent-return
   useEffect(() => {
@@ -144,6 +150,8 @@ const Register = ({
       first_name: first_name.value,
       last_name: last_name.value,
       coupon_code: coupon_code.value,
+      privacy_disclaimer_accepted: checkedState[0],
+      terms_of_service: checkedState[1],
     };
 
     if (_.includes(_.toLower(_.trim(orgName.value)), 'buildly')) {
@@ -183,13 +191,18 @@ const Register = ({
     }
   };
 
-  const handleChange = (e) => {
-    setChecked(e.target.checked);
+  // Handle checkbox change selection
+  const handleOnChange = (e, field, position) => {
+    // eslint-disable-next-line max-len
+    const updatedCheckedState = checkedState.map((item, index) => (index === position ? !item : item));
+
+    setCheckedState(updatedCheckedState);
   };
 
   const submitDisabled = () => {
     const errorKeys = Object.keys(formError);
     let errorExists = false;
+
     if (
       !username.value
       || !password.value
@@ -198,7 +211,10 @@ const Register = ({
       || !orgName.value
       || !userType.value
       || !first_name.value
+      || !checkedState[0]
+      || !checkedState[1]
     ) return true;
+
     errorKeys.forEach((key) => {
       if (formError[key].error) errorExists = true;
     });
@@ -428,15 +444,31 @@ const Register = ({
                   <Grid item xs={12}>
                     <div className={classes.consentContainer}>
                       <Checkbox
-                        id="igin "
-                        checked={checked}
-                        onChange={handleChange}
+                        id="privacy_disclaimer_accepted"
+                        value="privacy_disclaimer_accepted"
+                        checked={checkedState[0]}
+                        onChange={(e) => handleOnChange(e, privacy_disclaimer_accepted, 0)}
+                      />
+                      <p>
+                        <span>I have read and accept the </span>
+                        <a className={classes.pageLink} href="https://buildly.io/privacy/" target="_blank" rel="noopener noreferrer">privacy policy</a>
+                      </p>
+                    </div>
+                  </Grid>
+                </Grid>
+
+                <Grid container spacing={isMobile() ? 0 : 3}>
+                  <Grid item xs={12}>
+                    <div className={classes.consentContainer}>
+                      <Checkbox
+                        id="terms_of_service"
+                        value="terms_of_service"
+                        checked={checkedState[1]}
+                        onChange={(e) => handleOnChange(e, terms_of_service, 1)}
                       />
                       <p>
                         <span>I have read and accept the </span>
                         <a className={classes.pageLink} href="https://buildly.io/tos/" target="_blank" rel="noopener noreferrer">terms of service</a>
-                        <span> and </span>
-                        <a className={classes.pageLink} href="https://buildly.io/privacy/" target="_blank" rel="noopener noreferrer">privacy policy</a>
                       </p>
                     </div>
                   </Grid>
@@ -449,7 +481,7 @@ const Register = ({
                     variant="contained"
                     color="primary"
                     className={classes.submit}
-                    disabled={loading || submitDisabled() || !checked}
+                    disabled={loading || submitDisabled()}
                   >
                     Register
                   </Button>
