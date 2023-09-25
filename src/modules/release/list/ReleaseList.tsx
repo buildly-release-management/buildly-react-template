@@ -5,7 +5,7 @@ import Table from "react-bootstrap/Table";
 import { Release } from "../../../interfaces/release";
 import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Button from "react-bootstrap/Button";
+import { Button } from "@mui/material";
 import { Dropdown, ProgressBar } from "react-bootstrap";
 import DoughnutChart from "../../../components/ReleaseCharts/Doughnut";
 import BarChart from "../../../components/ReleaseCharts/BarChart";
@@ -33,6 +33,7 @@ import Tooltip from "@mui/material/Tooltip";
 import "./ReleaseList.css";
 import { GlobalStateContext } from "../../../context/globalState";
 import LoadingSpinner from "../../../components/Spinner";
+import ProjectSelect from "../../../components/ProjectSelect/ProjectSelect";
 
 const httpService = new HttpService();
 
@@ -177,6 +178,8 @@ function ReleaseList() {
       const data = { product_uuid: currentProduct.product_uuid, ...formData };
       sendRelease({ type: "Submit", release: data });
     }
+
+    handleClose();
   };
 
   const deleteRelease = (row: any) => {
@@ -276,7 +279,7 @@ function ReleaseList() {
               {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
           </TableCell>
-          <TableCell component="th" scope="row">
+          <TableCell>
             <Link
               to={{
                 pathname: `/releases/${row.release_uuid}`,
@@ -303,7 +306,7 @@ function ReleaseList() {
           <TableCell align="center">{row.release_date}</TableCell>
           <TableCell align="right">
             <Dropdown>
-              <Dropdown.Toggle variant="success" id="dropdown-basic">
+              <Dropdown.Toggle variant="link">
                 <IconButton aria-label="expand row" size="small">
                   <MoreVertIcon />
                 </IconButton>
@@ -381,6 +384,8 @@ function ReleaseList() {
 
   return (
     <>
+      <ProjectSelect/>
+
       {summaryLoading ? (
         <>
           <div className="d-flex flex-column align-items-center justify-content-center h-50">
@@ -396,7 +401,9 @@ function ReleaseList() {
                 <Typography variant="h6">Releases summary</Typography>
 
                 <Button
-                  variant="outline-secondary"
+                    type="submit"
+                    variant="outlined"
+                    color="primary"
                   size="sm"
                   onClick={handleShow}
                 >
@@ -499,90 +506,20 @@ function ReleaseList() {
                   </TableBody>
                 </Table>
               </TableContainer>
-
-              {/*Add/Edit release modal*/}
-              <Modal
-                show={showReleaseModal}
-                onHide={handleClose}
-                backdrop="static"
-                keyboard={false}
-                centered
-                size="lg"
-              >
-                <Modal.Header closeButton>
-                  <Modal.Title>New release</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                  {" "}
-                  <Form noValidate>
-                    {/*name*/}
-                    <Form.Group className="mb-3" controlId="name">
-                      <Form.Label>Name</Form.Label>
-                      <Form.Control
-                        size="sm"
-                        type="text"
-                        placeholder="Name"
-                        name="name"
-                        required
-                        onChange={(event) => updateFormData(event)}
-                      />
-                    </Form.Group>
-                    {/*description*/}
-                    <Form.Group className="mb-3" controlId="description">
-                      <Form.Label>Description</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={2}
-                        name="description"
-                        onChange={(event) => updateFormData(event)}
-                      />
-                    </Form.Group>
-                    {/*release date*/}
-                    <Form.Group className="mb-3" controlId="date">
-                      <Form.Label>Release date</Form.Label>
-                      <Form.Control
-                        size="sm"
-                        type="date"
-                        placeholder="Release date"
-                        name="release_date"
-                        required
-                        onChange={(event) => updateFormData(event)}
-                      />
-                    </Form.Group>
-                  </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={() => handleClose()}
-                  >
-                    Close
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    type="submit"
-                    disabled={!(formData.name && formData.release_date)}
-                    onClick={(event) => submitRelease(event)}
-                  >
-                    Save
-                  </Button>
-                </Modal.Footer>
-              </Modal>
             </>
           ) : (
             <>
               {" "}
-              <div className="d-flex flex-column align-items-center justify-content-center h-50">
+              <div className="d-flex flex-column align-items-center justify-content-center h-75">
                 <Typography variant="h6" className="text-center pb-2">
                   No releases to display for the current product. <br />
                   To get you started, create a release!
                 </Typography>
 
                 <Button
-                  variant="outline-secondary"
-                  size="sm"
+                    type="submit"
+                    variant="contained"
+                    color="primary"
                   onClick={handleShow}
                 >
                   New release
@@ -592,6 +529,79 @@ function ReleaseList() {
           )}
         </>
       )}
+
+      {/*Add/Edit release modal*/}
+      <Modal
+          show={showReleaseModal}
+          onHide={handleClose}
+          backdrop="static"
+          keyboard={false}
+          centered
+          size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>New release</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {" "}
+          <Form noValidate>
+            {/*name*/}
+            <Form.Group className="mb-3" controlId="name">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                  size="sm"
+                  type="text"
+                  placeholder="Name"
+                  name="name"
+                  required
+                  onChange={(event) => updateFormData(event)}
+              />
+            </Form.Group>
+            {/*description*/}
+            <Form.Group className="mb-3" controlId="description">
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                  as="textarea"
+                  rows={2}
+                  name="description"
+                  onChange={(event) => updateFormData(event)}
+              />
+            </Form.Group>
+            {/*release date*/}
+            <Form.Group className="mb-3" controlId="date">
+              <Form.Label>Release date</Form.Label>
+              <Form.Control
+                  size="sm"
+                  type="date"
+                  placeholder="Release date"
+                  name="release_date"
+                  required
+                  onChange={(event) => updateFormData(event)}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+              type="submit"
+              variant="outlined"
+              color="primary"
+              size="sm"
+              onClick={() => handleClose()}
+          >
+            Close
+          </Button>
+          <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              disabled={!(formData.name && formData.release_date)}
+              onClick={(event) => submitRelease(event)}
+          >
+            Save
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }

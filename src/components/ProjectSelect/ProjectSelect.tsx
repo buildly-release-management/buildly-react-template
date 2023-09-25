@@ -6,7 +6,7 @@ import "./ProjectSelect.css";
 import {GlobalStateContext} from '../../context/globalState';
 
 
-const ProjectSelect = ({orgUuid}: any) => {
+const ProjectSelect = () => {
     // Add/Edit release modal
     const [show, setShow] = useState(false);
 
@@ -55,7 +55,7 @@ const ProjectSelect = ({orgUuid}: any) => {
             </div>
 
             {/*Add/Edit release modal*/}
-            <CustomModal show={show}/>
+            {/*<CustomModal show={show}/>*/}
         </>
     );
 };

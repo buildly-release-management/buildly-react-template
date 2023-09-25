@@ -8,7 +8,7 @@
 }
 
 .charts-parent-container {
-  height: 33%;
+  height: 40%;
   margin-top: 8px;
   margin-bottom: 8px;
 }
@@ -20,4 +20,16 @@
   padding: 12px;
   width: 32%;
   text-align: -webkit-center;
+}
+
+.btn-secondary {
+  color: #ffffff;
+/*&:hover {*/
+/*   color: $white;*/
+/* }*/
+}
+
+.btn-outline-secondary:hover {
+  background-color: #fddec4;
+  color: #f9943b;
 }
