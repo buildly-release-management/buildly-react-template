@@ -86,8 +86,8 @@ const AddIssues = ({
   const estimate = useInput((editData && editData.estimate) || '');
   const complexity = useInput((editData && editData.complexity) || 0);
   const [assignees, setAssignees] = useState(
-    (editData && editData.issue_detail && _.map(editData.issue_detail.assignees, 'username'))
-    || [],
+    (editData && editData.issue_detail && _.map(editData.issue_detail.assignees))
+      || [],
   );
   const [assigneeData, setAssigneeData] = useState([]);
   const [repoList, setRepoList] = useState([]);
@@ -100,7 +100,7 @@ const AddIssues = ({
 
   useEffect(() => {
     const prod = _.find(products, { product_uuid });
-    const assigneeOptions = _.map(prod?.issue_tool_detail?.user_list, 'username') || [];
+    const assigneeOptions = _.map(prod?.issue_tool_detail?.user_list) || [];
 
     setRepoList(prod?.issue_tool_detail?.repository_list || []);
     setAssigneeData(assigneeOptions);
@@ -173,9 +173,7 @@ const AddIssues = ({
       repository: repo.value,
       column_id: colID,
       issue_detail: {
-        assignees: _.filter(assigneeData, (user) => (
-          !!user && _.includes(assignees, user.username)
-        )),
+        assignees,
       },
       ...issueCred?.auth_detail,
     };
@@ -462,14 +460,17 @@ const AddIssues = ({
                   multiple
                   filterSelectedOptions
                   id="assignees"
+                  name="assignees"
                   options={assigneeData}
-                  value={assignees}
-                  onChange={(e, newValue) => setAssignees(newValue)}
+                  getOptionLabel={(option) => option.username}
+                  getOptionSelected={(option, value) => option.username === value.username}
+                  onChange={(e, newValue) => setAssignees(_.map(newValue, 'user_id'))}
                   renderTags={(value, getAssigneeProps) => (
                     _.map(value, (option, index) => (
                       <Chip
                         variant="default"
-                        label={option}
+                        label={option.username}
+                        value={option.user_id}
                         {...getAssigneeProps({ index })}
                       />
                     ))
@@ -477,9 +478,10 @@ const AddIssues = ({
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      variant="outlined"
+                      required
+                      fullWidth
                       label="Assignees"
-                      margin="normal"
+                      {...assignees.bind}
                     />
                   )}
                 />
