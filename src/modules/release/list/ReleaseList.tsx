@@ -65,6 +65,24 @@ function ReleaseList() {
     globalContext.releaseMachineService,
     selectReleases
   );
+  if (releases && releases.length) {
+    releases.forEach((release: any, index: number) => {
+      try {
+        httpService
+            .fetchData(
+                `/feature/?release_features__release_uuid=${release.release_uuid}`,
+                "release"
+            )
+            .then((response: any) => {
+              if (response.data) {
+                releases[index].featuresList = response.data;
+              }
+            });
+      } catch (httpError) {
+        console.log("httpError : ", httpError);
+      }
+    });
+  }
 
   let featuresReleaseNames: string[] = [];
   let issuesReleaseNames: string[] = [];
@@ -189,14 +207,15 @@ function ReleaseList() {
 
   // Table
   function createData(
-    release_uuid: string,
-    name: string,
-    features_done: number,
-    // progress_bar_variant: string,
-    // status: number,
-    features_count: number,
-    issues_count: number,
-    release_date: string
+      release_uuid: string,
+      name: string,
+      features_done: number,
+      // progress_bar_variant: string,
+      // status: number,
+      features_count: number,
+      issues_count: number,
+      release_date: string,
+      featuresList: any[]
   ) {
     const barValue = (features_done / features_count) * 100;
     return {
@@ -208,6 +227,7 @@ function ReleaseList() {
       features_count,
       issues_count,
       release_date,
+      featuresList,
       history: [
         {
           date: "2020-01-05",
@@ -246,134 +266,145 @@ function ReleaseList() {
       progressBarObj = initProgressBar(row);
     }
 
-    let featuresList: any[] = [];
     if (open && row) {
       try {
         httpService
-          .fetchData(
-            `/feature/?release_features__release_uuid=${row.release_uuid}`,
-            "release"
-          )
-          .then((response: any) => {
-            featuresList = response.data;
-          });
+            .fetchData(
+                `/feature/?release_features__release_uuid=${row.release_uuid}`,
+                "release"
+            )
+            .then((response: any) => {
+              if (response.data) {
+                const releaseEntryIndex = releases.findIndex(
+                    (r: any) => r.release_uuid === row.release_uuid
+                );
+                if (releaseEntryIndex > -1) {
+                  releases[releaseEntryIndex].featuresList = response.data;
+                  row.featuresList = response.data;
+                }
+              }
+            });
       } catch (httpError) {
         console.log("httpError : ", httpError);
       }
     }
 
     return (
-      <React.Fragment>
-        <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
-          <TableCell>
-            <IconButton
-              aria-label="expand row"
-              size="small"
-              onClick={() => setOpen(!open)}
-            >
-              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-            </IconButton>
-          </TableCell>
-          <TableCell>
-            <Link
-              to={{
-                pathname: `${routes.RELEASE}/${row.release_uuid}`,
-              }}
-            >
-              {row.name}
-            </Link>{" "}
-          </TableCell>
-          <TableCell>
-            <Tooltip
-              title={`${progressBarObj.value}% achieved`}
-              placement="right-start"
-            >
-              <ProgressBar
-                now={progressBarObj.value}
-                label={`${progressBarObj.value}%`}
-                variant={progressBarObj.theme}
-              />
-            </Tooltip>
-          </TableCell>
-          {/*<TableCell align="right">{row.status}</TableCell>*/}
-          <TableCell align="center">{row.features_count}</TableCell>
-          <TableCell align="center">{row.issues_count}</TableCell>
-          <TableCell align="center">{row.release_date}</TableCell>
-          <TableCell align="right">
-            <Dropdown>
-              <Dropdown.Toggle variant="info" id="dropdown-basic">
-                <IconButton aria-label="expand row" size="small">
-                  <MoreVertIcon />
-                </IconButton>
-              </Dropdown.Toggle>
+        <React.Fragment>
+          <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+            <TableCell>
+              <IconButton
+                  aria-label="expand row"
+                  size="small"
+                  onClick={() => setOpen(!open)}
+              >
+                {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+              </IconButton>
+            </TableCell>
+            <TableCell>
+              <Link
+                  to={{
+                    pathname: `/releases/${row.release_uuid}`,
+                  }}
+              >
+                {row.name}
+              </Link>{" "}
+            </TableCell>
+            <TableCell>
+              <Tooltip
+                  title={`${progressBarObj.value}% achieved`}
+                  placement="right-start"
+              >
+                <ProgressBar
+                    now={progressBarObj.value}
+                    label={`${progressBarObj.value}%`}
+                    variant={progressBarObj.theme}
+                />
+              </Tooltip>
+            </TableCell>
+            {/*<TableCell align="right">{row.status}</TableCell>*/}
+            <TableCell align="center">{row.features_count}</TableCell>
+            <TableCell align="center">{row.issues_count}</TableCell>
+            <TableCell align="center">{row.release_date}</TableCell>
+            <TableCell align="right">
+              <Dropdown>
+                <Dropdown.Toggle variant="success" id="dropdown-basic">
+                  <IconButton aria-label="expand row" size="small">
+                    {/*<MoreVertIcon />*/}
+                  </IconButton>
+                </Dropdown.Toggle>
 
-              <Dropdown.Menu>
-                <Dropdown.Item onClick={() => deleteRelease(row)}>
-                  Delete release
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <TableCell
-            style={{
-              paddingBottom: 0,
-              paddingTop: 0,
-              paddingLeft: 8,
-              backgroundColor: "#f5f5f5",
-            }}
-            colSpan={12}
-          >
-            <Collapse in={open} timeout="auto" unmountOnExit>
-              <Box sx={{ margin: 1 }}>
-                {/*<Typography variant="h6" gutterBottom component="div">*/}
-                {/*  Features*/}
-                {/*</Typography>*/}
-                <Table size="small" aria-label="features">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Progress</TableCell>
-                      {/*<TableCell>Status</TableCell>*/}
-                      <TableCell>Issues</TableCell>
-                      <TableCell align="right">Assignees</TableCell>
-                      <TableCell align="right">Date Due</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {featuresList.length ? (
-                      featuresList.map((feature) => (
-                        <TableRow key={feature.feature_uuid}>
-                          <TableCell component="th" scope="row">
-                            {feature.name}
-                          </TableCell>
-                          <TableCell>{feature.progress}</TableCell>
-                          <TableCell>{feature.status}</TableCell>
-                          <TableCell>{feature.issues}</TableCell>
-                          <TableCell align="right">
-                            {feature.assignees}
-                          </TableCell>
-                          <TableCell align="right">
-                            {feature.date_due}
-                          </TableCell>
-                          {/*<TableCell align="right">*/}
-                          {/*  {Math.round(*/}
-                          {/*      feature.amount * row.features_count * 100*/}
-                          {/*  ) / 100}*/}
-                          {/*</TableCell>*/}
-                        </TableRow>
-                      ))
-                    ) : (
-                      <div className="p-2">No features to display</div>
-                    )}
-                  </TableBody>
-                </Table>
-              </Box>
-            </Collapse>
-          </TableCell>
-        </TableRow>
-      </React.Fragment>
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={() => deleteRelease(row)}>
+                    Delete release
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell
+                style={{
+                  paddingBottom: 0,
+                  paddingTop: 0,
+                  paddingLeft: 8,
+                  backgroundColor: "#f5f5f5",
+                }}
+                colSpan={12}
+            >
+              <Collapse in={open} timeout="auto" unmountOnExit>
+                <Box sx={{ margin: 1 }}>
+                  {/*<Typography variant="h6" gutterBottom component="div">*/}
+                  {/*  Features*/}
+                  {/*</Typography>*/}
+                  <Table size="small" aria-label="features">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Progress</TableCell>
+                        <TableCell align="center">Complexity</TableCell>
+                        {/*<TableCell>Status</TableCell>*/}
+                        <TableCell>Issues</TableCell>
+                        <TableCell align="right">Assignees</TableCell>
+                        {/*<TableCell align="right">Create Date</TableCell>*/}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {row?.featuresList?.length > 0 ? (
+                          row.featuresList.map((feature: any) => (
+                              <TableRow key={feature.feature_uuid}>
+                                <TableCell>
+                                  {feature.name}
+                                </TableCell>
+                                <TableCell>{feature.progress}</TableCell>
+                                <TableCell align="center">
+                                  {feature.complexity}
+                                </TableCell>
+                                {/*<TableCell>{feature.status}</TableCell>*/}
+                                <TableCell>{feature.issues}</TableCell>
+                                <TableCell align="right">
+                                  {feature.assignees}
+                                </TableCell>
+                                {/*<TableCell align="right">*/}
+                                {/*  {feature.create_date}*/}
+                                {/*</TableCell>*/}
+                                {/*<TableCell align="right">*/}
+                                {/*  {Math.round(*/}
+                                {/*      feature.amount * row.features_count * 100*/}
+                                {/*  ) / 100}*/}
+                                {/*</TableCell>*/}
+                              </TableRow>
+                          ))
+                      ) : (
+                          <div className="p-2">No features to display</div>
+                      )}
+                    </TableBody>
+                  </Table>
+                </Box>
+              </Collapse>
+            </TableCell>
+          </TableRow>
+        </React.Fragment>
     );
   }
 
