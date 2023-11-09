@@ -24,7 +24,6 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import { HttpService } from "../../../services/http.service";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Tooltip from "@mui/material/Tooltip";
 import "./ReleaseList.css";
 import { GlobalStateContext } from "../../../context/globalState";
@@ -302,11 +301,7 @@ function ReleaseList() {
               </IconButton>
             </TableCell>
             <TableCell>
-              <Link
-                  to={{
-                    pathname: `/releases/${row.release_uuid}`,
-                  }}
-              >
+              <Link to={`${routes.RELEASE}/${row.release_uuid}`}>
                 {row.name}
               </Link>{" "}
             </TableCell>

@@ -82,7 +82,8 @@ function ReleaseDetails() {
     status: number,
     features: number,
     issues: number,
-    release_date: string
+    release_date: string,
+    issuesList: any[]
   ) {
     return {
       feature_uuid,
@@ -94,6 +95,7 @@ function ReleaseDetails() {
       features,
       issues,
       release_date,
+      issuesList,
       history: [
         {
           date: "2020-01-05",
@@ -177,7 +179,27 @@ function ReleaseDetails() {
             )
             .then((response: any) => {
               if (response && response.data) {
-                setReleaseFeatures(response.data);
+
+                const features  = response.data;
+                if (features && features.length) {
+                  features.forEach((feature: any, index: number) => {
+                    try {
+                      httpService
+                          .fetchData(
+                              `/issue/?feature=${feature.feature_uuid}`,
+                              "release"
+                          )
+                          .then((response: any) => {
+                            if (response.data) {
+                              features[index].issuesList = response.data;
+                            }
+                          });
+                    } catch (httpError) {
+                      console.log("httpError : ", httpError);
+                    }
+                  });
+                }
+                setReleaseFeatures(features);
               }
             });
         } catch (httpError) {
@@ -235,14 +257,22 @@ function ReleaseDetails() {
     const { row } = props;
     const [open, setOpen] = React.useState(false);
 
-    let issuesList: any[] = [];
     if (open && row) {
       try {
         httpService
           .fetchData(`/issue/?feature=${row.feature_uuid}`, "release")
           .then((response: any) => {
             if (response && response.data) {
-              issuesList = response.data;
+
+              const featureEntryIndex = releaseFeatures.findIndex(
+                  (r: any) => r.feature_uuid === row.feature_uuid
+              );
+              if (featureEntryIndex > -1) {
+                releaseFeatures[featureEntryIndex].featuresList = response.data;
+                row.issuesList = response.data;
+
+                setReleaseFeatures(releaseFeatures);
+              }
             }
           });
       } catch (httpError) {
@@ -289,20 +319,21 @@ function ReleaseDetails() {
                   <TableHead>
                     <TableRow>
                       <TableCell>Name</TableCell>
-                      {/*<TableCell>Complexity</TableCell>*/}
-                      <TableCell>Status</TableCell>
+                      <TableCell align="center">Complexity</TableCell>
+                      <TableCell>Assignees</TableCell>
+                      {/*<TableCell>Status</TableCell>*/}
                       {/*<TableCell align="right">Amount</TableCell>*/}
                       {/*<TableCell align="right">Total price ($)</TableCell>*/}
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {issuesList.map((issue) => (
+                    {row?.issuesList?.map((issue) => (
                       <TableRow key={issue.issue_uuid}>
                         <TableCell>
                           {issue.name}
                         </TableCell>
-                        {/*<TableCell align="right">{issue.complexity}</TableCell>*/}
-                        <TableCell>{issue.status}</TableCell>
+                        <TableCell align="center">{issue.complexity}</TableCell>
+                        <TableCell>{issue.assignees}</TableCell>
                         {/*<TableCell align="right">{issue.amount}</TableCell>*/}
                         {/*<TableCell align="right">*/}
                         {/*  {Math.round(issue.amount * row.status * 100) / 100}*/}
@@ -432,7 +463,7 @@ function ReleaseDetails() {
                     <TableCell width="12" />
                     <TableCell width="33%">Name</TableCell>
                     {/*<TableCell>Progress</TableCell>*/}
-                    <TableCell align="center">Status</TableCell>
+                    <TableCell align="center">Complexity</TableCell>
                     {/*<TableCell align="center">Features</TableCell>*/}
                     {/*<TableCell align="center">Issues</TableCell>*/}
                     {/*<TableCell align="right">Release date</TableCell>*/}

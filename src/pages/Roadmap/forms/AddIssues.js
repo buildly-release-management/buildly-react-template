@@ -69,11 +69,16 @@ const AddIssues = ({
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
   const product_uuid = location.state && location.state.product_uuid;
-
+  console.log('features : ', features);
   // form fields definition
   const [description, setDescription] = useState((editData && editData.description) || '');
   const name = useInput((editData && editData.name) || '', { required: true });
-  const [feature, setFeatureValue] = useState((editData && editData.feature_uuid) || '');
+
+  const featureUuid = useInput((editData && editData.feature) || '');
+  const [feature, setFeatureValue] = useState(featureUuid.value);
+  // const [feature, setFeatureValue] = useState((editData && editData.feature) || '');
+  console.log('feature : ', feature);
+
   const type = useInput((editData && editData.issue_type) || '', { required: true });
   const [startDate, handleStartDateChange] = useState(moment(
     (editData && editData.start_date) || moment(),
@@ -161,7 +166,7 @@ const AddIssues = ({
       edit_date: dateTime,
       name: name.value,
       description,
-      feature_uuid: feature,
+      feature,
       issue_type: type.value,
       start_date: startDate,
       end_date: endDate,
@@ -280,32 +285,32 @@ const AddIssues = ({
               </Grid>
 
               <Grid item xs={12}>
-                <Autocomplete
-                  disablePortal
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  select
                   id="feature"
+                  label="Feature"
                   name="feature"
-                  options={features}
-                  getOptionLabel={(option) => option.name}
-                  onChange={(event, value) => setFeatureValue(value.feature_uuid)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      required
-                      fullWidth
-                      label="Feature"
-                      error={
-                              formError.feature
-                              && formError.feature.error
-                            }
-                      helperText={
-                              formError.feature
-                                ? formError.feature.message
-                                : ''
-                            }
-                      {...feature.bind}
-                    />
-                  )}
-                />
+                  autoComplete="feature"
+                  value={feature}
+                  onChange={(e) => {
+                    const selectedFeature = e.target.value;
+                    setFeatureValue(selectedFeature);
+                    featureUuid.setNewValue(selectedFeature);
+                  }}
+                >
+                  {_.map(features, (feat) => (
+                    <MenuItem
+                      key={`feature-${feat.feature_uuid}-${feat.name}`}
+                      value={feat.feature_uuid}
+                    >
+                      {feat.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
 
               <Grid item xs={12}>
