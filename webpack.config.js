@@ -127,29 +127,16 @@ module.exports = (env, argv) => {
       maxAssetSize: 512000,
     };
     webpackConfig.optimization = {
-      namedModules: false,
-      namedChunks: false,
       nodeEnv: 'production',
       flagIncludedChunks: true,
-      occurrenceOrder: true,
       sideEffects: true,
       usedExports: true,
       concatenateModules: true,
-      splitChunks: {
-        cacheGroups: {
-          commons: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendor',
-            chunks: 'all',
-          },
-        },
-        minSize: 30000,
-        maxAsyncRequests: 3,
-      },
+      splitChunks: false,
       noEmitOnErrors: true,
       minimize: true,
       removeAvailableModules: true,
-      removeEmptyChunks: true,
+      removeEmptyChunks: false,
       mergeDuplicateChunks: true,
     };
   } else {
