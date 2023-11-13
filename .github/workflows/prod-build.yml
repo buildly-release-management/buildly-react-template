@@ -22,7 +22,7 @@ jobs:
     - name: Tag version
       uses: Klemensas/action-autotag@stable
       id: tag_version
-      with:
+      env:
         GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}"
 
     # Create release notes

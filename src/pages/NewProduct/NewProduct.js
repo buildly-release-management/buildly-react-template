@@ -9,6 +9,7 @@ import {
   Hidden,
   Grid,
 } from '@mui/material';
+import Chatbot from '@components/Chatbot/Chatbot';
 import Loader from '@components/Loader/Loader';
 import FormModal from '@components/Modal/FormModal';
 import { getAllStatuses } from '@redux/release/actions/release.actions';
@@ -191,7 +192,7 @@ const NewProductForm = (props) => {
   const steps = getSteps();
   const maxSteps = steps.length;
 
-  const redirectTo = (location.state && location.state.from) || routes.DASHBOARD;
+  const redirectTo = (location.state && location.state.from) || routes.ROADMAP;
   const product_uuid = location.state && location.state.product_uuid;
   const editPage = location.state && location.state.type === 'editP';
   const editData = (
@@ -333,6 +334,7 @@ const NewProductForm = (props) => {
               )}
             </div>
           </div>
+          <Chatbot />
         </FormModal>
       )}
     </div>
