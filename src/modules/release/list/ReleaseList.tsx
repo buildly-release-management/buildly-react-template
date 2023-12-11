@@ -191,6 +191,8 @@ function ReleaseList() {
     if (currentProduct) {
       const data = { product_uuid: currentProduct.product_uuid, ...formData };
       sendRelease({ type: "Submit", release: data });
+
+      handleClose();
     }
   };
 
@@ -430,7 +432,6 @@ function ReleaseList() {
                 </Button>
               </div>
 
-              {/*style={{ position: "relative", height: "33%" }}*/}
 
               {releasesSummary ? (
                 <div className="container-fluid charts-parent-container">
@@ -526,78 +527,7 @@ function ReleaseList() {
                 </Table>
               </TableContainer>
 
-              {/*Add/Edit release modal*/}
-              <Modal
-                show={showReleaseModal}
-                onHide={handleClose}
-                backdrop="static"
-                keyboard={false}
-                centered
-                size="lg"
-              >
-                <Modal.Header closeButton>
-                  <Modal.Title>New release</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                  {" "}
-                  <Form noValidate>
-                    {/*name*/}
-                    <Form.Group className="mb-3" controlId="name">
-                      <Form.Label>Name</Form.Label>
-                      <Form.Control
-                        size="sm"
-                        type="text"
-                        placeholder="Name"
-                        name="name"
-                        required
-                        onChange={(event) => updateFormData(event)}
-                      />
-                    </Form.Group>
-                    {/*description*/}
-                    <Form.Group className="mb-3" controlId="description">
-                      <Form.Label>Description</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={2}
-                        name="description"
-                        onChange={(event) => updateFormData(event)}
-                      />
-                    </Form.Group>
-                    {/*release date*/}
-                    <Form.Group className="mb-3" controlId="date">
-                      <Form.Label>Release date</Form.Label>
-                      <Form.Control
-                        size="sm"
-                        type="date"
-                        placeholder="Release date"
-                        name="release_date"
-                        required
-                        onChange={(event) => updateFormData(event)}
-                      />
-                    </Form.Group>
-                  </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button
-                      type='button'
-                    variant="outlined"
-                      color='primary'
-                    size="small"
-                    onClick={handleClose}
-                  >
-                    Close
-                  </Button>
-                  <Button
-                      type="button"
-                      variant="contained"
-                      color="primary"
-                      size="small" disabled={!(formData.name && formData.release_date)}
-                      onClick={(event) => submitRelease(event)}
-                  >
-                    Save
-                  </Button>
-                </Modal.Footer>
-              </Modal>
+
             </>
           ) : (
             <>
@@ -620,6 +550,79 @@ function ReleaseList() {
               </div>
             </>
           )}
+
+          {/*Add/Edit release modal*/}
+          <Modal
+              show={showReleaseModal}
+              onHide={handleClose}
+              backdrop="static"
+              keyboard={false}
+              centered
+              size="lg"
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>New release</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              {" "}
+              <Form noValidate>
+                {/*name*/}
+                <Form.Group className="mb-3" controlId="name">
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control
+                      size="sm"
+                      type="text"
+                      placeholder="Name"
+                      name="name"
+                      required
+                      onChange={(event) => updateFormData(event)}
+                  />
+                </Form.Group>
+                {/*description*/}
+                <Form.Group className="mb-3" controlId="description">
+                  <Form.Label>Description</Form.Label>
+                  <Form.Control
+                      as="textarea"
+                      rows={2}
+                      name="description"
+                      onChange={(event) => updateFormData(event)}
+                  />
+                </Form.Group>
+                {/*release date*/}
+                <Form.Group className="mb-3" controlId="date">
+                  <Form.Label>Release date</Form.Label>
+                  <Form.Control
+                      size="sm"
+                      type="date"
+                      placeholder="Release date"
+                      name="release_date"
+                      required
+                      onChange={(event) => updateFormData(event)}
+                  />
+                </Form.Group>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                  type='button'
+                  variant="outlined"
+                  color='primary'
+                  size="small"
+                  onClick={handleClose}
+              >
+                Close
+              </Button>
+              <Button
+                  type="button"
+                  variant="contained"
+                  color="primary"
+                  size="small" disabled={!(formData.name && formData.release_date)}
+                  onClick={(event) => submitRelease(event)}
+              >
+                Save
+              </Button>
+            </Modal.Footer>
+          </Modal>
         </>
       )}
       <Chatbot />
