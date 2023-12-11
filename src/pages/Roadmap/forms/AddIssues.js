@@ -69,7 +69,7 @@ const AddIssues = ({
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
   const product_uuid = location.state && location.state.product_uuid;
-  console.log('features : ', features);
+
   // form fields definition
   const [description, setDescription] = useState((editData && editData.description) || '');
   const name = useInput((editData && editData.name) || '', { required: true });
@@ -77,7 +77,6 @@ const AddIssues = ({
   const featureUuid = useInput((editData && editData.feature) || '');
   const [feature, setFeatureValue] = useState(featureUuid.value);
   // const [feature, setFeatureValue] = useState((editData && editData.feature) || '');
-  console.log('feature : ', feature);
 
   const type = useInput((editData && editData.issue_type) || '', { required: true });
   const [startDate, handleStartDateChange] = useState(moment(
@@ -183,7 +182,12 @@ const AddIssues = ({
       ...issueCred?.auth_detail,
     };
 
+    // : (Array.isArray(assignees) && assignees.length > 0) ? assignees : null,
     if (editPage) {
+      // eslint-disable-next-line no-prototype-builtins
+      if (formData.hasOwnProperty('name')) {
+        delete formData.assignees;
+      }
       dispatch(updateIssue(formData));
     } else {
       formData.create_date = dateTime;
