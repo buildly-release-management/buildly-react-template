@@ -65,6 +65,7 @@ function ReleaseList() {
     selectReleases
   );
   if (releases && releases.length) {
+    releases.sort((a:any, b:any) => a.release_date.localeCompare(b.release_date));
     releases.forEach((release: any, index: number) => {
       try {
         httpService
@@ -172,7 +173,15 @@ function ReleaseList() {
 
   // Add/Edit release modal
   const [showReleaseModal, setShow] = useState(false);
-  const handleShow = () => setShow(true);
+  const handleShow = () => {
+    setFormData({
+      ...formData,
+      name: '',
+      release_date:'',
+    });
+
+    setShow(true);
+  };
   const handleClose = () => setShow(false);
 
   // Release form
@@ -325,7 +334,7 @@ function ReleaseList() {
             <TableCell align="center">{row.release_date}</TableCell>
             <TableCell align="right">
               <Dropdown>
-                <Dropdown.Toggle variant="success" id="dropdown-basic">
+                <Dropdown.Toggle variant="light" id="dropdown-basic">
                   <IconButton aria-label="expand row" size="small">
                     {/*<MoreVertIcon />*/}
                   </IconButton>
@@ -568,7 +577,7 @@ function ReleaseList() {
               <Form noValidate>
                 {/*name*/}
                 <Form.Group className="mb-3" controlId="name">
-                  <Form.Label>Name</Form.Label>
+                  <Form.Label>Name*</Form.Label>
                   <Form.Control
                       size="sm"
                       type="text"
@@ -590,7 +599,7 @@ function ReleaseList() {
                 </Form.Group>
                 {/*release date*/}
                 <Form.Group className="mb-3" controlId="date">
-                  <Form.Label>Release date</Form.Label>
+                  <Form.Label>Release date*</Form.Label>
                   <Form.Control
                       size="sm"
                       type="date"
@@ -616,7 +625,8 @@ function ReleaseList() {
                   type="button"
                   variant="contained"
                   color="primary"
-                  size="small" disabled={!(formData.name && formData.release_date)}
+                  size="small"
+                  disabled={!(formData?.name?.trim().length > 0 && formData?.release_date?.length > 0)}
                   onClick={(event) => submitRelease(event)}
               >
                 Save
