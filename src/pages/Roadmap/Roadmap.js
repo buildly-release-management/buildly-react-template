@@ -478,7 +478,7 @@ const Roadmap = ({
                 {
                 (
                   loaded && product && !_.isEmpty(product.third_party_tool)
-                  && !_.isEmpty(statuses) && (
+                  && _.includes(_.uniq(_.map(statuses, 'product_uuid')), selectedProduct) && (
                     <Button
                       variant="contained"
                       color="primary"
@@ -506,9 +506,15 @@ const Roadmap = ({
               </Grid>
             </Grid>
 
-            {loaded && _.isEmpty(statuses) && !!selectedProduct && !['report', 'tabular'].includes(view.toLocaleString())
+            {loaded && !!selectedProduct && !_.includes(_.uniq(_.map(statuses, 'product_uuid')), selectedProduct)
               ? (
-                product && !_.isEmpty(product.third_party_tool)
+                product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
+                && (
+                  // eslint-disable-next-line max-len
+                  (_.isEqual(_.size(product.third_party_tool), 2) && _.isEmpty(product.feature_tool_detail) && _.isEmpty(product.issue_tool_detail))
+                  // eslint-disable-next-line max-len
+                  || (_.isEqual(_.size(product.third_party_tool), 1) && (_.isEmpty(product.feature_tool_detail) || _.isEmpty(product.issue_tool_detail)))
+                )
                   ? (
                     <>
                       <Grid item xs={4} className={classes.configBoard}>
@@ -536,7 +542,7 @@ const Roadmap = ({
                     <>
                       <Grid item xs={4} className={classes.configBoard}>
                         <Typography component="div" variant="h4" align="center">
-                          Configure Project Board
+                          Configure Project Statuses
                         </Typography>
 
                         <Typography variant="subtitle1" align="center">
