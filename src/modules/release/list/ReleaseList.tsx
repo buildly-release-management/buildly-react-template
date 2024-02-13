@@ -535,8 +535,6 @@ function ReleaseList() {
                   </TableBody>
                 </Table>
               </TableContainer>
-
-
             </>
           ) : (
             <>
