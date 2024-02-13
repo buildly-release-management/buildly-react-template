@@ -18,7 +18,7 @@ module.exports = (env, argv) => {
     module: {
       rules: [
         {
-          test: /\.(jsx|js)$/,
+          test: /\.(jsx|js|tsx|ts)$/,
           include: path.resolve(__dirname, 'src'),
           exclude: /node_modules/,
           use: [{
@@ -29,6 +29,7 @@ module.exports = (env, argv) => {
                   targets: 'defaults',
                 }],
                 '@babel/preset-react',
+                '@babel/preset-typescript',
               ],
               plugins: [
                 '@babel/plugin-proposal-class-properties',
@@ -76,7 +77,7 @@ module.exports = (env, argv) => {
       ],
     },
     resolve: {
-      extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
+      extensions: ['.*', '.js', '.jsx', '.ts', '.tsx'],
       modules: [path.resolve(__dirname, './src'), 'node_modules'],
       alias: {
         '@assets': path.resolve(__dirname, './src/assets'),
@@ -126,29 +127,16 @@ module.exports = (env, argv) => {
       maxAssetSize: 512000,
     };
     webpackConfig.optimization = {
-      namedModules: false,
-      namedChunks: false,
       nodeEnv: 'production',
       flagIncludedChunks: true,
-      occurrenceOrder: true,
       sideEffects: true,
       usedExports: true,
       concatenateModules: true,
-      splitChunks: {
-        cacheGroups: {
-          commons: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendor',
-            chunks: 'all',
-          },
-        },
-        minSize: 30000,
-        maxAsyncRequests: 3,
-      },
+      splitChunks: false,
       noEmitOnErrors: true,
       minimize: true,
       removeAvailableModules: true,
-      removeEmptyChunks: true,
+      removeEmptyChunks: false,
       mergeDuplicateChunks: true,
     };
   } else {

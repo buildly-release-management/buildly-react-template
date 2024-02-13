@@ -8,6 +8,7 @@ import {
   Button, Grid, MenuItem, Tab, Tabs, TextField, Typography,
 } from '@mui/material';
 import { Sync as SyncIcon } from '@mui/icons-material';
+import Chatbot from '@components/Chatbot/Chatbot';
 import ConfirmModal from '@components/Modal/ConfirmModal';
 import Loader from '@components/Loader/Loader';
 import { routes } from '@routes/routesConstants';
@@ -23,7 +24,7 @@ import {
   getAllFeatures,
   getAllIssues,
   getAllStatuses,
-  thirdPartyToolSync,
+  thirdPartyToolSync, getAllReleases,
 } from '@redux/release/actions/release.actions';
 import Kanban from './components/Kanban';
 import Tabular from './components/Tabular';
@@ -142,6 +143,7 @@ const Roadmap = ({
   useEffect(() => {
     if (selectedProduct && !!selectedProduct) {
       dispatch(getAllStatuses(selectedProduct));
+      dispatch(getAllReleases(selectedProduct));
       dispatch(getAllFeatures(selectedProduct));
       dispatch(getAllIssues(selectedProduct));
       dispatch(getAllCredentials(selectedProduct));
@@ -476,7 +478,7 @@ const Roadmap = ({
                 {
                 (
                   loaded && product && !_.isEmpty(product.third_party_tool)
-                  && !_.isEmpty(statuses) && (
+                  && _.includes(_.uniq(_.map(statuses, 'product_uuid')), selectedProduct) && (
                     <Button
                       variant="contained"
                       color="primary"
@@ -493,9 +495,26 @@ const Roadmap = ({
               </Grid>
             </Grid>
 
-            {loaded && _.isEmpty(statuses) && !!selectedProduct && !['report', 'tabular'].includes(view.toLocaleString())
+            {/* Tabs */}
+            <Grid mb={3} container justifyContent="center">
+              <Grid item className={classes.viewTabs}>
+                <Tabs value={view} onChange={(event, vw) => setView(vw)}>
+                  {subNav.map((itemProps, index) => (
+                    <Tab {...itemProps} key={`tab${index}:${itemProps.value}`} />
+                  ))}
+                </Tabs>
+              </Grid>
+            </Grid>
+
+            {loaded && !!selectedProduct && !_.includes(_.uniq(_.map(statuses, 'product_uuid')), selectedProduct)
               ? (
-                product && !_.isEmpty(product.third_party_tool)
+                product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
+                && (
+                  // eslint-disable-next-line max-len
+                  (_.isEqual(_.size(product.third_party_tool), 2) && _.isEmpty(product.feature_tool_detail) && _.isEmpty(product.issue_tool_detail))
+                  // eslint-disable-next-line max-len
+                  || (_.isEqual(_.size(product.third_party_tool), 1) && (_.isEmpty(product.feature_tool_detail) || _.isEmpty(product.issue_tool_detail)))
+                )
                   ? (
                     <>
                       <Grid item xs={4} className={classes.configBoard}>
@@ -523,7 +542,7 @@ const Roadmap = ({
                     <>
                       <Grid item xs={4} className={classes.configBoard}>
                         <Typography component="div" variant="h4" align="center">
-                          Configure Project Board
+                          Configure Project Statuses
                         </Typography>
 
                         <Typography variant="subtitle1" align="center">
@@ -545,15 +564,15 @@ const Roadmap = ({
                   )
               ) : (
                 <>
-                  <Grid mb={3} container justifyContent="center">
-                    <Grid item className={classes.viewTabs}>
-                      <Tabs value={view} onChange={(event, vw) => setView(vw)}>
-                        {subNav.map((itemProps, index) => (
-                          <Tab {...itemProps} key={`tab${index}:${itemProps.value}`} />
-                        ))}
-                      </Tabs>
-                    </Grid>
-                  </Grid>
+                  {/* <Grid mb={3} container justifyContent="center"> */}
+                  {/*  <Grid item className={classes.viewTabs}> */}
+                  {/*    <Tabs value={view} onChange={(event, vw) => setView(vw)}> */}
+                  {/*      {subNav.map((itemProps, index) => ( */}
+                  {/*        <Tab {...itemProps} key={`tab${index}:${itemProps.value}`} /> */}
+                  {/*      ))} */}
+                  {/*    </Tabs> */}
+                  {/*  </Grid> */}
+                  {/* </Grid> */}
 
                   <ConfirmModal
                     open={openDeleteModal}
@@ -650,6 +669,7 @@ const Roadmap = ({
         ) }
       </>
       )}
+      <Chatbot />
     </>
   );
 };
@@ -665,6 +685,7 @@ const mapStateToProps = (state, ownProps) => ({
   credentials: state.productReducer.credentials,
   statuses: state.releaseReducer.statuses,
   dataSynced: state.releaseReducer.dataSynced,
+  releases: state.releaseReducer.releases,
 });
 
 export default connect(mapStateToProps)(Roadmap);

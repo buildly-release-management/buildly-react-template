@@ -17,6 +17,7 @@ import {
   Select,
   Checkbox,
   ListItemText,
+  Autocomplete,
 } from '@mui/material';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
@@ -111,6 +112,7 @@ const Setup = ({
       && productFormData.product_info.product_timezone)
     || '',
   { required: true });
+  const [timezone, setTimezone] = useState(productTimezone.value);
 
   const teamTimezoneAway = useInput((editData && editData.product_info
       && editData.product_info.team_timezone_away)
@@ -133,12 +135,12 @@ const Setup = ({
     if (validateObj && validateObj.error) {
       setFormError({
         ...prevState,
-        [e.target.id || parentId]: validateObj,
+        [e?.target?.id || parentId]: validateObj,
       });
     } else {
       setFormError({
         ...prevState,
-        [e.target.id || parentId]: {
+        [e?.target?.id || parentId]: {
           error: false,
           message: '',
         },
@@ -153,7 +155,7 @@ const Setup = ({
       || (integrationNeeded.value && _.isEmpty(integrationTypes.value))
       || !productType.value
       || !expectedTraffic.value
-      || (teamNeeded.value && !productTimezone.value)
+      || (teamNeeded.value && !timezone && typeof timezone === 'object')
     ) {
       return true;
     }
@@ -184,6 +186,7 @@ const Setup = ({
    */
   const handleSubmit = (event) => {
     event.preventDefault();
+
     const formData = {
       ...productFormData,
       product_info: {
@@ -194,7 +197,7 @@ const Setup = ({
         product_type: productType.value,
         expected_traffic: expectedTraffic.value,
         team_needed: teamNeeded.value,
-        product_timezone: teamNeeded.value ? productTimezone.value : '',
+        product_timezone: teamNeeded.value ? timezone : '',
         team_timezone_away: teamNeeded.value ? teamTimezoneAway.value : false,
       },
       edit_date: new Date(),
@@ -372,28 +375,30 @@ const Setup = ({
               </FormControl>
             </Grid>
 
+            {/* getOptionLabel={(option) => option.name} */}
             {teamNeeded.value && (
-              <Grid item xs={12}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  fullWidth
-                  select
-                  id="productTimezone"
-                  label="What timezone are you in?"
-                  name="productTimezone"
-                  autoComplete="productTimezone"
-                  onBlur={(e) => handleBlur(e, 'required', productTimezone)}
-                  {...productTimezone.bind}
-                >
-                  <MenuItem value="">---</MenuItem>
-                  {_.map(moment.tz.names(), (name, index) => (
-                    <MenuItem key={`${name}-${index}`} value={name}>
-                      {name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
+            <Grid item xs={12}>
+              <Autocomplete
+                disablePortal
+                id="productTimezone"
+                name="productTimezone"
+                options={moment.tz.names()}
+                value={timezone}
+                onChange={(event, value) => {
+                  handleBlur(event, 'required', productTimezone);
+                  setTimezone(value);
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    required
+                    fullWidth
+                    label="What timezone are you in?"
+                    {...productTimezone.bind}
+                  />
+                )}
+              />
+            </Grid>
             )}
 
             {teamNeeded.value && (

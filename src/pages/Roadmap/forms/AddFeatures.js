@@ -15,7 +15,7 @@ import {
   FormLabel,
   RadioGroup,
   FormControlLabel,
-  Radio,
+  Radio, Slider, Typography,
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
@@ -56,6 +56,7 @@ const useStyles = makeStyles((theme) => ({
 const AddFeatures = ({
   location,
   statuses,
+  releases,
   dispatch,
   products,
   credentials,
@@ -64,7 +65,6 @@ const AddFeatures = ({
   features,
 }) => {
   const classes = useStyles();
-
   const redirectTo = location.state && location.state.from;
   const editPage = location.state && (location.state.type === 'edit' || location.state.type === 'view');
   const editData = (editPage && location.state.data) || {};
@@ -95,6 +95,12 @@ const AddFeatures = ({
   const [status, setStatus] = useState({ status: '' });
   const [colID, setColID] = useState({ colID: (editData && status?.status_tracking_id) || '' });
 
+  const releaseUuid = useInput((editData && editData.release_uuid) || '', { required: true });
+  const [release, setRelease] = useState(releaseUuid.value);
+
+  const complexityValue = useInput((editData && editData.complexity) || 1, { required: true });
+  const [complexity, setComplexity] = useState(complexityValue.value);
+
   const [assignees, setAssignees] = useState(
     (editData && editData.feature_detail && _.map(editData.feature_detail.assigneees, 'username'))
     || [],
@@ -109,6 +115,31 @@ const AddFeatures = ({
   const enabled_desc = useInput((editData && editData.feature_detail?.enabled_desc) || '', { required: true });
   const search_or_nav = useInput((editData && editData.feature_detail?.search_or_nav) || '');
   const links = useInput((editData && editData.feature_detail?.links) || '');
+
+  const complexityMarkers = [
+    {
+      value: 1,
+      label: 1,
+    },
+    {
+      value: 2,
+      label: 2,
+    },
+    {
+      value: 3,
+      label: 3,
+    },
+    {
+      value: 4,
+      label: 4,
+    },
+    {
+      value: 5,
+      label: 5,
+    },
+  ];
+
+  const valuetext = (value) => value.toString();
 
   useEffect(() => {
     const prod = _.find(products, { product_uuid });
@@ -136,6 +167,8 @@ const AddFeatures = ({
       edit_date: dateTime,
       name: name.value,
       description: description.value,
+      complexity,
+      release_uuid: release,
       status: statusID.value,
       priority: priority.value,
       tags,
@@ -298,6 +331,57 @@ const AddFeatures = ({
             </Grid>
 
             <Grid container spacing={2}>
+
+              {/* Release */}
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  select
+                  id="release"
+                  label="Release"
+                  name="release"
+                  value={release}
+                  autoComplete="release"
+                  disabled={viewPage}
+                  onChange={(e) => {
+                    const selectedRelease = e.target.value;
+                    setRelease(selectedRelease);
+                    releaseUuid.setNewValue(selectedRelease);
+                  }}
+                >
+                  {_.map(releases, (rl) => (
+                    <MenuItem
+                      key={`release-${rl.release_uuid}-${rl.name}`}
+                      value={rl.release_uuid}
+                    >
+                      {rl.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              {/* Complexity */}
+              <Grid item xs={12}>
+                <Typography gutterBottom>Complexity</Typography>
+                <Slider
+                  aria-label="Complexity"
+                  defaultValue={complexity}
+                  step={1}
+                  min={1}
+                  max={5}
+                  getAriaValueText={valuetext}
+                  valueLabelDisplay="auto"
+                  marks={complexityMarkers}
+                  onChange={(e) => {
+                    const complexityObj = e.target.value;
+                    setComplexity(complexityObj);
+                    complexityValue.setNewValue(complexityObj.value);
+                  }}
+                />
+              </Grid>
 
               {/* Status */}
               <Grid item xs={12} md={8}>
@@ -707,6 +791,7 @@ const mapStateToProps = (state, ownProps) => ({
   products: state.productReducer.products,
   credentials: state.productReducer.credentials,
   features: state.releaseReducer.features,
+  releases: state.releaseReducer.releases,
 });
 
 export default connect(mapStateToProps)(AddFeatures);

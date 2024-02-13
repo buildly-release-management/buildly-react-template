@@ -73,7 +73,11 @@ const AddIssues = ({
   // form fields definition
   const [description, setDescription] = useState((editData && editData.description) || '');
   const name = useInput((editData && editData.name) || '', { required: true });
-  const [feature, setFeatureValue] = useState((editData && editData.feature_uuid) || '');
+
+  const featureUuid = useInput((editData && editData.feature) || '');
+  const [feature, setFeatureValue] = useState(featureUuid.value);
+  // const [feature, setFeatureValue] = useState((editData && editData.feature) || '');
+
   const type = useInput((editData && editData.issue_type) || '', { required: true });
   const [startDate, handleStartDateChange] = useState(moment(
     (editData && editData.start_date) || moment(),
@@ -86,8 +90,8 @@ const AddIssues = ({
   const estimate = useInput((editData && editData.estimate) || '');
   const complexity = useInput((editData && editData.complexity) || 0);
   const [assignees, setAssignees] = useState(
-    (editData && editData.issue_detail && _.map(editData.issue_detail.assignees, 'username'))
-    || [],
+    (editData && editData.issue_detail && _.map(editData.issue_detail.assignees))
+      || [],
   );
   const [assigneeData, setAssigneeData] = useState([]);
   const [repoList, setRepoList] = useState([]);
@@ -100,7 +104,7 @@ const AddIssues = ({
 
   useEffect(() => {
     const prod = _.find(products, { product_uuid });
-    const assigneeOptions = _.map(prod?.issue_tool_detail?.user_list, 'username') || [];
+    const assigneeOptions = _.map(prod?.issue_tool_detail?.user_list) || [];
 
     setRepoList(prod?.issue_tool_detail?.repository_list || []);
     setAssigneeData(assigneeOptions);
@@ -161,7 +165,7 @@ const AddIssues = ({
       edit_date: dateTime,
       name: name.value,
       description,
-      feature_uuid: feature,
+      feature,
       issue_type: type.value,
       start_date: startDate,
       end_date: endDate,
@@ -173,14 +177,17 @@ const AddIssues = ({
       repository: repo.value,
       column_id: colID,
       issue_detail: {
-        assignees: _.filter(assigneeData, (user) => (
-          !!user && _.includes(assignees, user.username)
-        )),
+        assignees,
       },
       ...issueCred?.auth_detail,
     };
 
+    // : (Array.isArray(assignees) && assignees.length > 0) ? assignees : null,
     if (editPage) {
+      // eslint-disable-next-line no-prototype-builtins
+      if (formData.hasOwnProperty('name')) {
+        delete formData.assignees;
+      }
       dispatch(updateIssue(formData));
     } else {
       formData.create_date = dateTime;
@@ -282,32 +289,32 @@ const AddIssues = ({
               </Grid>
 
               <Grid item xs={12}>
-                <Autocomplete
-                  disablePortal
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  select
                   id="feature"
+                  label="Feature"
                   name="feature"
-                  options={features}
-                  getOptionLabel={(option) => option.name}
-                  onChange={(event, value) => setFeatureValue(value.feature_uuid)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      required
-                      fullWidth
-                      label="Feature"
-                      error={
-                              formError.feature
-                              && formError.feature.error
-                            }
-                      helperText={
-                              formError.feature
-                                ? formError.feature.message
-                                : ''
-                            }
-                      {...feature.bind}
-                    />
-                  )}
-                />
+                  autoComplete="feature"
+                  value={feature}
+                  onChange={(e) => {
+                    const selectedFeature = e.target.value;
+                    setFeatureValue(selectedFeature);
+                    featureUuid.setNewValue(selectedFeature);
+                  }}
+                >
+                  {_.map(features, (feat) => (
+                    <MenuItem
+                      key={`feature-${feat.feature_uuid}-${feat.name}`}
+                      value={feat.feature_uuid}
+                    >
+                      {feat.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
 
               <Grid item xs={12}>
@@ -462,14 +469,17 @@ const AddIssues = ({
                   multiple
                   filterSelectedOptions
                   id="assignees"
+                  name="assignees"
                   options={assigneeData}
-                  value={assignees}
-                  onChange={(e, newValue) => setAssignees(newValue)}
+                  getOptionLabel={(option) => option.username}
+                  getOptionSelected={(option, value) => option.username === value.username}
+                  onChange={(e, newValue) => setAssignees(_.map(newValue, 'user_id'))}
                   renderTags={(value, getAssigneeProps) => (
                     _.map(value, (option, index) => (
                       <Chip
                         variant="default"
-                        label={option}
+                        label={option.username}
+                        value={option.user_id}
                         {...getAssigneeProps({ index })}
                       />
                     ))
@@ -477,9 +487,10 @@ const AddIssues = ({
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      variant="outlined"
+                      required
+                      fullWidth
                       label="Assignees"
-                      margin="normal"
+                      {...assignees.bind}
                     />
                   )}
                 />

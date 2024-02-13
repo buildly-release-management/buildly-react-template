@@ -107,6 +107,12 @@ const useStyles = makeStyles((theme) => ({
       height: '63vh',
     },
     overflowY: 'auto',
+    minHeight: '24px',
+  },
+  addItems: {
+    color: '#A8A8A8',
+    padding: '16px',
+    fontStyle: 'italic',
   },
 }));
 
@@ -174,7 +180,6 @@ const Kanban = ({
           delete cols[sts.status_uuid];
         }
       });
-
       setColumns(cols);
     }
   }, [statuses, features, issues]);
@@ -346,195 +351,207 @@ const Kanban = ({
                   <Droppable droppableId={columnId} key={columnId}>
                     {(provided, snapshot) => (
                       <div {...provided.droppableProps} ref={provided.innerRef}>
-                        {_.map(column.items, (item, itemIndex) => (
-                          <Draggable
-                            key={
-                              item.issue_uuid
-                                ? item.issue_uuid
-                                : item.feature_uuid
-                            }
-                            draggableId={
-                              item.issue_uuid
-                                ? item.issue_uuid
-                                : item.feature_uuid
-                            }
-                            index={itemIndex}
-                          >
-                            {(provided, snapshot) => (
-                              <Card
-                                className={classes.card}
-                                variant="outlined"
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                style={{
-                                  ...provided.draggableProps.style,
-                                  userSelect: 'none',
-                                  backgroundColor: item?.feature_detail?.is_imported
-                                  || item?.issue_detail?.is_imported
-                                    ? '#e0e0e0'
-                                    : '#F2F2F2',
-                                }}
+                        {column.items.length > 0 ? (
+                          <>
+                            {' '}
+                            {_.map(column.items, (item, itemIndex) => (
+                              <Draggable
+                                key={
+                                    item.issue_uuid
+                                      ? item.issue_uuid
+                                      : item.feature_uuid
+                                  }
+                                draggableId={
+                                    item.issue_uuid
+                                      ? item.issue_uuid
+                                      : item.feature_uuid
+                                  }
+                                index={itemIndex}
                               >
-                                <CardHeader
-                                  subheader={item.name}
-                                  action={(
-                                    <div>
-                                      <IconButton
-                                        id="menu-button"
-                                        aria-label="column-options"
-                                        aria-controls="menu-column"
-                                        aria-haspopup="true"
-                                        color="secondary"
-                                        aria-expanded
-                                        onClick={(e) => handleClick(e, item)}
-                                      >
-                                        <MoreHorizIcon />
-                                      </IconButton>
+                                {(provided, snapshot) => (
+                                  <Card
+                                    className={classes.card}
+                                    variant="outlined"
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    style={{
+                                      ...provided.draggableProps.style,
+                                      userSelect: 'none',
+                                      backgroundColor: item?.feature_detail?.is_imported
+                                          || item?.issue_detail?.is_imported
+                                        ? '#e0e0e0'
+                                        : '#F2F2F2',
+                                    }}
+                                  >
+                                    <CardHeader
+                                      subheader={item.name}
+                                      action={(
+                                        <div>
+                                          <IconButton
+                                            id="menu-button"
+                                            aria-label="column-options"
+                                            aria-controls="menu-column"
+                                            aria-haspopup="true"
+                                            color="secondary"
+                                            aria-expanded
+                                            onClick={(e) => handleClick(e, item)}
+                                          >
+                                            <MoreHorizIcon />
+                                          </IconButton>
 
-                                      <Menu
-                                        id="long-menu"
-                                        MenuListProps={{
-                                          'aria-labelledby': 'long-button',
-                                        }}
-                                        anchorEl={anchorEl}
-                                        open={currentNumber === item}
-                                        PaperProps={{
-                                          style: {
-                                            maxHeight: 48 * 4.5,
-                                            // width: '20ch',
-                                          },
-                                        }}
-                                        onClick={handleClose}
-                                      >
-                                        <MenuItem
-                                          onClick={(e) => {
-                                            const type = item.issue_uuid ? 'issue' : 'feat';
-                                            editItem(item, type);
-                                          }}
-                                        >
-                                          <ListItemIcon>
-                                            <EditIcon fontSize="small" />
-                                          </ListItemIcon>
-                                          Edit
-                                        </MenuItem>
+                                          <Menu
+                                            id="long-menu"
+                                            MenuListProps={{
+                                              'aria-labelledby': 'long-button',
+                                            }}
+                                            anchorEl={anchorEl}
+                                            open={currentNumber === item}
+                                            PaperProps={{
+                                              style: {
+                                                maxHeight: 48 * 4.5,
+                                                // width: '20ch',
+                                              },
+                                            }}
+                                            onClick={handleClose}
+                                          >
+                                            <MenuItem
+                                              onClick={(e) => {
+                                                const type = item.issue_uuid ? 'issue' : 'feat';
+                                                editItem(item, type);
+                                              }}
+                                            >
+                                              <ListItemIcon>
+                                                <EditIcon fontSize="small" />
+                                              </ListItemIcon>
+                                              Edit
+                                            </MenuItem>
 
-                                        {!item.issue_uuid && _.filter(issues, (issue) => (
-                                          issue.feature_uuid === item.feature_uuid
-                                        )).length === 0 && (
-                                          <MenuItem onClick={(e) => issueSuggestions(item, 'show')}>
-                                            <ListItemIcon>
-                                              <TaskIcon fontSize="small" />
-                                            </ListItemIcon>
-                                            Convert to issue/ticket for dev team
-                                          </MenuItem>
-                                        )}
+                                            {!item.issue_uuid && _.filter(issues, (issue) => (
+                                              issue.feature_uuid === item.feature_uuid
+                                            )).length === 0 && (
+                                            <MenuItem onClick={(e) => issueSuggestions(item, 'show')}>
+                                              <ListItemIcon>
+                                                <TaskIcon fontSize="small" />
+                                              </ListItemIcon>
+                                              Convert to issue/ticket for dev team
+                                            </MenuItem>
+                                            )}
 
-                                        <MenuItem
-                                          onClick={(e) => {
-                                            const type = item.issue_uuid ? 'issue' : 'feat';
-                                            deleteItem(item, type);
-                                          }}
-                                        >
-                                          <ListItemIcon>
-                                            <DeleteIcon fontSize="small" />
-                                          </ListItemIcon>
-                                          Delete
-                                        </MenuItem>
-                                      </Menu>
-                                    </div>
-                                  )}
-                                />
-
-                                <CardContent style={{ paddingBottom: '16px' }}>
-                                  {_.map(item.tags, (tag) => (
-                                    <Chip
-                                      key={item.issue_uuid
-                                        ? `tag-${item.issue_uuid}-${tag}`
-                                        : `tag-${item.feature_uuid}-${tag}`}
-                                      label={tag}
-                                      variant="outlined"
-                                      color="primary"
-                                      className={classes.tag}
+                                            <MenuItem
+                                              onClick={(e) => {
+                                                const type = item.issue_uuid ? 'issue' : 'feat';
+                                                deleteItem(item, type);
+                                              }}
+                                            >
+                                              <ListItemIcon>
+                                                <DeleteIcon fontSize="small" />
+                                              </ListItemIcon>
+                                              Delete
+                                            </MenuItem>
+                                          </Menu>
+                                        </div>
+                                          )}
                                     />
-                                  ))}
 
-                                  {item.estimate && (
-                                    <Chip
-                                      variant="outlined"
-                                      color="primary"
-                                      className={classes.chip}
-                                      icon={<UpdateIcon fontSize="small" />}
-                                      label={`${item.estimate}:00 Hrs`}
-                                    />
-                                  )}
+                                    <CardContent style={{ paddingBottom: '16px' }}>
+                                      {_.map(item.tags, (tag) => (
+                                        <Chip
+                                          key={item.issue_uuid
+                                            ? `tag-${item.issue_uuid}-${tag}`
+                                            : `tag-${item.feature_uuid}-${tag}`}
+                                          label={tag}
+                                          variant="outlined"
+                                          color="primary"
+                                          className={classes.tag}
+                                        />
+                                      ))}
 
-                                  {item.end_date && (
-                                    <Chip
-                                      variant="outlined"
-                                      color="primary"
-                                      className={classes.chip}
-                                      icon={<DateRangeIcon fontSize="small" />}
-                                      label={(item.end_date).slice(0, 10)}
-                                    />
-                                  )}
-
-                                  {item.issue_uuid && _.map(
-                                    _.filter(features, (feat) => (
-                                      feat.feature_uuid === item.feature_uuid
-                                    )),
-                                    (feat, ind) => (
+                                      {item.estimate && (
                                       <Chip
-                                        key={ind}
                                         variant="outlined"
                                         color="primary"
                                         className={classes.chip}
-                                        icon={<CallMergeIcon fontSize="small" />}
-                                        label={feat.name}
-                                        onClick={() => editItem(feat, 'feat', true)}
+                                        icon={<UpdateIcon fontSize="small" />}
+                                        label={`${item.estimate}:00 Hrs`}
                                       />
-                                    ),
-                                  )}
-
-                                  <Typography className={classes.moment} component="div" variant="body2">
-                                    {moment(item.create_date).fromNow()}
-
-                                    <div style={{ display: 'flex' }}>
-                                      {!item.issue_uuid && (
-                                        <CallSplitIcon
-                                          className={classes.bottomIcon}
-                                          fontSize="large"
-                                          onClick={(e) => showRelatedIssues(item.feature_uuid)}
-                                        />
                                       )}
 
-                                      <Badge
-                                        badgeContent={_.size(_.filter(comments, (c) => (
-                                          item.issue_uuid
-                                            ? c.issue === item.issue_uuid
-                                            : c.feature === item.feature_uuid
-                                        )))}
-                                        anchorOrigin={{
-                                          vertical: 'top',
-                                          horizontal: 'right',
-                                        }}
-                                        color="info"
-                                        overlap="circular"
-                                        showZero
-                                      >
-                                        <CommentIcon
-                                          className={classes.bottomIcon}
-                                          onClick={(e) => commentItem(item)}
-                                          fontSize="large"
-                                        />
-                                      </Badge>
-                                    </div>
-                                  </Typography>
-                                </CardContent>
-                              </Card>
-                            )}
-                          </Draggable>
-                        ))}
+                                      {item.end_date && (
+                                      <Chip
+                                        variant="outlined"
+                                        color="primary"
+                                        className={classes.chip}
+                                        icon={<DateRangeIcon fontSize="small" />}
+                                        label={(item.end_date).slice(0, 10)}
+                                      />
+                                      )}
+
+                                      {item.issue_uuid && _.map(
+                                        _.filter(features, (feat) => (
+                                          feat.feature_uuid === item.feature_uuid
+                                        )),
+                                        (feat, ind) => (
+                                          <Chip
+                                            key={ind}
+                                            variant="outlined"
+                                            color="primary"
+                                            className={classes.chip}
+                                            icon={<CallMergeIcon fontSize="small" />}
+                                            label={feat.name}
+                                            onClick={() => editItem(feat, 'feat', true)}
+                                          />
+                                        ),
+                                      )}
+
+                                      <Typography className={classes.moment} component="div" variant="body2">
+                                        {moment(item.create_date).fromNow()}
+
+                                        <div style={{ display: 'flex' }}>
+                                          {!item.issue_uuid && (
+                                          <CallSplitIcon
+                                            className={classes.bottomIcon}
+                                            fontSize="large"
+                                            onClick={(e) => showRelatedIssues(item.feature_uuid)}
+                                          />
+                                          )}
+
+                                          <Badge
+                                            badgeContent={_.size(_.filter(comments, (c) => (
+                                              item.issue_uuid
+                                                ? c.issue === item.issue_uuid
+                                                : c.feature === item.feature_uuid
+                                            )))}
+                                            anchorOrigin={{
+                                              vertical: 'top',
+                                              horizontal: 'right',
+                                            }}
+                                            color="info"
+                                            overlap="circular"
+                                            showZero
+                                          >
+                                            <CommentIcon
+                                              className={classes.bottomIcon}
+                                              onClick={(e) => commentItem(item)}
+                                              fontSize="large"
+                                            />
+                                          </Badge>
+                                        </div>
+                                      </Typography>
+                                    </CardContent>
+                                  </Card>
+                                )}
+                              </Draggable>
+                            ))}
+                          </>
+                        )
+                          : (
+                            <>
+                              <Typography component="div" align="center" className={classes.addItems}>
+                                Add issues
+                              </Typography>
+                            </>
+                          )}
                         {provided.placeholder}
                       </div>
                     )}
