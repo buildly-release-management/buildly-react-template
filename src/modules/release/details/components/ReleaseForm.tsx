@@ -2,7 +2,7 @@ import "./ReleaseForm.css";
 import Form from "react-bootstrap/Form";
 import React, { useState } from "react";
 import { Release } from "../../../../interfaces/release";
-import Button from "react-bootstrap/Button";
+import { Button } from "@mui/material";
 import { ReleaseService } from "../../../../services/release.service";
 
 const releaseService = new ReleaseService();
@@ -41,7 +41,7 @@ function ReleaseForm({ releasesDetails }: any) {
       <Form noValidate>
         {/*name*/}
         <Form.Group className="mb-3 col-md-6 col-sm-12" controlId="name">
-          <Form.Label>Name</Form.Label>
+          <Form.Label>Name*</Form.Label>
           <Form.Control
             size="sm"
             type="text"
@@ -65,7 +65,7 @@ function ReleaseForm({ releasesDetails }: any) {
         </Form.Group>
         {/*release date*/}
         <Form.Group className="mb-3 col-md-3 col-sm-12" controlId="date">
-          <Form.Label>Release date</Form.Label>
+          <Form.Label>Release date*</Form.Label>
           <Form.Control
             size="sm"
             type="date"
@@ -80,8 +80,10 @@ function ReleaseForm({ releasesDetails }: any) {
       <div className="d-flex flex-row justify-content-end">
         <Button
           className="mx-2"
-          variant="outline-secondary"
-          size="sm"
+          type='button'
+          variant="outlined"
+          color='primary'
+          size="small"
           onClick={() => resetForm()}
         >
           Cancel
@@ -89,9 +91,10 @@ function ReleaseForm({ releasesDetails }: any) {
 
         <Button
           className="mx-2"
-          variant="secondary"
-          size="sm"
-          type="submit"
+          type="button"
+          variant="contained"
+          color="primary"
+          size="small"
           disabled={!(formData.name && formData.release_date)}
           onClick={(event) => submitRelease(event)}
         >
