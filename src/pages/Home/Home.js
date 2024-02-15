@@ -20,7 +20,7 @@ const Home = () => {
         title="Insights Home Page"
         loading="lazy"
         className={classes.iframe}
-        src="https://www.canva.com/design/DAE36D_wnUI/view?embed"
+        src="https://storage.googleapis.com/insights-landing/index.html"
         allowFullScreen
       />
       <Copyright />

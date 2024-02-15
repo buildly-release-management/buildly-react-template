@@ -29,12 +29,7 @@ const App = () => (
           <Route
             exact
             path="/"
-            // eslint-disable-next-line no-nested-ternary
-            render={() => (oauthService.hasValidAccessToken() ? (
-              <Redirect to={routes.ROADMAP} />
-            ) : (
-              window.env.PRODUCTION ? <Home /> : <Redirect to={routes.LOGIN} />
-            ))}
+            render={() => (oauthService.hasValidAccessToken() ? <Redirect to={routes.ROADMAP} /> : <Home />)}
           />
           <Route exact path={`${routes.VERIFY_EMAIL}/:token`} component={VerifyEmail} />
           <Route path={routes.LOGIN} component={Login} />
