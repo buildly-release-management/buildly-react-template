@@ -20,7 +20,7 @@ const Home = () => {
         title="Insights Home Page"
         loading="lazy"
         className={classes.iframe}
-        src="https://storage.googleapis.com/insights-landing/index.html"
+        src={`https://storage.googleapis.com/insights-landing/index.html?origin=${window.env.PRODUCTION ? 'https://insights.buildly.io/' : 'https://rm-dev.buildly.io/'}`}
         allowFullScreen
       />
       <Copyright />
