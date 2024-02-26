@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Button,
@@ -26,6 +25,7 @@ import { isMobile } from '@utils/mediaQuery';
 import { providers } from '@utils/socialLogin';
 import Loader from '@components/Loader/Loader';
 import { showAlert } from '@redux/alert/actions/alert.actions';
+import { httpService } from '@modules/http/http.service';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {
@@ -99,7 +99,7 @@ const Register = ({
 }) => {
   const classes = useStyles();
 
-  const email = useInput('', { required: true });
+  const [email, setEmail] = useState('');
   const username = useInput('', { required: true });
   const password = useInput('', { required: true });
   const re_password = useInput('', {
@@ -107,13 +107,46 @@ const Register = ({
     confirm: true,
     matchField: password,
   });
-  const orgName = useInput('', { required: true });
+  const [orgName, setOrgName] = useState('');
   const userType = useInput('', { required: true });
   const first_name = useInput('', { required: true });
   const last_name = useInput('');
   const coupon_code = useInput(window.env.FREE_COUPON_CODE || '');
   const [formError, setFormError] = useState({});
   const [checked, setChecked] = React.useState(false);
+  const [hasInviteDetails, setInviteDetails] = React.useState(false);
+
+  useEffect(() => {
+    const queryParameters = new URLSearchParams(window.location.search);
+    const token = queryParameters.get('token');
+    if (token) {
+      try {
+        httpService.makeRequest('get',
+          `${window.env.API_URL}coreuser/invite_check/?token=${token}`)
+          .then((response) => {
+            if (response && response.data) {
+              setInviteDetails(true);
+              if (response.data.email) {
+                setEmail(response.data.email);
+              }
+
+              if (response.data.organization) {
+                setOrgName(response.data.organization.name);
+              }
+            }
+          }).catch((error) => {
+            console.log('error : ', error);
+            dispatch(showAlert({
+              type: 'error',
+              open: true,
+              message: 'Token is expired!',
+            }));
+          });
+      } catch (httpError) {
+        console.log('httpError : ', httpError);
+      }
+    }
+  }, []);
 
   // eslint-disable-next-line consistent-return
   useEffect(() => {
@@ -137,16 +170,16 @@ const Register = ({
     event.preventDefault();
     const registerFormValue = {
       username: username.value,
-      email: email.value,
+      email,
       password: password.value,
-      organization_name: orgName.value,
+      organization_name: orgName,
       user_type: userType.value,
       first_name: first_name.value,
       last_name: last_name.value,
       coupon_code: coupon_code.value,
     };
 
-    if (_.includes(_.toLower(_.trim(orgName.value)), 'buildly')) {
+    if (_.includes(_.toLower(_.trim(orgName)), 'buildly')) {
       dispatch(showAlert({
         type: 'error',
         open: true,
@@ -193,9 +226,9 @@ const Register = ({
     if (
       !username.value
       || !password.value
-      || !email.value
+      || !email
       || !re_password.value
-      || !orgName.value
+      || !orgName
       || !userType.value
       || !first_name.value
     ) return true;
@@ -294,11 +327,14 @@ const Register = ({
                       name="email"
                       autoComplete="email"
                       type="email"
+                      value={email}
+                      disabled={hasInviteDetails}
                       error={formError.email && formError.email.error}
                       helperText={
                         formError.email ? formError.email.message : ''
                       }
                       className={classes.textField}
+                      onChange={(e) => setEmail(e.target.value)}
                       onBlur={(e) => handleBlur(e, 'email', email)}
                       {...email.bind}
                     />
@@ -316,11 +352,14 @@ const Register = ({
                       label="Organization Name"
                       name="organization_name"
                       autoComplete="organization_name"
+                      value={orgName}
+                      disabled={hasInviteDetails}
                       error={formError.orgName && formError.orgName.error}
                       helperText={
                         formError.orgName ? formError.orgName.message : ''
                       }
                       className={classes.textField}
+                      onChange={(e) => setOrgName(e.target.value)}
                       onBlur={(e) => handleBlur(e, 'required', orgName)}
                       {...orgName.bind}
                     />
