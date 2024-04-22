@@ -7,7 +7,6 @@ import {
   TextField,
   Link,
   Card,
-  CircularProgress,
   CardContent,
   Typography,
   Container,
@@ -15,6 +14,7 @@ import {
 } from '@mui/material';
 import logo from '@assets/insights-logo.png';
 import Copyright from '@components/Copyright/Copyright';
+import Loader from '@components/Loader/Loader';
 import { useInput } from '@hooks/useInput';
 import { resetPassword } from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
@@ -48,13 +48,6 @@ const useStyles = makeStyles((theme) => ({
   submit: {
     marginBottom: theme.spacing(2),
   },
-  buttonProgress: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
-  },
   loadingWrapper: {
     margin: theme.spacing(1),
     position: 'relative',
@@ -74,10 +67,6 @@ const ResetPassword = ({
 
   const [formError, setFormError] = useState({});
 
-  /**
-   * Submit the form to the backend and attempts to change password
-   * @param {Event} event the default submit event
-   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const [uid, token] = location.pathname
@@ -97,13 +86,6 @@ const ResetPassword = ({
       dispatch(resetPassword(resetPasswordFormValue, history));
     }
   };
-
-  /**
-   * Handle input field blur event
-   * @param {Event} e Event
-   * @param {String} validation validation type if any
-   * @param {Object} input input field
-   */
 
   const handleBlur = (e, validation, input) => {
     const validateObj = validators(validation, input);
@@ -136,6 +118,7 @@ const ResetPassword = ({
 
   return (
     <>
+      {loading && <Loader open={loading} />}
       <div className={classes.logoDiv}>
         <img src={logo} alt="Logo" className={classes.logo} />
       </div>
@@ -205,12 +188,6 @@ const ResetPassword = ({
                   >
                     Submit
                   </Button>
-                  {loading && (
-                    <CircularProgress
-                      size={24}
-                      className={classes.buttonProgress}
-                    />
-                  )}
                 </div>
                 <Grid container>
                   <Grid item>

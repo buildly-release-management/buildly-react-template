@@ -28,7 +28,6 @@ const CustomModal = (props: ModalProps) => {
 
   const submitRelease = (event: any) => {
     event.preventDefault();
-    console.log("formData : ", formData);
     releaseService.submitRelease(formData).then();
   };
 
@@ -37,10 +36,7 @@ const CustomModal = (props: ModalProps) => {
   };
 
   return (
-    <div
-      className="modal show"
-      style={{ position: "initial" }}
-    >
+    <div className="modal show" style={{ position: "initial" }}>
       <Modal
         show={props.show}
         onHide={handleClose}
@@ -55,7 +51,6 @@ const CustomModal = (props: ModalProps) => {
         <Modal.Body>
           {" "}
           <Form noValidate>
-            {/*name*/}
             <Form.Group className="mb-3" controlId="name">
               <Form.Label>Name</Form.Label>
               <Form.Control
@@ -67,7 +62,6 @@ const CustomModal = (props: ModalProps) => {
                 onChange={(event) => updateFormData(event)}
               />
             </Form.Group>
-            {/*description*/}
             <Form.Group className="mb-3" controlId="description">
               <Form.Label>Description</Form.Label>
               <Form.Control
@@ -77,7 +71,6 @@ const CustomModal = (props: ModalProps) => {
                 onChange={(event) => updateFormData(event)}
               />
             </Form.Group>
-            {/*release date*/}
             <Form.Group className="mb-3" controlId="date">
               <Form.Label>Release date</Form.Label>
               <Form.Control
@@ -89,16 +82,6 @@ const CustomModal = (props: ModalProps) => {
                 onChange={(event) => updateFormData(event)}
               />
             </Form.Group>
-            {/*product*/}
-            {/*<Form.Group className="mb-3" controlId="product">*/}
-            {/*  <Select*/}
-            {/*    name="product_uuid"*/}
-            {/*    label="Select a product"*/}
-            {/*    options={props.products}*/}
-            {/*    required={true}*/}
-            {/*    onChange={(event) => updateFormData(event)}*/}
-            {/*  />*/}
-            {/*</Form.Group>*/}
           </Form>
         </Modal.Body>
         <Modal.Footer>

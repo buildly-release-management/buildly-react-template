@@ -65,70 +65,57 @@ const Setup = ({
   const buttonText = editPage ? 'Save' : 'Create Product';
 
   const productSetup = useInput((editData && editData.product_info
-      && editData.product_info.product_setup)
+    && editData.product_info.product_setup)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.product_setup)
-    || '',
-  { required: true });
+    || '', { required: true });
 
   const integrationNeeded = useInput((editData && editData.product_info
-      && editData.product_info.integration_needed)
+    && editData.product_info.integration_needed)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.integration_needed)
-    || false,
-  { required: true });
+    || false, { required: true });
 
   const integrationTypes = useInput((editData && editData.product_info
-      && editData.product_info.integration_types)
+    && editData.product_info.integration_types)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.integration_types)
-    || [],
-  { required: true });
+    || [], { required: true });
 
   const productType = useInput((editData && editData.product_info
-      && editData.product_info.product_type)
+    && editData.product_info.product_type)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.product_type)
-    || '',
-  { required: true });
+    || '', { required: true });
 
   const expectedTraffic = useInput((editData && editData.product_info
-      && editData.product_info.expected_traffic)
+    && editData.product_info.expected_traffic)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.expected_traffic)
-    || '',
-  { required: true });
+    || '', { required: true });
 
   const teamNeeded = useInput((editData && editData.product_info
-      && editData.product_info.team_needed)
+    && editData.product_info.team_needed)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.team_needed)
-    || false,
-  { required: true });
+    || false, { required: true });
 
   const productTimezone = useInput((editData && editData.product_info
-      && editData.product_info.product_timezone)
+    && editData.product_info.product_timezone)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.product_timezone)
-    || '',
-  { required: true });
+    || '', { required: true });
+
   const [timezone, setTimezone] = useState(productTimezone.value);
 
   const teamTimezoneAway = useInput((editData && editData.product_info
-      && editData.product_info.team_timezone_away)
+    && editData.product_info.team_timezone_away)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.team_timezone_away)
-    || true,
-  { required: true });
+    || true, { required: true });
 
   const [formError, setFormError] = useState({});
 
-  /**
-   * Handle input field blur event
-   * @param {Event} e Event
-   * @param {String} validation validation type if any
-   * @param {Object} input input field
-   */
   const handleBlur = (e, validation, input, parentId) => {
     const validateObj = validators(validation, input);
     const prevState = { ...formError };
@@ -150,7 +137,6 @@ const Setup = ({
 
   const submitDisabled = () => {
     const errorKeys = Object.keys(formError);
-
     if (!productSetup.value
       || (integrationNeeded.value && _.isEmpty(integrationTypes.value))
       || !productType.value
@@ -159,7 +145,6 @@ const Setup = ({
     ) {
       return true;
     }
-
     let errorExists = false;
     _.forEach(errorKeys, (key) => {
       if (formError[key].error) {
@@ -180,13 +165,8 @@ const Setup = ({
     || teamTimezoneAway.hasChanged()
   );
 
-  /**
-   * Submit The form and add/edit custodian
-   * @param {Event} event the default submit event
-   */
   const handleSubmit = (event) => {
     event.preventDefault();
-
     const formData = {
       ...productFormData,
       product_info: {
@@ -202,11 +182,9 @@ const Setup = ({
       },
       edit_date: new Date(),
     };
-
     if (user && !user.survey_status) {
       dispatch(updateUser({ id: user.id, survey_status: true }));
     }
-
     if (editPage) {
       formData.product_uuid = product_uuid;
       dispatch(updateProduct(formData));
@@ -239,12 +217,10 @@ const Setup = ({
                 ))}
               </TextField>
             </Grid>
-
             <Grid item xs={12}>
               <Typography variant="h6" component="h6">
                 Will you be integrating with other software?
               </Typography>
-
               <FormControl component="fieldset" required>
                 <RadioGroup
                   row
@@ -256,7 +232,6 @@ const Setup = ({
                     control={<Radio color="info" onClick={(e) => integrationNeeded.setNewValue(true)} />}
                     label="Yes"
                   />
-
                   <FormControlLabel
                     checked={!integrationNeeded.value}
                     control={<Radio color="info" onClick={(e) => integrationNeeded.setNewValue(false)} />}
@@ -265,13 +240,11 @@ const Setup = ({
                 </RadioGroup>
               </FormControl>
             </Grid>
-
             {integrationNeeded.value && (
               <Grid item xs={12}>
                 <Typography variant="h6" gutterBottom component="div">
                   If Yes what types? (Multiple Select)
                 </Typography>
-
                 <FormControl fullWidth>
                   <Select
                     labelId="integration-type-label"
@@ -309,7 +282,6 @@ const Setup = ({
                 </FormControl>
               </Grid>
             )}
-
             <Grid item xs={3}>
               <TextField
                 variant="outlined"
@@ -328,7 +300,6 @@ const Setup = ({
                 ))}
               </TextField>
             </Grid>
-
             <Grid item xs={9}>
               <TextField
                 variant="outlined"
@@ -348,12 +319,10 @@ const Setup = ({
                 ))}
               </TextField>
             </Grid>
-
             <Grid item xs={12}>
               <Typography variant="h6" component="h6">
                 Do you want to hire a team or use your own team (internal developers)?
               </Typography>
-
               <FormControl component="fieldset" required>
                 <RadioGroup
                   row
@@ -365,7 +334,6 @@ const Setup = ({
                     control={<Radio color="info" onClick={(e) => teamNeeded.setNewValue(true)} />}
                     label="Hire team"
                   />
-
                   <FormControlLabel
                     checked={!teamNeeded.value}
                     control={<Radio color="info" onClick={(e) => teamNeeded.setNewValue(false)} />}
@@ -374,39 +342,35 @@ const Setup = ({
                 </RadioGroup>
               </FormControl>
             </Grid>
-
-            {/* getOptionLabel={(option) => option.name} */}
             {teamNeeded.value && (
-            <Grid item xs={12}>
-              <Autocomplete
-                disablePortal
-                id="productTimezone"
-                name="productTimezone"
-                options={moment.tz.names()}
-                value={timezone}
-                onChange={(event, value) => {
-                  handleBlur(event, 'required', productTimezone);
-                  setTimezone(value);
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    required
-                    fullWidth
-                    label="What timezone are you in?"
-                    {...productTimezone.bind}
-                  />
-                )}
-              />
-            </Grid>
+              <Grid item xs={12}>
+                <Autocomplete
+                  disablePortal
+                  id="productTimezone"
+                  name="productTimezone"
+                  options={moment.tz.names()}
+                  value={timezone}
+                  onChange={(event, value) => {
+                    handleBlur(event, 'required', productTimezone);
+                    setTimezone(value);
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      required
+                      fullWidth
+                      label="What timezone are you in?"
+                      {...productTimezone.bind}
+                    />
+                  )}
+                />
+              </Grid>
             )}
-
             {teamNeeded.value && (
               <Grid item xs={12}>
                 <Typography variant="h6" component="h6">
                   Is it ok for that team to be more then 3 timezones away?
                 </Typography>
-
                 <FormControl component="fieldset" required>
                   <RadioGroup
                     row
@@ -418,7 +382,6 @@ const Setup = ({
                       control={<Radio color="info" onClick={(e) => teamTimezoneAway.setNewValue(true)} />}
                       label="Yes"
                     />
-
                     <FormControlLabel
                       checked={!teamTimezoneAway.value}
                       control={<Radio color="info" onClick={(e) => teamTimezoneAway.setNewValue(false)} />}
@@ -429,7 +392,6 @@ const Setup = ({
               </Grid>
             )}
           </Grid>
-
           <Grid container spacing={3} className={classes.buttonContainer}>
             <Grid item xs={12} sm={4}>
               <Button
@@ -443,7 +405,6 @@ const Setup = ({
                 Back
               </Button>
             </Grid>
-
             <Grid item xs={12} sm={4}>
               <Button
                 type="submit"

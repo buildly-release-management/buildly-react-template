@@ -8,7 +8,6 @@ import {
   Link,
   Grid,
   Card,
-  CircularProgress,
   CardContent,
   Typography,
   Container,
@@ -16,14 +15,11 @@ import {
 import logo from '@assets/insights-logo.png';
 import Copyright from '@components/Copyright/Copyright';
 import GithubLogin from '@components/SocialLogin/GithubLogin';
+import Loader from '@components/Loader/Loader';
 import { useInput } from '@hooks/useInput';
-import {
-  login,
-  validateResetPasswordToken,
-} from '@redux/authuser/actions/authuser.actions';
+import { login, validateResetPasswordToken } from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
-import { providers } from '@utils/socialLogin';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {
@@ -54,13 +50,6 @@ const useStyles = makeStyles((theme) => ({
   textField: {
     minHeight: '5rem',
     margin: '0.25rem 0',
-  },
-  buttonProgress: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
   },
   loadingWrapper: {
     margin: theme.spacing(1),
@@ -101,10 +90,6 @@ const Login = ({
     }
   }, []);
 
-  /**
-   * Submit the form to the backend and attempts to authenticate
-   * @param {Event} event the default submit event
-   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const loginFormValue = {
@@ -113,13 +98,6 @@ const Login = ({
     };
     dispatch(login(loginFormValue, history));
   };
-
-  /**
-   * Handle input field blur event
-   * @param {Event} e Event
-   * @param {String} validation validation type if any
-   * @param {Object} input input field
-   */
 
   const handleBlur = (e, validation, input) => {
     const validateObj = validators(validation, input);
@@ -152,6 +130,7 @@ const Login = ({
 
   return (
     <>
+      {(loading || socialLogin) && <Loader open={loading || socialLogin} />}
       <div className={classes.logoDiv}>
         <img src={logo} alt="Logo" className={classes.logo} />
       </div>
@@ -210,12 +189,6 @@ const Login = ({
                   >
                     Sign in
                   </Button>
-                  {loading && !socialLogin && (
-                    <CircularProgress
-                      size={24}
-                      className={classes.buttonProgress}
-                    />
-                  )}
                 </div>
               </form>
               <Grid container>
@@ -228,14 +201,6 @@ const Login = ({
                     history={history}
                     disabled={loading && socialLogin}
                   />
-                  {loading
-                    && socialLogin
-                    && socialLogin === providers.github && (
-                      <CircularProgress
-                        size={24}
-                        className={classes.buttonProgress}
-                      />
-                  )}
                 </Grid>
                 <Grid item xs className={classes.link}>
                   <Link

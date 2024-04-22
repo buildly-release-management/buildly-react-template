@@ -74,36 +74,29 @@ const UseInfo = ({
     || '');
 
   const useSituation = useInput((editData && editData.product_info
-      && editData.product_info.use_situation)
+    && editData.product_info.use_situation)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.use_situation)
     || '');
 
   const impFunction = useInput((editData && editData.product_info
-      && editData.product_info.imp_function)
+    && editData.product_info.imp_function)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.imp_function)
     || '');
 
   const deliveryRisk = useInput((editData && editData.product_info
-      && editData.product_info.delivery_risk)
+    && editData.product_info.delivery_risk)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.delivery_risk)
     || '');
 
   const toolReq = useInput((editData && editData.product_info && editData.product_info.tool_req)
     || (productFormData && productFormData.product_info && productFormData.product_info.tool_req)
-    || 'no',
-  { required: true });
+    || 'no', { required: true });
 
   const [formError, setFormError] = useState({});
 
-  /**
-   * Handle input field blur event
-   * @param {Event} e Event
-   * @param {String} validation validation type if any
-   * @param {Object} input input field
-   */
   const handleBlur = (e, validation, input, parentId) => {
     const validateObj = validators(validation, input);
     const prevState = { ...formError };
@@ -134,7 +127,6 @@ const UseInfo = ({
     ) {
       return true;
     }
-
     let errorExists = false;
     _.forEach(errorKeys, (key) => {
       if (formError[key].error) {
@@ -153,10 +145,6 @@ const UseInfo = ({
     || toolReq.hasChanged()
   );
 
-  /**
-   * Submit The form and add/edit custodian
-   * @param {Event} event the default submit event
-   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = {
@@ -172,7 +160,6 @@ const UseInfo = ({
       },
       edit_date: new Date(),
     };
-
     dispatch(saveProductFormData(formData));
     handleNext();
   };
@@ -187,7 +174,6 @@ const UseInfo = ({
                 <Typography variant="h6" component="h6">
                   Do you already have requirements in your connected project planning tool?
                 </Typography>
-
                 <FormControl component="fieldset" required>
                   <RadioGroup
                     row
@@ -202,7 +188,6 @@ const UseInfo = ({
                       control={<Radio color="info" />}
                       label="Yes, we do"
                     />
-
                     <FormControlLabel
                       checked={toolReq.value === 'no'}
                       value="no"
@@ -230,7 +215,6 @@ const UseInfo = ({
                     {...productUse.bind}
                   />
                 </Grid>
-
                 <Grid item xs={12}>
                   <TextField
                     variant="outlined"
@@ -246,7 +230,6 @@ const UseInfo = ({
                     {...useWhen.bind}
                   />
                 </Grid>
-
                 <Grid item xs={12}>
                   <TextField
                     variant="outlined"
@@ -262,7 +245,6 @@ const UseInfo = ({
                     {...useSituation.bind}
                   />
                 </Grid>
-
                 <Grid item xs={12}>
                   <TextField
                     variant="outlined"
@@ -278,7 +260,6 @@ const UseInfo = ({
                     {...impFunction.bind}
                   />
                 </Grid>
-
                 <Grid item xs={12}>
                   <TextField
                     variant="outlined"
@@ -296,7 +277,7 @@ const UseInfo = ({
                 </Grid>
               </Grid>
             )
-        )}
+          )}
           <Grid container spacing={3} className={classes.buttonContainer}>
             <Grid item xs={12} sm={4}>
               <Button
@@ -310,7 +291,6 @@ const UseInfo = ({
                 Back
               </Button>
             </Grid>
-
             <Grid item xs={12} sm={4}>
               <Button
                 type="submit"

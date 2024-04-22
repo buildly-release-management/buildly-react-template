@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
@@ -17,18 +18,27 @@ import {
   Logout, Person,
 } from '@mui/icons-material';
 import {
-  Avatar, Dialog, DialogActions, DialogContent, DialogTitle,
-  Divider, Grid, ListItemIcon, Tooltip, Typography,
+  Avatar,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  ListItemIcon,
+  Tooltip,
+  Typography,
 } from '@mui/material';
 import logo from '@assets/insights-orange-white.png';
 import { UserContext } from '@context/User.context';
 import {
-  logout, loadOrgNames, loadStripeProducts, getUser,
+  logout, loadOrgNames, loadStripeProducts, getUser, updateUser,
 } from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
 import { hasGlobalAdminRights, hasAdminRights } from '@utils/permissions';
 import { useElements, useStripe } from '@stripe/react-stripe-js';
 import StripeCard from '@components/StripeCard/StripeCard';
+import Loader from '@components/Loader/Loader';
 import { isMobile } from '@utils/mediaQuery';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
@@ -168,14 +178,12 @@ const StyledMenu = styled((props) => (
   },
 }));
 
-/**
- * Component for the top bar header.
- */
 const TopBar = ({
   history,
   dispatch,
   orgNames,
   location,
+  loading,
   stripeProducts,
 }) => {
   const classes = useStyles();
@@ -185,7 +193,6 @@ const TopBar = ({
 
   const [organization, setOrganization] = useState(null);
 
-  // Check if there is an active subscription
   const maxDate = new Date();
   maxDate.setHours(0, 0, 0, 0);
   maxDate.setDate(maxDate.getDate() + 1);
@@ -227,12 +234,10 @@ const TopBar = ({
     setOrganization(user.organization.name);
   }
 
-  // Open upgrade plan dialog
   const handleDialogOpen = () => {
     setOpen(true);
   };
 
-  // Close upgrade plan dialog
   const handleDialogClose = (event, reason) => {
     if (reason && reason === ('backdropClick' || 'escapeKeyDown')) {
       return;
@@ -248,10 +253,14 @@ const TopBar = ({
   const handleOrganizationChange = (e) => {
     const organization_name = e.target.value;
     setOrganization(organization_name);
+    const profileValues = {
+      id: user.id,
+      organization_name,
+    };
+    dispatch(updateUser(profileValues));
     history.push(routes.ROADMAP);
   };
 
-  // handleCollapseAccountMenu
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -271,12 +280,6 @@ const TopBar = ({
     }
   }, []);
 
-  /**
-   * Handle input field blur event
-   * @param {Event} e Event
-   * @param {String} validation validation type if any
-   * @param {Object} input input field
-   */
   const handleBlur = (e, validation, input) => {
     const validateObj = validators(validation, input);
     const prevState = { ...formError };
@@ -296,10 +299,6 @@ const TopBar = ({
     }
   };
 
-  /**
-   * Enable/Disable upgrade plan submit button
-   * @returns {boolean}
-   */
   const submitDisabled = () => {
     try {
       if (
@@ -318,10 +317,6 @@ const TopBar = ({
       .find((key) => formError[key].error);
   };
 
-  /**
-   * Submit the upgrade plan form
-   * @param {Event} event the default submit event
-   */
   const handleSubmit = async (event) => {
     event.preventDefault();
     let validationError = '';
@@ -345,7 +340,6 @@ const TopBar = ({
       };
 
       if (!validationError) {
-        // save subscription
         try {
           httpService.makeRequest('post',
             `${window.env.API_URL}subscription/`,
@@ -356,250 +350,243 @@ const TopBar = ({
                 open: true,
                 message: 'Subscription successfully saved',
               }));
-
               dispatch(getUser());
             });
         } catch (httpError) {
-          console.log('httpError : ', httpError);
           dispatch(showAlert({
             type: 'error',
             open: true,
             message: 'Couldn\'t save subscription!',
           }));
         }
-
         handleDialogClose();
       }
     }
   };
 
   return (
-    <AppBar position="fixed" className={classes.appBar}>
-      <Toolbar>
-        <Link to={routes.ROADMAP}>
-          <img src={logo} alt="Logo" className={classes.logo} />
-        </Link>
-
-        <Box className={classes.navItems}>
-          {pages.map((page) => (
-            <Button
-              key={page.value}
-              sx={{
-                m: 1,
-                display: 'block',
-              }}
-              className={`${classes.navButton} ${page.pathName.includes(location.pathname) ? classes.isActive : ''}`}
-              disabled={page.disabled}
-              onClick={() => {
-                setAnchorEl(null);
-                history.push(page.value);
-              }}
-            >
-              {page.label}
-            </Button>
-          ))}
-
-          {
-            !(user && user.subscriptions && user.subscriptions.length) && (
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleDialogOpen}
-            >
-              Upgrade plan
-            </Button>
-            )
-          }
-        </Box>
-
-        <div className={classes.menuRight}>
-          {isSuperAdmin && (
-            <TextField
-              className={classes.globalFilter}
-              variant="outlined"
-              fullWidth
-              id="org"
-              label="Organization"
-              select
-              value={organization}
-              onChange={handleOrganizationChange}
-            >
-              {_.map(orgNames, (org, index) => (
-                <MenuItem
-                  key={index}
-                  value={org}
-                >
-                  {org}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-
-          <div className={classes.userInfo}>
-            <Typography>{user.first_name}</Typography>
-            <Typography>
-              {user.organization.name}
-              ,
-              {' '}
-              {user.user_type}
-            </Typography>
-          </div>
-          <Tooltip title="Account settings">
-            <IconButton
-              size="small"
-              aria-controls={open ? 'account-menu' : undefined}
-              aria-haspopup="true"
-              aria-expanded={open ? 'true' : undefined}
-              onClick={(e) => setAnchorEl(e.currentTarget)}
-            >
-              <Avatar
-                className={classes.accountMenuIcon}
+    <>
+      {loading && <Loader open={loading} />}
+      <AppBar position="fixed" className={classes.appBar}>
+        <Toolbar>
+          <Link to={routes.ROADMAP}>
+            <img src={logo} alt="Logo" className={classes.logo} />
+          </Link>
+          <Box className={classes.navItems}>
+            {pages.map((page) => (
+              <Button
+                key={page.value}
                 sx={{
-                  width: 32,
-                  height: 32,
+                  m: 1,
+                  display: 'block',
+                }}
+                className={`${classes.navButton} ${page.pathName.includes(location.pathname) ? classes.isActive : ''}`}
+                disabled={page.disabled}
+                onClick={() => {
+                  setAnchorEl(null);
+                  history.push(page.value);
                 }}
               >
-                <Person className={classes.userIcon} />
-              </Avatar>
-            </IconButton>
-          </Tooltip>
-          <Menu
-            id="account-menu"
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={() => setAnchorEl(null)}
-            onClick={handleClose}
-            PaperProps={{
-              elevation: 0,
-              sx: {
-                overflow: 'visible',
-                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-                mt: 1.5,
-                '& .MuiAvatar-root': {
-                  width: 32,
-                  height: 32,
-                  ml: -0.5,
-                  mr: 1,
+                {page.label}
+              </Button>
+            ))}
+            {
+              !(user && user.subscriptions && user.subscriptions.length) && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleDialogOpen}
+                >
+                  Upgrade plan
+                </Button>
+              )
+            }
+          </Box>
+          <div className={classes.menuRight}>
+            {isSuperAdmin && (
+              <TextField
+                className={classes.globalFilter}
+                variant="outlined"
+                fullWidth
+                id="org"
+                label="Organization"
+                select
+                value={organization}
+                onChange={handleOrganizationChange}
+              >
+                {_.map(orgNames, (org, index) => (
+                  <MenuItem
+                    key={index}
+                    value={org}
+                  >
+                    {org}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+            <div className={classes.userInfo}>
+              <Typography>{user.first_name}</Typography>
+              <Typography>
+                {user.organization.name}
+                ,
+                {' '}
+                {user.user_type}
+              </Typography>
+            </div>
+            <Tooltip title="Account settings">
+              <IconButton
+                size="small"
+                aria-controls={open ? 'account-menu' : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? 'true' : undefined}
+                onClick={(e) => setAnchorEl(e.currentTarget)}
+              >
+                <Avatar
+                  className={classes.accountMenuIcon}
+                  sx={{
+                    width: 32,
+                    height: 32,
+                  }}
+                >
+                  <Person className={classes.userIcon} />
+                </Avatar>
+              </IconButton>
+            </Tooltip>
+            <Menu
+              id="account-menu"
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+              onClick={handleClose}
+              PaperProps={{
+                elevation: 0,
+                sx: {
+                  overflow: 'visible',
+                  filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                  mt: 1.5,
+                  '& .MuiAvatar-root': {
+                    width: 32,
+                    height: 32,
+                    ml: -0.5,
+                    mr: 1,
+                  },
+                  '&:before': {
+                    content: '""',
+                    display: 'block',
+                    position: 'absolute',
+                    top: 0,
+                    right: 14,
+                    width: 10,
+                    height: 10,
+                    bgcolor: 'background.paper',
+                    transform: 'translateY(-50%) rotate(45deg)',
+                    zIndex: 0,
+                  },
                 },
-                '&:before': {
-                  content: '""',
-                  display: 'block',
-                  position: 'absolute',
-                  top: 0,
-                  right: 14,
-                  width: 10,
-                  height: 10,
-                  bgcolor: 'background.paper',
-                  transform: 'translateY(-50%) rotate(45deg)',
-                  zIndex: 0,
-                },
-              },
-            }}
-            transformOrigin={{
-              horizontal: 'right',
-              vertical: 'top',
-            }}
-            anchorOrigin={{
-              horizontal: 'right',
-              vertical: 'bottom',
-            }}
-          >
-            <MenuItem
-              className={classes.accountMenuIItem}
-              onClick={() => {
-                history.push(routes.USER_PROFILE);
+              }}
+              transformOrigin={{
+                horizontal: 'right',
+                vertical: 'top',
+              }}
+              anchorOrigin={{
+                horizontal: 'right',
+                vertical: 'bottom',
               }}
             >
-              <Person />
-              {' '}
-              My profile
-            </MenuItem>
-            {isAdmin && (
               <MenuItem
                 className={classes.accountMenuIItem}
                 onClick={() => {
-                  history.push(routes.USER_MANAGEMENT);
+                  history.push(routes.USER_PROFILE);
                 }}
               >
-                <GroupIcon />
+                <Person />
                 {' '}
-                User management
+                My profile
               </MenuItem>
-            )}
-            <Divider />
-            <MenuItem className={classes.accountMenuIItem} onClick={handleLogoutClick}>
-              <ListItemIcon aria-label="logout">
-                <Logout fontSize="small" />
-              </ListItemIcon>
-              Logout
-            </MenuItem>
-          </Menu>
-        </div>
-
-        {/* Upgrade plan dialogue */}
-        <Dialog open={planDialogOpen} onClose={handleDialogClose} maxWidth="sm" fullWidth>
-          <DialogTitle>Upgrade plan</DialogTitle>
-          <DialogContent>
-            <Grid
-              className={showProducts ? '' : classes.hidden}
-              container
-              spacing={isMobile() ? 0 : 3}
-            >
-              <Grid item xs={12}>
-                <TextField
-                  select
-                  fullWidth
-                  variant="outlined"
-                  margin="normal"
-                  id="product"
-                  name="product"
-                  required
-                  label="Subscription to Product"
-                  autoComplete="product"
-                  error={formError.product && formError.product.error}
-                  helperText={
-                    formError.product ? formError.product.message : ''
-                  }
-                  onBlur={(e) => handleBlur(e, 'required', product)}
-                  {...product.bind}
+              {isAdmin && (
+                <MenuItem
+                  className={classes.accountMenuIItem}
+                  onClick={() => {
+                    history.push(routes.USER_MANAGEMENT);
+                  }}
                 >
-                  <MenuItem value="">----------</MenuItem>
-                  {stripeProducts && !_.isEmpty(stripeProducts)
-                    && _.map(stripeProducts, (prd) => (
-                      <MenuItem key={`sub-product-${prd.id}`} value={prd.id}>
-                        {`${prd.name}`}
-                      </MenuItem>
-                    ))}
-                </TextField>
+                  <GroupIcon />
+                  {' '}
+                  User management
+                </MenuItem>
+              )}
+              <Divider />
+              <MenuItem className={classes.accountMenuIItem} onClick={handleLogoutClick}>
+                <ListItemIcon aria-label="logout">
+                  <Logout fontSize="small" />
+                </ListItemIcon>
+                Logout
+              </MenuItem>
+            </Menu>
+          </div>
+          <Dialog open={planDialogOpen} onClose={handleDialogClose} maxWidth="sm" fullWidth>
+            <DialogTitle>Upgrade plan</DialogTitle>
+            <DialogContent>
+              <Grid
+                className={showProducts ? '' : classes.hidden}
+                container
+                spacing={isMobile() ? 0 : 3}
+              >
+                <Grid item xs={12}>
+                  <TextField
+                    select
+                    fullWidth
+                    variant="outlined"
+                    margin="normal"
+                    id="product"
+                    name="product"
+                    required
+                    label="Subscription to Product"
+                    autoComplete="product"
+                    error={formError.product && formError.product.error}
+                    helperText={
+                      formError.product ? formError.product.message : ''
+                    }
+                    onBlur={(e) => handleBlur(e, 'required', product)}
+                    {...product.bind}
+                  >
+                    <MenuItem value="">----------</MenuItem>
+                    {stripeProducts && !_.isEmpty(stripeProducts)
+                      && _.map(stripeProducts, (prd) => (
+                        <MenuItem key={`sub-product-${prd.id}`} value={prd.id}>
+                          {`${prd.name}`}
+                        </MenuItem>
+                      ))}
+                  </TextField>
+                </Grid>
               </Grid>
-            </Grid>
-            <Grid
-              className={showProducts ? '' : classes.hidden}
-              container
-              spacing={isMobile() ? 0 : 3}
-            >
-              <Grid item xs={12}>
-                <StripeCard
-                  cardError={cardError}
-                  setCardError={setCardError}
-                />
+              <Grid
+                className={showProducts ? '' : classes.hidden}
+                container
+                spacing={isMobile() ? 0 : 3}
+              >
+                <Grid item xs={12}>
+                  <StripeCard
+                    cardError={cardError}
+                    setCardError={setCardError}
+                  />
+                </Grid>
               </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions className={classes.dialogActionButtons}>
-            <Button onClick={handleDialogClose}>Cancel</Button>
-            <Button
-              variant="contained"
-              disabled={submitDisabled()}
-              onClick={handleSubmit}
-            >
-              Upgrade
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-      </Toolbar>
-    </AppBar>
+            </DialogContent>
+            <DialogActions className={classes.dialogActionButtons}>
+              <Button onClick={handleDialogClose}>Cancel</Button>
+              <Button
+                variant="contained"
+                disabled={submitDisabled()}
+                onClick={handleSubmit}
+              >
+                Upgrade
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </Toolbar>
+      </AppBar>
+    </>
   );
 };
 
@@ -607,7 +594,6 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
   ...state.authReducer,
   ...state.googleSheetReducer,
-  // user: state.authReducer.data,
 });
 
 export default connect(mapStateToProps)(TopBar);

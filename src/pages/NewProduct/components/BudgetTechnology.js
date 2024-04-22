@@ -88,29 +88,24 @@ const BudgetTechnology = ({
 
   const hosting = useInput((editData && editData.product_info && editData.product_info.hosting)
     || (productFormData && productFormData.product_info && productFormData.product_info.hosting)
-    || 'No Preference',
-  { required: true });
+    || 'No Preference', { required: true });
 
   const language = useInput((editData && editData.product_info && editData.product_info.language)
     || (productFormData && productFormData.product_info && productFormData.product_info.language)
-    || 'No Preference',
-  { required: true });
+    || 'No Preference', { required: true });
 
   const database = useInput((editData && editData.product_info && editData.product_info.database)
     || (productFormData && productFormData.product_info && productFormData.product_info.database)
-    || 'No Preference',
-  { required: true });
+    || 'No Preference', { required: true });
 
   const storage = useInput((editData && editData.product_info && editData.product_info.storage)
     || (productFormData && productFormData.product_info && productFormData.product_info.storage)
-    || 'No Preference',
-  { required: true });
+    || 'No Preference', { required: true });
 
   const deployment = useInput((editData && editData.product_info
-      && editData.product_info.deployment)
+    && editData.product_info.deployment)
     || (productFormData && productFormData.product_info && productFormData.product_info.deployment)
-    || 'No Preference',
-  { required: true });
+    || 'No Preference', { required: true });
 
   checkIfBudgetTechnologyEdited = () => (
     !!(productFormData && productFormData.product_info
@@ -131,10 +126,6 @@ const BudgetTechnology = ({
     || deployment.hasChanged()
   );
 
-  /**
-   * Submit The form and add/edit custodian
-   * @param {Event} event the default submit event
-   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = {
@@ -151,7 +142,6 @@ const BudgetTechnology = ({
       },
       edit_date: new Date(),
     };
-
     dispatch(saveProductFormData(formData));
     handleNext();
   };
@@ -194,7 +184,6 @@ const BudgetTechnology = ({
                 first users onboarded?
               </Typography>
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <DatePickerComponent
                 label="Date"
@@ -202,13 +191,11 @@ const BudgetTechnology = ({
                 handleDateChange={handlefirstUserDateChange}
               />
             </Grid>
-
             <Grid item xs={12} sm={12}>
               <Typography variant="h6" gutterBottom component="div">
                 Do you have an approximate budget yet?
               </Typography>
             </Grid>
-
             <Grid item xs={12} sm={12}>
               <Slider
                 value={approxBudget.value}
@@ -224,14 +211,12 @@ const BudgetTechnology = ({
                 marks={BUDGET_CATEGORY}
               />
             </Grid>
-
             <Grid item xs={12} sm={12}>
               <Typography variant="h6" gutterBottom component="div">
                 Do you have a preference for hosting, language, database,
                 storage or deployment?
               </Typography>
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <FormControl
                 variant="outlined"
@@ -242,7 +227,6 @@ const BudgetTechnology = ({
                 <FormLabel component="legend">
                   Select Hosting
                 </FormLabel>
-
                 <Select {...hosting.bind}>
                   {_.map(HOSTING, (host, idx) => (
                     <MenuItem key={`hosting-${idx}`} value={host}>
@@ -252,7 +236,6 @@ const BudgetTechnology = ({
                 </Select>
               </FormControl>
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <FormControl
                 variant="outlined"
@@ -263,7 +246,6 @@ const BudgetTechnology = ({
                 <FormLabel component="legend">
                   Select Language
                 </FormLabel>
-
                 <Select {...language.bind}>
                   {_.map(LANGUAGES, (lng, idx) => (
                     <MenuItem key={`language-${idx}`} value={lng}>
@@ -273,7 +255,6 @@ const BudgetTechnology = ({
                 </Select>
               </FormControl>
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <FormControl
                 variant="outlined"
@@ -284,7 +265,6 @@ const BudgetTechnology = ({
                 <FormLabel component="legend">
                   Select Database
                 </FormLabel>
-
                 <Select {...database.bind}>
                   {_.map(DATABASES, (db, idx) => (
                     <MenuItem key={`database-${idx}`} value={db}>
@@ -294,7 +274,6 @@ const BudgetTechnology = ({
                 </Select>
               </FormControl>
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <FormControl
                 variant="outlined"
@@ -305,7 +284,6 @@ const BudgetTechnology = ({
                 <FormLabel component="legend">
                   Select Storage
                 </FormLabel>
-
                 <Select {...storage.bind}>
                   {_.map(STORAGES, (strg, idx) => (
                     <MenuItem key={`storage-${idx}`} value={strg}>
@@ -315,7 +293,6 @@ const BudgetTechnology = ({
                 </Select>
               </FormControl>
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <FormControl
                 variant="outlined"
@@ -326,7 +303,6 @@ const BudgetTechnology = ({
                 <FormLabel component="legend">
                   Select Deployment
                 </FormLabel>
-
                 <Select {...deployment.bind}>
                   {_.map(DEPLOYMENTS, (deploy, idx) => (
                     <MenuItem key={`deployment-${idx}`} value={deploy}>
@@ -337,7 +313,6 @@ const BudgetTechnology = ({
               </FormControl>
             </Grid>
           </Grid>
-
           <Grid container spacing={3} className={classes.buttonContainer}>
             <Grid item xs={12} sm={4}>
               <Button
@@ -351,7 +326,6 @@ const BudgetTechnology = ({
                 Back
               </Button>
             </Grid>
-
             <Grid item xs={12} sm={4}>
               <Button
                 type="submit"

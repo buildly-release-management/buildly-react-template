@@ -10,6 +10,7 @@ import Alert from 'react-bootstrap/Alert';
 
 import './Report.css';
 
+import Loader from '@components/Loader/Loader';
 import TimelineComponent from '@components/Timeline/TimelineComponent';
 import RangeSlider from '@components/RangeSlider/RangeSlider';
 import FlowChartComponent from '@components/FlowChart/FlowChart';
@@ -29,13 +30,17 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 const Report = ({ selectedProduct }) => {
   let displayReport = true;
+
   // states
   const [productData, setProductData] = useState([]);
   const [releaseData, setReleaseData] = useState([]);
   const [architectureImg, setArchitectureImg] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   // effects
   useEffect(() => {
     if (selectedProduct) {
+      setLoading(true);
       // define requests
       const requestsArray = [];
       // Load product data
@@ -65,6 +70,7 @@ const Report = ({ selectedProduct }) => {
       // handle promises
       Promise.all(requestsArray)
         .then((results) => {
+          setLoading(false);
           const reportData = results[0].data;
           const releaseReport = JSON.parse(JSON.stringify(results[1].data));
 
@@ -97,6 +103,7 @@ const Report = ({ selectedProduct }) => {
           }
         })
         .catch((error) => {
+          setLoading(false);
           displayReport = false;
         });
     }
@@ -141,6 +148,7 @@ const Report = ({ selectedProduct }) => {
   if (selectedProduct && displayReport) {
     return (
       <>
+        {loading && <Loader open={loading} />}
         <div className="row mb-3">
           <section className="text-end">
             <Button
@@ -239,20 +247,20 @@ const Report = ({ selectedProduct }) => {
                       </thead>
                       <tbody>
                         {
-                        productData && productData.budget && productData.budget?.team_data.map(
-                          (item, index) => (
-                            <tr key={`budget-${index}`}>
-                              <td>{item.role}</td>
-                              <td>{`$${item.budget}`}</td>
-                            </tr>
-                          ),
-                        )
-                      }
+                          productData && productData.budget && productData.budget?.team_data.map(
+                            (item, index) => (
+                              <tr key={`budget-${index}`}>
+                                <td>{item.role}</td>
+                                <td>{`$${item.budget}`}</td>
+                              </tr>
+                            ),
+                          )
+                        }
                         <tr>
                           <th className="text-right totals-header">Payroll Total</th>
                           <th className="totals-header">
                             {`$${(productData && productData.budget
-                            && productData.budget?.total_budget) || '0.00'}`}
+                              && productData.budget?.total_budget) || '0.00'}`}
                           </th>
                         </tr>
                       </tbody>
@@ -264,21 +272,21 @@ const Report = ({ selectedProduct }) => {
                       </thead>
                       <tbody>
                         {
-                        productData && productData.budget
-                        && productData.budget.other_costs?.map(
-                          (item, index) => (
-                            <tr key={`add-${index}`}>
-                              <td>{item.item}</td>
-                              <td>{`$${item.cost}`}</td>
-                            </tr>
-                          ),
-                        )
-                      }
+                          productData && productData.budget
+                          && productData.budget.other_costs?.map(
+                            (item, index) => (
+                              <tr key={`add-${index}`}>
+                                <td>{item.item}</td>
+                                <td>{`$${item.cost}`}</td>
+                              </tr>
+                            ),
+                          )
+                        }
                         <tr>
                           <th className="text-right totals-header">Additional Total</th>
                           <th className="totals-header">
                             {`$${(productData && productData.budget
-                            && productData.budget?.total_costs) || '0.00'}`}
+                              && productData.budget?.total_costs) || '0.00'}`}
                           </th>
                         </tr>
                       </tbody>

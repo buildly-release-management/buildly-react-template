@@ -68,7 +68,6 @@ const confirmValidator = (input) => {
 
 const duplicateValidator = (input) => {
   const { value, required, productFeatures } = input;
-  console.log('In duplicate check', value, required, productFeatures);
   if (!value && required) {
     return {
       error: true,
