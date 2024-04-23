@@ -98,8 +98,7 @@ const ProductSetup = ({
 
   const name = useInput((editData && editData.name)
     || (productFormData && productFormData.product_name)
-    || '',
-  { required: true });
+    || '', { required: true });
 
   const description = useInput((editData && editData.description)
     || (productFormData && productFormData.product_description)
@@ -142,18 +141,15 @@ const ProductSetup = ({
         case 'trello':
           setTrelloAuth(productFormData.featureCreds.auth_detail);
           break;
-
         default:
           break;
       }
     }
-
     if (productFormData && !_.isEmpty(productFormData.issueCreds)) {
       switch (_.toLower(productFormData.issueCreds.auth_detail.tool_name)) {
         case 'github':
           setGithubIssueAuth(productFormData.issueCreds.auth_detail);
           break;
-
         default:
           break;
       }
@@ -170,7 +166,6 @@ const ProductSetup = ({
         editCreds.push(issueCred);
       }
     }
-
     if (editData && !_.isEmpty(editCreds)) {
       _.forEach(editCreds, (cred) => {
         if (cred && cred.auth_detail && _.toLower(cred.auth_detail.tool_type) === 'feature') {
@@ -178,18 +173,15 @@ const ProductSetup = ({
             case 'trello':
               setTrelloAuth(cred.auth_detail);
               break;
-
             default:
               break;
           }
         }
-
         if (cred && cred.auth_detail && _.toLower(cred.auth_detail.tool_type) === 'issue') {
           switch (_.toLower(cred.auth_detail.tool_name)) {
             case 'github':
               setGithubIssueAuth(cred.auth_detail);
               break;
-
             default:
               break;
           }
@@ -202,7 +194,6 @@ const ProductSetup = ({
     if (!thirdPartyTools || _.isEmpty(thirdPartyTools)) {
       dispatch(getAllThirdPartyTools());
     }
-
     if (productFormData
       && productFormData.third_party_tool
       && !_.isEmpty(productFormData.third_party_tool)
@@ -240,7 +231,6 @@ const ProductSetup = ({
 
   const submitDisabled = () => {
     const errorKeys = Object.keys(formError);
-
     if (!name.value
       || (featuresTool.value === 'trello' && (!trelloAuth.access_token || !trelloAuth.trello_key))
       || (issuesTool.value === 'github' && (!githubIssueAuth.access_token || !githubIssueAuth.owner_name))
@@ -249,14 +239,12 @@ const ProductSetup = ({
     ) {
       return true;
     }
-
     let errorExists = false;
     _.forEach(errorKeys, (key) => {
       if (formError[key].error) {
         errorExists = true;
       }
     });
-
     return errorExists;
   };
 
@@ -282,48 +270,36 @@ const ProductSetup = ({
 
   const handleFeatureCredential = (event) => {
     event.preventDefault();
-
     let authDetail;
     switch (featuresTool.value) {
       case 'trello':
         authDetail = trelloAuth;
         break;
-
       default:
         break;
     }
-
     dispatch(validateCredential({ ...authDetail }));
   };
 
   const handleIssueCredential = (event) => {
     event.preventDefault();
-
     let authDetail;
     switch (issuesTool.value) {
       case 'github':
         authDetail = githubIssueAuth;
         break;
-
       default:
         break;
     }
-
     dispatch(validateCredential({ ...authDetail }));
   };
 
-  /**
-   * Submit The form and add/edit
-   * @param {Event} event the default submit event
-   */
   const handleSubmit = (event) => {
     event.preventDefault();
-
     const dateTime = new Date();
     let tools = [];
     let newFeatCred;
     let newIssueCred;
-
     switch (featuresTool.value) {
       case 'trello': {
         const ft = _.find(thirdPartyTools, (tool) => (
@@ -337,11 +313,9 @@ const ProductSetup = ({
         };
         break;
       }
-
       default:
         break;
     }
-
     switch (issuesTool.value) {
       case 'github': {
         const it = _.find(thirdPartyTools, (tool) => (
@@ -355,17 +329,14 @@ const ProductSetup = ({
         };
         break;
       }
-
       default:
         break;
     }
 
-    //  check tooltype of features and previous tool credentials
     const updatedFeatureCreds = !_.isMatch(
       newFeatCred?.auth_detail.tool_name, featCred?.auth_detail.tool_name,
     );
 
-    // check tooltype of issues and previous tool credentials
     const updatedIssueCreds = !_.isMatch(
       newIssueCred?.auth_detail.tool_name, issueCred?.auth_detail.tool_name,
     );
@@ -420,7 +391,6 @@ const ProductSetup = ({
                 {...name.bind}
               />
             </Grid>
-
             <Grid item xs={12}>
               <Grid container spacing={2}>
                 <Grid className={classes.inputWithTooltip} item xs={12}>
@@ -439,7 +409,6 @@ const ProductSetup = ({
                 </Grid>
               </Grid>
             </Grid>
-
             <Grid item xs={12}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
@@ -449,7 +418,6 @@ const ProductSetup = ({
                     handleDateChange={setStartDate}
                   />
                 </Grid>
-
                 <Grid item xs={12} sm={6}>
                   <DatePickerComponent
                     label="End Date"
@@ -459,10 +427,8 @@ const ProductSetup = ({
                 </Grid>
               </Grid>
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <Typography variant="h6">Features</Typography>
-
               <Box sx={{ border: '1px solid', borderRadius: '4px', padding: '0 12px' }}>
                 <Typography variant="subtitle1" align="center" mt={2}>Connect to supported tool</Typography>
                 <FormControl component="fieldset" required>
@@ -484,7 +450,6 @@ const ProductSetup = ({
                         </>
                       )}
                     />
-
                     <FormControlLabel
                       value="start fresh"
                       className={classes.radioLeft}
@@ -494,7 +459,6 @@ const ProductSetup = ({
                     />
                   </RadioGroup>
                 </FormControl>
-
                 {featuresTool.value === 'trello' && (
                   <>
                     <Grid item>
@@ -502,7 +466,6 @@ const ProductSetup = ({
                         How to get the access token?
                       </a>
                     </Grid>
-
                     <Grid item>
                       <TextField
                         required
@@ -520,7 +483,6 @@ const ProductSetup = ({
                         })}
                       />
                     </Grid>
-
                     <Grid item>
                       <TextField
                         required
@@ -540,7 +502,6 @@ const ProductSetup = ({
                     </Grid>
                   </>
                 )}
-
                 {featuresTool.value !== 'start fresh' && (
                   <Grid item>
                     <Button
@@ -557,10 +518,8 @@ const ProductSetup = ({
                 )}
               </Box>
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <Typography variant="h6">Issues</Typography>
-
               <Box sx={{ border: '1px solid', borderRadius: '4px', padding: '0 12px' }}>
                 <Typography variant="subtitle1" align="center" mt={2}>Connect to supported tool</Typography>
                 <FormControl component="fieldset" required>
@@ -582,7 +541,6 @@ const ProductSetup = ({
                         </>
                       )}
                     />
-
                     <FormControlLabel
                       value="start fresh"
                       className={classes.radioLeft}
@@ -592,7 +550,6 @@ const ProductSetup = ({
                     />
                   </RadioGroup>
                 </FormControl>
-
                 {issuesTool.value === 'github' && (
                   <>
                     <Grid item>
@@ -600,7 +557,6 @@ const ProductSetup = ({
                         How to get the access token?
                       </a>
                     </Grid>
-
                     <Grid item>
                       <TextField
                         required
@@ -618,7 +574,6 @@ const ProductSetup = ({
                         })}
                       />
                     </Grid>
-
                     <Grid item>
                       <TextField
                         required
@@ -638,7 +593,6 @@ const ProductSetup = ({
                     </Grid>
                   </>
                 )}
-
                 {issuesTool.value !== 'start fresh' && (
                   <Grid item>
                     <Button
@@ -657,7 +611,6 @@ const ProductSetup = ({
             </Grid>
           </Grid>
         </Box>
-
         <Grid container spacing={3} className={classes.buttonContainer}>
           <Grid item xs={12} sm={4}>
             <Button

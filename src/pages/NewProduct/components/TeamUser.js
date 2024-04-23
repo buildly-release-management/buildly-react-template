@@ -85,12 +85,12 @@ const TeamUser = ({
 
   const teamSize = useInput((editData && editData.product_info && editData.product_info.team_size)
     || (productFormData && productFormData.product_info && productFormData.product_info.team_size)
-    || '5 - 10',
-  { required: true });
+    || '5 - 10', { required: true });
 
   const roles = (editData && editData.product_info && editData.product_info.role_count)
     || (productFormData && productFormData.product_info && productFormData.product_info.role_count)
     || [];
+
   const [roleCount, setRoleCount] = useState(
     (ROLES.map((role) => {
       const currentRole = roles.find((item) => item.role === role.role);
@@ -99,7 +99,6 @@ const TeamUser = ({
         count: currentRole ? currentRole.count : role.count,
       };
     })),
-
   );
 
   const doc_file = useInput((editData && editData.product_info && editData.product_info.doc_file)
@@ -120,10 +119,6 @@ const TeamUser = ({
     setFilesUpload(event.target.files);
   };
 
-  /**
-   * Submit The form and add/edit custodian
-   * @param {Event} event the default submit event
-   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const uploadFile = new FormData();
@@ -140,7 +135,6 @@ const TeamUser = ({
       },
       edit_date: new Date(),
     };
-
     dispatch(docIdentifier(uploadFile, formData));
     handleNext();
   };
@@ -155,7 +149,6 @@ const TeamUser = ({
                 What is the size of your current team and backgrounds/roles?
               </Typography>
             </Grid>
-
             <Grid item xs={12} sm={12}>
               <FormControl component="fieldset">
                 <RadioGroup
@@ -169,13 +162,11 @@ const TeamUser = ({
                     control={<Radio color="info" />}
                     label="1 - 5"
                   />
-
                   <FormControlLabel
                     value="5 - 10"
                     control={<Radio color="info" />}
                     label="5 - 10"
                   />
-
                   <FormControlLabel
                     value="10 - 20 or more"
                     control={<Radio color="info" />}
@@ -184,7 +175,6 @@ const TeamUser = ({
                 </RadioGroup>
               </FormControl>
             </Grid>
-
             <Grid item xs={12}>
               <TableContainer component={Paper}>
                 <Table aria-label="simple table">
@@ -196,14 +186,12 @@ const TeamUser = ({
                       <TableCell />
                     </TableRow>
                   </TableHead>
-
                   <TableBody>
                     {_.map(roleCount, (row, index) => (
                       <TableRow key={index}>
                         <TableCell scope="row">
                           {row.role}
                         </TableCell>
-
                         <TableCell align="right">
                           <IconButton
                             onClick={() => {
@@ -219,7 +207,6 @@ const TeamUser = ({
                             <RemoveIcon />
                           </IconButton>
                         </TableCell>
-
                         <TableCell style={{ width: '30%' }}>
                           <TextField
                             disabled
@@ -228,7 +215,6 @@ const TeamUser = ({
                             variant="filled"
                           />
                         </TableCell>
-
                         <TableCell align="left">
                           <IconButton
                             onClick={() => {
@@ -248,13 +234,11 @@ const TeamUser = ({
                 </Table>
               </TableContainer>
             </Grid>
-
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom component="div">
                 Do you have any existing requirements documents, mockups,
                 designs etc.?
               </Typography>
-
               <TextField
                 variant="outlined"
                 margin="normal"
@@ -270,7 +254,6 @@ const TeamUser = ({
               />
             </Grid>
           </Grid>
-
           {doc_file.value && !_.isEmpty(doc_file.value) && (
             <>
               <Grid item xs={12} className={classes.filesText}>
@@ -278,7 +261,6 @@ const TeamUser = ({
                   Already uploaded files
                 </Typography>
               </Grid>
-
               <ImageList sx={{ width: '100%', height: 200 }} cols={4} rowHeight={200} gap={40}>
                 {_.map(doc_file.value, (file, index) => (
                   <ImageListItem key={`${index}-${file}`}>
@@ -296,7 +278,6 @@ const TeamUser = ({
               </ImageList>
             </>
           )}
-
           <Grid container spacing={3} className={classes.buttonContainer}>
             <Grid item xs={12} sm={4}>
               <Button
@@ -310,7 +291,6 @@ const TeamUser = ({
                 Back
               </Button>
             </Grid>
-
             <Grid item xs={12} sm={4}>
               <Button
                 type="submit"

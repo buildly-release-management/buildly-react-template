@@ -19,18 +19,17 @@ import Paper from "@mui/material/Paper";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
-// import { Button, ProgressBar, Tab, Tabs } from "react-bootstrap";
 import ReleaseForm from "./components/ReleaseForm";
 import { HttpService } from "../../../services/http.service";
-import LoadingSpinner from "../../../components/Spinner";
+import Loader from "../../../components/Loader/Loader";
 import { useActor } from "@xstate/react";
 import { GlobalStateContext } from "../../../context/globalState";
 import Chatbot from "../../../components/Chatbot/Chatbot";
 import { routes } from "../../../routes/routesConstants";
-import Tab from '@mui/material/Tab';
-import TabContext from '@mui/lab/TabContext';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
+import Tab from "@mui/material/Tab";
+import TabContext from "@mui/lab/TabContext";
+import TabList from "@mui/lab/TabList";
+import TabPanel from "@mui/lab/TabPanel";
 
 interface BarChartData {
   label: string;
@@ -45,22 +44,19 @@ function ReleaseDetails() {
   const { releaseUuid } = useParams();
   const history = useHistory();
 
-  // define release summary
   const [releaseSummary, setReleaseSummary] = useState(null as any);
-  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
   const globalContext = useContext(GlobalStateContext);
   const [productState] = useActor(globalContext.productMachineService);
 
-  // Tabs
   const [tabKey, setTabKey] = React.useState<string>("report");
-  const [value, setValue] = React.useState('1');
+  const [value, setValue] = React.useState("1");
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
   };
 
-  // Sample data
   const pieChartLabels = ["Done", "In progress", "Overdue"];
   const pieChartLabel = "Releases summary";
   const pieChartData = [7, 5, 3];
@@ -72,7 +68,6 @@ function ReleaseDetails() {
   const borderWidth = 1;
   const borderColor = "#000000";
 
-  // Table
   function createData(
     feature_uuid: string,
     name: string,
@@ -111,13 +106,11 @@ function ReleaseDetails() {
     };
   }
 
-  // Initialize release details
   const [releaseDetails, setReleaseDetails] = useState(null as any);
   const [releaseFeatures, setReleaseFeatures] = useState(null as any);
 
   useEffect(() => {
     if (releaseUuid) {
-      // Fetch release details
       if (!releaseDetails) {
         setSummaryLoading(true);
         try {
@@ -129,15 +122,12 @@ function ReleaseDetails() {
             .then((response: any) => {
               if (response && response.data) {
                 setReleaseDetails(response.data);
-
                 const releaseSummaryObj = response.data;
-
                 if (releaseSummaryObj && releaseSummaryObj.summary) {
                   // Construct issues summary data
                   const featuresSummaryObj = generateBarChartData(
                     releaseSummaryObj.summary.feature_issues
                   );
-
                   setReleaseSummary({
                     progressSummary: {
                       labels: Object.keys(
@@ -160,7 +150,6 @@ function ReleaseDetails() {
                     },
                   });
                 }
-
                 setSummaryLoading(false);
               }
             });
@@ -171,6 +160,7 @@ function ReleaseDetails() {
       }
 
       if (!releaseFeatures) {
+        setSummaryLoading(true);
         try {
           httpService
             .fetchData(
@@ -179,41 +169,36 @@ function ReleaseDetails() {
             )
             .then((response: any) => {
               if (response && response.data) {
-
-                const features  = response.data;
+                const features = response.data;
                 if (features && features.length) {
                   features.forEach((feature: any, index: number) => {
                     try {
                       httpService
-                          .fetchData(
-                              `/issue/?feature=${feature.feature_uuid}`,
-                              "release"
-                          )
-                          .then((response: any) => {
-                            if (response.data) {
-                              features[index].issuesList = response.data;
-                            }
-                          });
+                        .fetchData(
+                          `/issue/?feature=${feature.feature_uuid}`,
+                          "release"
+                        )
+                        .then((response: any) => {
+                          if (response.data) {
+                            features[index].issuesList = response.data;
+                          }
+                        });
                     } catch (httpError) {
-                      console.log("httpError : ", httpError);
+                      setSummaryLoading(false);
                     }
                   });
                 }
                 setReleaseFeatures(features);
+                setSummaryLoading(false);
               }
             });
         } catch (httpError) {
-          console.log("httpError : ", httpError);
+          setSummaryLoading(false);
         }
       }
     }
   }, [productState]);
 
-  /**
-   * Construct bar chart data
-   * @param data
-   * @param dataField
-   */
   const generateBarChartData = (data: any) => {
     featureNames = [];
     barChartSummaryData = [
@@ -258,25 +243,26 @@ function ReleaseDetails() {
     const [open, setOpen] = React.useState(false);
 
     if (open && row) {
+      setSummaryLoading(true);
       try {
         httpService
           .fetchData(`/issue/?feature=${row.feature_uuid}`, "release")
           .then((response: any) => {
             if (response && response.data) {
-
               const featureEntryIndex = releaseFeatures.findIndex(
-                  (r: any) => r.feature_uuid === row.feature_uuid
+                (r: any) => r.feature_uuid === row.feature_uuid
               );
               if (featureEntryIndex > -1) {
                 releaseFeatures[featureEntryIndex].featuresList = response.data;
                 row.issuesList = response.data;
-
                 setReleaseFeatures(releaseFeatures);
               }
+              setSummaryLoading(false);
             }
           });
       } catch (httpError) {
         console.log("httpError : ", httpError);
+        setSummaryLoading(false);
       }
     }
 
@@ -292,52 +278,27 @@ function ReleaseDetails() {
               {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
           </TableCell>
-          <TableCell>
-            {row.name}
-          </TableCell>
-          {/*<TableCell>*/}
-          {/*  <ProgressBar*/}
-          {/*    now={row.progress}*/}
-          {/*    label={`${row.progress}%`}*/}
-          {/*    variant={row.progress_bar_variant}*/}
-          {/*  />*/}
-          {/*</TableCell>*/}
+          <TableCell>{row.name}</TableCell>
           <TableCell align="center">{row.complexity}</TableCell>
-          {/*<TableCell align="right">{row.status}</TableCell>*/}
-          {/*<TableCell align="center">{row.features}</TableCell>*/}
-          {/*<TableCell align="center">{row.issues}</TableCell>*/}
-          {/*<TableCell align="right">{row.release_date}</TableCell>*/}
         </TableRow>
         <TableRow>
           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={12}>
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Box sx={{ margin: 1 }}>
-                {/*<Typography variant="h6" gutterBottom component="div">*/}
-                {/*  History*/}
-                {/*</Typography>*/}
                 <Table size="small" aria-label="issues">
                   <TableHead>
                     <TableRow>
                       <TableCell>Name</TableCell>
                       <TableCell align="center">Complexity</TableCell>
                       <TableCell>Assignees</TableCell>
-                      {/*<TableCell>Status</TableCell>*/}
-                      {/*<TableCell align="right">Amount</TableCell>*/}
-                      {/*<TableCell align="right">Total price ($)</TableCell>*/}
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {row?.issuesList?.map((issue) => (
                       <TableRow key={issue.issue_uuid}>
-                        <TableCell>
-                          {issue.name}
-                        </TableCell>
+                        <TableCell>{issue.name}</TableCell>
                         <TableCell align="center">{issue.complexity}</TableCell>
                         <TableCell>{issue.assignees}</TableCell>
-                        {/*<TableCell align="right">{issue.amount}</TableCell>*/}
-                        {/*<TableCell align="right">*/}
-                        {/*  {Math.round(issue.amount * row.status * 100) / 100}*/}
-                        {/*</TableCell>*/}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -352,160 +313,132 @@ function ReleaseDetails() {
 
   return (
     <>
-      <Box className="toolbar" display="flex" alignItems="center">
-        <IconButton aria-label="back" onClick={(e) => history.push(routes.RELEASE)}>
-          <KeyboardArrowLeftIcon />
-        </IconButton>
-        <Link
-            className="toolbar-header"
-            to={{
-              pathname: routes.RELEASE,
-            }}
-        >
-          {releaseDetails && releaseDetails.name}
-        </Link>
-      </Box>
-
-      <Box sx={{ width: '100%', typography: 'body1' }}>
-        <TabContext value={value}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <TabList onChange={handleChange} aria-label="release tabs">
-              <Tab label="Report" value="1" />
-              <Tab label="Details" value="2" />
-              <Tab label="Features & Issues" value="3" />
-            </TabList>
+      {summaryLoading ? (
+        <>
+          <div className="d-flex flex-column align-items-center justify-content-center h-50">
+            <Loader open={summaryLoading} />
+          </div>
+        </>
+      ) : (
+        <>
+          <Box className="toolbar" display="flex" alignItems="center">
+            <IconButton
+              aria-label="back"
+              onClick={(e) => history.push(routes.RELEASE)}
+            >
+              <KeyboardArrowLeftIcon />
+            </IconButton>
+            <Link
+              className="toolbar-header"
+              to={{
+                pathname: routes.RELEASE,
+              }}
+            >
+              {releaseDetails && releaseDetails.name}
+            </Link>
           </Box>
-          <TabPanel value="1">
-            {summaryLoading ? (
-                <>
-                  <div className="d-flex flex-column align-items-center justify-content-center h-75">
-                    <LoadingSpinner />
-                  </div>
-                </>
-            ) : (
-                <>
-                  {releaseDetails?.features?.length ? (
-                      <>
-                        {" "}
-                        <div className="container-fluid release-summary-container">
-                          <div className="row flex-nowrap justify-content-between">
-                            <div
-                                className="chart-container"
-                                style={{
-                                  width: "32%",
-                                  height: "100%",
-                                }}
-                            >
-                              <DoughnutChart
-                                  id="progressSummary"
-                                  label="Progress summary"
-                                  labels={releaseSummary?.progressSummary?.labels}
-                                  data={releaseSummary?.progressSummary?.values}
-                              />
-                            </div>
-                            <div
-                                className="chart-container"
-                                style={{
-                                  width: "32%",
-                                }}
-                            >
-                              <BarChart
-                                  id="features"
-                                  label="Features summary"
-                                  labels={releaseSummary?.features?.featureNames}
-                                  data={releaseSummary?.features?.barChartSummaryData}
-                                  backgroundColor={backgroundColor}
-                                  borderWidth={borderWidth}
-                                  borderColor={borderColor}
-                              />
-                            </div>
-                            <div
-                                className="chart-container"
-                                style={{
-                                  width: "32%",
-                                }}
-                            >
-                              {releaseSummary?.assignees?.labels.length ? (
-                                  <DoughnutChart
-                                      id="resourceAllocation"
-                                      label="Resource allocation"
-                                      labels={releaseSummary?.assignees?.labels}
-                                      data={releaseSummary?.assignees?.values}
-                                  />
-                              ) : (
-                                  <>
-                                    {" "}
-                                    <Typography>Resource allocation</Typography>
-                                    <Typography className="m-auto">
-                                      No data to display
-                                    </Typography>
-                                  </>
-                              )}
-                            </div>
-                          </div>
+          <Box sx={{ width: "100%", typography: "body1" }}>
+            <TabContext value={value}>
+              <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                <TabList onChange={handleChange} aria-label="release tabs">
+                  <Tab label="Report" value="1" />
+                  <Tab label="Details" value="2" />
+                  <Tab label="Features & Issues" value="3" />
+                </TabList>
+              </Box>
+              <TabPanel value="1">
+                {releaseDetails?.features?.length ? (
+                  <>
+                    {" "}
+                    <div className="container-fluid release-summary-container">
+                      <div className="row flex-nowrap justify-content-between">
+                        <div
+                          className="chart-container"
+                          style={{
+                            width: "32%",
+                            height: "100%",
+                          }}
+                        >
+                          <DoughnutChart
+                            id="progressSummary"
+                            label="Progress summary"
+                            labels={releaseSummary?.progressSummary?.labels}
+                            data={releaseSummary?.progressSummary?.values}
+                          />
                         </div>
-
-                      </>
-                  ) : (
-                      <Typography>No features added yet</Typography>
-                  )}
-                </>
-            )}
-          </TabPanel>
-          <TabPanel value="2">
-            <ReleaseForm releasesDetails={releaseDetails} />
-          </TabPanel>
-          <TabPanel value="3">
-            <TableContainer component={Paper}>
-              <Table aria-label="collapsible table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell width="12" />
-                    <TableCell width="33%">Name</TableCell>
-                    {/*<TableCell>Progress</TableCell>*/}
-                    <TableCell align="center">Complexity</TableCell>
-                    {/*<TableCell align="center">Features</TableCell>*/}
-                    {/*<TableCell align="center">Issues</TableCell>*/}
-                    {/*<TableCell align="right">Release date</TableCell>*/}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {releaseFeatures && releaseFeatures.length
-                      ? releaseFeatures.map((row: any) => (
-                          <Row key={row.feature_uuid} row={row} />
-                      ))
-                      : []}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </TabPanel>
-        </TabContext>
-      </Box>
-
-      {/*<Tabs*/}
-      {/*  id="release-details-tabs"*/}
-      {/*  activeKey={tabKey}*/}
-      {/*  onSelect={(k) => {*/}
-      {/*    if (k) {*/}
-      {/*      setTabKey(k);*/}
-      {/*    }*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*  /!*Release summary tab*!/*/}
-      {/*  /!*<Tab eventKey="report" title="Report">*!/*/}
-
-      {/*  /!*</Tab>*!/*/}
-
-      {/*  /!*Edit details tab*!/*/}
-      {/*  /!*<Tab eventKey="details" title="Details">*!/*/}
-      {/*  /!*  <ReleaseForm releasesDetails={releaseDetails} />*!/*/}
-      {/*  /!*</Tab>*!/*/}
-
-      {/*  /!*Features & Issues summary*!/*/}
-      {/*  /!*<Tab eventKey="features-issues" title="Features & Issues">*!/*/}
-      {/*  /!* *!/*/}
-      {/*  /!*</Tab>*!/*/}
-      {/*</Tabs>*/}
+                        <div
+                          className="chart-container"
+                          style={{
+                            width: "32%",
+                          }}
+                        >
+                          <BarChart
+                            id="features"
+                            label="Features summary"
+                            labels={releaseSummary?.features?.featureNames}
+                            data={releaseSummary?.features?.barChartSummaryData}
+                            backgroundColor={backgroundColor}
+                            borderWidth={borderWidth}
+                            borderColor={borderColor}
+                          />
+                        </div>
+                        <div
+                          className="chart-container"
+                          style={{
+                            width: "32%",
+                          }}
+                        >
+                          {releaseSummary?.assignees?.labels.length ? (
+                            <DoughnutChart
+                              id="resourceAllocation"
+                              label="Resource allocation"
+                              labels={releaseSummary?.assignees?.labels}
+                              data={releaseSummary?.assignees?.values}
+                            />
+                          ) : (
+                            <>
+                              {" "}
+                              <Typography>Resource allocation</Typography>
+                              <Typography className="m-auto">
+                                No data to display
+                              </Typography>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <Typography>No features added yet</Typography>
+                )}
+              </TabPanel>
+              <TabPanel value="2">
+                <ReleaseForm releasesDetails={releaseDetails} />
+              </TabPanel>
+              <TabPanel value="3">
+                <TableContainer component={Paper}>
+                  <Table aria-label="collapsible table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell width="12" />
+                        <TableCell width="33%">Name</TableCell>
+                        <TableCell align="center">Complexity</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {releaseFeatures && releaseFeatures.length
+                        ? releaseFeatures.map((row: any) => (
+                            <Row key={row.feature_uuid} row={row} />
+                          ))
+                        : []}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </TabPanel>
+            </TabContext>
+          </Box>
+        </>
+      )}
       <Chatbot />
     </>
   );

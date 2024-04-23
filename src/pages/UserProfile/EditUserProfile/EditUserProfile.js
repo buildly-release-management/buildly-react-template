@@ -1,38 +1,30 @@
 import React, { useState } from 'react';
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './EditUserProfile.css';
-
 import { useInput } from '@hooks/useInput';
 import {
   Avatar,
-  Button, Grid, MenuItem, TextField, Typography,
+  Button,
+  Grid,
+  MenuItem,
+  TextField,
+  Typography,
 } from '@mui/material';
+import Loader from '@components/Loader/Loader';
 import { isMobile } from '@utils/mediaQuery';
 import { validators } from '@utils/validators';
-import {
-  Person,
-} from '@mui/icons-material';
+import { Person } from '@mui/icons-material';
 import { updateUser } from '@redux/authuser/actions/authuser.actions';
 import { connect } from 'react-redux';
 
-const EditUserProfile = ({ dispatch, user }) => {
-  // Initialize variables
+const EditUserProfile = ({ dispatch, loading, user }) => {
   const [disableSubmitBtn, setBtnDisabled] = useState(true);
+  const [formError, setFormError] = useState({});
 
   const first_name = useInput(user && user.first_name, { required: true });
   const last_name = useInput(user && user.last_name, { required: true });
-  const email = useInput(user && user.email, { required: true });
-  const username = useInput(user && user.username, { required: true });
   const userType = useInput(user && user.user_type, { required: true });
-  const [formError, setFormError] = useState({});
 
-  /**
-   * Handle input field blur event, validate form
-   * @param {Event} e Event
-   * @param {String} validation validation type if any
-   * @param {Object} input input field
-   */
   const handleBlur = (e, validation, input) => {
     const validateObj = validators(validation, input);
     const prevState = { ...formError };
@@ -50,52 +42,43 @@ const EditUserProfile = ({ dispatch, user }) => {
         },
       });
     }
-
-    // Update submit btn toggle status
     setBtnDisabled(toggleSubmitBtn());
   };
 
-  /**
-   * Enable/disable submit button
-   * @returns {boolean}
-   */
   const toggleSubmitBtn = () => {
     const errorKeys = Object.keys(formError);
     let errorExists = false;
     if (
       !first_name.value
-        || !last_name.value
-        || !username.value
-        || !email.value
-        || !userType.value
+      || !last_name.value
+      || !userType.value
     ) return true;
-
+    if (
+      first_name.hasChanged()
+      || last_name.hasChanged()
+      || userType.hasChanged()
+    ) return false;
     errorKeys.forEach((key) => {
       if (formError[key].error) errorExists = true;
     });
     return errorExists;
   };
 
-  /**
-   * Update the user profile
-   * @param {Event} event the default submit event
-   */
   const saveUserProfile = (event) => {
     event.preventDefault();
     const profileValues = {
       id: user.id,
       first_name: first_name.value,
       last_name: last_name.value,
-      username: username.value,
-      email: email.value,
       user_type: userType.value,
     };
-
     dispatch(updateUser(profileValues));
+    setBtnDisabled(true);
   };
 
   return (
     <>
+      {loading && <Loader open={loading} />}
       <div className="row border rounded">
         <div className="col-4 m-auto">
           <div className="d-flex flex-column align-items-center">
@@ -111,6 +94,16 @@ const EditUserProfile = ({ dispatch, user }) => {
               Organization:
               {' '}
               {user.organization.name}
+            </Typography>
+            <Typography>
+              Username:
+              {' '}
+              {user.username}
+            </Typography>
+            <Typography>
+              Email:
+              {' '}
+              {user.email}
             </Typography>
           </div>
         </div>
@@ -129,14 +122,13 @@ const EditUserProfile = ({ dispatch, user }) => {
                   autoComplete="first_name"
                   error={formError.first_name && formError.first_name.error}
                   helperText={
-                      formError.first_name ? formError.first_name.message : ''
-                    }
+                    formError.first_name ? formError.first_name.message : ''
+                  }
                   className="textField"
                   onKeyUp={(e) => handleBlur(e, 'required', first_name)}
                   {...first_name.bind}
                 />
               </Grid>
-
               <Grid item xs={12} md={6}>
                 <TextField
                   variant="outlined"
@@ -148,58 +140,14 @@ const EditUserProfile = ({ dispatch, user }) => {
                   autoComplete="last_name"
                   error={formError.last_name && formError.last_name.error}
                   helperText={
-                      formError.last_name ? formError.last_name.message : ''
-                    }
+                    formError.last_name ? formError.last_name.message : ''
+                  }
                   className="textField"
                   onKeyUp={(e) => handleBlur(e, 'required', last_name)}
                   {...last_name.bind}
                 />
               </Grid>
             </Grid>
-
-            <Grid container spacing={isMobile() ? 0 : 3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="username"
-                  label="Username"
-                  name="username"
-                  autoComplete="username"
-                  error={formError.username && formError.username.error}
-                  helperText={
-                      formError.username ? formError.username.message : ''
-                    }
-                  className="textField"
-                  onKeyUp={(e) => handleBlur(e, 'required', username)}
-                  {...username.bind}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email"
-                  name="email"
-                  autoComplete="email"
-                  type="email"
-                  error={formError.email && formError.email.error}
-                  helperText={
-                      formError.email ? formError.email.message : ''
-                    }
-                  className="textField"
-                  onKeyUp={(e) => handleBlur(e, 'email', email)}
-                  {...email.bind}
-                />
-              </Grid>
-            </Grid>
-
             <Grid container spacing={isMobile() ? 0 : 3}>
               <Grid item xs={12}>
                 <TextField
@@ -214,8 +162,8 @@ const EditUserProfile = ({ dispatch, user }) => {
                   autoComplete="userType"
                   error={formError.userType && formError.userType.error}
                   helperText={
-                      formError.userType ? formError.userType.message : ''
-                    }
+                    formError.userType ? formError.userType.message : ''
+                  }
                   className="textField"
                   onBlur={(e) => handleBlur(e, 'required', userType)}
                   {...userType.bind}
@@ -226,14 +174,13 @@ const EditUserProfile = ({ dispatch, user }) => {
                 </TextField>
               </Grid>
             </Grid>
-
             <div className="loadingWrapper">
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
                 className="submit"
-                disabled={disableSubmitBtn}
+                disabled={loading || disableSubmitBtn}
               >
                 Save changes
               </Button>
@@ -244,8 +191,11 @@ const EditUserProfile = ({ dispatch, user }) => {
     </>
   );
 };
+
 const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
+  ...state.authReducer,
   user: state.authReducer.data,
 });
+
 export default connect(mapStateToProps)(EditUserProfile);

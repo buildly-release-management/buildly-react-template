@@ -9,13 +9,10 @@ interface ButtonProps {
 }
 
 const CustomButton = (props: ButtonProps) => {
-  console.log("props : ", props);
   return (
-    <>
-      <Button variant={props.variant} onClick={() => props.btnClicked}>
-        {props.label}
-      </Button>
-    </>
+    <Button variant={props.variant} onClick={() => props.btnClicked}>
+      {props.label}
+    </Button>
   );
 };
 

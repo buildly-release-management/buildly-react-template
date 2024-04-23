@@ -33,13 +33,12 @@ const ShowRelatedIssues = ({
 }) => {
   const classes = useStyles();
   const redirectTo = location.state && location.state.from;
-  const feature_uuid = location.state && location.state.feature_uuid;
-
+  const feature = location.state && location.state.feature_uuid;
   const [openFormModal, setFormModal] = useState(true);
   const [relatedIssues, setRelatedIssues] = useState([]);
 
   useEffect(() => {
-    setRelatedIssues(_.filter(issues, { feature_uuid }));
+    setRelatedIssues(_.filter(issues, { feature }));
   }, [issues]);
 
   const handleClose = () => {
@@ -59,20 +58,17 @@ const ShowRelatedIssues = ({
           className={classes.form}
         >
           {loading && <Loader open={loading} />}
-
           {_.isEmpty(relatedIssues) && (
             <Typography variant="body1" component="div">
               No related issues found.
             </Typography>
           )}
-
           {!_.isEmpty(relatedIssues) && _.map(relatedIssues, (issue) => (
             <Card key={`issue-${issue.issue_uuid}`} className={classes.card}>
               <CardContent>
                 <Typography variant="h6">
                   {issue.name}
                 </Typography>
-
                 <Typography variant="body1">
                   {parse(issue.description)}
                 </Typography>
