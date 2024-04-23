@@ -217,6 +217,7 @@ const Kanban = ({
 
       let updateData = {};
       if (removed.issue_uuid) {
+        removed.assignees = removed.assignees || [];
         updateData = {
           ...removed,
           ...issueCred?.auth_detail,
@@ -357,15 +358,15 @@ const Kanban = ({
                             {_.map(column.items, (item, itemIndex) => (
                               <Draggable
                                 key={
-                                    item.issue_uuid
-                                      ? item.issue_uuid
-                                      : item.feature_uuid
-                                  }
+                                  item.issue_uuid
+                                    ? item.issue_uuid
+                                    : item.feature_uuid
+                                }
                                 draggableId={
-                                    item.issue_uuid
-                                      ? item.issue_uuid
-                                      : item.feature_uuid
-                                  }
+                                  item.issue_uuid
+                                    ? item.issue_uuid
+                                    : item.feature_uuid
+                                }
                                 index={itemIndex}
                               >
                                 {(provided, snapshot) => (
@@ -379,7 +380,7 @@ const Kanban = ({
                                       ...provided.draggableProps.style,
                                       userSelect: 'none',
                                       backgroundColor: item?.feature_detail?.is_imported
-                                          || item?.issue_detail?.is_imported
+                                        || item?.issue_detail?.is_imported
                                         ? '#e0e0e0'
                                         : '#F2F2F2',
                                     }}
@@ -429,14 +430,15 @@ const Kanban = ({
 
                                             {!item.issue_uuid && _.filter(issues, (issue) => (
                                               issue.feature_uuid === item.feature_uuid
-                                            )).length === 0 && (
-                                            <MenuItem onClick={(e) => issueSuggestions(item, 'show')}>
-                                              <ListItemIcon>
-                                                <TaskIcon fontSize="small" />
-                                              </ListItemIcon>
-                                              Convert to issue/ticket for dev team
-                                            </MenuItem>
-                                            )}
+                                            )).length === 0
+                                              && (
+                                                <MenuItem onClick={(e) => issueSuggestions(item, 'show')}>
+                                                  <ListItemIcon>
+                                                    <TaskIcon fontSize="small" />
+                                                  </ListItemIcon>
+                                                  Convert to issue/ticket for dev team
+                                                </MenuItem>
+                                              )}
 
                                             <MenuItem
                                               onClick={(e) => {
@@ -451,7 +453,7 @@ const Kanban = ({
                                             </MenuItem>
                                           </Menu>
                                         </div>
-                                          )}
+                                      )}
                                     />
 
                                     <CardContent style={{ paddingBottom: '16px' }}>
@@ -468,23 +470,23 @@ const Kanban = ({
                                       ))}
 
                                       {item.estimate && (
-                                      <Chip
-                                        variant="outlined"
-                                        color="primary"
-                                        className={classes.chip}
-                                        icon={<UpdateIcon fontSize="small" />}
-                                        label={`${item.estimate}:00 Hrs`}
-                                      />
+                                        <Chip
+                                          variant="outlined"
+                                          color="primary"
+                                          className={classes.chip}
+                                          icon={<UpdateIcon fontSize="small" />}
+                                          label={`${item.estimate}:00 Hrs`}
+                                        />
                                       )}
 
                                       {item.end_date && (
-                                      <Chip
-                                        variant="outlined"
-                                        color="primary"
-                                        className={classes.chip}
-                                        icon={<DateRangeIcon fontSize="small" />}
-                                        label={(item.end_date).slice(0, 10)}
-                                      />
+                                        <Chip
+                                          variant="outlined"
+                                          color="primary"
+                                          className={classes.chip}
+                                          icon={<DateRangeIcon fontSize="small" />}
+                                          label={(item.end_date).slice(0, 10)}
+                                        />
                                       )}
 
                                       {item.issue_uuid && _.map(
@@ -509,11 +511,11 @@ const Kanban = ({
 
                                         <div style={{ display: 'flex' }}>
                                           {!item.issue_uuid && (
-                                          <CallSplitIcon
-                                            className={classes.bottomIcon}
-                                            fontSize="large"
-                                            onClick={(e) => showRelatedIssues(item.feature_uuid)}
-                                          />
+                                            <CallSplitIcon
+                                              className={classes.bottomIcon}
+                                              fontSize="large"
+                                              onClick={(e) => showRelatedIssues(item.feature_uuid)}
+                                            />
                                           )}
 
                                           <Badge

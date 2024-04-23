@@ -8,13 +8,13 @@ import {
   Link,
   Grid,
   Card,
-  CircularProgress,
   CardContent,
   Typography,
   Container,
 } from '@mui/material';
 import logo from '@assets/insights-logo.png';
 import Copyright from '@components/Copyright/Copyright';
+import Loader from '@components/Loader/Loader';
 import { useInput } from '@hooks/useInput';
 import { sendPasswordResetLink } from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
@@ -47,13 +47,6 @@ const useStyles = makeStyles((theme) => ({
     minHeight: '5rem',
     margin: '0.25rem 0',
   },
-  buttonProgress: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
-  },
   loadingWrapper: {
     margin: theme.spacing(1),
     position: 'relative',
@@ -65,10 +58,6 @@ const ForgotPassword = ({ dispatch, loading }) => {
   const email = useInput('', { required: true });
   const [error, setError] = useState({});
 
-  /**
-   * Submit the form to the backend and attempts to authenticate
-   * @param {Event} event the default submit event
-   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const loginFormValue = {
@@ -76,13 +65,6 @@ const ForgotPassword = ({ dispatch, loading }) => {
     };
     dispatch(sendPasswordResetLink(loginFormValue));
   };
-
-  /**
-   * Handle input field blur event
-   * @param {Event} e Event
-   * @param {String} validation validation type if any
-   * @param {Object} input input field
-   */
 
   const handleBlur = (e, validation, input) => {
     const validateObj = validators(validation, input);
@@ -115,6 +97,7 @@ const ForgotPassword = ({ dispatch, loading }) => {
 
   return (
     <>
+      {loading && <Loader open={loading} />}
       <div className={classes.logoDiv}>
         <img src={logo} alt="Logo" className={classes.logo} />
       </div>
@@ -142,7 +125,6 @@ const ForgotPassword = ({ dispatch, loading }) => {
                   onBlur={(e) => handleBlur(e, 'email', email)}
                   {...email.bind}
                 />
-
                 <div className={classes.loadingWrapper}>
                   <Button
                     type="submit"
@@ -154,12 +136,6 @@ const ForgotPassword = ({ dispatch, loading }) => {
                   >
                     Submit
                   </Button>
-                  {loading && (
-                    <CircularProgress
-                      size={24}
-                      className={classes.buttonProgress}
-                    />
-                  )}
                 </div>
                 <Grid container>
                   <Grid item xs>

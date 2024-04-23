@@ -74,20 +74,18 @@ const ApplicationMarket = ({
   const classes = useStyles();
 
   const applicationType = useInput((editData && editData.product_info
-      && editData.product_info.application_type)
+    && editData.product_info.application_type)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.application_type)
-    || 'Desktop',
-  { required: true });
+    || 'Desktop', { required: true });
 
   const userLabels = useInput((editData && editData.product_info
-      && editData.product_info.user_labels)
+    && editData.product_info.user_labels)
     || (productFormData && productFormData.product_info && productFormData.product_info.user_labels)
-    || [{ label: '', type: '' }],
-  { required: true });
+    || [{ label: '', type: '' }], { required: true });
 
   const [bussinessSegment, setBussinessSegment] = useState((editData && editData.product_info
-      && editData.product_info.bussiness_segment)
+    && editData.product_info.bussiness_segment)
     || (productFormData && productFormData.product_info
       && productFormData.product_info.bussiness_segment)
     || []);
@@ -98,7 +96,6 @@ const ApplicationMarket = ({
     ) {
       return true;
     }
-
     return false;
   };
 
@@ -113,10 +110,6 @@ const ApplicationMarket = ({
       && !_.isEqual(bussinessSegment, productFormData.product_info.bussiness_segment))
   );
 
-  /**
-   * Submit The form and add/edit custodian
-   * @param {Event} event the default submit event
-   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = {
@@ -129,7 +122,6 @@ const ApplicationMarket = ({
       },
       edit_date: new Date(),
     };
-
     dispatch(saveProductFormData(formData));
     handleNext();
   };
@@ -143,7 +135,6 @@ const ApplicationMarket = ({
               <Typography variant="h6" gutterBottom component="div">
                 Type of Application
               </Typography>
-
               <RadioGroup
                 row
                 aria-label="Application"
@@ -155,19 +146,16 @@ const ApplicationMarket = ({
                   control={<Radio color="info" />}
                   label="Mobile Native"
                 />
-
                 <FormControlLabel
                   value="Mobile Hybrid"
                   control={<Radio color="info" />}
                   label="Mobile Hybrid"
                 />
-
                 <FormControlLabel
                   value="Desktop"
                   control={<Radio color="info" />}
                   label="Desktop"
                 />
-
                 <FormControlLabel
                   value="Both"
                   control={<Radio color="info" />}
@@ -175,17 +163,14 @@ const ApplicationMarket = ({
                 />
               </RadioGroup>
             </Grid>
-
             <Grid item xs={12} mt={3}>
               <Typography variant="h6" gutterBottom component="div">
                 What our your primary business segments?
               </Typography>
-
               <FormControl fullWidth>
                 <InputLabel id="bussiness-segment-label">
                   Business Segment
                 </InputLabel>
-
                 <Select
                   labelId="bussiness-segment-label"
                   id="bussiness-segment"
@@ -215,12 +200,10 @@ const ApplicationMarket = ({
                 </Select>
               </FormControl>
             </Grid>
-
             <Grid item xs={12} mt={3}>
               <Typography variant="h6" gutterBottom component="div">
                 Who are your users?
               </Typography>
-
               {_.map(userLabels.value, (userLabel, idx) => (
                 <Grid container spacing={2} key={`user-label-${idx}`} mt={-3.5}>
                   <Grid item xs={5}>
@@ -242,7 +225,6 @@ const ApplicationMarket = ({
                       )}
                     />
                   </Grid>
-
                   <Grid item xs={5}>
                     <TextField
                       variant="outlined"
@@ -270,7 +252,6 @@ const ApplicationMarket = ({
                       ))}
                     </TextField>
                   </Grid>
-
                   {idx === 0 && (
                     <Grid item xs={2} className={classes.addButton}>
                       <Button
@@ -291,7 +272,6 @@ const ApplicationMarket = ({
               ))}
             </Grid>
           </Grid>
-
           <Grid container spacing={3} className={classes.buttonContainer}>
             <Grid item xs={12} sm={4}>
               <Button
@@ -305,7 +285,6 @@ const ApplicationMarket = ({
                 Back
               </Button>
             </Grid>
-
             <Grid item xs={12} sm={4}>
               <Button
                 type="submit"

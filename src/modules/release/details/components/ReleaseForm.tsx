@@ -19,7 +19,6 @@ function ReleaseForm({ releasesDetails }: any) {
 
   const submitRelease = (event: any) => {
     event.preventDefault();
-    console.log("formData : ", formData);
     releaseService.submitRelease(formData).then();
   };
 
@@ -80,9 +79,9 @@ function ReleaseForm({ releasesDetails }: any) {
       <div className="d-flex flex-row justify-content-end">
         <Button
           className="mx-2"
-          type='button'
+          type="button"
           variant="outlined"
-          color='primary'
+          color="primary"
           size="small"
           onClick={() => resetForm()}
         >

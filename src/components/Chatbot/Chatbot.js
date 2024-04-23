@@ -34,7 +34,7 @@ const Chatbot = () => {
   const id = open ? 'chatbot-popover' : undefined;
 
   useEffect(() => {
-    if (history.action === "PUSH") {
+    if (history.action === 'PUSH') {
       setMessages(initialMessages);
     }
   }, []);
@@ -102,7 +102,6 @@ const Chatbot = () => {
       })
       .catch((error) => {
         setIsTyping(false);
-        console.log(error);
       });
   }
 

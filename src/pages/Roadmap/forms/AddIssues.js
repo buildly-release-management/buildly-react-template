@@ -58,6 +58,7 @@ const AddIssues = ({
   loading,
 }) => {
   const classes = useStyles();
+  const redirectTo = location.state && location.state.from;
   const editPage = location.state && location.state.type === 'edit';
   const editData = (editPage && location.state.data) || {};
   const buttonText = editPage ? 'Save' : 'Add Issue';
@@ -91,7 +92,7 @@ const AddIssues = ({
   const complexity = useInput((editData && editData.complexity) || 0);
   const [assignees, setAssignees] = useState(
     (editData && editData.issue_detail && _.map(editData.issue_detail.assignees))
-      || [],
+    || [],
   );
   const [assigneeData, setAssigneeData] = useState([]);
   const [repoList, setRepoList] = useState([]);
@@ -121,7 +122,7 @@ const AddIssues = ({
   const closeFormModal = () => {
     const dataHasChanged = (
       name.hasChanged()
-      || feature.hasChanged()
+      || featureUuid.hasChanged()
       || type.hasChanged()
       || statusID.hasChanged()
       || repo.hasChanged()
@@ -150,9 +151,7 @@ const AddIssues = ({
   const discardFormData = () => {
     setConfirmModal(false);
     setFormModal(false);
-    history.push(_.includes(location?.state?.from, 'kanban')
-      ? routes.ROADMAP_KANBAN
-      : routes.ROADMAP_TABULAR);
+    history.push(redirectTo);
   };
 
   const handleSubmit = (event) => {
@@ -193,9 +192,7 @@ const AddIssues = ({
       formData.create_date = dateTime;
       dispatch(createIssue(formData));
     }
-    history.push(_.includes(location.state.from, 'kanban')
-      ? routes.ROADMAP_KANBAN
-      : routes.ROADMAP_TABULAR);
+    history.push(redirectTo);
   };
 
   const handleBlur = (e, validation, input, parentId) => {
@@ -463,38 +460,38 @@ const AddIssues = ({
               )}
 
               {!_.isEmpty(assigneeData) && (
-              <Grid item xs={12}>
-                <Autocomplete
-                  fullWidth
-                  multiple
-                  filterSelectedOptions
-                  id="assignees"
-                  name="assignees"
-                  options={assigneeData}
-                  getOptionLabel={(option) => option.username}
-                  getOptionSelected={(option, value) => option.username === value.username}
-                  onChange={(e, newValue) => setAssignees(_.map(newValue, 'user_id'))}
-                  renderTags={(value, getAssigneeProps) => (
-                    _.map(value, (option, index) => (
-                      <Chip
-                        variant="default"
-                        label={option.username}
-                        value={option.user_id}
-                        {...getAssigneeProps({ index })}
+                <Grid item xs={12}>
+                  <Autocomplete
+                    fullWidth
+                    multiple
+                    filterSelectedOptions
+                    id="assignees"
+                    name="assignees"
+                    options={assigneeData}
+                    getOptionLabel={(option) => option.username}
+                    getOptionSelected={(option, value) => option.username === value.username}
+                    onChange={(e, newValue) => setAssignees(_.map(newValue, 'user_id'))}
+                    renderTags={(value, getAssigneeProps) => (
+                      _.map(value, (option, index) => (
+                        <Chip
+                          variant="default"
+                          label={option.username}
+                          value={option.user_id}
+                          {...getAssigneeProps({ index })}
+                        />
+                      ))
+                    )}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        required
+                        fullWidth
+                        label="Assignees"
+                        {...assignees.bind}
                       />
-                    ))
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      required
-                      fullWidth
-                      label="Assignees"
-                      {...assignees.bind}
-                    />
-                  )}
-                />
-              </Grid>
+                    )}
+                  />
+                </Grid>
               )}
 
               {editPage && (

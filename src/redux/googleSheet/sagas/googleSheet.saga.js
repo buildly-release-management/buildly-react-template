@@ -35,7 +35,6 @@ function* addData(payload) {
       history.push(routes.ROADMAP);
     }
   } catch (error) {
-    console.log('error', error);
     yield [
       yield put({
         type: ADD_DATA_FAIL,

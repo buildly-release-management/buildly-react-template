@@ -751,7 +751,7 @@ function* docIdentifier(payload) {
 
       if (response.data.cloud_url && !_.isEmpty(response.data.cloud_url)) {
         const doc_file = productFormData.product_info.doc_file
-        && !_.isEmpty(productFormData.product_info.doc_file)
+          && !_.isEmpty(productFormData.product_info.doc_file)
           ? [...productFormData.product_info.doc_file, ...response.data.cloud_url]
           : response.data.cloud_url;
 
