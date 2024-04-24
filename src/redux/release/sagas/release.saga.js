@@ -238,18 +238,38 @@ function* allComments(payload) {
   try {
     const comments = yield call(
       httpService.makeRequest,
-      'get',
-      `${window.env.API_URL}release/comment/?product_uuid=${payload.product_uuid || payload.searchQuery}`,
+      "get",
+      `${window.env.API_URL}release/comment/?product_uuid=${
+        payload.product_uuid || payload.searchQuery
+      }`
     );
-    yield put({ type: ALL_COMMENTS_SUCCESS, data: comments.data });
+    // checking if comments array contains any value with user_signoff_uuid not null
+    if (_.some(comments?.data, (ele) => ele.user_signoff_uuid !== null)) {
+      const users = yield call(
+        httpService.makeRequest,
+        "get",
+        `${window.env.API_URL}coreuser/`
+      );
+      // merging comments array with user information based on user_signoff_uuid compared to core_user_uuid
+      const commentsWithUserInfo = _.map(comments.data, (comment) => ({
+        ...comment,
+        user_info: _.find(users.data, {
+          core_user_uuid: comment.user_signoff_uuid,
+        }),
+      }));
+
+      yield put({ type: ALL_COMMENTS_SUCCESS, data: commentsWithUserInfo });
+    } else {
+      yield put({ type: ALL_COMMENTS_SUCCESS, data: comments.data });
+    }
   } catch (error) {
     yield [
       yield put(
         showAlert({
-          type: 'error',
+          type: "error",
           open: true,
-          message: 'Couldn\'t fetch all Comments!',
-        }),
+          message: "Couldn't fetch all Comments!",
+        })
       ),
       yield put({
         type: ALL_COMMENTS_FAILURE,
@@ -292,6 +312,10 @@ function* createComment(payload) {
       `${window.env.API_URL}release/comment/`,
       payload.data,
     );
+    // binding user_info from api payload to response of create comment
+    if ("user_info" in payload.data) {
+      comment.data.user_info = payload.data.user_info;
+    }
     yield [
       yield put({ type: CREATE_COMMENT_SUCCESS, data: comment.data }),
       yield put(
