@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import moment from 'moment-timezone';
@@ -11,6 +11,7 @@ import Loader from '@components/Loader/Loader';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
 import { createComment } from '@redux/release/actions/release.actions';
+import { UserContext } from '../../../context/User.context';
 
 const useStyles = makeStyles((theme) => ({
   formTitle: {
@@ -44,6 +45,10 @@ const useStyles = makeStyles((theme) => ({
   fromNow: {
     textAlign: 'end',
   },
+  userName: {
+    color: theme.palette.secondary.main,
+    fontWeight: 500,
+  },
 }));
 
 const Comments = ({
@@ -54,6 +59,7 @@ const Comments = ({
   const { feature, issue } = location && location.state;
 
   const theme = useTheme();
+  const user = useContext(UserContext);
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
 
   const [filteredComments, setFilteredComments] = useState([]);
@@ -101,6 +107,8 @@ const Comments = ({
       issue: issue?.issue_uuid,
       card_number: feature?.feature_tracker_id || issue?.issue_number,
       repository: issue?.repository,
+      user_signoff_uuid: user?.core_user_uuid,
+      user_info: user,
     };
 
     dispatch(createComment(commentData));
@@ -160,7 +168,10 @@ const Comments = ({
           {!_.isEmpty(filteredComments) && _.map(filteredComments, (comment, index) => (
             <Card key={comment.comment_uuid} className={classes.commentCard}>
               <CardContent>
-                <Typography variant="body1">
+                <Typography variant="body1" className={classes.userName}>
+                  {comment?.user_info?.first_name} {comment?.user_info?.last_name}
+                </Typography>
+                <Typography variant="body2">
                   {comment.comment}
                 </Typography>
 
