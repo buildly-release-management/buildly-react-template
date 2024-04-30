@@ -5,14 +5,18 @@ on:
     branches:
       - prod
 
+env:
+  PROJECT_ID: dev-buildly
+  REGION: us
+  IMAGE_NAME: us-docker.pkg.dev/dev-buildly/gcr.io/dev/buildly-ui
+
 jobs:
   build:
     name: Build and Push image to GCR
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: gcr.io/dev-buildly/insights/prod/buildly-ui
     steps:
-    - uses: actions/checkout@v3
+    - name: "Checkout"
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - uses: actions/setup-node@v3
@@ -48,19 +52,26 @@ jobs:
         draft: false
         prerelease: false
 
-    # Login to docker
-    - name: Docker login
-      uses: docker/login-action@v2
+    - id: "auth"
+      uses: "google-github-actions/auth@v1"
       with:
-        registry: gcr.io
-        username: _json_key
-        password: ${{ secrets.GCR_JSON_KEY }}
+        credentials_json: "${{ secrets.GCR_JSON_KEY }}"
+
+    - name: "Set up Cloud SDK"
+      uses: "google-github-actions/setup-gcloud@v1"
+
+    - name: "Use gcloud CLI"
+      run: "gcloud info"
 
     # ui build
     - name: yarn install, build and test
       run: |
         yarn install
         yarn run build:prod
+
+    - name: "Docker auth"
+      run: |-
+        gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
     # Build docker image
     - name: Build docker image
@@ -77,3 +88,16 @@ jobs:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         SLACK_MESSAGE: 'Production Docker Image of buildly-ui pushed to Google Container Registry Successfully'
         MSG_MINIMAL: true
+
+    # Send email alert
+    - name: Email Alert
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{ secrets.MAIL_USERNAME }}
+        password: ${{ secrets.MAIL_PASSWORD }}
+        subject: Github Actions Build and Push job alert
+        to: ${{ secrets.RECIPIENT_EMAIL }}
+        from: ${{ secrets.SENDER_EMAIL }}
+        body: Production Docker Image of buildly-ui pushed to Google Container Registry Successfully

@@ -1,6 +1,7 @@
+/* eslint-disable no-console */
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
+import { connect } from 'react-redux';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Button,
@@ -8,7 +9,6 @@ import {
   TextField,
   Link,
   Card,
-  CircularProgress,
   CardContent,
   Typography,
   Container,
@@ -23,9 +23,9 @@ import { register } from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
 import { isMobile } from '@utils/mediaQuery';
-import { providers } from '@utils/socialLogin';
 import Loader from '@components/Loader/Loader';
 import { showAlert } from '@redux/alert/actions/alert.actions';
+import { httpService } from '@modules/http/http.service';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {
@@ -57,13 +57,6 @@ const useStyles = makeStyles((theme) => ({
     minHeight: '5rem',
     margin: '0.25rem 0',
   },
-  buttonProgress: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
-  },
   loadingWrapper: {
     margin: theme.spacing(1),
     position: 'relative',
@@ -78,9 +71,6 @@ const useStyles = makeStyles((theme) => ({
   },
   link: {
     margin: theme.spacing(1, 0, 0, 1),
-  },
-  hidden: {
-    display: 'none',
   },
   consentContainer: {
     display: 'flex',
@@ -99,7 +89,7 @@ const Register = ({
 }) => {
   const classes = useStyles();
 
-  const email = useInput('', { required: true });
+  const [email, setEmail] = useState('');
   const username = useInput('', { required: true });
   const password = useInput('', { required: true });
   const re_password = useInput('', {
@@ -107,13 +97,44 @@ const Register = ({
     confirm: true,
     matchField: password,
   });
-  const orgName = useInput('', { required: true });
+  const [orgName, setOrgName] = useState('');
   const userType = useInput('', { required: true });
   const first_name = useInput('', { required: true });
   const last_name = useInput('');
   const coupon_code = useInput(window.env.FREE_COUPON_CODE || '');
   const [formError, setFormError] = useState({});
   const [checked, setChecked] = React.useState(false);
+  const [hasInviteDetails, setInviteDetails] = React.useState(false);
+
+  useEffect(() => {
+    const queryParameters = new URLSearchParams(window.location.search);
+    const token = queryParameters.get('token');
+    if (token) {
+      try {
+        httpService.makeRequest('get',
+          `${window.env.API_URL}coreuser/invite_check/?token=${token}`)
+          .then((response) => {
+            if (response && response.data) {
+              setInviteDetails(true);
+              if (response.data.email) {
+                setEmail(response.data.email);
+              }
+              if (response.data.organization) {
+                setOrgName(response.data.organization.name);
+              }
+            }
+          }).catch((error) => {
+            dispatch(showAlert({
+              type: 'error',
+              open: true,
+              message: 'Token is expired!',
+            }));
+          });
+      } catch (httpError) {
+        console.log('httpError : ', httpError);
+      }
+    }
+  }, []);
 
   // eslint-disable-next-line consistent-return
   useEffect(() => {
@@ -122,31 +143,26 @@ const Register = ({
       script.src = '//fw-cdn.com/1900654/2696977.js';
       script.chat = true;
       document.body.appendChild(script);
-
       return () => {
         document.body.removeChild(script);
       };
     }
   }, []);
 
-  /**
-   * Submit the form to the backend and attempts to authenticate
-   * @param {Event} event the default submit event
-   */
   const handleSubmit = async (event) => {
     event.preventDefault();
     const registerFormValue = {
       username: username.value,
-      email: email.value,
+      email,
       password: password.value,
-      organization_name: orgName.value,
+      organization_name: orgName,
       user_type: userType.value,
       first_name: first_name.value,
       last_name: last_name.value,
       coupon_code: coupon_code.value,
     };
 
-    if (_.includes(_.toLower(_.trim(orgName.value)), 'buildly')) {
+    if (_.includes(_.toLower(_.trim(orgName)), 'buildly')) {
       dispatch(showAlert({
         type: 'error',
         open: true,
@@ -156,13 +172,6 @@ const Register = ({
       dispatch(register(registerFormValue, history));
     }
   };
-
-  /**
-   * Handle input field blur event
-   * @param {Event} e Event
-   * @param {String} validation validation type if any
-   * @param {Object} input input field
-   */
 
   const handleBlur = (e, validation, input) => {
     const validateObj = validators(validation, input);
@@ -193,9 +202,9 @@ const Register = ({
     if (
       !username.value
       || !password.value
-      || !email.value
+      || !email
       || !re_password.value
-      || !orgName.value
+      || !orgName
       || !userType.value
       || !first_name.value
     ) return true;
@@ -207,7 +216,7 @@ const Register = ({
 
   return (
     <>
-      {loading && <Loader open={loading} />}
+      {(loading || socialLogin) && <Loader open={loading || socialLogin} />}
       <div className={classes.logoDiv}>
         <img src={logo} alt="Logo" className={classes.logo} />
       </div>
@@ -219,7 +228,6 @@ const Register = ({
               <Typography component="h1" variant="h5">
                 Register
               </Typography>
-
               <form className={classes.form} noValidate onSubmit={handleSubmit}>
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12} md={6}>
@@ -241,7 +249,6 @@ const Register = ({
                       {...first_name.bind}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <TextField
                       variant="outlined"
@@ -261,7 +268,6 @@ const Register = ({
                     />
                   </Grid>
                 </Grid>
-
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12} md={6}>
                     <TextField
@@ -282,7 +288,6 @@ const Register = ({
                       {...username.bind}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <TextField
                       variant="outlined"
@@ -294,17 +299,19 @@ const Register = ({
                       name="email"
                       autoComplete="email"
                       type="email"
+                      value={email}
+                      disabled={hasInviteDetails}
                       error={formError.email && formError.email.error}
                       helperText={
                         formError.email ? formError.email.message : ''
                       }
                       className={classes.textField}
+                      onChange={(e) => setEmail(e.target.value)}
                       onBlur={(e) => handleBlur(e, 'email', email)}
                       {...email.bind}
                     />
                   </Grid>
                 </Grid>
-
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12}>
                     <TextField
@@ -316,17 +323,19 @@ const Register = ({
                       label="Organization Name"
                       name="organization_name"
                       autoComplete="organization_name"
+                      value={orgName}
+                      disabled={hasInviteDetails}
                       error={formError.orgName && formError.orgName.error}
                       helperText={
                         formError.orgName ? formError.orgName.message : ''
                       }
                       className={classes.textField}
+                      onChange={(e) => setOrgName(e.target.value)}
                       onBlur={(e) => handleBlur(e, 'required', orgName)}
                       {...orgName.bind}
                     />
                   </Grid>
                 </Grid>
-
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12}>
                     <TextField
@@ -353,7 +362,6 @@ const Register = ({
                     </TextField>
                   </Grid>
                 </Grid>
-
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12} md={6}>
                     <TextField
@@ -375,7 +383,6 @@ const Register = ({
                       {...password.bind}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <TextField
                       variant="outlined"
@@ -401,7 +408,6 @@ const Register = ({
                     />
                   </Grid>
                 </Grid>
-
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12}>
                     <TextField
@@ -422,7 +428,6 @@ const Register = ({
                     />
                   </Grid>
                 </Grid>
-
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12}>
                     <div className={classes.consentContainer}>
@@ -440,7 +445,6 @@ const Register = ({
                     </div>
                   </Grid>
                 </Grid>
-
                 <div className={classes.loadingWrapper}>
                   <Button
                     type="submit"
@@ -452,37 +456,19 @@ const Register = ({
                   >
                     Register
                   </Button>
-                  {loading && !socialLogin && (
-                    <CircularProgress
-                      size={24}
-                      className={classes.buttonProgress}
-                    />
-                  )}
                 </div>
               </form>
-
               <Grid container>
                 <Grid item xs={12} className={classes.or}>
                   <Typography variant="body1">----OR----</Typography>
                 </Grid>
-
                 <Grid item xs={12} className={classes.socialAuth}>
                   <GithubLogin
                     dispatch={dispatch}
                     history={history}
                     disabled={loading && socialLogin}
                   />
-
-                  {loading
-                    && socialLogin
-                    && socialLogin === providers.github && (
-                      <CircularProgress
-                        size={24}
-                        className={classes.buttonProgress}
-                      />
-                  )}
                 </Grid>
-
                 <Grid item className={classes.link}>
                   <Link href={routes.LOGIN} variant="body2" color="secondary">
                     Already have an account? Sign in

@@ -69,7 +69,6 @@ const Tabular = ({
           {_.size(_.filter(comments, { feature: featureRows[menuIndex]?.feature_uuid }))}
           )
         </MenuItem>
-
         <Divider />
         <MenuItem onClick={(e) => issueSuggestions(featureRows[menuIndex])}>
           <ListItemIcon>
@@ -77,7 +76,6 @@ const Tabular = ({
           </ListItemIcon>
           Convert to issue/ticket for dev team
         </MenuItem>
-
         <Divider />
         <MenuItem onClick={(e) => showRelatedIssues(featureRows[menuIndex]?.feature_uuid)}>
           <ListItemIcon>
@@ -100,7 +98,6 @@ const Tabular = ({
           </ListItemIcon>
           Comments
         </MenuItem>
-
         {!!issueRows[menuIndex] && !!issueRows[menuIndex].feature_uuid && (
           <>
             <Divider />
@@ -202,13 +199,11 @@ const Tabular = ({
           No product selected yet. Please select a product to view related features and/or issues.
         </Typography>
       )}
-
       {!!selectedProduct && upgrade && (
         <Typography variant="h6" align="center">
           Upgrade to be able to create more features
         </Typography>
       )}
-
       {!!selectedProduct && suggestedFeatures && !_.isEmpty(suggestedFeatures) && (
         <div className={classes.tabular}>
           <DataTableWrapper
@@ -221,7 +216,6 @@ const Tabular = ({
           />
         </div>
       )}
-
       {!!selectedProduct && (
         <div
           className={
@@ -247,7 +241,6 @@ const Tabular = ({
           />
         </div>
       )}
-
       {!!selectedProduct && (
         <div className={`${classes.tabular} ${classes.tabular2}`}>
           <DataTableWrapper

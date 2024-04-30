@@ -83,7 +83,7 @@ const IssueSuggestions = ({
     const formData = {
       ...editData,
       edit_date: dateTime,
-      feature_uuid: showData.feature_uuid,
+      feature: showData.feature_uuid,
       start_date: dateTime,
       end_date: dateTime,
       status: showData.status,

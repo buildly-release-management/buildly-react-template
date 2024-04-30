@@ -203,7 +203,7 @@ const NewProductForm = (props) => {
   const viewPage = location.state && location.state.type === 'view';
   const formTitle = editPage ? 'Edit Product' : 'New Product Setup';
 
-  const [activeStep, setActiveStep] = React.useState(0);
+  const [activeStep, setActiveStep] = useState(0);
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
   const [confirmModalFor, setConfirmModalFor] = useState(null);
@@ -237,7 +237,7 @@ const NewProductForm = (props) => {
 
   const handleClose = () => {
     if ((!editData && productFormData && !_.isEmpty(productFormData))
-    || checkIfFormEdited(activeStep)) {
+      || checkIfFormEdited(activeStep)) {
       setConfirmModal(true);
       setConfirmModalFor(null);
     } else {

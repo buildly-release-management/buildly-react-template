@@ -1,13 +1,9 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { UserContext } from '@context/User.context';
-import {
-  Button,
-  Grid,
-} from '@mui/material';
+import { Button, Grid } from '@mui/material';
 import MUIDataTable from 'mui-datatables';
 
-const Subscriptions = ({ dispatch }) => {
-  // Initialize variables
+const Subscriptions = () => {
   const user = useContext(UserContext);
   const maxDate = new Date();
   maxDate.setHours(0, 0, 0, 0);
@@ -31,15 +27,15 @@ const Subscriptions = ({ dispatch }) => {
         empty: true,
         customBodyRenderLite: (dataIndex) => (
           <>
-            { (maxDate > new Date(user.subscriptions[dataIndex].subscription_end_date)) && (
-            <Button
-              type="submit"
-              variant="outlined"
-              color="primary"
-              size="small"
-            >
-              Renew
-            </Button>
+            {(maxDate > new Date(user.subscriptions[dataIndex].subscription_end_date)) && (
+              <Button
+                type="submit"
+                variant="outlined"
+                color="primary"
+                size="small"
+              >
+                Renew
+              </Button>
             )}
           </>
         ),
@@ -59,15 +55,14 @@ const Subscriptions = ({ dispatch }) => {
   };
 
   return (
-    <>
-      <Grid item xs={12}>
-        <MUIDataTable
-          data={user.subscriptions}
-          columns={columns}
-          options={options}
-        />
-      </Grid>
-    </>
+    <Grid item xs={12}>
+      <MUIDataTable
+        data={user.subscriptions}
+        columns={columns}
+        options={options}
+      />
+    </Grid>
   );
 };
+
 export default Subscriptions;
