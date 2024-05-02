@@ -32,7 +32,7 @@ const MainNavbar = (props: any) => {
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="mx-auto main-nav-link">
             <Nav.Link href="#roadmap">Roadmap</Nav.Link>
-            <Nav.Link href="#dashboard">Dashboard</Nav.Link>
+            <Nav.Link href="#dashboard">Portfolio</Nav.Link>
             <Nav.Link href="#releases">Releases</Nav.Link>
             <Button variant="secondary" size="sm">
               Upgrade plan
