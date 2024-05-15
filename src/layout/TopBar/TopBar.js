@@ -214,7 +214,7 @@ const TopBar = ({
     label: 'Releases',
     value: routes.RELEASE,
     pathName: [routes.RELEASE],
-    // disabled: !activePlan,
+    disabled: !activePlan,
   }];
 
   const stripe = useStripe();
