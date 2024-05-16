@@ -25,60 +25,6 @@ const TimelineComponent = ({ reportData, suggestedFeatures }) => {
             icon={releaseItem.icon}
             title={releaseItem.name}
             subtitle={releaseItem.release_date}
-            // action={
-            //   (
-            //     (
-            //       releaseItem && releaseItem.features.length && (
-            //         <div
-            //           className="feature-list m-2"
-            //           style={{
-            //             backgroundColor: releaseItem.bgColor,
-            //             padding: 8,
-            //             paddingLeft: 20,
-            //             color: releaseItem.bgColor === '#0C5594'
-            //               || releaseItem.bgColor === '#152944'
-            //               ? '#fff'
-            //               : '#000',
-            //           }}
-            //         >
-            //           <ul className="p-2">
-            //             {(
-            //               releaseItem.features && releaseItem.features.map(
-            //                 (feature, index) => (
-            //                   <li key={`feat-${index}`}>{feature.name}</li>
-            //                 ),
-            //               )
-            //             )}
-            //           </ul>
-            //         </div>
-            //       )
-            //     ) || (
-            //       <div
-            //         className="feature-list m-2"
-            //         style={{
-            //           backgroundColor: releaseItem.bgColor,
-            //           padding: 8,
-            //           paddingLeft: 20,
-            //           color: releaseItem.bgColor === '#0C5594'
-            //             || releaseItem.bgColor === '#152944'
-            //             ? '#fff'
-            //             : '#000',
-            //         }}
-            //       >
-            //         <ul className="p-2">
-            //           {(
-            //             features && features.map(
-            //               (feature, index) => (
-            //                 <li key={`feat-${index}`}>{`${feature?.suggested_feature}(Sug.)`}</li>
-            //               ),
-            //             )
-            //           )}
-            //         </ul>
-            //       </div>
-            //     )
-            //     || ''
-            //   )
-            // }
             action={(
               <div
                 className="feature-list m-2"
