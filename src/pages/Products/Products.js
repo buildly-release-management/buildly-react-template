@@ -50,7 +50,7 @@ const Products = ({
 
   useEffect(() => {
     dispatch(getAllProducts(user.organization.organization_uuid));
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     setRows(_.orderBy(getProductsData(products), 'create_date', 'desc'));

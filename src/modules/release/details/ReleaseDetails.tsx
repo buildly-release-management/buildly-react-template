@@ -1,5 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
+import _ from "lodash";
 import DoughnutChart from "../../../components/Charts/Doughnut";
 import BarChart from "../../../components/Charts/BarChart";
 import "./ReleaseDetails.css";
@@ -22,8 +23,6 @@ import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import ReleaseForm from "./components/ReleaseForm";
 import { HttpService } from "../../../services/http.service";
 import Loader from "../../../components/Loader/Loader";
-import { useActor } from "@xstate/react";
-import { GlobalStateContext } from "../../../context/globalState";
 import Chatbot from "../../../components/Chatbot/Chatbot";
 import { routes } from "../../../routes/routesConstants";
 import Tab from "@mui/material/Tab";
@@ -31,42 +30,29 @@ import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 
-interface BarChartData {
-  label: string;
-  key: string;
-  backgroundColor: string;
-  data: number[];
-}
-
-const httpService = new HttpService();
-
 function ReleaseDetails() {
   const { releaseUuid } = useParams();
   const history = useHistory();
+  const httpService = new HttpService();
 
-  const [releaseSummary, setReleaseSummary] = useState(null as any);
+  const [releaseDetails, setReleaseDetails] = useState<any>([]);
+  const [releaseSummary, setReleaseSummary] = useState<any>([]);
+  const [releaseFeatures, setReleaseFeatures] = useState<any>([]);
+  const [progressSummaryLabels, setProgressSummaryLabels] = useState<any>([]);
+  const [progressSummaryValues, setProgressSummaryValues] = useState<any>([]);
+  const [assigneesLabels, setAssigneesLabels] = useState<any>([]);
+  const [assigneesValues, setAssigneesValues] = useState<any>([]);
+  const [barFeatureNames, setBarFeatureNames] = useState<any>([]);
+  const [barSummary, setBarSummary] = useState<any>([]);
   const [summaryLoading, setSummaryLoading] = useState(false);
-
-  const globalContext = useContext(GlobalStateContext);
-  const [productState] = useActor(globalContext.productMachineService);
-
-  const [tabKey, setTabKey] = React.useState<string>("report");
-  const [value, setValue] = React.useState("1");
+  const [value, setValue] = useState("1");
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
   };
 
-  const pieChartLabels = ["Done", "In progress", "Overdue"];
-  const pieChartLabel = "Releases summary";
-  const pieChartData = [7, 5, 3];
-
   let featureNames: string[] = [];
   let barChartSummaryData: any[] = [];
-
-  const backgroundColor = "#02b844";
-  const borderWidth = 1;
-  const borderColor = "#000000";
 
   function createData(
     feature_uuid: string,
@@ -106,98 +92,98 @@ function ReleaseDetails() {
     };
   }
 
-  const [releaseDetails, setReleaseDetails] = useState(null as any);
-  const [releaseFeatures, setReleaseFeatures] = useState(null as any);
+  useEffect(() => {
+    setSummaryLoading(true);
+    try {
+      httpService
+        .fetchData(
+          `/release/release_summary/?release_uuid=${releaseUuid}`,
+          "release"
+        )
+        .then((response: any) => {
+          setReleaseDetails(response.data);
+          const releaseSummaryObj = response.data;
+          if (releaseSummaryObj && releaseSummaryObj.summary) {
+            const featuresSummaryObj = generateBarChartData(
+              releaseSummaryObj.summary.feature_issues
+            );
+            setReleaseSummary({
+              progressSummary: {
+                labels: Object.keys(releaseSummaryObj.summary.features_summary),
+                values: Object.values(
+                  releaseSummaryObj.summary.features_summary
+                ),
+              },
+              features: featuresSummaryObj,
+              assignees: {
+                labels: releaseSummaryObj.summary.assignee_data
+                  ? Object.keys(releaseSummaryObj.summary.assignee_data)
+                  : [],
+                values: Object.keys(releaseSummaryObj.summary.assignee_data)
+                  .length
+                  ? Object.values(releaseSummaryObj.summary.assignee_data)
+                  : [],
+              },
+            });
+          }
+          setSummaryLoading(false);
+        });
+    } catch (httpError) {
+      console.log("httpError : ", httpError);
+      setSummaryLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (releaseUuid) {
-      if (!releaseDetails) {
-        setSummaryLoading(true);
-        try {
-          httpService
-            .fetchData(
-              `/release/release_summary/?release_uuid=${releaseUuid}`,
-              "release"
-            )
-            .then((response: any) => {
-              if (response && response.data) {
-                setReleaseDetails(response.data);
-                const releaseSummaryObj = response.data;
-                if (releaseSummaryObj && releaseSummaryObj.summary) {
-                  // Construct issues summary data
-                  const featuresSummaryObj = generateBarChartData(
-                    releaseSummaryObj.summary.feature_issues
-                  );
-                  setReleaseSummary({
-                    progressSummary: {
-                      labels: Object.keys(
-                        releaseSummaryObj.summary.features_summary
-                      ),
-                      values: Object.values(
-                        releaseSummaryObj.summary.features_summary
-                      ),
-                    },
-                    features: featuresSummaryObj,
-                    assignees: {
-                      labels: releaseSummaryObj.summary.assignee_data
-                        ? Object.keys(releaseSummaryObj.summary.assignee_data)
-                        : [],
-                      values: Object.keys(
-                        releaseSummaryObj.summary.assignee_data
-                      ).length
-                        ? Object.values(releaseSummaryObj.summary.assignee_data)
-                        : [],
-                    },
-                  });
-                }
-                setSummaryLoading(false);
-              }
-            });
-        } catch (httpError) {
-          console.log("httpError : ", httpError);
-          setSummaryLoading(false);
-        }
-      }
-
-      if (!releaseFeatures) {
-        setSummaryLoading(true);
-        try {
-          httpService
-            .fetchData(
-              `/feature/?release_features__release_uuid=${releaseUuid}`,
-              "release"
-            )
-            .then((response: any) => {
-              if (response && response.data) {
-                const features = response.data;
-                if (features && features.length) {
-                  features.forEach((feature: any, index: number) => {
-                    try {
-                      httpService
-                        .fetchData(
-                          `/issue/?feature=${feature.feature_uuid}`,
-                          "release"
-                        )
-                        .then((response: any) => {
-                          if (response.data) {
-                            features[index].issuesList = response.data;
-                          }
-                        });
-                    } catch (httpError) {
-                      setSummaryLoading(false);
+    setSummaryLoading(true);
+    try {
+      httpService
+        .fetchData(
+          `/feature/?release_features__release_uuid=${releaseUuid}`,
+          "release"
+        )
+        .then((response: any) => {
+          const features = response.data;
+          if (features && features.length) {
+            features.forEach((feature: any, index: number) => {
+              try {
+                httpService
+                  .fetchData(
+                    `/issue/?feature=${feature.feature_uuid}`,
+                    "release"
+                  )
+                  .then((response: any) => {
+                    if (response.data) {
+                      features[index].issuesList = response.data;
                     }
                   });
-                }
-                setReleaseFeatures(features);
-                setSummaryLoading(false);
+              } catch (httpError) {
+                console.log("httpError : ", httpError);
               }
             });
-        } catch (httpError) {
+          }
+          setReleaseFeatures(features);
           setSummaryLoading(false);
-        }
-      }
+        });
+    } catch (httpError) {
+      console.log("httpError : ", httpError);
+      setSummaryLoading(false);
     }
-  }, [productState]);
+  }, []);
+
+  useEffect(() => {
+    if (!releaseSummary) return;
+
+    const { progressSummary, features, assignees } = releaseSummary;
+
+    progressSummary?.labels && setProgressSummaryLabels(progressSummary.labels);
+    progressSummary?.values && setProgressSummaryValues(progressSummary.values);
+    features?.featureNames && setBarFeatureNames(features.featureNames);
+    features?.barChartSummaryData &&
+      setBarSummary(features.barChartSummaryData);
+    assignees?.labels && setAssigneesLabels(assignees.labels);
+    assignees?.values && setAssigneesValues(assignees.values);
+  }, [releaseSummary]);
 
   const generateBarChartData = (data: any) => {
     featureNames = [];
@@ -242,30 +228,6 @@ function ReleaseDetails() {
     const { row } = props;
     const [open, setOpen] = React.useState(false);
 
-    if (open && row) {
-      setSummaryLoading(true);
-      try {
-        httpService
-          .fetchData(`/issue/?feature=${row.feature_uuid}`, "release")
-          .then((response: any) => {
-            if (response && response.data) {
-              const featureEntryIndex = releaseFeatures.findIndex(
-                (r: any) => r.feature_uuid === row.feature_uuid
-              );
-              if (featureEntryIndex > -1) {
-                releaseFeatures[featureEntryIndex].featuresList = response.data;
-                row.issuesList = response.data;
-                setReleaseFeatures(releaseFeatures);
-              }
-              setSummaryLoading(false);
-            }
-          });
-      } catch (httpError) {
-        console.log("httpError : ", httpError);
-        setSummaryLoading(false);
-      }
-    }
-
     return (
       <React.Fragment>
         <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
@@ -294,13 +256,23 @@ function ReleaseDetails() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {row?.issuesList?.map((issue) => (
-                      <TableRow key={issue.issue_uuid}>
-                        <TableCell>{issue.name}</TableCell>
-                        <TableCell align="center">{issue.complexity}</TableCell>
-                        <TableCell>{issue.assignees}</TableCell>
+                    {row?.issuesList?.length ? (
+                      row?.issuesList?.map((issue) => (
+                        <TableRow key={issue.issue_uuid}>
+                          <TableCell>{issue.name}</TableCell>
+                          <TableCell align="center">
+                            {issue.complexity}
+                          </TableCell>
+                          <TableCell>{issue.assignees}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+                        <TableCell>No issues to display</TableCell>
+                        <TableCell />
+                        <TableCell />
                       </TableRow>
-                    ))}
+                    )}
                   </TableBody>
                 </Table>
               </Box>
@@ -314,11 +286,7 @@ function ReleaseDetails() {
   return (
     <>
       {summaryLoading ? (
-        <>
-          <div className="d-flex flex-column align-items-center justify-content-center h-50">
-            <Loader open={summaryLoading} />
-          </div>
-        </>
+        <Loader open={summaryLoading} />
       ) : (
         <>
           <Box className="toolbar" display="flex" alignItems="center">
@@ -349,7 +317,6 @@ function ReleaseDetails() {
               <TabPanel value="1">
                 {releaseDetails?.features?.length ? (
                   <>
-                    {" "}
                     <div className="container-fluid release-summary-container">
                       <div className="row flex-nowrap justify-content-between">
                         <div
@@ -362,8 +329,12 @@ function ReleaseDetails() {
                           <DoughnutChart
                             id="progressSummary"
                             label="Progress summary"
-                            labels={releaseSummary?.progressSummary?.labels}
-                            data={releaseSummary?.progressSummary?.values}
+                            labels={
+                              progressSummaryLabels ? progressSummaryLabels : []
+                            }
+                            data={
+                              progressSummaryValues ? progressSummaryValues : []
+                            }
                           />
                         </div>
                         <div
@@ -375,11 +346,11 @@ function ReleaseDetails() {
                           <BarChart
                             id="features"
                             label="Features summary"
-                            labels={releaseSummary?.features?.featureNames}
-                            data={releaseSummary?.features?.barChartSummaryData}
-                            backgroundColor={backgroundColor}
-                            borderWidth={borderWidth}
-                            borderColor={borderColor}
+                            labels={barFeatureNames ? barFeatureNames : []}
+                            data={barSummary ? barSummary : []}
+                            backgroundColor="#02b844"
+                            borderWidth={1}
+                            borderColor="#000"
                           />
                         </div>
                         <div
@@ -388,16 +359,15 @@ function ReleaseDetails() {
                             width: "32%",
                           }}
                         >
-                          {releaseSummary?.assignees?.labels.length ? (
+                          {!_.isEmpty(assigneesLabels) ? (
                             <DoughnutChart
                               id="resourceAllocation"
                               label="Resource allocation"
-                              labels={releaseSummary?.assignees?.labels}
-                              data={releaseSummary?.assignees?.values}
+                              labels={assigneesLabels ? assigneesLabels : []}
+                              data={assigneesValues ? assigneesValues : []}
                             />
                           ) : (
                             <>
-                              {" "}
                               <Typography>Resource allocation</Typography>
                               <Typography className="m-auto">
                                 No data to display
@@ -426,11 +396,17 @@ function ReleaseDetails() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {releaseFeatures && releaseFeatures.length
-                        ? releaseFeatures.map((row: any) => (
-                            <Row key={row.feature_uuid} row={row} />
-                          ))
-                        : []}
+                      {releaseFeatures.length ? (
+                        releaseFeatures.map((row: any) => (
+                          <Row key={row.feature_uuid} row={row} />
+                        ))
+                      ) : (
+                        <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+                          <TableCell />
+                          <TableCell>No features to display</TableCell>
+                          <TableCell />
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -443,4 +419,5 @@ function ReleaseDetails() {
     </>
   );
 }
+
 export default ReleaseDetails;
