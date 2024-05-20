@@ -62,44 +62,37 @@ export const getReleaseBudgetData = (teamData, releases) => {
 };
 
 export const addColorsAndIcons = (releaseData) => {
-  if (!releaseData) {
-    return null;
+  const releaseDataCopy = [...releaseData];
+  if (releaseDataCopy.length > 0) {
+    return releaseDataCopy.map((item, index) => {
+      const itemCopy = { ...item };
+      let colors = ['#E0E0E0', '#F9943B', '#0C5594', '#152944'];
+      const status = item.release_status.toLowerCase();
+      if (itemCopy.name.toLowerCase().includes('poc')) {
+        if (status === 'released') {
+          itemCopy.icon = FaRegCalendarCheck;
+        } else if (status === 'in_progress') {
+          itemCopy.icon = FaHubspot;
+        } else {
+          itemCopy.icon = FaQuestionCircle;
+        }
+      } else if (itemCopy.name.toLowerCase().includes('mvp')) {
+        if (status === 'released') {
+          itemCopy.icon = FaRegCalendarCheck;
+        } else if (status === 'in_progress') {
+          itemCopy.icon = FaPlaneDeparture;
+        } else {
+          itemCopy.icon = FaQuestionCircle;
+        }
+      } else {
+        itemCopy.icon = FaCloudsmith;
+      }
+      if (index + 1 > colors.length) {
+        colors = [...colors, ...colors];
+      }
+      itemCopy.bgColor = colors[index];
+      return itemCopy;
+    });
   }
-  return releaseData.map((release, index) => {
-    const releaseCopy = { ...release };
-    const colors = ['#E0E0E0', '#F9943B', '#0C5594', '#152944'];
-    let allColors = [...colors];
-
-    const status = releaseCopy.release_status.toLowerCase();
-    if (release.name.toLowerCase()
-      .includes('poc')) {
-      // add icons and color
-      if (status === 'released') {
-        releaseCopy.icon = FaRegCalendarCheck;
-      } else if (status === 'in_progress') {
-        releaseCopy.icon = FaHubspot;
-      } else {
-        releaseCopy.icon = FaQuestionCircle;
-      }
-    } else if (release.name.toLowerCase()
-      .includes('mvp')) {
-      // add icons and color
-      if (status === 'released') {
-        releaseCopy.icon = FaRegCalendarCheck;
-      } else if (status === 'in_progress') {
-        releaseCopy.icon = FaPlaneDeparture;
-      } else {
-        releaseCopy.icon = FaQuestionCircle;
-      }
-    } else {
-      releaseCopy.icon = FaCloudsmith;
-    }
-
-    while (index > colors.length) {
-      allColors += (colors);
-    }
-
-    releaseCopy.bgColor = colors[index];
-    return releaseCopy;
-  });
+  return [];
 };

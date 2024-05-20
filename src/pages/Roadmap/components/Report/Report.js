@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
+import _ from 'lodash';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Image from 'react-bootstrap/Image';
@@ -39,7 +39,7 @@ const Report = ({ selectedProduct }) => {
 
   // effects
   useEffect(() => {
-    if (selectedProduct) {
+    if (selectedProduct && _.toNumber(selectedProduct) !== 0) {
       setLoading(true);
       // define requests
       const requestsArray = [];
@@ -70,9 +70,8 @@ const Report = ({ selectedProduct }) => {
       // handle promises
       Promise.all(requestsArray)
         .then((results) => {
-          setLoading(false);
           const reportData = results[0].data;
-          const releaseReport = JSON.parse(JSON.stringify(results[1].data));
+          const releaseReport = results[1].data;
 
           if (reportData && reportData.budget) {
             // set the image to display
@@ -90,16 +89,16 @@ const Report = ({ selectedProduct }) => {
             setProductData(reportData);
             setArchitectureImg(img);
             // get release data
-            releaseReport.release_budget = getReleaseBudgetData(
+            releaseReport.release_data = getReleaseBudgetData(
               reportData.budget?.team_data,
               releaseReport.release_data,
             );
-
-            releaseReport.release_budget = addColorsAndIcons(
-              JSON.parse(JSON.stringify(releaseReport.release_budget)),
+            releaseReport.release_data = addColorsAndIcons(
+              releaseReport.release_data,
             );
             // set release data
             setReleaseData(releaseReport);
+            setLoading(false);
           }
         })
         .catch((error) => {
@@ -107,7 +106,7 @@ const Report = ({ selectedProduct }) => {
           displayReport = false;
         });
     }
-  }, []);
+  }, [selectedProduct]);
 
   /**
    * Download pdf report
@@ -145,7 +144,7 @@ const Report = ({ selectedProduct }) => {
     setAnchorEl(null);
   };
 
-  if (selectedProduct && displayReport) {
+  if (selectedProduct && displayReport && _.toNumber(selectedProduct) !== 0) {
     return (
       <>
         {loading && <Loader open={loading} />}
@@ -170,7 +169,6 @@ const Report = ({ selectedProduct }) => {
               }}
             >
               <MenuItem onClick={getPdf}>Download Report</MenuItem>
-              {/* <MenuItem onClick={closeDownloadMenu}>Email report</MenuItem> */}
             </Menu>
           </section>
         </div>
@@ -180,7 +178,8 @@ const Report = ({ selectedProduct }) => {
             <Card className="w-100">
               <Card.Body>
                 <Card.Title>
-                  {`Architecture suggestion: (${productData?.architecture_type?.toUpperCase()})`}
+                  Architecture suggestion:
+                  {productData && productData.architecture_type ? ` (${productData?.architecture_type?.toUpperCase()})` : ''}
                 </Card.Title>
                 <div className="image-responsive m-2" style={{ height: 350 }}>
                   <Image src={architectureImg} fluid style={{ height: '100%' }} />
@@ -205,10 +204,10 @@ const Report = ({ selectedProduct }) => {
             <Card.Title>Timeline</Card.Title>
             <div className="m-2">
               {
-                releaseData.release_budget && releaseData.release_budget.length
+                releaseData.release_data && releaseData.release_data.length
                   ? (
                     <TimelineComponent
-                      reportData={releaseData.release_budget}
+                      reportData={releaseData.release_data}
                       suggestedFeatures={productData?.feature_suggestions}
                     />
                   ) : (
@@ -296,13 +295,19 @@ const Report = ({ selectedProduct }) => {
               </div>
               <div className="col-md-5 row">
                 {(
-                  releaseData && releaseData.release_budget && releaseData.release_budget.map(
+                  releaseData && releaseData.release_data && releaseData.release_data.map(
                     (releaseItem, index) => (
-                      <div className="col-md-6" key={`rc-${index}`}>
+                      <div className="col-md-6" style={{ marginBottom: 20 }} key={`rc-${index}`}>
                         <ListGroup as="ul">
                           <ListGroup.Item
                             as="li"
-                            style={{ backgroundColor: releaseItem.bgColor }}
+                            style={{
+                              backgroundColor: releaseItem.bgColor,
+                              color: releaseItem.bgColor === '#0C5594'
+                                || releaseItem.bgColor === '#152944'
+                                ? '#fff'
+                                : '#000',
+                            }}
                           >
                             <b>{releaseItem.name}</b>
                           </ListGroup.Item>

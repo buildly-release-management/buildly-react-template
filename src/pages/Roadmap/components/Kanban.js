@@ -247,7 +247,7 @@ const Kanban = ({
 
   return (
     <>
-      {!selectedProduct && (
+      {(!selectedProduct || _.toNumber(selectedProduct) === 0) && (
         <Typography className={classes.noProduct} component="div" variant="body1">
           No product selected yet. Please select a product to view related features and/or issues.
         </Typography>
@@ -259,7 +259,7 @@ const Kanban = ({
         </FormHelperText>
       )}
 
-      {!!selectedProduct && (
+      {!!selectedProduct && _.toNumber(selectedProduct) !== 0 && (
         <DragDropContext
           onDragEnd={(result) => {
             onDragEnd(result, columns, setColumns);
