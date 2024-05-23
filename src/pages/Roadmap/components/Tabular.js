@@ -48,6 +48,7 @@ const Tabular = ({
   removeSuggestedFeature,
   comments,
   showRelatedIssues,
+  setDataLoading,
 }) => {
   const classes = useStyles();
   const [featureRows, setFeatureRows] = useState([]);
@@ -120,6 +121,7 @@ const Tabular = ({
   }, [features, issueRows, menuIndex, comments]);
 
   useEffect(() => {
+    setDataLoading(true);
     const featRows = _.map(features, (feat) => ({
       ...feat,
       _status: _.find(statuses, { status_uuid: feat.status })?.name,
@@ -134,10 +136,12 @@ const Tabular = ({
 
     setFeatureRows(featRows);
     setIssueRows(issRows);
+    setDataLoading(false);
   }, [statuses, features, issues]);
 
   useEffect(() => {
     if (suggestedFeatures && !_.isEmpty(suggestedFeatures)) {
+      setDataLoading(true);
       const cols = [
         {
           name: 'suggested_feature',
@@ -189,12 +193,13 @@ const Tabular = ({
         },
       ];
       setFinalSugCols(cols);
+      setDataLoading(false);
     }
   }, [suggestedFeatures]);
 
   return (
     <>
-      {!selectedProduct && (
+      {(!selectedProduct || _.toNumber(selectedProduct) === 0) && (
         <Typography className={classes.noProduct} component="div" variant="body1">
           No product selected yet. Please select a product to view related features and/or issues.
         </Typography>
@@ -204,7 +209,7 @@ const Tabular = ({
           Upgrade to be able to create more features
         </Typography>
       )}
-      {!!selectedProduct && suggestedFeatures && !_.isEmpty(suggestedFeatures) && (
+      {!!selectedProduct && suggestedFeatures && !_.isEmpty(suggestedFeatures) && _.toNumber(selectedProduct) !== 0 && (
         <div className={classes.tabular}>
           <DataTableWrapper
             loading={loading}
@@ -216,7 +221,7 @@ const Tabular = ({
           />
         </div>
       )}
-      {!!selectedProduct && (
+      {!!selectedProduct && _.toNumber(selectedProduct) !== 0 && (
         <div
           className={
             suggestedFeatures && !_.isEmpty(suggestedFeatures)
@@ -241,7 +246,7 @@ const Tabular = ({
           />
         </div>
       )}
-      {!!selectedProduct && (
+      {!!selectedProduct && _.toNumber(selectedProduct) !== 0 && (
         <div className={`${classes.tabular} ${classes.tabular2}`}>
           <DataTableWrapper
             loading={loading}

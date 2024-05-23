@@ -3,12 +3,14 @@ import Table from "react-bootstrap/Table";
 import { Release } from "../../../interfaces/release";
 import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@mui/material";
 import { Dropdown, ProgressBar } from "react-bootstrap";
 import DoughnutChart from "../../../components/Charts/Doughnut";
 import BarChart from "../../../components/Charts/BarChart";
 import {
+  Autocomplete,
   Box,
+  Button,
+  Checkbox,
   Collapse,
   IconButton,
   TableBody,
@@ -16,11 +18,14 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import { HttpService } from "../../../services/http.service";
@@ -30,6 +35,12 @@ import { GlobalStateContext } from "../../../context/globalState";
 import Chatbot from "../../../components/Chatbot/Chatbot";
 import { routes } from "../../../routes/routesConstants";
 import Loader from "../../../components/Loader/Loader";
+import { connect } from "react-redux";
+import {
+  getAllFeatures,
+  getAllIssues,
+} from "../../../redux/release/actions/release.actions";
+import _ from "lodash";
 
 const httpService = new HttpService();
 
@@ -40,7 +51,7 @@ interface BarChartData {
   data: number[];
 }
 
-function ReleaseList() {
+function ReleaseList({ loading, loaded, dispatch, features, issues }: any) {
   const [releasesSummary, setReleasesSummary] = useState(null as any);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
@@ -52,6 +63,11 @@ function ReleaseList() {
   const selectCurrentProduct = (state: any) => state.context.selectedProduct;
   const selectReleases = (state: any) => state.context.releases;
 
+  const [selectedFeatures, setSelectedFeatures] = useState<any>([]);
+
+  const uncheckedIcon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+  const checkedIcon = <CheckBoxIcon fontSize="small" />;
+
   const currentProduct = useSelector(
     globalContext.productMachineService,
     selectCurrentProduct
@@ -62,11 +78,18 @@ function ReleaseList() {
   );
 
   useEffect(() => {
+    if (currentProduct) {
+      dispatch(getAllFeatures(currentProduct.product_uuid));
+      dispatch(getAllIssues(currentProduct.product_uuid));
+    }
+  }, [currentProduct]);
+
+  useEffect(() => {
     if (releases && releases.length > 0) {
+      setSummaryLoading(true);
       releases.sort((a: any, b: any) =>
         a.release_date.localeCompare(b.release_date)
       );
-      setSummaryLoading(true);
       releases.forEach((release: any, index: number) => {
         try {
           httpService
@@ -125,9 +148,10 @@ function ReleaseList() {
         setSummaryLoading(false);
       }
     }
-  }, [productState]);
+  }, [productState, currentProduct]);
 
   const generateBarChartData = (data: any, dataField: string) => {
+    setSummaryLoading(true);
     const releaseNames: string[] = [];
     const barChartSummaryData: BarChartData[] = [
       {
@@ -160,6 +184,7 @@ function ReleaseList() {
         }
       });
     });
+    setSummaryLoading(false);
     return { releaseNames, barChartSummaryData };
   };
 
@@ -188,7 +213,13 @@ function ReleaseList() {
   const submitRelease = (event: any) => {
     event.preventDefault();
     if (currentProduct) {
-      const data = { product_uuid: currentProduct.product_uuid, ...formData };
+      const data = {
+        product_uuid: currentProduct.product_uuid,
+        features:
+          selectedFeatures &&
+          selectedFeatures.map((obj: any) => obj.feature_uuid),
+        ...formData,
+      };
       sendRelease({ type: "Submit", release: data });
       handleClose();
     }
@@ -245,13 +276,16 @@ function ReleaseList() {
   function Row(props: { row: ReturnType<typeof createData> }) {
     const { row } = props;
     const [open, setOpen] = React.useState(false);
+
     let progressBarObj = {
       value: 0,
       theme: "danger",
     };
+
     if (row.features_count > 0) {
       progressBarObj = initProgressBar(row);
     }
+
     if (open && row) {
       try {
         httpService
@@ -333,30 +367,119 @@ function ReleaseList() {
                 <Table size="small" aria-label="features">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Name</TableCell>
+                      <TableCell width="12" />
+                      <TableCell width="33%">Name</TableCell>
                       <TableCell>Progress</TableCell>
                       <TableCell align="center">Complexity</TableCell>
-                      <TableCell>Issues</TableCell>
+                      <TableCell align="center">Issues</TableCell>
                       <TableCell align="right">Assignees</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {row?.featuresList?.length > 0 ? (
                       row.featuresList.map((feature: any) => (
-                        <TableRow key={feature.feature_uuid}>
-                          <TableCell>{feature.name}</TableCell>
-                          <TableCell>{feature.progress}</TableCell>
+                        <FeatureRow
+                          key={feature.feature_uuid}
+                          feature={feature}
+                        />
+                      ))
+                    ) : (
+                      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+                        <TableCell />
+                        <TableCell>No features to display</TableCell>
+                        <TableCell />
+                        <TableCell />
+                        <TableCell />
+                        <TableCell />
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      </React.Fragment>
+    );
+  }
+
+  function FeatureRow(props: any) {
+    const { feature }: any = props;
+    const [featureOpen, setFeatureOpen] = React.useState(false);
+    const [relatedIssues, setRelatedIssues] = React.useState<any>([]);
+
+    useEffect(() => {
+      setRelatedIssues(
+        _.filter(
+          issues,
+          (issueItem) =>
+            _.toString(issueItem.feature) === _.toString(feature.feature_uuid)
+        )
+      );
+    }, [feature]);
+
+    return (
+      <React.Fragment>
+        <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+          <TableCell>
+            <IconButton
+              aria-label="expand row"
+              size="small"
+              onClick={() => setFeatureOpen(!featureOpen)}
+            >
+              {featureOpen ? (
+                <KeyboardArrowUpIcon />
+              ) : (
+                <KeyboardArrowDownIcon />
+              )}
+            </IconButton>
+          </TableCell>
+          <TableCell>{feature.name}</TableCell>
+          <TableCell>{feature.progress}</TableCell>
+          <TableCell align="center">{feature.complexity}</TableCell>
+          <TableCell align="center">{relatedIssues.length}</TableCell>
+          <TableCell align="right">{feature.assignees}</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell
+            style={{
+              paddingBottom: 0,
+              paddingTop: 0,
+              paddingLeft: 8,
+              backgroundColor: "#f5f5f5",
+            }}
+            colSpan={12}
+          >
+            <Collapse in={featureOpen} timeout="auto" unmountOnExit>
+              <Box sx={{ margin: 1 }}>
+                <Table size="small" aria-label="features">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell width="33%">Name</TableCell>
+                      <TableCell>Progress</TableCell>
+                      <TableCell align="center">Complexity</TableCell>
+                      <TableCell align="right">Assignees</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {relatedIssues.length > 0 ? (
+                      relatedIssues.map((issue: any) => (
+                        <TableRow key={issue.issue_uuid}>
+                          <TableCell>{issue.name}</TableCell>
+                          <TableCell>{issue.progress}</TableCell>
                           <TableCell align="center">
-                            {feature.complexity}
+                            {issue.complexity}
                           </TableCell>
-                          <TableCell>{feature.issues}</TableCell>
-                          <TableCell align="right">
-                            {feature.assignees}
-                          </TableCell>
+                          <TableCell align="right">{issue.assignees}</TableCell>
                         </TableRow>
                       ))
                     ) : (
-                      <div className="p-2">No features to display</div>
+                      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+                        <TableCell>No issues to display</TableCell>
+                        <TableCell />
+                        <TableCell />
+                        <TableCell />
+                      </TableRow>
                     )}
                   </TableBody>
                 </Table>
@@ -370,10 +493,30 @@ function ReleaseList() {
 
   return (
     <>
-      {summaryLoading ? (
+      {summaryLoading ||
+      loading ||
+      !loaded ||
+      releaseState.matches("Entry.Loading") ||
+      releaseState.matches("Submitting") ||
+      releaseState.matches("Submitting.Creating") ||
+      releaseState.matches("Submitting.Updating") ||
+      releaseState.matches("Deleting") ||
+      productState.matches("Products Loading") ? (
         <>
           <div className="d-flex flex-column align-items-center justify-content-center h-50">
-            <Loader open={summaryLoading} />
+            <Loader
+              open={
+                summaryLoading ||
+                loading ||
+                !loaded ||
+                releaseState.matches("Entry.Loading") ||
+                releaseState.matches("Submitting") ||
+                releaseState.matches("Submitting.Creating") ||
+                releaseState.matches("Submitting.Updating") ||
+                releaseState.matches("Deleting") ||
+                productState.matches("Products Loading")
+              }
+            />
           </div>
         </>
       ) : (
@@ -448,7 +591,7 @@ function ReleaseList() {
                 </div>
               ) : null}
               <div className="d-flex justify-content-between">
-                <Typography variant="h6">Releases </Typography>
+                <Typography variant="h6">Releases</Typography>
               </div>
               <TableContainer component={Paper} className="mt-2">
                 <Table aria-label="collapsible table">
@@ -484,6 +627,7 @@ function ReleaseList() {
                   </TableBody>
                 </Table>
               </TableContainer>
+              <div style={{ height: 100 }} />
             </>
           ) : (
             <>
@@ -550,6 +694,43 @@ function ReleaseList() {
                     onChange={(event) => updateFormData(event)}
                   />
                 </Form.Group>
+                <Form.Group
+                  className="mb-3 releaseFeaturesAdd"
+                  controlId="features"
+                >
+                  <Form.Label>Add Features</Form.Label>
+                  <Autocomplete
+                    multiple
+                    id="features-multiple"
+                    disableCloseOnSelect
+                    filterSelectedOptions
+                    options={_.orderBy(features, ["name"], ["asc"])}
+                    getOptionLabel={(option) => option && option.name}
+                    value={selectedFeatures}
+                    onChange={(event, newValue) => {
+                      if (_.size(newValue) > _.size(selectedFeatures)) {
+                        setSelectedFeatures([
+                          ...selectedFeatures,
+                          _.last(newValue),
+                        ]);
+                      } else {
+                        setSelectedFeatures(newValue);
+                      }
+                    }}
+                    renderOption={(props, option, { selected }) => (
+                      <li {...props}>
+                        <Checkbox
+                          icon={uncheckedIcon}
+                          checkedIcon={checkedIcon}
+                          style={{ marginRight: 8 }}
+                          checked={selected}
+                        />
+                        {option.name}
+                      </li>
+                    )}
+                    renderInput={(params) => <TextField {...params} />}
+                  />
+                </Form.Group>
               </Form>
             </Modal.Body>
             <Modal.Footer>
@@ -570,7 +751,8 @@ function ReleaseList() {
                 disabled={
                   !(
                     formData?.name?.trim().length > 0 &&
-                    formData?.release_date?.length > 0
+                    formData?.release_date?.length > 0 &&
+                    selectedFeatures.length > 0
                   )
                 }
                 onClick={(event) => submitRelease(event)}
@@ -586,4 +768,12 @@ function ReleaseList() {
   );
 }
 
-export default ReleaseList;
+const mapStateToProps = (state: any, ownProps: any) => ({
+  ...ownProps,
+  loading: state.releaseReducer.loading,
+  loaded: state.releaseReducer.loaded,
+  features: state.releaseReducer.features,
+  issues: state.releaseReducer.issues,
+});
+
+export default connect(mapStateToProps)(ReleaseList);

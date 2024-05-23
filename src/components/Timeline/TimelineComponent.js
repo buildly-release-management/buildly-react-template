@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react';
 import './TimelineComponent.css';
 import { Timeline, TimelineEvent } from '@mailtop/horizontal-timeline';
@@ -8,10 +9,14 @@ const TimelineComponent = ({ reportData, suggestedFeatures }) => {
 
   useEffect(() => {
     setReleaseData(reportData);
+  }, [reportData]);
+
+  useEffect(() => {
     setFeatures(suggestedFeatures);
-  }, [reportData, suggestedFeatures]);
+  }, [suggestedFeatures]);
+
   return (
-    <Timeline minEvents={6} height={360} placeholder>
+    <Timeline height={360} placeholder>
       {(
         releaseData && releaseData.map((releaseItem, idx) => (
           <TimelineEvent
@@ -20,38 +25,38 @@ const TimelineComponent = ({ reportData, suggestedFeatures }) => {
             icon={releaseItem.icon}
             title={releaseItem.name}
             subtitle={releaseItem.release_date}
-            action={
-              (
-                (
-                  releaseItem && releaseItem.features.length && (
-                    <div className="feature-list m-2 p-2" style={{ backgroundColor: releaseItem.bgColor }}>
-                      <ul className="p-2">
-                        {(
-                          releaseItem.features && releaseItem.features.map(
-                            (feature, index) => (
-                              <li key={`feat-${index}`}>{feature.name}</li>
-                            ),
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  )
-                ) || (
-                  <div className="feature-list m-2 p-2" style={{ backgroundColor: releaseItem.bgColor }}>
-                    <ul className="p-2">
-                      {(
-                        features && features.map(
+            action={(
+              <div
+                className="feature-list m-2"
+                style={{
+                  backgroundColor: releaseItem.bgColor,
+                  padding: 8,
+                  paddingLeft: 20,
+                  color: releaseItem.bgColor === '#0C5594'
+                    || releaseItem.bgColor === '#152944'
+                    ? '#fff'
+                    : '#000',
+                }}
+              >
+                <ul className="p-2">
+                  {releaseItem && releaseItem.features
+                    ? (
+                      releaseItem.features.map(
+                        (feature, index) => (
+                          <li key={`feat-${index}`}>{feature.name}</li>
+                        ),
+                      )
+                    ) : features
+                      ? (
+                        features.map(
                           (feature, index) => (
                             <li key={`feat-${index}`}>{`${feature?.suggested_feature}(Sug.)`}</li>
                           ),
                         )
-                      )}
-                    </ul>
-                  </div>
-                )
-                || ''
-              )
-            }
+                      ) : null}
+                </ul>
+              </div>
+            )}
           />
         ))
       )}
