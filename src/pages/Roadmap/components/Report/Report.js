@@ -7,6 +7,8 @@ import Card from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Table from 'react-bootstrap/Table';
 import Alert from 'react-bootstrap/Alert';
+import Modal from 'react-bootstrap/Modal';
+import Form from 'react-bootstrap/Form';
 
 import './Report.css';
 
@@ -27,6 +29,11 @@ import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import Chip from '@mui/material/Chip';
+import { Autocomplete } from '@mui/lab';
+import { TextField } from '@mui/material';
+import { showAlert } from '../../../../redux/alert/actions/alert.actions';
+import { dispatch } from '../../../../redux/store';
 
 const Report = ({ selectedProduct }) => {
   let displayReport = true;
@@ -36,6 +43,57 @@ const Report = ({ selectedProduct }) => {
   const [releaseData, setReleaseData] = useState([]);
   const [architectureImg, setArchitectureImg] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Email report modal
+  const [showEmailModal, setShow] = useState(false);
+  const closeEmailModal = () => setShow(false);
+  const openEmailModal = () => {
+    closeDownloadMenu();
+    setShow(true);
+  };
+
+  const [formData, setFormData] = useState({ message: '', emails: [] });
+  const updateFormData = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const setEmails = (emailAddresses) => {
+    setFormData({
+      ...formData,
+      emails: emailAddresses,
+    });
+  };
+
+  const emailReport = (event) => {
+    event.preventDefault();
+    try {
+      closeEmailModal();
+      httpService.sendDirectServiceRequest(
+        `pdf_report/${selectedProduct}/`,
+        'POST',
+        {
+          email: formData.emails,
+        },
+        'product',
+      )
+        .then((response) => {
+          dispatch(showAlert({
+            type: 'success',
+            open: true,
+            message: 'PDF report successfully sent!',
+          }));
+
+          setFormData({
+            ...formData,
+            emails: [],
+            message: '',
+          });
+        });
+    } catch { }
+  };
 
   // effects
   useEffect(() => {
@@ -169,6 +227,7 @@ const Report = ({ selectedProduct }) => {
               }}
             >
               <MenuItem onClick={getPdf}>Download Report</MenuItem>
+              <MenuItem onClick={openEmailModal}>Email report</MenuItem>
             </Menu>
           </section>
         </div>
@@ -345,6 +404,66 @@ const Report = ({ selectedProduct }) => {
             </div>
           </Card.Body>
         </Card>
+
+        {/* Email report modal */}
+        <Modal
+          show={showEmailModal}
+          onHide={closeEmailModal}
+          backdrop="static"
+          keyboard={false}
+          centered
+          dialogClassName="modal-60w"
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Email report</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form noValidate>
+              <Form.Group className="mb-3" controlId="email">
+                {/* <Form.Label>Email addresses</Form.Label> */}
+                <Autocomplete
+                  clearIcon={false}
+                  options={[]}
+                  freeSolo
+                  multiple
+                  value={formData.emails}
+                  onChange={(e, newValue) => setEmails(newValue)}
+                  renderTags={(value, props) => value.map((option, index) => (
+                    <Chip label={option} {...props({ index })} />
+                  ))}
+                  renderInput={(params) => <TextField label="Add an email address and press enter" {...params} />}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3" controlId="message">
+                <Form.Label>Message</Form.Label>
+                <Form.Control as="textarea" rows={3} name="message" onChange={(event) => updateFormData(event)} />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              type="button"
+              variant="outlined"
+              color="primary"
+              size="small"
+              name="email"
+              onClick={closeEmailModal}
+            >
+              Close
+            </Button>
+            <Button
+              type="button"
+              variant="contained"
+              color="primary"
+              size="small"
+              name="message"
+              disabled={!formData?.emails?.length}
+              onClick={(event) => emailReport(event)}
+            >
+              Email report
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </>
     );
   }
