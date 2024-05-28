@@ -23,7 +23,7 @@ import microservice from '@assets/architecture-suggestions/GCP - MicroServices.p
 import monolith from '@assets/architecture-suggestions/GCP - Monolithic.png';
 import multiCloud from '@assets/architecture-suggestions/GCP - MicroServices w_ DataPipeline.png';
 import microApp from '@assets/architecture-suggestions/Digital Ocean - MicroApp w_ FrontEnd.png';
-import { addColorsAndIcons, getReleaseBudgetData } from '@pages/Roadmap/components/Report/utils';
+import { addColorsAndIcons, getReleaseBudgetData } from '@pages/ProductRoadmap/components/Report/utils';
 
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
@@ -92,7 +92,9 @@ const Report = ({ selectedProduct }) => {
             message: '',
           });
         });
-    } catch { }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // effects

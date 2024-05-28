@@ -7,7 +7,7 @@ import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
 import { getAllProducts } from '@redux/product/actions/product.actions';
 import { routes } from '@routes/routesConstants';
 import AddProduct from '@pages/NewProduct/NewProduct';
-import { productColumns, getProductsData } from './ProductConstants';
+import { productColumns, getProductsData } from './ProductPortfolioConstants';
 import { clearProductData } from '@redux/release/actions/release.actions';
 
 const useStyles = makeStyles((theme) => ({
@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Products = ({
+const ProductPortfolio = ({
   dispatch, loading, history, products, user,
 }) => {
   const redirectTo = location.state && location.state.from;
@@ -109,4 +109,4 @@ const mapStateToProps = (state, ownProps) => ({
   user: state.authReducer.data,
 });
 
-export default connect(mapStateToProps)(Products);
+export default connect(mapStateToProps)(ProductPortfolio);

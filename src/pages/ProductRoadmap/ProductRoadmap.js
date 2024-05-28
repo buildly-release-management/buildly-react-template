@@ -88,7 +88,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Roadmap = ({
+const ProductRoadmap = ({
   history,
   loading,
   loaded,
@@ -622,4 +622,4 @@ const mapStateToProps = (state, ownProps) => ({
   releases: state.releaseReducer.releases,
 });
 
-export default connect(mapStateToProps)(Roadmap);
+export default connect(mapStateToProps)(ProductRoadmap);

@@ -14,7 +14,7 @@ import {
   Task as TaskIcon,
 } from '@mui/icons-material';
 import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
-import { featureColumns, issueColumns } from '../RoadmapConstants';
+import { featureColumns, issueColumns } from '../ProductRoadmapConstants';
 
 const useStyles = makeStyles((theme) => ({
   upgrade: {},

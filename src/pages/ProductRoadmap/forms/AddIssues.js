@@ -23,7 +23,7 @@ import {
   updateIssue,
 } from '@redux/release/actions/release.actions';
 import { validators } from '@utils/validators';
-import { ISSUETYPES } from '../RoadmapConstants';
+import { ISSUETYPES } from '../ProductRoadmapConstants';
 import { routes } from '@routes/routesConstants';
 import SmartInput from '@components/SmartInput/SmartInput';
 

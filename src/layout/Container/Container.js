@@ -4,12 +4,12 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Container } from '@mui/material';
 import { UserContext, getUser } from '@context/User.context';
 import TopBar from '@layout/TopBar/TopBar';
-import Roadmap from '@pages/Roadmap/Roadmap';
+import ProductRoadmap from '@pages/ProductRoadmap/ProductRoadmap';
 import UserManagement from '@pages/UserManagement/UserManagement';
 import { routes } from '@routes/routesConstants';
 import NewProduct from '@pages/NewProduct/NewProduct';
 import DeveloperForm from '@pages/DeveloperForm/DeveloperForm';
-import Products from '@pages/Products/Products';
+import ProductPortfolio from '@pages/ProductPortfolio/ProductPortfolio';
 import UserProfile from '@pages/UserProfile/UserProfile';
 import ReleaseList from '../../modules/release/list/ReleaseList';
 import ReleaseDetails from '../../modules/release/details/ReleaseDetails';
@@ -61,12 +61,12 @@ const ContainerDashboard = ({ location, history }) => {
                 render={() => <Redirect to={routes.PRODUCT_PORTFOLIO} />}
               />
               <Route exact path={`${routes.RELEASE}/:releaseUuid`} component={ReleaseDetails} />
-              <Route path={routes.PRODUCT_ROADMAP} component={Roadmap} />
+              <Route path={routes.PRODUCT_ROADMAP} component={ProductRoadmap} />
               <Route path={routes.USER_PROFILE} component={UserProfile} />
               <Route path={routes.USER_MANAGEMENT} component={UserManagement} />
               <Route path={routes.NEW_PRODUCT} component={NewProduct} />
               <Route path={routes.DEVELOPER_FORM} component={DeveloperForm} />
-              <Route path={routes.PRODUCT_PORTFOLIO} component={Products} />
+              <Route path={routes.PRODUCT_PORTFOLIO} component={ProductPortfolio} />
               <Route path={routes.RELEASE} component={ReleaseList} />
             </Switch>
           </Container>
