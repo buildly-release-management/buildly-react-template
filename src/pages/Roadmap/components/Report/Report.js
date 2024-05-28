@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import _ from 'lodash';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -9,6 +9,12 @@ import Table from 'react-bootstrap/Table';
 import Alert from 'react-bootstrap/Alert';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 import './Report.css';
 
@@ -25,19 +31,14 @@ import multiCloud from '@assets/architecture-suggestions/GCP - MicroServices w_ 
 import microApp from '@assets/architecture-suggestions/Digital Ocean - MicroApp w_ FrontEnd.png';
 import { addColorsAndIcons, getReleaseBudgetData } from '@pages/Roadmap/components/Report/utils';
 
-import Button from '@mui/material/Button';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import Chip from '@mui/material/Chip';
-import { Autocomplete } from '@mui/lab';
-import { TextField } from '@mui/material';
 import { showAlert } from '../../../../redux/alert/actions/alert.actions';
 import { dispatch } from '../../../../redux/store';
+import { UserContext } from '../../../../context/User.context';
 
 const Report = ({ selectedProduct }) => {
+  const user = useContext(UserContext);
   let displayReport = true;
-
   // states
   const [productData, setProductData] = useState([]);
   const [releaseData, setReleaseData] = useState([]);
@@ -49,22 +50,27 @@ const Report = ({ selectedProduct }) => {
   const closeEmailModal = () => setShow(false);
   const openEmailModal = () => {
     closeDownloadMenu();
+    setRecipients([{ name: '', email: '' }]);
     setShow(true);
   };
 
-  const [formData, setFormData] = useState({ message: '', emails: [] });
-  const updateFormData = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const [btnDisabled, disableButton] = useState(true);
+  const [recipients, setRecipients] = useState([]);
+  const updateRecipients = (event, index) => {
+    recipients[index][event.target.name] = event.target.value;
+    setRecipients(recipients);
+    validateForm();
   };
 
-  const setEmails = (emailAddresses) => {
-    setFormData({
-      ...formData,
-      emails: emailAddresses,
-    });
+  const addNewRecipient = () => {
+    recipients.push({ name: '', email: '' });
+    setRecipients([...recipients]);
+    disableButton(true);
+  };
+
+  const validateForm = () => {
+    const disable = recipients.some((recipient) => !recipient.name.toString().trim().length || !recipient.email.toString().trim().length);
+    disableButton(disable);
   };
 
   const emailReport = (event) => {
@@ -75,23 +81,19 @@ const Report = ({ selectedProduct }) => {
         `pdf_report/${selectedProduct}/`,
         'POST',
         {
-          email: formData.emails,
+          senders_name: `${user.first_name} ${user.last_name}`,
+          senders_title: user.title,
+          company_name: user.organization.name,
+          contact_information: user.contact_info,
+          recipients,
         },
         'product',
       )
-        .then((response) => {
-          dispatch(showAlert({
-            type: 'success',
-            open: true,
-            message: 'PDF report successfully sent!',
-          }));
-
-          setFormData({
-            ...formData,
-            emails: [],
-            message: '',
-          });
-        });
+        .then((response) => (
+          <Alert key="success" variant="success">
+            Report successfully emailed!
+          </Alert>
+        ));
     } catch { }
   };
 
@@ -412,32 +414,55 @@ const Report = ({ selectedProduct }) => {
           backdrop="static"
           keyboard={false}
           centered
-          dialogClassName="modal-60w"
+          size="lg"
         >
           <Modal.Header closeButton>
             <Modal.Title>Email report</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+
             <Form noValidate>
-              <Form.Group className="mb-3" controlId="email">
-                {/* <Form.Label>Email addresses</Form.Label> */}
-                <Autocomplete
-                  clearIcon={false}
-                  options={[]}
-                  freeSolo
-                  multiple
-                  value={formData.emails}
-                  onChange={(e, newValue) => setEmails(newValue)}
-                  renderTags={(value, props) => value.map((option, index) => (
-                    <Chip label={option} {...props({ index })} />
-                  ))}
-                  renderInput={(params) => <TextField label="Add an email address and press enter" {...params} />}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3" controlId="message">
-                <Form.Label>Message</Form.Label>
-                <Form.Control as="textarea" rows={3} name="message" onChange={(event) => updateFormData(event)} />
-              </Form.Group>
+              <Container>
+                {(
+                    recipients.map(
+                      (recipientObj, index) => (
+                        <Row xs={1} md={2}>
+                          <Col xs={6}>
+                            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+                              <Form.Label>Recipient's name</Form.Label>
+                              <Form.Control
+                                type="text"
+                                placeholder="Name"
+                                name="name"
+                                onChange={(event) => updateRecipients(event, index)}
+                              />
+                            </Form.Group>
+                          </Col>
+                          <Col xs={6}>
+                            <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+                              <Form.Label>Recipient's email address</Form.Label>
+                              <Form.Control type="email" placeholder="Email address" name="email" onChange={(event) => updateRecipients(event, index)} />
+                            </Form.Group>
+                          </Col>
+                        </Row>
+                      ),
+                    )
+                )}
+              </Container>
+              <div className="d-flex justify-content-end">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={btnDisabled}
+                  onClick={addNewRecipient}
+                >
+                  Add another recipient
+                </Button>
+              </div>
+              {/* <Form.Group className="mb-3" controlId="message"> */}
+              {/*  <Form.Label>Message</Form.Label> */}
+              {/*  <Form.Control as="textarea" rows={3} name="message" onChange={(event) => updateFormData(event)} /> */}
+              {/* </Form.Group> */}
             </Form>
           </Modal.Body>
           <Modal.Footer>
@@ -457,7 +482,7 @@ const Report = ({ selectedProduct }) => {
               color="primary"
               size="small"
               name="message"
-              disabled={!formData?.emails?.length}
+              disabled={btnDisabled}
               onClick={(event) => emailReport(event)}
             >
               Email report
