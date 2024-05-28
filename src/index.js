@@ -7,6 +7,7 @@ import configureStore from './redux/store';
 import './index.css';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import registerServiceWorker from './serviceWorkerRegistration';
 
 if (window.env.PRODUCTION) {
   const script = document.createElement('script');
@@ -39,3 +40,5 @@ ReactDOM.render(
   </Provider>,
   document.getElementById('root'),
 );
+
+registerServiceWorker();

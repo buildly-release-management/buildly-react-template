@@ -4,15 +4,9 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+const { GenerateSW } = require('workbox-webpack-plugin');
 
 module.exports = (env, argv) => {
-  const fileCopy = env.build === 'local'
-    ? new CopyPlugin([
-      { from: '.env.development.local', to: 'environment.js' },
-    ])
-    : new CopyPlugin([
-      { from: 'window.environment.js', to: 'environment.js' },
-    ]);
   const webpackConfig = {
     entry: ['babel-polyfill', './src/index.js'],
     module: {
@@ -77,8 +71,8 @@ module.exports = (env, argv) => {
       ],
     },
     resolve: {
-      extensions: ['.*', '.js', '.jsx', '.ts', '.tsx'],
-      modules: [path.resolve(__dirname, './src'), 'node_modules'],
+      extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
+      modules: [path.resolve(__dirname, './src'), 'node_modules', path.resolve('node_modules')],
       alias: {
         '@assets': path.resolve(__dirname, './src/assets'),
         '@components': path.resolve(__dirname, './src/components'),
@@ -97,7 +91,6 @@ module.exports = (env, argv) => {
       path: path.resolve(__dirname, 'dist/'),
       publicPath: '/',
       filename: 'bundle.js',
-      hashFunction: 'sha256',
     },
     devServer: {
       contentBase: path.join(__dirname, 'public/'),
@@ -114,9 +107,22 @@ module.exports = (env, argv) => {
         favicon: './src/assets/favicon.ico',
         hash: true,
       }),
-      fileCopy,
+      new GenerateSW({
+        maximumFileSizeToCacheInBytes: 200000000,
+        clientsClaim: true,
+        skipWaiting: true,
+      }),
     ],
   };
+
+  if (env && env.build === 'local') {
+    webpackConfig.plugins = [
+      ...webpackConfig.plugins,
+      new CopyPlugin([
+        { from: '.env.development.local', to: 'environment.json' },
+      ]),
+    ];
+  }
 
   if (env && env.build === 'prod') {
     webpackConfig.mode = 'production';
@@ -127,16 +133,29 @@ module.exports = (env, argv) => {
       maxAssetSize: 512000,
     };
     webpackConfig.optimization = {
+      namedModules: false,
+      namedChunks: false,
       nodeEnv: 'production',
       flagIncludedChunks: true,
+      occurrenceOrder: true,
       sideEffects: true,
       usedExports: true,
       concatenateModules: true,
-      splitChunks: false,
+      splitChunks: {
+        cacheGroups: {
+          commons: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendor',
+            chunks: 'all',
+          },
+        },
+        minSize: 30000,
+        maxAsyncRequests: 3,
+      },
       noEmitOnErrors: true,
       minimize: true,
       removeAvailableModules: true,
-      removeEmptyChunks: false,
+      removeEmptyChunks: true,
       mergeDuplicateChunks: true,
     };
   } else {
