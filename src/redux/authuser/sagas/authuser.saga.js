@@ -89,7 +89,7 @@ function* login(payload) {
     yield call(oauthService.setCurrentCoreUser, coreuser, user);
     yield [
       yield put({ type: LOGIN_SUCCESS, user }),
-      yield call(history.push, routes.PRODUCT_ROADMAP),
+      yield call(history.push, routes.PRODUCT_PORTFOLIO),
     ];
   } catch (error) {
     console.log('error', error);
@@ -441,7 +441,7 @@ function* socialLogin(payload) {
     if (!user.data.email || !user.data.organization || !user.data.user_type) {
       yield call(history.push, routes.MISSING_DATA);
     } else {
-      yield call(history.push, routes.PRODUCT_ROADMAP);
+      yield call(history.push, routes.PRODUCT_PORTFOLIO);
     }
   } catch (error) {
     yield [

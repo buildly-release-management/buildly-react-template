@@ -32,7 +32,7 @@ function* addData(payload) {
     ];
 
     if (history) {
-      history.push(routes.PRODUCT_ROADMAP);
+      history.push(routes.PRODUCT_PORTFOLIO);
     }
   } catch (error) {
     yield [

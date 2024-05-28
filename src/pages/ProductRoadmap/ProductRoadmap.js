@@ -28,7 +28,6 @@ import {
 } from '@redux/release/actions/release.actions';
 import Kanban from './components/Kanban';
 import Tabular from './components/Tabular';
-import Report from './components/Report/Report';
 import AddFeatures from './forms/AddFeatures';
 import AddIssues from './forms/AddIssues';
 import Comments from './forms/Comments';
@@ -109,10 +108,6 @@ const ProductRoadmap = ({
     {
       label: 'Kanban',
       value: 'kanban',
-    },
-    {
-      label: 'Report',
-      value: 'report',
     },
   ];
   const viewPath = (
@@ -533,15 +528,6 @@ const ProductRoadmap = ({
                         createSuggestedFeature={createSuggestedFeature}
                         removeSuggestedFeature={removeSuggestedFeature}
                         showRelatedIssues={showRelatedIssues}
-                      />
-                    )}
-                  />
-                  <Route
-                    path={routes.PRODUCT_ROADMAP_REPORT}
-                    render={(prps) => (
-                      <Report
-                        {...prps}
-                        selectedProduct={selectedProduct}
                       />
                     )}
                   />

@@ -215,6 +215,11 @@ const TopBar = ({
     value: routes.RELEASE,
     pathName: [routes.RELEASE],
     disabled: !activePlan,
+  },
+  {
+    label: 'Insights',
+    value: routes.INSIGHTS,
+    pathName: [routes.INSIGHTS],
   }];
 
   const stripe = useStripe();
@@ -258,7 +263,7 @@ const TopBar = ({
       organization_name,
     };
     dispatch(updateUser(profileValues));
-    history.push(routes.PRODUCT_ROADMAP);
+    history.push(routes.PRODUCT_PORTFOLIO);
   };
 
   const handleClose = () => {

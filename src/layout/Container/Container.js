@@ -3,6 +3,7 @@ import { Route, Redirect, Switch } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { Container } from '@mui/material';
 import { UserContext, getUser } from '@context/User.context';
+import Insights from '@pages/Insights/Insights';
 import TopBar from '@layout/TopBar/TopBar';
 import ProductRoadmap from '@pages/ProductRoadmap/ProductRoadmap';
 import UserManagement from '@pages/UserManagement/UserManagement';
@@ -68,6 +69,7 @@ const ContainerDashboard = ({ location, history }) => {
               <Route path={routes.DEVELOPER_FORM} component={DeveloperForm} />
               <Route path={routes.PRODUCT_PORTFOLIO} component={ProductPortfolio} />
               <Route path={routes.RELEASE} component={ReleaseList} />
+              <Route path={routes.INSIGHTS} component={Insights} />
             </Switch>
           </Container>
         </UserContext.Provider>

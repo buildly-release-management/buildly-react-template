@@ -21,6 +21,7 @@ export const routes = {
   MISSING_DATA: '/missing-data',
   NEW_PRODUCT: '/app/new-product',
   RELEASE: '/app/release',
+  INSIGHTS: '/app/insights',
   DEVELOPER_FORM: '/app/developer-form',
   PRODUCT_PORTFOLIO: '/app/product-portfolio',
   ADD_FEATURE: '/app/product-roadmap/add-feature/',
