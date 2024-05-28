@@ -58,15 +58,15 @@ const ContainerDashboard = ({ location, history }) => {
               <Route
                 exact
                 path={routes.APP}
-                render={() => <Redirect to={routes.ROADMAP} />}
+                render={() => <Redirect to={routes.PRODUCT_PORTFOLIO} />}
               />
               <Route exact path={`${routes.RELEASE}/:releaseUuid`} component={ReleaseDetails} />
-              <Route path={routes.ROADMAP} component={Roadmap} />
+              <Route path={routes.PRODUCT_ROADMAP} component={Roadmap} />
               <Route path={routes.USER_PROFILE} component={UserProfile} />
               <Route path={routes.USER_MANAGEMENT} component={UserManagement} />
               <Route path={routes.NEW_PRODUCT} component={NewProduct} />
               <Route path={routes.DEVELOPER_FORM} component={DeveloperForm} />
-              <Route path={routes.PRODUCTS} component={Products} />
+              <Route path={routes.PRODUCT_PORTFOLIO} component={Products} />
               <Route path={routes.RELEASE} component={ReleaseList} />
             </Switch>
           </Container>

@@ -33,7 +33,7 @@ const Products = ({
 
   const editProductPath = redirectTo
     ? `${redirectTo}/product`
-    : `${routes.PRODUCTS}/edit`;
+    : `${routes.PRODUCT_PORTFOLIO}/edit`;
 
   const deleteProduct = (item) => {
     setDeleteItemId(item.product_uuid);
@@ -73,7 +73,7 @@ const Products = ({
 
   const viewProductRoadmap = (item) => {
     localStorage.setItem('activeProduct', item.product_uuid);
-    history.push(routes.ROADMAP_REPORT);
+    history.push(routes.PRODUCT_ROADMAP_REPORT);
   };
 
   return (
@@ -92,7 +92,7 @@ const Products = ({
         setDeleteModal={setConfirmModal}
         handleDeleteModal={handleConfirmModal}
         deleteModalTitle="Are you sure you want to delete this product?"
-        tableHeader="Dashboard"
+        tableHeader="Product Portfolio"
         menuIndex={menuIndex}
         setMenuIndex={setMenuIndex}
       >

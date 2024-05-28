@@ -9,7 +9,7 @@ import {
   Typography,
   Container,
 } from '@mui/material';
-import logo from '@assets/insights-logo.png';
+import logo from '@assets/buildly-product-labs-logo.png';
 import Copyright from '@components/Copyright/Copyright';
 import { routes } from '@routes/routesConstants';
 

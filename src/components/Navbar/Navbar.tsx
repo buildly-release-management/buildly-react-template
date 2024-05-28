@@ -25,14 +25,14 @@ const MainNavbar = (props: any) => {
       >
         {/*<Container>*/}
         <a className="navbar-brand" href="#home">
-          {/*<img src="/src/assets/insights-orange-white.png" />*/}
+          {/*<img src="/src/assets/buildly-product-labs-orange-white.png" />*/}
         </a>
 
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="mx-auto main-nav-link">
-            <Nav.Link href="#roadmap">Roadmap</Nav.Link>
-            <Nav.Link href="#dashboard">Dashboard</Nav.Link>
+            <Nav.Link href="#dashboard">Product Portfolio</Nav.Link>
+            <Nav.Link href="#roadmap">Product Roadmap</Nav.Link>
             <Nav.Link href="#releases">Releases</Nav.Link>
             <Button variant="secondary" size="sm">
               Upgrade plan

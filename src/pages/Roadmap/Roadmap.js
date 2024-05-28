@@ -132,7 +132,7 @@ const Roadmap = ({
   const [isDataLoading, setDataLoading] = useState(false);
 
   useEffect(() => {
-    history.push(`/app/roadmap/${view || location.state}`);
+    history.push(`/app/product-roadmap/${view || location.state}`);
   }, [view]);
 
   useEffect(() => {
@@ -382,7 +382,7 @@ const Roadmap = ({
             <Grid container mb={2} alignItems="center">
               <Grid item md={4}>
                 <Typography variant="h4">
-                  Roadmap
+                  Product Roadmap
                 </Typography>
               </Grid>
               <Grid item md={8} className={classes.menuRight}>
@@ -398,7 +398,7 @@ const Roadmap = ({
                   onChange={(e) => {
                     if (e.target.value === -1) {
                       history.push(routes.NEW_PRODUCT, {
-                        from: routes.ROADMAP_TABULAR,
+                        from: routes.PRODUCT_ROADMAP_TABULAR,
                       });
                     } else {
                       setActiveProduct(e.target.value);
@@ -494,7 +494,7 @@ const Roadmap = ({
                     submitText="Delete"
                   />
                   <Route
-                    path={routes.ROADMAP_TABULAR}
+                    path={routes.PRODUCT_ROADMAP_TABULAR}
                     render={(prps) => (
                       <Tabular
                         {...prps}
@@ -516,7 +516,7 @@ const Roadmap = ({
                     )}
                   />
                   <Route
-                    path={routes.ROADMAP_KANBAN}
+                    path={routes.PRODUCT_ROADMAP_KANBAN}
                     render={(prps) => (
                       <Kanban
                         {...prps}
@@ -537,7 +537,7 @@ const Roadmap = ({
                     )}
                   />
                   <Route
-                    path={routes.ROADMAP_REPORT}
+                    path={routes.PRODUCT_ROADMAP_REPORT}
                     render={(prps) => (
                       <Report
                         {...prps}
@@ -589,7 +589,7 @@ const Roadmap = ({
                     Thanks for registering.
                     To get you started we want to take your through a new product
                     wizard. This will help you get oriented with the system, and
-                    create your first product with Insights!
+                    create your first product with Buildly Product Labs!
                   </Typography>
                   <Button
                     variant="contained"

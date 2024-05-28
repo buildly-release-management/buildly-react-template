@@ -142,8 +142,8 @@ const AddIssues = ({
       setFormModal(false);
       if (location && location.state) {
         history.push(_.includes(location.state.from, 'kanban')
-          ? routes.ROADMAP_KANBAN
-          : routes.ROADMAP_TABULAR);
+          ? routes.PRODUCT_ROADMAP_KANBAN
+          : routes.PRODUCT_ROADMAP_TABULAR);
       }
     }
   };
