@@ -162,7 +162,7 @@ const Register = ({
       coupon_code: coupon_code.value,
     };
 
-    if (_.includes(_.toLower(_.trim(orgName)), 'buildly')) {
+    if (!hasInviteDetails && _.includes(_.toLower(_.trim(orgName)), 'buildly')) {
       dispatch(showAlert({
         type: 'error',
         open: true,
