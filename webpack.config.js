@@ -133,11 +133,8 @@ module.exports = (env, argv) => {
       maxAssetSize: 512000,
     };
     webpackConfig.optimization = {
-      namedModules: false,
-      namedChunks: false,
       nodeEnv: 'production',
       flagIncludedChunks: true,
-      occurrenceOrder: true,
       sideEffects: true,
       usedExports: true,
       concatenateModules: true,
@@ -152,7 +149,6 @@ module.exports = (env, argv) => {
         minSize: 30000,
         maxAsyncRequests: 3,
       },
-      noEmitOnErrors: true,
       minimize: true,
       removeAvailableModules: true,
       removeEmptyChunks: true,
