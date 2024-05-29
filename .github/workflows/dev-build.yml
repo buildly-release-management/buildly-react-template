@@ -36,7 +36,7 @@ jobs:
 
     - name: yarn install, build and test
       run: |
-        yarn install
+        yarn install --force --no-lockfile --ignore-optional
         yarn run build:dev
 
     - name: "Docker auth"
