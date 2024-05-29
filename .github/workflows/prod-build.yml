@@ -21,7 +21,7 @@ jobs:
         fetch-depth: 0
     - uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: 16
 
     # auto generate tag from label defined in Dockerfile
     - name: Tag version
@@ -67,7 +67,7 @@ jobs:
     - name: yarn install, build and test
       run: |
         rm -rf node_modules
-        yarn install --force --no-lockfile --ignore-optional
+        yarn install
         yarn run build:prod
 
     - name: "Docker auth"
