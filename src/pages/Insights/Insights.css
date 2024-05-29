@@ -25,3 +25,21 @@ table td {
   background-color: #fff !important;
   color: #162944 !important;
 }
+
+.insightsSelectedProductRoot {
+  margin-top: 16px;
+}
+
+.insightsSelectedProduct {
+  width: 250px;
+  text-align: start;
+}
+
+.insightsSelectedProduct > .MuiOutlinedInput-notchedOutline {
+  border-color: #121212,
+}
+
+.insightsSelectedProduct > .MuiInputBase-input {
+  padding-top: 9.6px;
+  padding-bottom: 9.6px;
+}

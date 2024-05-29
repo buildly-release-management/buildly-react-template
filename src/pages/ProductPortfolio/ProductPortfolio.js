@@ -7,7 +7,7 @@ import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
 import { getAllProducts } from '@redux/product/actions/product.actions';
 import { routes } from '@routes/routesConstants';
 import AddProduct from '@pages/NewProduct/NewProduct';
-import { productColumns, getProductsData } from './ProductConstants';
+import { productColumns, getProductsData } from './ProductPortfolioConstants';
 import { clearProductData } from '@redux/release/actions/release.actions';
 
 const useStyles = makeStyles((theme) => ({
@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Products = ({
+const ProductPortfolio = ({
   dispatch, loading, history, products, user,
 }) => {
   const redirectTo = location.state && location.state.from;
@@ -33,7 +33,7 @@ const Products = ({
 
   const editProductPath = redirectTo
     ? `${redirectTo}/product`
-    : `${routes.PRODUCTS}/edit`;
+    : `${routes.PRODUCT_PORTFOLIO}/edit`;
 
   const deleteProduct = (item) => {
     setDeleteItemId(item.product_uuid);
@@ -73,7 +73,7 @@ const Products = ({
 
   const viewProductRoadmap = (item) => {
     localStorage.setItem('activeProduct', item.product_uuid);
-    history.push(routes.ROADMAP_REPORT);
+    history.push(routes.PRODUCT_ROADMAP_REPORT);
   };
 
   return (
@@ -92,7 +92,7 @@ const Products = ({
         setDeleteModal={setConfirmModal}
         handleDeleteModal={handleConfirmModal}
         deleteModalTitle="Are you sure you want to delete this product?"
-        tableHeader="Dashboard"
+        tableHeader="Product Portfolio"
         menuIndex={menuIndex}
         setMenuIndex={setMenuIndex}
       >
@@ -109,4 +109,4 @@ const mapStateToProps = (state, ownProps) => ({
   user: state.authReducer.data,
 });
 
-export default connect(mapStateToProps)(Products);
+export default connect(mapStateToProps)(ProductPortfolio);

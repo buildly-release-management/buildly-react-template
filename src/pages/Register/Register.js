@@ -15,7 +15,7 @@ import {
   Grid,
   MenuItem, Checkbox,
 } from '@mui/material';
-import logo from '@assets/insights-logo.png';
+import logo from '@assets/buildly-product-labs-logo.png';
 import Copyright from '@components/Copyright/Copyright';
 import GithubLogin from '@components/SocialLogin/GithubLogin';
 import { useInput } from '@hooks/useInput';
@@ -162,7 +162,7 @@ const Register = ({
       coupon_code: coupon_code.value,
     };
 
-    if (_.includes(_.toLower(_.trim(orgName)), 'buildly')) {
+    if (!hasInviteDetails && _.includes(_.toLower(_.trim(orgName)), 'buildly')) {
       dispatch(showAlert({
         type: 'error',
         open: true,
