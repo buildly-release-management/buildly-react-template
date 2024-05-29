@@ -8,12 +8,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Open+Sans:wght@300;400;500&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
-    <title>Buildly Insights</title>
+    <title>Buildly Product Labs</title>
 </head>
 
 <body>
     <div id="root"></div>
-    <script type="text/javascript" src="/environment.js"></script>
+    <script type="text/javascript">
+        fetch('/environment.json').then((response) => response.json()).then((env) => { window.env = env; });
+    </script>
 </body>
 
 </html>

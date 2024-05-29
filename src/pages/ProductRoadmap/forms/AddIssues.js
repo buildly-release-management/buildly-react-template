@@ -23,7 +23,7 @@ import {
   updateIssue,
 } from '@redux/release/actions/release.actions';
 import { validators } from '@utils/validators';
-import { ISSUETYPES } from '../RoadmapConstants';
+import { ISSUETYPES } from '../ProductRoadmapConstants';
 import { routes } from '@routes/routesConstants';
 import SmartInput from '@components/SmartInput/SmartInput';
 
@@ -142,8 +142,8 @@ const AddIssues = ({
       setFormModal(false);
       if (location && location.state) {
         history.push(_.includes(location.state.from, 'kanban')
-          ? routes.ROADMAP_KANBAN
-          : routes.ROADMAP_TABULAR);
+          ? routes.PRODUCT_ROADMAP_KANBAN
+          : routes.PRODUCT_ROADMAP_TABULAR);
       }
     }
   };

@@ -29,7 +29,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import logo from '@assets/insights-orange-white.png';
+import logo from '@assets/buildly-product-labs-orange-white.png';
 import { UserContext } from '@context/User.context';
 import {
   logout, loadOrgNames, loadStripeProducts, getUser, updateUser,
@@ -201,20 +201,25 @@ const TopBar = ({
     .find((subscription) => new Date(subscription.subscription_end_date) > maxDate);
 
   const pages = [{
-    label: 'Roadmap',
-    value: routes.ROADMAP,
-    pathName: [routes.ROADMAP, routes.ROADMAP_TABULAR, routes.ROADMAP_KANBAN, routes.ROADMAP_REPORT],
+    label: 'Product Portfolio',
+    value: routes.PRODUCT_PORTFOLIO,
+    pathName: [routes.PRODUCT_PORTFOLIO],
   },
   {
-    label: 'Dashboard',
-    value: routes.PRODUCTS,
-    pathName: [routes.PRODUCTS],
+    label: 'Product Roadmap',
+    value: routes.PRODUCT_ROADMAP,
+    pathName: [routes.PRODUCT_ROADMAP, routes.PRODUCT_ROADMAP_TABULAR, routes.PRODUCT_ROADMAP_KANBAN, routes.PRODUCT_ROADMAP_REPORT],
   },
   {
     label: 'Releases',
     value: routes.RELEASE,
     pathName: [routes.RELEASE],
     disabled: !activePlan,
+  },
+  {
+    label: 'Insights',
+    value: routes.INSIGHTS,
+    pathName: [routes.INSIGHTS],
   }];
 
   const stripe = useStripe();
@@ -258,7 +263,7 @@ const TopBar = ({
       organization_name,
     };
     dispatch(updateUser(profileValues));
-    history.push(routes.ROADMAP);
+    history.push(routes.PRODUCT_PORTFOLIO);
   };
 
   const handleClose = () => {
@@ -369,7 +374,7 @@ const TopBar = ({
       {loading && <Loader open={loading} />}
       <AppBar position="fixed" className={classes.appBar}>
         <Toolbar>
-          <Link to={routes.ROADMAP}>
+          <Link to={routes.PRODUCT_ROADMAP}>
             <img src={logo} alt="Logo" className={classes.logo} />
           </Link>
           <Box className={classes.navItems}>

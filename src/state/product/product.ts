@@ -43,8 +43,11 @@ export const productMachine = createMachine({
         actions: {
             addProductsToCxt: assign(
                 (cxt, event) => {
+                    const activeProd = localStorage.getItem('activeProduct');
+
                     const data: any = event.data
-                    return {products: data, selectedProduct: data[0]}
+                    const selectedProduct: any = data.find((item: any) => item.product_uuid === activeProd) || data[0]
+                    return {products: data, selectedProduct}
                 }
             ),
             addErrorToCxt: assign((cxt, event) => (

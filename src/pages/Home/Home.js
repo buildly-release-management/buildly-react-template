@@ -17,7 +17,7 @@ const Home = () => {
   return (
     <>
       <iframe
-        title="Insights Home Page"
+        title="Buildly Product Labs Home Page"
         loading="lazy"
         className={classes.iframe}
         src={`https://storage.googleapis.com/insights-landing/index.html?origin=${window.env.PRODUCTION ? 'https://insights.buildly.io/' : 'https://rm-dev.buildly.io/'}`}

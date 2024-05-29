@@ -164,7 +164,7 @@ const DataTableWrapper = ({
                     <ListItemIcon>
                       <DashboardIcon fontSize="small" />
                     </ListItemIcon>
-                    Roadmap
+                    Product Roadmap
                   </MenuItem>
                   )
                 }

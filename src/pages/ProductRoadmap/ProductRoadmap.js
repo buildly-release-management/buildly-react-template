@@ -28,7 +28,6 @@ import {
 } from '@redux/release/actions/release.actions';
 import Kanban from './components/Kanban';
 import Tabular from './components/Tabular';
-import Report from './components/Report/Report';
 import AddFeatures from './forms/AddFeatures';
 import AddIssues from './forms/AddIssues';
 import Comments from './forms/Comments';
@@ -88,7 +87,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Roadmap = ({
+const ProductRoadmap = ({
   history,
   loading,
   loaded,
@@ -110,10 +109,6 @@ const Roadmap = ({
       label: 'Kanban',
       value: 'kanban',
     },
-    {
-      label: 'Report',
-      value: 'report',
-    },
   ];
   const viewPath = (
     subNav.find((item) => location.pathname.endsWith(item.value))
@@ -132,7 +127,7 @@ const Roadmap = ({
   const [isDataLoading, setDataLoading] = useState(false);
 
   useEffect(() => {
-    history.push(`/app/roadmap/${view || location.state}`);
+    history.push(`/app/product-roadmap/${view || location.state}`);
   }, [view]);
 
   useEffect(() => {
@@ -382,7 +377,7 @@ const Roadmap = ({
             <Grid container mb={2} alignItems="center">
               <Grid item md={4}>
                 <Typography variant="h4">
-                  Roadmap
+                  Product Roadmap
                 </Typography>
               </Grid>
               <Grid item md={8} className={classes.menuRight}>
@@ -398,7 +393,7 @@ const Roadmap = ({
                   onChange={(e) => {
                     if (e.target.value === -1) {
                       history.push(routes.NEW_PRODUCT, {
-                        from: routes.ROADMAP_TABULAR,
+                        from: routes.PRODUCT_ROADMAP_TABULAR,
                       });
                     } else {
                       setActiveProduct(e.target.value);
@@ -494,7 +489,7 @@ const Roadmap = ({
                     submitText="Delete"
                   />
                   <Route
-                    path={routes.ROADMAP_TABULAR}
+                    path={routes.PRODUCT_ROADMAP_TABULAR}
                     render={(prps) => (
                       <Tabular
                         {...prps}
@@ -516,7 +511,7 @@ const Roadmap = ({
                     )}
                   />
                   <Route
-                    path={routes.ROADMAP_KANBAN}
+                    path={routes.PRODUCT_ROADMAP_KANBAN}
                     render={(prps) => (
                       <Kanban
                         {...prps}
@@ -533,15 +528,6 @@ const Roadmap = ({
                         createSuggestedFeature={createSuggestedFeature}
                         removeSuggestedFeature={removeSuggestedFeature}
                         showRelatedIssues={showRelatedIssues}
-                      />
-                    )}
-                  />
-                  <Route
-                    path={routes.ROADMAP_REPORT}
-                    render={(prps) => (
-                      <Report
-                        {...prps}
-                        selectedProduct={selectedProduct}
                       />
                     )}
                   />
@@ -589,7 +575,7 @@ const Roadmap = ({
                     Thanks for registering.
                     To get you started we want to take your through a new product
                     wizard. This will help you get oriented with the system, and
-                    create your first product with Insights!
+                    create your first product with Buildly Product Labs!
                   </Typography>
                   <Button
                     variant="contained"
@@ -604,7 +590,7 @@ const Roadmap = ({
           </div>
         )
       )}
-      <Chatbot />
+      {/* <Chatbot /> */}
     </>
   );
 };
@@ -622,4 +608,4 @@ const mapStateToProps = (state, ownProps) => ({
   releases: state.releaseReducer.releases,
 });
 
-export default connect(mapStateToProps)(Roadmap);
+export default connect(mapStateToProps)(ProductRoadmap);
