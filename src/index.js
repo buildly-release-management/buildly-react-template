@@ -9,7 +9,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import registerServiceWorker from './serviceWorkerRegistration';
 
-if (window.env.PRODUCTION) {
+if (window.env && window.env.PRODUCTION) {
   const script = document.createElement('script');
   script.src = 'https://www.googletagmanager.com/gtag/js?id=UA-145772893-1';
   script.async = true;
