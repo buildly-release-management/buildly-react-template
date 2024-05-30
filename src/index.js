@@ -9,6 +9,8 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import registerServiceWorker from './serviceWorkerRegistration';
 
+fetch('/environment.json').then((response) => response.json()).then((env) => { window.env = env; });
+
 if (window.env && window.env.PRODUCTION) {
   const script = document.createElement('script');
   script.src = 'https://www.googletagmanager.com/gtag/js?id=UA-145772893-1';
