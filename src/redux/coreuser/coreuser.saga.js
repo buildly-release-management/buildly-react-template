@@ -17,11 +17,9 @@ import {
   UPDATE_COREUSER_FAIL,
 } from './coreuser.actions';
 
-const endpoint = `${window.env.API_URL}coreuser/`;
-
 function* loadCoreUsers() {
   try {
-    const res = yield call(httpService.makeRequest, 'get', endpoint);
+    const res = yield call(httpService.makeRequest, 'get', `${window.env.API_URL}coreuser/`);
     yield [yield put({ type: LOAD_DATA_COREUSER_COMMIT, data: res.data })];
   } catch (error) {
     yield put({ type: LOAD_DATA_COREUSER_FAIL, error });
@@ -33,7 +31,7 @@ function* createCoreUser(action) {
     const res = yield call(
       httpService.makeRequest,
       'post',
-      endpoint,
+      `${window.env.API_URL}coreuser/`,
       action.data,
     );
     yield [yield put({ type: CREATE_COREUSER_COMMIT, data: res.data })];
@@ -47,7 +45,7 @@ function* updateCoreUser(action) {
     const res = yield call(
       httpService.makeRequest,
       'patch',
-      `${endpoint}${action.data.id}/`,
+      `${window.env.API_URL}coreuser/${action.data.id}/`,
       action.data,
       true,
     );
@@ -62,7 +60,7 @@ function* deleteCoreUser(action) {
     const res = yield call(
       httpService.makeRequest,
       'delete',
-      `${endpoint}${action.data.id}/`,
+      `${window.env.API_URL}coreuser/${action.data.id}/`,
       {},
       true,
     );
