@@ -12,49 +12,20 @@ export const getReleaseBudgetData = (teamData, releases) => {
   if (releases) {
     return releases.map((release) => {
       const budgetDict = { ...release };
-      const data = [];
+      let data = [];
       if (teamData) {
-        if (release.name.toLowerCase()
-          .includes('poc')) {
-          teamData.forEach((team) => {
-            if (team.role.toLowerCase() !== '') {
-              data.push(
-                {
-                  title: team.role,
-                  cost: +team.budget * +team.count,
-                  count: team.count,
-                },
-              );
-            }
-          });
-        } else if (release.name.toLowerCase()
-          .includes('mvp')) {
-          teamData.forEach((team) => {
-            data.push(
-              {
-                title: team.role,
-                cost: +team.budget * +team.count,
-                count: team.count,
-              },
-            );
-          });
-        } else {
-          teamData.forEach((team) => {
-            const teamDict = {
-              title: team.role,
-              cost: +team.budget * +team.count,
-              count: team.count,
-            };
-            if (release.features.length < 5 && team.count > 2) {
-              teamDict.cost = +team.budget * (+team.count - 1);
-              teamDict.count = +team.count - 1;
-            }
-            data.push(teamDict);
-          });
-        }
+        data = teamData.map((team) => (
+          {
+            title: team.role,
+            cost: +team.budget,
+            count: team.count,
+          }
+        ));
       }
+
       budgetDict.team = data;
-      budgetDict.totalCost = data.map((x) => x.cost).reduce((prev, next) => prev + next);
+      budgetDict.totalCost = data.map((x) => x.cost)
+        .reduce((prev, next) => prev + next);
       return budgetDict;
     });
   }
@@ -68,7 +39,8 @@ export const addColorsAndIcons = (releaseData) => {
       const itemCopy = { ...item };
       let colors = ['#E0E0E0', '#F9943B', '#0C5594', '#152944'];
       const status = item.release_status.toLowerCase();
-      if (itemCopy.name.toLowerCase().includes('poc')) {
+      if (itemCopy.name.toLowerCase()
+        .includes('poc')) {
         if (status === 'released') {
           itemCopy.icon = FaRegCalendarCheck;
         } else if (status === 'in_progress') {
@@ -76,7 +48,8 @@ export const addColorsAndIcons = (releaseData) => {
         } else {
           itemCopy.icon = FaQuestionCircle;
         }
-      } else if (itemCopy.name.toLowerCase().includes('mvp')) {
+      } else if (itemCopy.name.toLowerCase()
+        .includes('mvp')) {
         if (status === 'released') {
           itemCopy.icon = FaRegCalendarCheck;
         } else if (status === 'in_progress') {
