@@ -371,6 +371,7 @@ const Insights = ({
                         <tr>
                           <th className="light-header">Payroll</th>
                           <th className="light-header">Monthly ($)</th>
+                          <th className="light-header">Total ($)</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -379,6 +380,7 @@ const Insights = ({
                             (item, index) => (
                               <tr key={`budget-${index}`}>
                                 <td>{item.role}</td>
+                                <td>{`$${item.monthly_budget}`}</td>
                                 <td>{`$${item.budget}`}</td>
                               </tr>
                             ),
@@ -386,6 +388,10 @@ const Insights = ({
                         }
                         <tr>
                           <th className="text-right totals-header">Payroll Total</th>
+                          <th className="totals-header">
+                            {`$${(productData && productData.budget
+                              && productData.budget?.total_monthly_budget) || '0.00'}`}
+                          </th>
                           <th className="totals-header">
                             {`$${(productData && productData.budget
                               && productData.budget?.total_budget) || '0.00'}`}
@@ -446,7 +452,7 @@ const Insights = ({
                               </strong>
                             </ListGroup.Item>
                             {(
-                              releaseItem.team && releaseItem.team.map(
+                              releaseItem?.team && releaseItem?.team.map(
                                 (team, idx) => (
                                   <ListGroup.Item
                                     key={`team-${idx}`}
@@ -509,8 +515,11 @@ const Insights = ({
                           <Col xs={6}>
                             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                               <Form.Label>Recipient's email address</Form.Label>
-                              <Form.Control type="email" placeholder="Email address" name="email"
-                                            onChange={(event) => updateRecipients(event, index)}/>
+                              <Form.Control
+                                type="email"
+                                placeholder="Email address"
+                                name="email"
+                                onChange={(event) => updateRecipients(event, index)}/>
                             </Form.Group>
                           </Col>
                         </Row>
@@ -576,3 +585,4 @@ const mapStateToProps = (state, ownProps) => ({
 });
 
 export default connect(mapStateToProps)(Insights);
+
