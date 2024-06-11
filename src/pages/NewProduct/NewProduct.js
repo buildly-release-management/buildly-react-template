@@ -334,7 +334,7 @@ const NewProductForm = (props) => {
               )}
             </div>
           </div>
-          {/* <Chatbot /> */}
+          <Chatbot />
         </FormModal>
       )}
     </div>

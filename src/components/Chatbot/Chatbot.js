@@ -12,15 +12,9 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 // Set sender here
 const sender = 'Buildly Product Labs';
-// "Explain things like you would to a 10 year old learning how to code."
-const systemMessage = {
-  //  Explain things like you're talking to a software professional with 5 years of experience.
-  role: 'system', content: "Explain things like you're talking to a software professional with 2 years of experience.",
-};
 // Initial message state
 const initialMessages = [{
   message: "Hello, I'm here to help you! Ask me anything!",
-  sentTime: 'just now',
   sender,
 }];
 
@@ -40,62 +34,26 @@ const Chatbot = () => {
   }, []);
 
   const handleSend = async (message) => {
-    const newMessage = {
-      message,
-      direction: 'outgoing',
-      sender: 'user',
-    };
-
-    const newMessages = [...messages, newMessage];
-
+    const newMessages = [...messages, { message, sender: 'user' }];
     setMessages(newMessages);
 
     // Initial system message to determine ChatGPT functionality
     // How it responds, how it talks, etc.
     setIsTyping(true);
-    await processMessageToChatGPT(newMessages);
+    await processMessageToBabble(newMessages);
   };
 
-  async function processMessageToChatGPT(chatMessages) { // messages is an array of messages
-    // Format messages for chatGPT API
-    // API is expecting objects in format of
-    // { role: "user" or "assistant", "content": "message here"}
-    // So we need to reformat
-
-    const apiMessages = chatMessages.map((messageObject) => {
-      let role = '';
-      if (messageObject.sender === sender) {
-        role = 'assistant';
-      } else {
-        role = 'user';
-      }
-      return { role, content: messageObject.message };
-    });
-
-    // Get the request body set up with the model we plan to use
-    // and the messages which we formatted above. We add a system message in the front to'
-    // determine how we want chatGPT to act.
-    const apiRequestBody = {
-      model: 'gpt-3.5-turbo',
-      messages: [
-        systemMessage, // The system message DEFINES the logic of our chatGPT
-        ...apiMessages, // The messages from our chat with ChatGPT
-      ],
-    };
-
-    await fetch('https://api.openai.com/v1/chat/completions',
+  async function processMessageToBabble(chatMessages) {
+    await fetch(window.env.BABBLE_CHATBOT_URL,
       {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${window.env.BOT_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(apiRequestBody),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: _.last(chatMessages).message }),
       })
       .then((data) => data.json())
       .then((data) => {
         setMessages([...chatMessages, {
-          message: data.choices[0].message.content,
+          message: data.response,
           sender,
         }]);
         setIsTyping(false);
