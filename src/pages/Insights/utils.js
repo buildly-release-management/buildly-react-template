@@ -18,7 +18,6 @@ export const getReleaseBudgetData = (budgetData, releaseData) => {
 
     // // add team.budget to get release total
     releaseCopy.totalCost = (teamData ? teamData.team.reduce((acc, curr) => acc + curr.budget, 0) : 0);
-    console.log('releaseCopy', releaseCopy);
     return releaseCopy;
   });
 };

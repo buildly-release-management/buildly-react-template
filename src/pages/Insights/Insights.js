@@ -366,7 +366,7 @@ const Insights = ({
                         <thead>
                         <tr>
                           <th>PLATFORM DEV EXPENSES</th>
-                          <th>BUDGET</th>
+                          <th colSpan="2">BUDGET</th>
                         </tr>
                         <tr>
                           <th className="light-header">Payroll</th>
