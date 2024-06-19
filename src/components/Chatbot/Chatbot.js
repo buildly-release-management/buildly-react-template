@@ -14,7 +14,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 const sender = 'Buildly Product Labs';
 // Initial message state
 const initialMessages = [{
-  message: "Hello, I'm here to help you! Ask me anything!",
+  message: 'Hello there! How can I help you today?',
   sender,
 }];
 
