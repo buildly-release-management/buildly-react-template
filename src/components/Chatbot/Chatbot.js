@@ -9,6 +9,7 @@ import {
   Box, Button, Fab, Popover, useTheme,
 } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
+import './Chatbot.css';
 
 // Set sender here
 const sender = 'Buildly Product Labs';
@@ -34,7 +35,7 @@ const Chatbot = () => {
   }, []);
 
   const handleSend = async (message) => {
-    const newMessages = [...messages, { message, sender: 'user' }];
+    const newMessages = [...messages, { message, direction: 'outgoing', sender: 'user' }];
     setMessages(newMessages);
 
     // Initial system message to determine ChatGPT functionality
