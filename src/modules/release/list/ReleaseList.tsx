@@ -763,7 +763,7 @@ function ReleaseList({ loading, loaded, dispatch, features, issues }: any) {
           </Modal>
         </>
       )}
-      {/* <Chatbot /> */}
+      <Chatbot />
     </>
   );
 }

@@ -11,15 +11,15 @@ import registerServiceWorker from './serviceWorkerRegistration';
 
 if (window.env.PRODUCTION) {
   const script = document.createElement('script');
-  script.src = 'https://www.googletagmanager.com/gtag/js?id=UA-145772893-1';
+  script.src = 'https://www.googletagmanager.com/gtag/js?id=G-0DSG4S0NKS';
   script.async = true;
 
   const script2 = document.createElement('script');
   script2.innerHTML = `
     window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
+    function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'UA-145772893-1', { 'send_page_view': false });
+    gtag('config', 'G-0DSG4S0NKS');
   `;
 
   document.body.appendChild(script);

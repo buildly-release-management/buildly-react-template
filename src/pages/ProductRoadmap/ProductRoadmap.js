@@ -590,7 +590,7 @@ const ProductRoadmap = ({
           </div>
         )
       )}
-      {/* <Chatbot /> */}
+      <Chatbot />
     </>
   );
 };

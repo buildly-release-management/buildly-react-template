@@ -9,6 +9,7 @@ import { routes } from '@routes/routesConstants';
 import AddProduct from '@pages/NewProduct/NewProduct';
 import { productColumns, getProductsData } from './ProductPortfolioConstants';
 import { clearProductData } from '@redux/release/actions/release.actions';
+import Chatbot from '../../components/Chatbot/Chatbot';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -99,6 +100,7 @@ const ProductPortfolio = ({
         <Route path={addProductPath} component={AddProduct} />
         <Route path={`${editProductPath}/:id`} component={AddProduct} />
       </DataTableWrapper>
+      <Chatbot />
     </div>
   );
 };
