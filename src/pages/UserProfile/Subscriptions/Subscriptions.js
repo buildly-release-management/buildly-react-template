@@ -3,6 +3,10 @@ import { UserContext } from '@context/User.context';
 import { Button, Grid } from '@mui/material';
 import MUIDataTable from 'mui-datatables';
 
+function MoreVertIcon() {
+  return null;
+}
+
 const Subscriptions = () => {
   const user = useContext(UserContext);
   const maxDate = new Date();
@@ -37,6 +41,18 @@ const Subscriptions = () => {
                 Renew
               </Button>
             )}
+
+            {(maxDate < new Date(user.subscriptions[dataIndex].subscription_end_date)) && (
+            <Button
+              type="submit"
+              variant="outlined"
+              color="primary"
+              size="small"
+              onClick={() => cancelSubscription(user.subscriptions[dataIndex])}
+            >
+              Cancel
+            </Button>
+            )}
           </>
         ),
       },
@@ -52,6 +68,16 @@ const Subscriptions = () => {
     filter: false,
     viewColumns: false,
     enableNestedDataAccess: '.',
+  };
+
+  const cancelSubscription = (item) => {
+    console.log('item : ', item);
+    // history.push(`${editProductPath}/:${item.product_uuid}`, {
+    //   type: 'editP',
+    //   from: redirectTo || location.pathname,
+    //   data: item,
+    //   product_uuid: item.product_uuid,
+    // });
   };
 
   return (
