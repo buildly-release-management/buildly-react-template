@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Button, Grid, Tooltip,
 } from '@mui/material';
 import MUIDataTable from 'mui-datatables';
 import Modal from 'react-bootstrap/Modal';
-import { getUser } from '../../../context/User.context';
+import { getUser, UserContext } from '../../../context/User.context';
 import { showAlert } from '../../../redux/alert/actions/alert.actions';
 import Badge from 'react-bootstrap/Badge';
 import TextField from '@mui/material/TextField';
@@ -21,6 +21,7 @@ import { connect } from 'react-redux';
 import { httpService } from '@modules/http/http.service';
 import { loadOrgNames } from '../../../redux/authuser/actions/authuser.actions';
 import { loadCoreuserData } from '../../../redux/coreuser/coreuser.actions';
+import { hasAdminRights, hasGlobalAdminRights } from '../../../utils/permissions';
 
 const useStyles = makeStyles((theme) => ({
   dialogActionButtons: {
@@ -35,6 +36,9 @@ const Subscriptions = ({
   user,
 }) => {
   const classes = useStyles();
+
+  // const user = useContext(UserContext);
+  const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
 
   const [organization, setOrganization] = useState(null);
   if (!organization) {
@@ -71,18 +75,7 @@ const Subscriptions = ({
         empty: true,
         customBodyRenderLite: (dataIndex) => (
           <>
-            {/* {(maxDate > new Date(user.subscriptions[dataIndex].subscription_end_date)) && ( */}
-            {/*  <Button */}
-            {/*    type="submit" */}
-            {/*    variant="outlined" */}
-            {/*    color="primary" */}
-            {/*    size="small" */}
-            {/*  > */}
-            {/*    Renew */}
-            {/*  </Button> */}
-            {/* )} */}
-
-            {(maxDate < new Date(user.subscriptions[dataIndex].subscription_end_date)) && (
+            {(isAdmin && (maxDate < new Date(user.subscriptions[dataIndex].subscription_end_date))) && (
               (user.subscriptions[dataIndex].cancelled) ? (
                 <Tooltip
                   title={`Cancelled on: ${new Date(user.subscriptions[dataIndex].cancelled_date)}`}
@@ -135,10 +128,9 @@ const Subscriptions = ({
           }));
 
           // getCoreUser();
-          // dispatch(getUserDetails());
+          // dispatch(getUser());
         });
     } catch (httpError) {
-      console.log('httpError : ', httpError);
       dispatch(showAlert({
         type: 'error',
         open: true,
@@ -146,13 +138,6 @@ const Subscriptions = ({
       }));
       closeWarningModal();
     }
-  };
-
-  const getCoreUser = () => {
-    try {
-      httpService.makeRequest('get',
-        `${window.env.API_URL}coreuser/`).then();
-    } catch (httpError) { console.log('httpError : ', httpError); }
   };
 
   // Cancel subscription warning modal
@@ -278,13 +263,16 @@ const Subscriptions = ({
   return (
     <>
       <div className="p-2 ms-auto">
+        {isAdmin
+        && (
         <Button
           variant="contained"
           size="small"
           onClick={handleDialogOpen}
         >
-          Add subscription
+          New subscription
         </Button>
+        )}
       </div>
 
       <Grid item xs={12}>
@@ -386,5 +374,3 @@ const mapStateToProps = (state, ownProps) => ({
 });
 
 export default connect(mapStateToProps)(Subscriptions);
-
-// export default Subscriptions;
