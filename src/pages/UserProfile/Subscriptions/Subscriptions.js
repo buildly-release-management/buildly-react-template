@@ -1,21 +1,16 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { UserContext } from '@context/User.context';
+import React, { useEffect, useState } from 'react';
 import {
-  Button, Grid,
+  Button, Grid, Tooltip,
 } from '@mui/material';
 import MUIDataTable from 'mui-datatables';
 import Modal from 'react-bootstrap/Modal';
-// import { dispatch } from '../../../redux/store';
 import { getUser } from '../../../context/User.context';
 import { showAlert } from '../../../redux/alert/actions/alert.actions';
-import { HttpService } from '../../../services/http.service';
 import Badge from 'react-bootstrap/Badge';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import _ from 'lodash';
-import {
-  loadOrgNames, loadStripeProducts,
-} from '@redux/authuser/actions/authuser.actions';
+import { loadStripeProducts } from '@redux/authuser/actions/authuser.actions';
 import { isMobile } from '@utils/mediaQuery';
 import { validators } from '@utils/validators';
 import { useInput } from '@hooks/useInput';
@@ -23,10 +18,9 @@ import { useElements, useStripe } from '@stripe/react-stripe-js';
 import StripeCard from '../../../components/StripeCard/StripeCard';
 import makeStyles from '@mui/styles/makeStyles';
 import { connect } from 'react-redux';
-
-function MoreVertIcon() {
-  return null;
-}
+import { httpService } from '@modules/http/http.service';
+import { loadOrgNames } from '../../../redux/authuser/actions/authuser.actions';
+import { loadCoreuserData } from '../../../redux/coreuser/coreuser.actions';
 
 const useStyles = makeStyles((theme) => ({
   dialogActionButtons: {
@@ -38,10 +32,9 @@ const Subscriptions = ({
   dispatch,
   orgNames,
   stripeProducts,
+  user,
 }) => {
   const classes = useStyles();
-  const user = useContext(UserContext);
-  const httpService = new HttpService();
 
   const [organization, setOrganization] = useState(null);
   if (!organization) {
@@ -78,19 +71,26 @@ const Subscriptions = ({
         empty: true,
         customBodyRenderLite: (dataIndex) => (
           <>
-            {(maxDate > new Date(user.subscriptions[dataIndex].subscription_end_date)) && (
-              <Button
-                type="submit"
-                variant="outlined"
-                color="primary"
-                size="small"
-              >
-                Renew
-              </Button>
-            )}
+            {/* {(maxDate > new Date(user.subscriptions[dataIndex].subscription_end_date)) && ( */}
+            {/*  <Button */}
+            {/*    type="submit" */}
+            {/*    variant="outlined" */}
+            {/*    color="primary" */}
+            {/*    size="small" */}
+            {/*  > */}
+            {/*    Renew */}
+            {/*  </Button> */}
+            {/* )} */}
 
             {(maxDate < new Date(user.subscriptions[dataIndex].subscription_end_date)) && (
-              (user.subscriptions[dataIndex].cancelled) ? (<Badge bg="secondary">Cancelled</Badge>) : (
+              (user.subscriptions[dataIndex].cancelled) ? (
+                <Tooltip
+                  title={`Cancelled on: ${new Date(user.subscriptions[dataIndex].cancelled_date)}`}
+                  placement="right-start"
+                >
+                  <Badge bg="secondary">Cancelled</Badge>
+                </Tooltip>
+              ) : (
                 <Button
                   type="submit"
                   variant="outlined"
@@ -122,14 +122,10 @@ const Subscriptions = ({
   const [subscriptionToCancel, setSubscriptionToCancel] = useState(null);
 
   const cancelSubscription = () => {
-    console.log('subscriptionToCancel : ', subscriptionToCancel);
-
     try {
-      // httpService.deleteItem('delete',
-      //   `${window.env.API_URL}subscription/${subscriptionToCancel.subscription_uuid}`)
-      httpService.deleteItem(`/subscription/${subscriptionToCancel.subscription_uuid}/`, 'subscription')
+      httpService.makeRequest('delete',
+        `${window.env.API_URL}subscription/${subscriptionToCancel.subscription_uuid}`)
         .then((response) => {
-          console.log('response : ', response);
           closeWarningModal();
 
           dispatch(showAlert({
@@ -137,7 +133,9 @@ const Subscriptions = ({
             open: true,
             message: 'Subscription successfully saved',
           }));
-          dispatch(getUser());
+
+          // getCoreUser();
+          // dispatch(getUserDetails());
         });
     } catch (httpError) {
       console.log('httpError : ', httpError);
@@ -148,6 +146,13 @@ const Subscriptions = ({
       }));
       closeWarningModal();
     }
+  };
+
+  const getCoreUser = () => {
+    try {
+      httpService.makeRequest('get',
+        `${window.env.API_URL}coreuser/`).then();
+    } catch (httpError) { console.log('httpError : ', httpError); }
   };
 
   // Cancel subscription warning modal
@@ -172,7 +177,7 @@ const Subscriptions = ({
 
   useEffect(() => {
     if (!orgNames) {
-      // dispatch(loadOrgNames());
+      dispatch(loadOrgNames());
     }
     if (window.env.STRIPE_KEY && !stripeProducts) {
       dispatch(loadStripeProducts());
@@ -255,6 +260,7 @@ const Subscriptions = ({
                 open: true,
                 message: 'Subscription successfully saved',
               }));
+
               dispatch(getUser());
             });
         } catch (httpError) {
@@ -376,6 +382,7 @@ const mapStateToProps = (state, ownProps) => ({
   ...ownProps,
   ...state.authReducer,
   ...state.googleSheetReducer,
+  user: state.authReducer.data,
 });
 
 export default connect(mapStateToProps)(Subscriptions);
