@@ -77,6 +77,9 @@ const useStyles = makeStyles((theme) => ({
   card: {
     margin: theme.spacing(1),
   },
+  cardHeader: {
+    padding: '8px',
+  },
   chip: {
     marginRight: theme.spacing(0.5),
     marginBottom: theme.spacing(0.5),
@@ -88,7 +91,7 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.neutral.text,
   },
   moment: {
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(1),
     textAlign: 'left',
     display: 'flex',
     justifyContent: 'space-between',
@@ -386,6 +389,7 @@ const Kanban = ({
                                     }}
                                   >
                                     <CardHeader
+                                      className={classes.cardHeader}
                                       subheader={item.name}
                                       action={(
                                         <div>
@@ -456,7 +460,7 @@ const Kanban = ({
                                       )}
                                     />
 
-                                    <CardContent style={{ paddingBottom: '16px' }}>
+                                    <CardContent style={{ paddingBottom: '8px' }} className={classes.cardHeader}>
                                       {_.map(item.tags, (tag) => (
                                         <Chip
                                           key={item.issue_uuid
@@ -513,7 +517,7 @@ const Kanban = ({
                                           {!item.issue_uuid && (
                                             <CallSplitIcon
                                               className={classes.bottomIcon}
-                                              fontSize="large"
+                                              fontSize="medium"
                                               onClick={(e) => showRelatedIssues(item.feature_uuid)}
                                             />
                                           )}
@@ -535,7 +539,7 @@ const Kanban = ({
                                             <CommentIcon
                                               className={classes.bottomIcon}
                                               onClick={(e) => commentItem(item)}
-                                              fontSize="large"
+                                              fontSize="medium"
                                             />
                                           </Badge>
                                         </div>
