@@ -570,9 +570,8 @@ const Insights = ({
         </>
       )}
 
-      {!selectedProduct &&
-        <Alert variant="warning">Please select a product to get insights.</Alert>}
-      {/* <Chatbot /> */}
+      {!selectedProduct && <Alert variant="warning">Please select a product to get insights.</Alert>}
+      <Chatbot />
     </>
   );
 };

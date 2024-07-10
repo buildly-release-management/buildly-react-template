@@ -415,7 +415,7 @@ function ReleaseDetails() {
           </Box>
         </>
       )}
-      {/* <Chatbot /> */}
+      <Chatbot />
     </>
   );
 }
