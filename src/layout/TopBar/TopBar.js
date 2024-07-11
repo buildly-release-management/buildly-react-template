@@ -397,13 +397,13 @@ const TopBar = ({
             ))}
             {
               !(user && user.subscriptions && user.subscriptions.length) && (
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={handleDialogOpen}
-                >
-                  Upgrade plan
-                </Button>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={handleDialogOpen}
+              >
+                Upgrade plan
+              </Button>
               )
             }
           </Box>
