@@ -8,7 +8,11 @@ import {
   Grid,
   Button,
   Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
 import {
@@ -23,6 +27,11 @@ const useStyles = makeStyles((theme) => ({
       width: '70%',
       margin: 'auto',
     },
+  },
+  accordion: {
+    width: '100%',
+    color: theme.palette.secondary.main,
+    border: `1px solid ${theme.palette.secondary.main}`,
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
@@ -145,15 +154,17 @@ const IssueSuggestions = ({
 
               {showData && !_.isEmpty(showData.suggested_issues)
               && _.map(showData.suggested_issues, (issue, index) => (
-                <Button
+                <Accordion
                   key={`${issue.name}-${index}`}
-                  style={{ cursor: 'text' }}
-                  fullWidth
-                  variant="outlined"
-                  color="secondary"
+                  className={classes.accordion}
                 >
-                  {`${issue.name} (${issue.ticket_type} ticket)`}
-                </Button>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon color="secondary" />}>
+                    <Typography color="inherit" variant="h6">{`${issue.name} (${issue.ticket_type} ticket)`}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <div dangerouslySetInnerHTML={{ __html: `Description: ${issue.description || 'Not available'}` }} />
+                  </AccordionDetails>
+                </Accordion>
               ))}
             </Grid>
 
