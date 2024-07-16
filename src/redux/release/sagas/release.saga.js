@@ -101,6 +101,9 @@ import {
   THIRD_PARTY_TOOL_SYNC,
   THIRD_PARTY_TOOL_SYNC_SUCCESS,
   THIRD_PARTY_TOOL_SYNC_FAILURE,
+  GENERATE_USER_STORIES,
+  GENERATE_USER_STORIES_SUCCESS,
+  GENERATE_USER_STORIES_FAILURE,
 } from '../actions/release.actions';
 import {
   deleteProduct, getProduct,
@@ -1077,6 +1080,31 @@ function* thirdPartyToolSync(payload) {
   }
 }
 
+function* generateUserStories(payload) {
+  try {
+    const stories = yield call(
+      httpService.makeRequest,
+      'get',
+      `${window.env.API_URL}release/generate-user-stories/?user_types=${payload.user_types}&feature_uuid=${payload.feature_uuid}`,
+    );
+    yield put({ type: GENERATE_USER_STORIES_SUCCESS, data: stories.data });
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t generate user stories!',
+        }),
+      ),
+      yield put({
+        type: GENERATE_USER_STORIES_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
 // Watchers
 function* watchGetAllReleases() {
   yield takeLatest(ALL_RELEASES, allReleases);
@@ -1206,6 +1234,10 @@ function* watchThirdPartyToolSync() {
   yield takeLatest(THIRD_PARTY_TOOL_SYNC, thirdPartyToolSync);
 }
 
+function* watchGenerateUserStories() {
+  yield takeLatest(GENERATE_USER_STORIES, generateUserStories);
+}
+
 export default function* releaseSaga() {
   yield all([
     watchGetAllReleases(),
@@ -1240,5 +1272,6 @@ export default function* releaseSaga() {
     watchDeleteStatus(),
     watchClearProductData(),
     watchThirdPartyToolSync(),
+    watchGenerateUserStories(),
   ]);
 }

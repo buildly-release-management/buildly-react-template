@@ -129,6 +129,10 @@ export const THIRD_PARTY_TOOL_SYNC = 'RELEASE/THIRD_PARTY_TOOL_SYNC';
 export const THIRD_PARTY_TOOL_SYNC_SUCCESS = 'RELEASE/THIRD_PARTY_TOOL_SYNC_SUCCESS';
 export const THIRD_PARTY_TOOL_SYNC_FAILURE = 'RELEASE/THIRD_PARTY_TOOL_SYNC_FAILURE';
 
+export const GENERATE_USER_STORIES = 'RELEASE/GENERATE_USER_STORIES';
+export const GENERATE_USER_STORIES_SUCCESS = 'RELEASE/GENERATE_USER_STORIES_SUCCESS';
+export const GENERATE_USER_STORIES_FAILURE = 'RELEASE/GENERATE_USER_STORIES_FAILURE';
+
 /**
  * Get all Releases
  * @param {uuid} product_uuid
@@ -416,3 +420,10 @@ export const thirdPartyToolSync = (creds) => ({
   type: THIRD_PARTY_TOOL_SYNC,
   creds,
 });
+
+/**
+ * Generate user stories
+ * @param {Array} user_types
+ * @param {uuid} feature_uuid
+ */
+export const generateUserStories = (user_types, feature_uuid) => ({ type: GENERATE_USER_STORIES, user_types, feature_uuid });
