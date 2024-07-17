@@ -45,6 +45,11 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  userStoryButton: {
+    margin: theme.spacing(3, 0, 2),
+    borderRadius: '18px',
+    float: 'right',
+  },
 }));
 
 const AddFeatures = ({
@@ -101,6 +106,7 @@ const AddFeatures = ({
     || [],
   );
 
+  const [generate, setGenerate] = useState(false);
   const [userTypes, setUserTypes] = useState(
     (editData && editData.feature_detail && _.keys(editData.feature_detail.user_stories))
     || [],
@@ -159,16 +165,23 @@ const AddFeatures = ({
     }
   }, [statuses]);
 
+  useEffect(() => {
+    if (generate && !_.isEmpty(user_stories)) {
+      setGenerate(false);
+      setUserStories(user_stories);
+    }
+  }, [user_stories]);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
     const featCred = _.find(credentials, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'feature'));
-    const finalUserStories = {};
+    let finalUserStories = {};
 
-    _.forEach(userTypes, (ut, index) => {
+    _.forEach(userTypes, (ut) => {
       finalUserStories = {
         ...finalUserStories,
-        [ut]: userStories[index],
+        [ut]: userStories[ut],
       };
     });
 
@@ -265,7 +278,11 @@ const AddFeatures = ({
     }
   };
 
-  const requestUserStories = () => {}
+  const requestUserStories = () => {
+    setGenerate(true);
+    dispatch(generateUserStories(userTypes, editData.feature_uuid));
+  };
+  console.log(user_stories);
 
   return (
     <>
@@ -515,7 +532,7 @@ const AddFeatures = ({
                 variant="outlined"
                 color="primary"
                 onClick={requestUserStories}
-                className={classes.submit}
+                className={classes.userStoryButton}
               >
                 Generate User Stories
               </Button>
