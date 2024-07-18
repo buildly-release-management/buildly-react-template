@@ -241,17 +241,17 @@ function* allComments(payload) {
   try {
     const comments = yield call(
       httpService.makeRequest,
-      "get",
+      'get',
       `${window.env.API_URL}release/comment/?product_uuid=${
         payload.product_uuid || payload.searchQuery
-      }`
+      }`,
     );
     // checking if comments array contains any value with user_signoff_uuid not null
     if (_.some(comments?.data, (ele) => ele.user_signoff_uuid !== null)) {
       const users = yield call(
         httpService.makeRequest,
-        "get",
-        `${window.env.API_URL}coreuser/`
+        'get',
+        `${window.env.API_URL}coreuser/`,
       );
       // merging comments array with user information based on user_signoff_uuid compared to core_user_uuid
       const commentsWithUserInfo = _.map(comments.data, (comment) => ({
@@ -269,10 +269,10 @@ function* allComments(payload) {
     yield [
       yield put(
         showAlert({
-          type: "error",
+          type: 'error',
           open: true,
           message: "Couldn't fetch all Comments!",
-        })
+        }),
       ),
       yield put({
         type: ALL_COMMENTS_FAILURE,
@@ -316,7 +316,7 @@ function* createComment(payload) {
       payload.data,
     );
     // binding user_info from api payload to response of create comment
-    if ("user_info" in payload.data) {
+    if ('user_info' in payload.data) {
       comment.data.user_info = payload.data.user_info;
     }
     yield [
@@ -1085,7 +1085,7 @@ function* generateUserStories(payload) {
     const stories = yield call(
       httpService.makeRequest,
       'get',
-      `${window.env.API_URL}release/generate-user-stories/?user_types=${payload.user_types}&feature_uuid=${payload.feature_uuid}`,
+      `${window.env.API_URL}release/generate-user-stories/?user_types=${encodeURIComponent(payload.user_types)}&feature_uuid=${payload.feature_uuid}`,
     );
     yield put({ type: GENERATE_USER_STORIES_SUCCESS, data: stories.data });
   } catch (error) {

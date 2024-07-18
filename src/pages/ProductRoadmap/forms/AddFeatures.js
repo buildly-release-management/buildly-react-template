@@ -106,7 +106,6 @@ const AddFeatures = ({
     || [],
   );
 
-  const [generate, setGenerate] = useState(false);
   const [userTypes, setUserTypes] = useState(
     (editData && editData.feature_detail && _.keys(editData.feature_detail.user_stories))
     || [],
@@ -166,8 +165,7 @@ const AddFeatures = ({
   }, [statuses]);
 
   useEffect(() => {
-    if (generate && !_.isEmpty(user_stories)) {
-      setGenerate(false);
+    if (!_.isEmpty(user_stories)) {
       setUserStories(user_stories);
     }
   }, [user_stories]);
@@ -268,7 +266,8 @@ const AddFeatures = ({
     || !!(editPage && editData && !_.isEqual((editData.tags || []), tags))
     || !!(editPage && editData && editData.feature_detail
       && !_.isEqual(_.map(editData.feature_detail.assigneees, 'username'), assignees))
-    );
+    )
+    || !!(editPage && editData && !_.isEqual(editData.feature_detail.user_stories, user_stories));
 
     if (dataHasChanged) {
       setConfirmModal(true);
@@ -279,10 +278,8 @@ const AddFeatures = ({
   };
 
   const requestUserStories = () => {
-    setGenerate(true);
     dispatch(generateUserStories(userTypes, editData.feature_uuid));
   };
-  console.log(user_stories);
 
   return (
     <>
@@ -543,6 +540,8 @@ const AddFeatures = ({
                 variant="outlined"
                 margin="normal"
                 fullWidth
+                multiline
+                maxRows={5}
                 id={`${ut}-user-story`}
                 label={`User Story for ${_.capitalize(ut)}`}
                 name={`${ut}-user-story`}
@@ -550,7 +549,7 @@ const AddFeatures = ({
                 autoComplete={`${ut}-user-story`}
                 disabled={viewPage}
                 onChange={(e) => {
-                  setUserStories({ ...userStories, [ut]: e.target.value })
+                  setUserStories({ ...userStories, [ut]: e.target.value });
                 }}
               />
             ))}
