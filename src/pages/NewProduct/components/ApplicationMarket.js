@@ -285,7 +285,7 @@ const ApplicationMarket = ({
                       onChange={(e) => userLabels.setNewValue(
                         _.map(userLabels.value, (ul, index) => (
                           idx === index
-                            ? { label: ul.label, type: ul.type, profile: _.replace(e.target.value, ',', '') }
+                            ? { label: ul.label, type: ul.type, profile: e.target.value, }
                             : ul
                         )),
                       )}
