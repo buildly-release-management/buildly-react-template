@@ -59,6 +59,10 @@ const useStyles = makeStyles((theme) => ({
   addButton: {
     margin: 'auto',
   },
+  userProfile: {
+    paddingTop: '0 !important',
+    paddingBottom: theme.spacing(2),
+  },
 }));
 
 // eslint-disable-next-line import/no-mutable-exports
@@ -268,6 +272,25 @@ const ApplicationMarket = ({
                       </Button>
                     </Grid>
                   )}
+                  <Grid item xs={12} className={classes.userProfile}>
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      fullWidth
+                      id={`user-profile-${idx}`}
+                      label="User Profile"
+                      name={`user-profile-${idx}`}
+                      autoComplete="user-profile"
+                      value={userLabel.profile}
+                      onChange={(e) => userLabels.setNewValue(
+                        _.map(userLabels.value, (ul, index) => (
+                          idx === index
+                            ? { label: ul.label, type: ul.type, profile: e.target.value }
+                            : ul
+                        )),
+                      )}
+                    />
+                  </Grid>
                 </Grid>
               ))}
             </Grid>

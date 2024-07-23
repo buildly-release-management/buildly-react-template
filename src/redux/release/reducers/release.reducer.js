@@ -100,6 +100,7 @@ import {
   GENERATE_USER_STORIES,
   GENERATE_USER_STORIES_SUCCESS,
   GENERATE_USER_STORIES_FAILURE,
+  CLEAR_USER_STORIES,
 } from '../actions/release.actions';
 
 const initialState = {
@@ -506,6 +507,14 @@ export default (state = initialState, action) => {
         loading: false,
         loaded: true,
         user_stories: action.data,
+      };
+
+    case CLEAR_USER_STORIES:
+      return {
+        ...state,
+        loading: false,
+        loaded: true,
+        user_stories: [],
       };
 
     default:
