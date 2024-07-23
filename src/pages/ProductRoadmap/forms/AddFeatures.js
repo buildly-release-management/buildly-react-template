@@ -18,7 +18,9 @@ import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
 import SmartInput from '@components/SmartInput/SmartInput';
 import { useInput } from '@hooks/useInput';
-import { createFeature, updateFeature, generateUserStories } from '@redux/release/actions/release.actions';
+import {
+  createFeature, updateFeature, generateUserStories, clearUserStories,
+} from '@redux/release/actions/release.actions';
 import { validators } from '@utils/validators';
 import { PRIORITIES } from '../ProductRoadmapConstants';
 
@@ -110,6 +112,7 @@ const AddFeatures = ({
     (editData && editData.feature_detail && _.keys(editData.feature_detail.user_stories))
     || [],
   );
+  const [userProfiles, setUserProfiles] = useState({});
   const [userStories, setUserStories] = useState(
     (editData && editData.feature_detail && editData.feature_detail.user_stories)
     || [],
@@ -144,9 +147,18 @@ const AddFeatures = ({
     const prod = _.find(products, { product_uuid });
     const assigneeOptions = _.map(prod?.feature_tool_detail?.user_list, 'username') || [];
     const productUserTypes = _.map((prod?.product_info?.user_labels || []), 'label');
+    let productUserProfiles = {};
+
+    _.forEach(prod?.product_info?.user_labels || [], (ul) => {
+      productUserProfiles = {
+        ...productUserProfiles,
+        [ul.label]: ul.profile,
+      };
+    });
 
     setAssigneeData(assigneeOptions);
     setTagList(prod?.feature_tool_detail?.labels || []);
+    setUserProfiles(productUserProfiles);
 
     if (_.isEmpty(userTypes)) {
       setUserTypes(productUserTypes);
@@ -273,12 +285,14 @@ const AddFeatures = ({
       setConfirmModal(true);
     } else {
       setFormModal(false);
+      dispatch(clearUserStories());
       history.push(redirectTo);
     }
   };
 
   const requestUserStories = () => {
-    dispatch(generateUserStories(userTypes, editData.feature_uuid));
+    const userTypeProfiles = _.map(userTypes, (ut) => userProfiles[ut] || '');
+    dispatch(generateUserStories(userTypes, userTypeProfiles, editData.feature_uuid));
   };
 
   return (

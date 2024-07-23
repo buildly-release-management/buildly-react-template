@@ -1084,8 +1084,9 @@ function* generateUserStories(payload) {
   try {
     const stories = yield call(
       httpService.makeRequest,
-      'get',
-      `${window.env.API_URL}release/generate-user-stories/?user_types=${encodeURIComponent(payload.user_types)}&feature_uuid=${payload.feature_uuid}`,
+      'post',
+      `${window.env.API_URL}release/generate-user-stories/`,
+      { user_types: payload.user_types, user_profiles: payload.user_profiles, feature_uuid: payload.feature_uuid },
     );
     yield put({ type: GENERATE_USER_STORIES_SUCCESS, data: stories.data });
   } catch (error) {
