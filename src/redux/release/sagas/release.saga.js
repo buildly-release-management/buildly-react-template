@@ -101,6 +101,9 @@ import {
   THIRD_PARTY_TOOL_SYNC,
   THIRD_PARTY_TOOL_SYNC_SUCCESS,
   THIRD_PARTY_TOOL_SYNC_FAILURE,
+  GENERATE_USER_STORIES,
+  GENERATE_USER_STORIES_SUCCESS,
+  GENERATE_USER_STORIES_FAILURE,
 } from '../actions/release.actions';
 import {
   deleteProduct, getProduct,
@@ -238,17 +241,17 @@ function* allComments(payload) {
   try {
     const comments = yield call(
       httpService.makeRequest,
-      "get",
+      'get',
       `${window.env.API_URL}release/comment/?product_uuid=${
         payload.product_uuid || payload.searchQuery
-      }`
+      }`,
     );
     // checking if comments array contains any value with user_signoff_uuid not null
     if (_.some(comments?.data, (ele) => ele.user_signoff_uuid !== null)) {
       const users = yield call(
         httpService.makeRequest,
-        "get",
-        `${window.env.API_URL}coreuser/`
+        'get',
+        `${window.env.API_URL}coreuser/`,
       );
       // merging comments array with user information based on user_signoff_uuid compared to core_user_uuid
       const commentsWithUserInfo = _.map(comments.data, (comment) => ({
@@ -266,10 +269,10 @@ function* allComments(payload) {
     yield [
       yield put(
         showAlert({
-          type: "error",
+          type: 'error',
           open: true,
           message: "Couldn't fetch all Comments!",
-        })
+        }),
       ),
       yield put({
         type: ALL_COMMENTS_FAILURE,
@@ -313,7 +316,7 @@ function* createComment(payload) {
       payload.data,
     );
     // binding user_info from api payload to response of create comment
-    if ("user_info" in payload.data) {
+    if ('user_info' in payload.data) {
       comment.data.user_info = payload.data.user_info;
     }
     yield [
@@ -1077,6 +1080,32 @@ function* thirdPartyToolSync(payload) {
   }
 }
 
+function* generateUserStories(payload) {
+  try {
+    const stories = yield call(
+      httpService.makeRequest,
+      'post',
+      `${window.env.API_URL}release/generate-user-stories/`,
+      { user_types: payload.user_types, user_profiles: payload.user_profiles, feature_uuid: payload.feature_uuid },
+    );
+    yield put({ type: GENERATE_USER_STORIES_SUCCESS, data: stories.data });
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t generate user stories!',
+        }),
+      ),
+      yield put({
+        type: GENERATE_USER_STORIES_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
 // Watchers
 function* watchGetAllReleases() {
   yield takeLatest(ALL_RELEASES, allReleases);
@@ -1206,6 +1235,10 @@ function* watchThirdPartyToolSync() {
   yield takeLatest(THIRD_PARTY_TOOL_SYNC, thirdPartyToolSync);
 }
 
+function* watchGenerateUserStories() {
+  yield takeLatest(GENERATE_USER_STORIES, generateUserStories);
+}
+
 export default function* releaseSaga() {
   yield all([
     watchGetAllReleases(),
@@ -1240,5 +1273,6 @@ export default function* releaseSaga() {
     watchDeleteStatus(),
     watchClearProductData(),
     watchThirdPartyToolSync(),
+    watchGenerateUserStories(),
   ]);
 }
