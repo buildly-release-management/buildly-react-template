@@ -286,6 +286,7 @@ const AddFeatures = ({
       setConfirmModal(true);
     } else {
       setFormModal(false);
+      dispatch(clearUserStories());
       history.push(redirectTo);
     }
   };
