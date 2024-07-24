@@ -281,6 +281,7 @@ const AddFeatures = ({
     )
     || !!(editPage && editData && !_.isEqual(editData.feature_detail.user_stories, user_stories));
 
+    dispatch(clearUserStories());
     if (dataHasChanged) {
       setConfirmModal(true);
     } else {
