@@ -1,7 +1,5 @@
-/* eslint-disable no-console */
 import React, { useState, useEffect } from 'react';
 import _ from 'lodash';
-import { connect } from 'react-redux';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Button,
@@ -19,13 +17,15 @@ import logo from '@assets/buildly-product-labs-logo.png';
 import Copyright from '@components/Copyright/Copyright';
 import GithubLogin from '@components/SocialLogin/GithubLogin';
 import { useInput } from '@hooks/useInput';
-import { register } from '@redux/authuser/actions/authuser.actions';
+import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
 import { isMobile } from '@utils/mediaQuery';
 import Loader from '@components/Loader/Loader';
-import { showAlert } from '@redux/alert/actions/alert.actions';
-import { httpService } from '@modules/http/http.service';
+import { useQuery } from 'react-query';
+import { inviteTokenCheckQuery } from '../../react-query/queries/authUser/inviteTokenCheckQuery';
+import { useRegisterMutation } from '../../react-query/mutation/authUser/registerMutation';
+import { useSocialLoginMutation } from '../../react-query/mutation/authUser/socialLoginMutation';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {
@@ -84,12 +84,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Register = ({
-  dispatch, loading, history, socialLogin,
-}) => {
+const Register = ({ history }) => {
   const classes = useStyles();
 
-  const [email, setEmail] = useState('');
+  const [inviteToken, setInviteToken] = useState('');
+
+  const email = useInput('', { required: true });
   const username = useInput('', { required: true });
   const password = useInput('', { required: true });
   const re_password = useInput('', {
@@ -97,44 +97,40 @@ const Register = ({
     confirm: true,
     matchField: password,
   });
-  const [orgName, setOrgName] = useState('');
+  const organization_name = useInput('', { required: true });
   const userType = useInput('', { required: true });
   const first_name = useInput('', { required: true });
   const last_name = useInput('');
   const coupon_code = useInput(window.env.FREE_COUPON_CODE || '');
   const [formError, setFormError] = useState({});
   const [checked, setChecked] = React.useState(false);
-  const [hasInviteDetails, setInviteDetails] = React.useState(false);
+
+  const { displayAlert } = useAlert();
+
+  const { data: inviteTokenCheckData, isLoading: isInviteTokenCheckLoading } = useQuery(
+    ['inviteTokenCheck'],
+    () => inviteTokenCheckQuery(inviteToken, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(inviteToken) },
+  );
+
+  const { mutate: registerMutation, isLoading: isRegisterLoading } = useRegisterMutation(history, routes.LOGIN, displayAlert);
+
+  const { mutate: socialLoginMutation, isLoading: isSocialLoginLoading } = useSocialLoginMutation(history, routes.MISSING_DATA, routes.PRODUCT_PORTFOLIO, displayAlert);
 
   useEffect(() => {
     const queryParameters = new URLSearchParams(window.location.search);
     const token = queryParameters.get('token');
-    if (token) {
-      try {
-        httpService.makeRequest('get',
-          `${window.env.API_URL}coreuser/invite_check/?token=${token}`)
-          .then((response) => {
-            if (response && response.data) {
-              setInviteDetails(true);
-              if (response.data.email) {
-                setEmail(response.data.email);
-              }
-              if (response.data.organization) {
-                setOrgName(response.data.organization.name);
-              }
-            }
-          }).catch((error) => {
-            dispatch(showAlert({
-              type: 'error',
-              open: true,
-              message: 'Token is expired!',
-            }));
-          });
-      } catch (httpError) {
-        console.log('httpError : ', httpError);
-      }
+    if (!_.isEmpty(token)) {
+      setInviteToken(token);
     }
   }, []);
+
+  useEffect(() => {
+    if (inviteTokenCheckData) {
+      email.setValue(inviteTokenCheckData.email || '');
+      organization_name.setValue(inviteTokenCheckData.organization_name || '');
+    }
+  }, [inviteTokenCheckData]);
 
   // eslint-disable-next-line consistent-return
   useEffect(() => {
@@ -153,23 +149,18 @@ const Register = ({
     event.preventDefault();
     const registerFormValue = {
       username: username.value,
-      email,
+      email: email.value,
       password: password.value,
-      organization_name: orgName,
+      organization_name: organization_name.value,
       user_type: userType.value,
       first_name: first_name.value,
       last_name: last_name.value,
       coupon_code: coupon_code.value,
     };
-
-    if (!hasInviteDetails && _.includes(_.toLower(_.trim(orgName)), 'buildly')) {
-      dispatch(showAlert({
-        type: 'error',
-        open: true,
-        message: 'Organization name cannot have word Buildly in it',
-      }));
+    if (!inviteTokenCheckData && _.includes(_.toLower(_.trim(organization_name.value)), 'buildly')) {
+      displayAlert('error', 'Organization name cannot have word Buildly in it.');
     } else {
-      dispatch(register(registerFormValue, history));
+      registerMutation(registerFormValue);
     }
   };
 
@@ -202,9 +193,9 @@ const Register = ({
     if (
       !username.value
       || !password.value
-      || !email
+      || !email.value
       || !re_password.value
-      || !orgName
+      || !organization_name.value
       || !userType.value
       || !first_name.value
     ) return true;
@@ -216,7 +207,7 @@ const Register = ({
 
   return (
     <>
-      {(loading || socialLogin) && <Loader open={loading || socialLogin} />}
+      {(isRegisterLoading || isSocialLoginLoading || isInviteTokenCheckLoading) && <Loader open={isRegisterLoading || isSocialLoginLoading || isInviteTokenCheckLoading} />}
       <div className={classes.logoDiv}>
         <img src={logo} alt="Logo" className={classes.logo} />
       </div>
@@ -299,14 +290,12 @@ const Register = ({
                       name="email"
                       autoComplete="email"
                       type="email"
-                      value={email}
-                      disabled={hasInviteDetails}
+                      disabled={inviteTokenCheckData}
                       error={formError.email && formError.email.error}
                       helperText={
                         formError.email ? formError.email.message : ''
                       }
                       className={classes.textField}
-                      onChange={(e) => setEmail(e.target.value)}
                       onBlur={(e) => handleBlur(e, 'email', email)}
                       {...email.bind}
                     />
@@ -323,16 +312,14 @@ const Register = ({
                       label="Organization Name"
                       name="organization_name"
                       autoComplete="organization_name"
-                      value={orgName}
-                      disabled={hasInviteDetails}
+                      disabled={inviteTokenCheckData}
                       error={formError.orgName && formError.orgName.error}
                       helperText={
                         formError.orgName ? formError.orgName.message : ''
                       }
                       className={classes.textField}
-                      onChange={(e) => setOrgName(e.target.value)}
-                      onBlur={(e) => handleBlur(e, 'required', orgName)}
-                      {...orgName.bind}
+                      onBlur={(e) => handleBlur(e, 'required', organization_name)}
+                      {...organization_name.bind}
                     />
                   </Grid>
                 </Grid>
@@ -452,7 +439,7 @@ const Register = ({
                     variant="contained"
                     color="primary"
                     className={classes.submit}
-                    disabled={loading || submitDisabled() || !checked}
+                    disabled={isRegisterLoading || isSocialLoginLoading || submitDisabled() || !checked || isInviteTokenCheckLoading}
                   >
                     Register
                   </Button>
@@ -464,9 +451,9 @@ const Register = ({
                 </Grid>
                 <Grid item xs={12} className={classes.socialAuth}>
                   <GithubLogin
-                    dispatch={dispatch}
+                    socialLoginMutation={socialLoginMutation}
                     history={history}
-                    disabled={loading && socialLogin}
+                    disabled={isRegisterLoading || isSocialLoginLoading || isInviteTokenCheckLoading}
                   />
                 </Grid>
                 <Grid item className={classes.link}>
@@ -484,9 +471,4 @@ const Register = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  ...state.authReducer,
-});
-
-export default connect(mapStateToProps)(Register);
+export default Register;

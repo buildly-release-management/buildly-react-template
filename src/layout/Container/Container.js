@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Route, Redirect, Switch } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { Container } from '@mui/material';
@@ -33,12 +33,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-/**
- * Container for the app layout when the user is authenticated.
- */
 const ContainerDashboard = ({ location, history }) => {
   const classes = useStyles();
-  const [navHidden, setNavHidden] = useState(false);
   const { organization } = getUser();
 
   return (
@@ -46,8 +42,6 @@ const ContainerDashboard = ({ location, history }) => {
       <GlobalStateProvider>
         <UserContext.Provider value={getUser()}>
           <TopBar
-            navHidden={navHidden}
-            setNavHidden={setNavHidden}
             location={location}
             history={history}
           />

@@ -1,6 +1,5 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import makeStyles from '@mui/styles/makeStyles';
@@ -17,15 +16,14 @@ import {
 import DatePickerComponent from '@components/DatePicker/DatePicker';
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
+import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
-import {
-  createIssue,
-  updateIssue,
-} from '@redux/release/actions/release.actions';
 import { validators } from '@utils/validators';
 import { ISSUETYPES } from '../ProductRoadmapConstants';
 import { routes } from '@routes/routesConstants';
 import SmartInput from '@components/SmartInput/SmartInput';
+import { useCreateIssueMutation } from '../../../react-query/mutation/release/createIssueMutation';
+import { useUpdateIssueMutation } from '../../../react-query/mutation/release/UpdateIssueMutation';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -47,16 +45,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const AddIssues = ({
-  dispatch,
-  history,
-  location,
-  statuses,
-  features,
-  credentials,
-  products,
-  loading,
-}) => {
+const AddIssues = ({ history, location }) => {
   const classes = useStyles();
   const redirectTo = location.state && location.state.from;
   const editPage = location.state && location.state.type === 'edit';
@@ -67,17 +56,19 @@ const AddIssues = ({
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
 
+  const { displayAlert } = useAlert();
+
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
-  const product_uuid = location.state && location.state.product_uuid;
+  const {
+    product_uuid, statusData, productData, featureData, credentialData,
+  } = location && location.state;
 
-  // form fields definition
   const [description, setDescription] = useState((editData && editData.description) || '');
   const name = useInput((editData && editData.name) || '', { required: true });
 
   const featureUuid = useInput((editData && editData.feature) || '');
   const [feature, setFeatureValue] = useState(featureUuid.value);
-  // const [feature, setFeatureValue] = useState((editData && editData.feature) || '');
 
   const type = useInput((editData && editData.issue_type) || '', { required: true });
   const [startDate, handleStartDateChange] = useState(moment(
@@ -104,20 +95,20 @@ const AddIssues = ({
   const [formError, setFormError] = useState({});
 
   useEffect(() => {
-    const prod = _.find(products, { product_uuid });
+    const prod = _.find(productData, { product_uuid });
     const assigneeOptions = _.map(prod?.issue_tool_detail?.user_list) || [];
 
     setRepoList(prod?.issue_tool_detail?.repository_list || []);
     setAssigneeData(assigneeOptions);
-  }, [products]);
+  }, [productData]);
 
   useEffect(() => {
     if (editData) {
-      const sts = _.find(statuses, { status_uuid: editData.status });
+      const sts = _.find(statusData, { status_uuid: editData.status });
       setStatus(sts);
       setColID(sts?.status_tracking_id);
     }
-  }, [statuses]);
+  }, [statusData]);
 
   const closeFormModal = () => {
     const dataHasChanged = (
@@ -140,25 +131,17 @@ const AddIssues = ({
       setConfirmModal(true);
     } else {
       setFormModal(false);
-      if (location && location.state) {
-        history.push(_.includes(location.state.from, 'kanban')
-          ? routes.PRODUCT_ROADMAP_KANBAN
-          : routes.PRODUCT_ROADMAP_TABULAR);
-      }
+      history.push(redirectTo);
     }
   };
 
-  const discardFormData = () => {
-    setConfirmModal(false);
-    setFormModal(false);
-    history.push(redirectTo);
-  };
+  const { mutate: createIssueMutation, isLoading: isCreatingIssueLoading } = useCreateIssueMutation(product_uuid, history, redirectTo, displayAlert);
+  const { mutate: updateIssueMutation, isLoading: isUpdatingIssueLoading } = useUpdateIssueMutation(product_uuid, history, redirectTo, displayAlert);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-    const issueCred = _.find(credentials, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'issue'));
-
+    const issueCred = _.find(credentialData, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'issue'));
     const formData = {
       ...editData,
       edit_date: dateTime,
@@ -180,19 +163,16 @@ const AddIssues = ({
       },
       ...issueCred?.auth_detail,
     };
-
-    // : (Array.isArray(assignees) && assignees.length > 0) ? assignees : null,
     if (editPage) {
       // eslint-disable-next-line no-prototype-builtins
       if (formData.hasOwnProperty('name')) {
         delete formData.assignees;
       }
-      dispatch(updateIssue(formData));
+      updateIssueMutation(formData);
     } else {
       formData.create_date = dateTime;
-      dispatch(createIssue(formData));
+      createIssueMutation(formData);
     }
-    history.push(redirectTo);
   };
 
   const handleBlur = (e, validation, input, parentId) => {
@@ -247,9 +227,9 @@ const AddIssues = ({
           wantConfirm
           openConfirmModal={openConfirmModal}
           setConfirmModal={setConfirmModal}
-          handleConfirmModal={discardFormData}
+          handleConfirmModal={(e) => history.push(redirectTo)}
         >
-          {loading && <Loader open={loading} />}
+          {(isCreatingIssueLoading || isUpdatingIssueLoading) && <Loader open={isCreatingIssueLoading || isUpdatingIssueLoading} />}
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
               <Grid item xs={12}>
@@ -275,7 +255,6 @@ const AddIssues = ({
                   {...name.bind}
                 />
               </Grid>
-
               <Grid item xs={12}>
                 <SmartInput
                   onEditorValueChange={setDescription}
@@ -284,7 +263,6 @@ const AddIssues = ({
                   required
                 />
               </Grid>
-
               <Grid item xs={12}>
                 <TextField
                   variant="outlined"
@@ -303,7 +281,7 @@ const AddIssues = ({
                     featureUuid.setNewValue(selectedFeature);
                   }}
                 >
-                  {_.map(features, (feat) => (
+                  {_.map(featureData, (feat) => (
                     <MenuItem
                       key={`feature-${feat.feature_uuid}-${feat.name}`}
                       value={feat.feature_uuid}
@@ -313,7 +291,6 @@ const AddIssues = ({
                   ))}
                 </TextField>
               </Grid>
-
               <Grid item xs={12}>
                 <TextField
                   variant="outlined"
@@ -347,7 +324,6 @@ const AddIssues = ({
                   ))}
                 </TextField>
               </Grid>
-
               {!_.isEmpty(repoList) && (
                 <Grid item xs={12}>
                   <TextField
@@ -379,7 +355,6 @@ const AddIssues = ({
                   </TextField>
                 </Grid>
               )}
-
               <Grid item xs={12} md={6}>
                 <DatePickerComponent
                   label="Start Date"
@@ -388,7 +363,6 @@ const AddIssues = ({
                   handleDateChange={handleStartDateChange}
                 />
               </Grid>
-
               <Grid item xs={12} md={6}>
                 <DatePickerComponent
                   label="End Date"
@@ -397,7 +371,6 @@ const AddIssues = ({
                   handleDateChange={handleEndDateChange}
                 />
               </Grid>
-
               <Grid item xs={12}>
                 <TextField
                   variant="outlined"
@@ -417,7 +390,7 @@ const AddIssues = ({
                     setColID(stat?.status_tracking_id);
                   }}
                 >
-                  {_.map(statuses, (sts) => (
+                  {_.map(statusData, (sts) => (
                     <MenuItem
                       key={`status-${sts.status_uuid}-${sts.name}`}
                       value={sts}
@@ -427,7 +400,6 @@ const AddIssues = ({
                   ))}
                 </TextField>
               </Grid>
-
               {!_.isEmpty(repo) && (
                 <Grid item xs={12}>
                   <Autocomplete
@@ -458,7 +430,6 @@ const AddIssues = ({
                   />
                 </Grid>
               )}
-
               {!_.isEmpty(assigneeData) && (
                 <Grid item xs={12}>
                   <Autocomplete
@@ -493,7 +464,6 @@ const AddIssues = ({
                   />
                 </Grid>
               )}
-
               {editPage && (
                 <Grid item xs={12}>
                   <TextField
@@ -515,7 +485,6 @@ const AddIssues = ({
                   />
                 </Grid>
               )}
-
               {editPage && (
                 <Grid item xs={12}>
                   <TextField
@@ -539,7 +508,6 @@ const AddIssues = ({
                 </Grid>
               )}
             </Grid>
-
             <Grid container spacing={isDesktop ? 3 : 0} justifyContent="center">
               <Grid item xs={12} sm={4}>
                 <Button
@@ -547,13 +515,12 @@ const AddIssues = ({
                   fullWidth
                   variant="outlined"
                   color="primary"
-                  onClick={discardFormData}
+                  onClick={closeFormModal}
                   className={classes.submit}
                 >
                   Cancel
                 </Button>
               </Grid>
-
               <Grid item xs={12} sm={4}>
                 <Button
                   type="submit"
@@ -561,7 +528,7 @@ const AddIssues = ({
                   variant="contained"
                   color="primary"
                   className={classes.submit}
-                  disabled={submitDisabled()}
+                  disabled={isCreatingIssueLoading || isUpdatingIssueLoading || submitDisabled()}
                 >
                   {buttonText}
                 </Button>
@@ -574,13 +541,4 @@ const AddIssues = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  loading: state.productReducer.loading || state.releaseReducer.loading,
-  statuses: state.releaseReducer.statuses,
-  features: state.releaseReducer.features,
-  products: state.productReducer.products,
-  credentials: state.productReducer.credentials,
-});
-
-export default connect(mapStateToProps)(AddIssues);
+export default AddIssues;

@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useContext } from 'react';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import makeStyles from '@mui/styles/makeStyles';
@@ -19,13 +18,19 @@ import {
   ListItemText,
   Autocomplete,
 } from '@mui/material';
+import Loader from '@components/Loader/Loader';
+import { UserContext } from '@context/User.context';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
-import { updateUser } from '@redux/authuser/actions/authuser.actions';
-import { createProduct, updateProduct } from '@redux/product/actions/product.actions';
+import useAlert from '@hooks/useAlert';
+import { routes } from '../../../routes/routesConstants';
 import {
   EXPECTED_TRAFFIC, INTEGRATION_TYPES, PRODUCT_SETUP, PRODUCT_TYPE,
 } from '../ProductFormConstants';
+import { useStore } from '../../../zustand/product/productStore';
+import { useUpdateUserMutation } from '../../../react-query/mutation/authUser/updateUserMutation';
+import { useCreateProductMutation } from '../../../react-query/mutation/product/createProductMutation';
+import { useUpdateProductMutation } from '../../../react-query/mutation/product/updateProductMutation';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -51,18 +56,20 @@ const useStyles = makeStyles((theme) => ({
 export let checkIfSetupEdited;
 
 const Setup = ({
-  dispatch,
   history,
-  productFormData,
   editData,
   handleBack,
   editPage,
   product_uuid,
   redirectTo,
-  user,
 }) => {
   const classes = useStyles();
   const buttonText = editPage ? 'Save' : 'Create Product';
+  const user = useContext(UserContext);
+  const organization = user.organization.organization_uuid;
+
+  const { productFormData, clearProductFormData } = useStore();
+  const { displayAlert } = useAlert();
 
   const productSetup = useInput((editData && editData.product_info
     && editData.product_info.product_setup)
@@ -115,6 +122,10 @@ const Setup = ({
     || true, { required: true });
 
   const [formError, setFormError] = useState({});
+
+  const { mutate: updateUserMutation, isLoading: isUpdateUserLoading } = useUpdateUserMutation(history, displayAlert);
+  const { mutate: createProductMutation, isLoading: isCreatingProductLoading } = useCreateProductMutation(organization, history, routes.PRODUCT_ROADMAP, clearProductFormData, displayAlert);
+  const { mutate: updateProductMutation, isLoading: isUpdatingProductLoading } = useUpdateProductMutation(organization, history, redirectTo, clearProductFormData, displayAlert);
 
   const handleBlur = (e, validation, input, parentId) => {
     const validateObj = validators(validation, input);
@@ -183,251 +194,251 @@ const Setup = ({
       edit_date: new Date(),
     };
     if (user && !user.survey_status) {
-      dispatch(updateUser({ id: user.id, survey_status: true }));
+      const profileValues = {
+        id: user.id,
+        survey_status: true,
+      };
+      updateUserMutation(profileValues);
     }
     if (editPage) {
       formData.product_uuid = product_uuid;
-      dispatch(updateProduct(formData));
-      history.push(redirectTo);
+      updateProductMutation(formData);
     } else {
-      dispatch(createProduct(formData, history));
+      createProductMutation(formData);
     }
   };
 
   return (
-    <div>
-      <form className={classes.form} noValidate onSubmit={handleSubmit}>
-        <Box mb={2} mt={3}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                select
-                id="productSetup"
-                label="What type of product or project is this"
-                name="productSetup"
-                autoComplete="productSetup"
-                onBlur={(e) => handleBlur(e, 'required', productSetup)}
-                {...productSetup.bind}
-              >
-                {_.map(PRODUCT_SETUP, (setup, idx) => (
-                  <MenuItem key={idx} value={setup.value}>{setup.text}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="h6" component="h6">
-                Will you be integrating with other software?
-              </Typography>
-              <FormControl component="fieldset" required>
-                <RadioGroup
-                  row
-                  aria-label="integration"
-                  name="integration-radio-buttons-group"
-                >
-                  <FormControlLabel
-                    checked={integrationNeeded.value}
-                    control={<Radio color="info" onClick={(e) => integrationNeeded.setNewValue(true)} />}
-                    label="Yes"
-                  />
-                  <FormControlLabel
-                    checked={!integrationNeeded.value}
-                    control={<Radio color="info" onClick={(e) => integrationNeeded.setNewValue(false)} />}
-                    label="No"
-                  />
-                </RadioGroup>
-              </FormControl>
-            </Grid>
-            {integrationNeeded.value && (
+    <>
+      {(isUpdateUserLoading || isCreatingProductLoading || isUpdatingProductLoading) && <Loader open={isUpdateUserLoading || isCreatingProductLoading || isUpdatingProductLoading} />}
+      <div>
+        <form className={classes.form} noValidate onSubmit={handleSubmit}>
+          <Box mb={2} mt={3}>
+            <Grid container spacing={2}>
               <Grid item xs={12}>
-                <Typography variant="h6" gutterBottom component="div">
-                  If Yes what types? (Multiple Select)
-                </Typography>
-                <FormControl fullWidth>
-                  <Select
-                    labelId="integration-type-label"
-                    id="integration-type"
-                    value={integrationTypes.value}
-                    label="Integration Type"
-                    multiple
-                    onChange={(event) => {
-                      const {
-                        target: { value },
-                      } = event;
-                      integrationTypes.setNewValue(
-                        // On autofill we get a stringified value.
-                        typeof value === 'string' ? value.split(',') : value,
-                      );
-                    }}
-                    renderValue={(selected) => {
-                      const values = _.map(selected, (sel) => {
-                        const type = _.find(INTEGRATION_TYPES, { value: sel });
-                        return type.text;
-                      });
-                      return values.join(', ');
-                    }}
-                  >
-                    <MenuItem value="">-----------------------</MenuItem>
-                    {_.map(INTEGRATION_TYPES, (intType, idx) => (
-                      <MenuItem key={`integration-type-${idx}`} value={intType.value}>
-                        <Checkbox
-                          checked={_.indexOf(integrationTypes.value, intType.value) > -1}
-                        />
-                        <ListItemText primary={intType.text} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            )}
-            <Grid item xs={3}>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                select
-                id="productType"
-                label="What type of product/app it is?"
-                name="productType"
-                autoComplete="productType"
-                onBlur={(e) => handleBlur(e, 'required', productType)}
-                {...productType.bind}
-              >
-                {_.map(PRODUCT_TYPE, (type, idx) => (
-                  <MenuItem key={idx} value={type.value}>{type.text}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={9}>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                select
-                id="expectedTraffic"
-                label="How many users do you expect to accommodate per month?"
-                name="expectedTraffic"
-                autoComplete="expectedTraffic"
-                onBlur={(e) => handleBlur(e, 'required', expectedTraffic)}
-                {...expectedTraffic.bind}
-              >
-                <MenuItem value="">------------------------------</MenuItem>
-                {productType.value && _.map(EXPECTED_TRAFFIC[productType.value], (traffic, idx) => (
-                  <MenuItem key={idx} value={traffic}>{traffic}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="h6" component="h6">
-                Do you want to hire a team or use your own team (internal developers)?
-              </Typography>
-              <FormControl component="fieldset" required>
-                <RadioGroup
-                  row
-                  aria-label="team-needed"
-                  name="team-needed-radio-buttons-group"
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  select
+                  id="productSetup"
+                  label="What type of product or project is this"
+                  name="productSetup"
+                  autoComplete="productSetup"
+                  onBlur={(e) => handleBlur(e, 'required', productSetup)}
+                  {...productSetup.bind}
                 >
-                  <FormControlLabel
-                    checked={teamNeeded.value}
-                    control={<Radio color="info" onClick={(e) => teamNeeded.setNewValue(true)} />}
-                    label="Hire team"
-                  />
-                  <FormControlLabel
-                    checked={!teamNeeded.value}
-                    control={<Radio color="info" onClick={(e) => teamNeeded.setNewValue(false)} />}
-                    label="Use my Own team"
-                  />
-                </RadioGroup>
-              </FormControl>
-            </Grid>
-            {teamNeeded.value && (
-              <Grid item xs={12}>
-                <Autocomplete
-                  disablePortal
-                  id="productTimezone"
-                  name="productTimezone"
-                  options={moment.tz.names()}
-                  value={timezone}
-                  onChange={(event, value) => {
-                    handleBlur(event, 'required', productTimezone);
-                    setTimezone(value);
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      required
-                      fullWidth
-                      label="What timezone are you in?"
-                      {...productTimezone.bind}
-                    />
-                  )}
-                />
+                  {_.map(PRODUCT_SETUP, (setup, idx) => (
+                    <MenuItem key={idx} value={setup.value}>{setup.text}</MenuItem>
+                  ))}
+                </TextField>
               </Grid>
-            )}
-            {teamNeeded.value && (
               <Grid item xs={12}>
                 <Typography variant="h6" component="h6">
-                  Is it ok for that team to be more then 3 timezones away?
+                  Will you be integrating with other software?
                 </Typography>
                 <FormControl component="fieldset" required>
                   <RadioGroup
                     row
-                    aria-label="team-timezone-away"
-                    name="team-timezone-away-radio-buttons-group"
+                    aria-label="integration"
+                    name="integration-radio-buttons-group"
                   >
                     <FormControlLabel
-                      checked={teamTimezoneAway.value}
-                      control={<Radio color="info" onClick={(e) => teamTimezoneAway.setNewValue(true)} />}
+                      checked={integrationNeeded.value}
+                      control={<Radio color="info" onClick={(e) => integrationNeeded.setNewValue(true)} />}
                       label="Yes"
                     />
                     <FormControlLabel
-                      checked={!teamTimezoneAway.value}
-                      control={<Radio color="info" onClick={(e) => teamTimezoneAway.setNewValue(false)} />}
+                      checked={!integrationNeeded.value}
+                      control={<Radio color="info" onClick={(e) => integrationNeeded.setNewValue(false)} />}
                       label="No"
                     />
                   </RadioGroup>
                 </FormControl>
               </Grid>
-            )}
-          </Grid>
-          <Grid container spacing={3} className={classes.buttonContainer}>
-            <Grid item xs={12} sm={4}>
-              <Button
-                type="button"
-                variant="outlined"
-                color="primary"
-                fullWidth
-                onClick={handleBack}
-                className={classes.submit}
-              >
-                Back
-              </Button>
+              {integrationNeeded.value && (
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom component="div">
+                    If Yes what types? (Multiple Select)
+                  </Typography>
+                  <FormControl fullWidth>
+                    <Select
+                      labelId="integration-type-label"
+                      id="integration-type"
+                      value={integrationTypes.value}
+                      label="Integration Type"
+                      multiple
+                      onChange={(event) => {
+                        const {
+                          target: { value },
+                        } = event;
+                        integrationTypes.setNewValue(
+                          // On autofill we get a stringified value.
+                          typeof value === 'string' ? value.split(',') : value,
+                        );
+                      }}
+                      renderValue={(selected) => {
+                        const values = _.map(selected, (sel) => {
+                          const type = _.find(INTEGRATION_TYPES, { value: sel });
+                          return type.text;
+                        });
+                        return values.join(', ');
+                      }}
+                    >
+                      <MenuItem value="">-----------------------</MenuItem>
+                      {_.map(INTEGRATION_TYPES, (intType, idx) => (
+                        <MenuItem key={`integration-type-${idx}`} value={intType.value}>
+                          <Checkbox
+                            checked={_.indexOf(integrationTypes.value, intType.value) > -1}
+                          />
+                          <ListItemText primary={intType.text} />
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              )}
+              <Grid item xs={3}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  select
+                  id="productType"
+                  label="What type of product/app it is?"
+                  name="productType"
+                  autoComplete="productType"
+                  onBlur={(e) => handleBlur(e, 'required', productType)}
+                  {...productType.bind}
+                >
+                  {_.map(PRODUCT_TYPE, (type, idx) => (
+                    <MenuItem key={idx} value={type.value}>{type.text}</MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={9}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  select
+                  id="expectedTraffic"
+                  label="How many users do you expect to accommodate per month?"
+                  name="expectedTraffic"
+                  autoComplete="expectedTraffic"
+                  onBlur={(e) => handleBlur(e, 'required', expectedTraffic)}
+                  {...expectedTraffic.bind}
+                >
+                  <MenuItem value="">------------------------------</MenuItem>
+                  {productType.value && _.map(EXPECTED_TRAFFIC[productType.value], (traffic, idx) => (
+                    <MenuItem key={idx} value={traffic}>{traffic}</MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="h6" component="h6">
+                  Do you want to hire a team or use your own team (internal developers)?
+                </Typography>
+                <FormControl component="fieldset" required>
+                  <RadioGroup
+                    row
+                    aria-label="team-needed"
+                    name="team-needed-radio-buttons-group"
+                  >
+                    <FormControlLabel
+                      checked={teamNeeded.value}
+                      control={<Radio color="info" onClick={(e) => teamNeeded.setNewValue(true)} />}
+                      label="Hire team"
+                    />
+                    <FormControlLabel
+                      checked={!teamNeeded.value}
+                      control={<Radio color="info" onClick={(e) => teamNeeded.setNewValue(false)} />}
+                      label="Use my Own team"
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </Grid>
+              {teamNeeded.value && (
+                <Grid item xs={12}>
+                  <Autocomplete
+                    disablePortal
+                    id="productTimezone"
+                    name="productTimezone"
+                    options={moment.tz.names()}
+                    value={timezone}
+                    onChange={(event, value) => {
+                      handleBlur(event, 'required', productTimezone);
+                      setTimezone(value);
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        required
+                        fullWidth
+                        label="What timezone are you in?"
+                        {...productTimezone.bind}
+                      />
+                    )}
+                  />
+                </Grid>
+              )}
+              {teamNeeded.value && (
+                <Grid item xs={12}>
+                  <Typography variant="h6" component="h6">
+                    Is it ok for that team to be more then 3 timezones away?
+                  </Typography>
+                  <FormControl component="fieldset" required>
+                    <RadioGroup
+                      row
+                      aria-label="team-timezone-away"
+                      name="team-timezone-away-radio-buttons-group"
+                    >
+                      <FormControlLabel
+                        checked={teamTimezoneAway.value}
+                        control={<Radio color="info" onClick={(e) => teamTimezoneAway.setNewValue(true)} />}
+                        label="Yes"
+                      />
+                      <FormControlLabel
+                        checked={!teamTimezoneAway.value}
+                        control={<Radio color="info" onClick={(e) => teamTimezoneAway.setNewValue(false)} />}
+                        label="No"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                </Grid>
+              )}
             </Grid>
-            <Grid item xs={12} sm={4}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                disabled={submitDisabled()}
-                className={classes.submit}
-              >
-                {buttonText}
-              </Button>
+            <Grid container spacing={3} className={classes.buttonContainer}>
+              <Grid item xs={12} sm={4}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  color="primary"
+                  fullWidth
+                  onClick={handleBack}
+                  className={classes.submit}
+                >
+                  Back
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  disabled={submitDisabled()}
+                  className={classes.submit}
+                >
+                  {buttonText}
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
-        </Box>
-      </form>
-    </div>
+          </Box>
+        </form>
+      </div>
+    </>
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  user: state.authReducer.data,
-  productFormData: state.productReducer.productFormData,
-});
-
-export default connect(mapStateToProps)(Setup);
+export default Setup;

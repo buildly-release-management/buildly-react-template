@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
 import { Route } from 'react-router-dom';
 import Popup from 'reactjs-popup';
-import {
-  NotificationContainer,
-  NotificationManager,
-} from 'react-notifications';
 import { rem } from 'polished';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -20,10 +15,11 @@ import {
 import { Email as EmailIcon } from '@mui/icons-material';
 import Loader from '@components/Loader/Loader';
 import { useInput } from '@hooks/useInput';
-import { invite } from '@redux/authuser/actions/authuser.actions';
+import useAlert from '../../hooks/useAlert';
 import { routes } from '@routes/routesConstants';
 import Users from './Users/Users';
 import UserGroups from './UserGroups/UserGroups';
+import { useInviteMutation } from '../../react-query/mutation/authUser/inviteMutation';
 
 const useStyles = makeStyles((theme) => ({
   userManagementHeading: {
@@ -51,44 +47,36 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const UserManagement = ({
-  dispatch,
-  loading,
-  loaded,
-  error,
-  user,
-  history,
-  location,
-}) => {
+const UserManagement = ({ history, location }) => {
   const classes = useStyles();
-  const email = useInput('', { required: true });
-  const [inviteCall, setInviteCall] = useState(false);
+  const { displayAlert } = useAlert();
+
   const subNav = [
     { label: 'Current users', value: 'current-users' },
     { label: 'User groups', value: 'groups' },
   ];
-  const viewPath = (
-    subNav.find((item) => location.pathname.endsWith(item.value)) || subNav[0]
-  ).value;
+
+  const viewPath = (subNav.find((item) => location.pathname.endsWith(item.value)) || subNav[0]).value;
+
   const [view, setView] = useState(viewPath);
+  const email = useInput('', { required: true });
 
   useEffect(() => {
     history.push(`/app/profile/users/${view || location.state}`);
   }, [view]);
 
-  if (user && user.data && user.data.detail && inviteCall && !error) {
-    NotificationManager.success(user.data.detail, 'Success');
-    setInviteCall(false);
-  }
+  const clearEmails = () => {
+    email.clear();
+  };
+
+  const { mutate: inviteMutation, isLoading: isInviting } = useInviteMutation(clearEmails, displayAlert);
 
   const inviteUser = (event) => {
     event.preventDefault();
     const inviteFormValue = {
       emails: getEmailsFromInputValue(email.value),
     };
-    setInviteCall(true);
-    dispatch(invite(inviteFormValue));
-    email.clear();
+    inviteMutation(inviteFormValue);
   };
 
   const getEmailsFromInputValue = (value) => value.split(',').map((item) => item.trim());
@@ -99,7 +87,7 @@ const UserManagement = ({
 
   return (
     <>
-      {(loading || !loaded) && <Loader open={loading || !loaded} />}
+      {isInviting && <Loader open={isInviting} />}
       <Box mt={1} mb={3}>
         <Grid container mb={3} justifyContent="space-between" alignItems="center">
           <Grid item>
@@ -134,7 +122,7 @@ const UserManagement = ({
               }}
               arrow={false}
             >
-              <form className={classes.inviteForm}>
+              <form className={classes.inviteForm} onSubmit={inviteUser}>
                 <Typography variant="h6">Invite users to platform</Typography>
                 <TextField
                   className={classes.textField}
@@ -142,18 +130,15 @@ const UserManagement = ({
                   id="email"
                   variant="outlined"
                   placeholder="abc@xcy.com, 123@zxc.com"
-                  error={Boolean(error)}
-                  helperText={error}
                   {...email.bind}
                 />
                 <Grid justifyContent="flex-end" container spacing={0}>
                   <Grid item>
                     <Button
-                      onClick={inviteUser}
                       size="small"
                       variant="contained"
                       color="primary"
-                      disabled={(loading && !loaded) || !email.value}
+                      disabled={isInviting || !email.value}
                       type="submit"
                     >
                       Send
@@ -175,19 +160,9 @@ const UserManagement = ({
         </Grid>
         <Route path={routes.CURRENT_USERS} component={Users} />
         <Route path={routes.USER_GROUPS} component={UserGroups} />
-        <NotificationContainer />
       </Box>
     </>
   );
 };
 
-const mapStateToProps = (state, ownProps) => {
-  const loaded = state.coreuserReducer.loaded && state.coregroupReducer.loaded;
-  return {
-    ...ownProps,
-    ...state.authReducer,
-    loaded,
-  };
-};
-
-export default connect(mapStateToProps)(UserManagement);
+export default UserManagement;

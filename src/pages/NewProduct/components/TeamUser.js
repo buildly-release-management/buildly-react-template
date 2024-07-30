@@ -1,6 +1,5 @@
 /* eslint-disable no-param-reassign */
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -26,8 +25,11 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
 import { useInput } from '@hooks/useInput';
-import { docIdentifier } from '@redux/product/actions/product.actions';
+import Loader from '@components/Loader/Loader';
 import { ROLES } from '../ProductFormConstants';
+import useAlert from '@hooks/useAlert';
+import { useStore } from '../../../zustand/product/productStore';
+import { useDocIdentifierMutation } from '../../../react-query/mutation/product/docIdentifierMutation';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -77,10 +79,12 @@ const useStyles = makeStyles((theme) => ({
 // eslint-disable-next-line import/no-mutable-exports
 export let checkIfTeamUserEdited;
 
-const TeamUser = ({
-  productFormData, handleNext, handleBack, dispatch, editData,
-}) => {
+const TeamUser = ({ handleNext, handleBack, editData }) => {
   const classes = useStyles();
+
+  const { displayAlert } = useAlert();
+  const { productFormData, updateProductFormData } = useStore();
+
   const [filesUpload, setFilesUpload] = useState([]);
 
   const teamSize = useInput((editData && editData.product_info && editData.product_info.team_size)
@@ -119,6 +123,8 @@ const TeamUser = ({
     setFilesUpload(event.target.files);
   };
 
+  const { mutate: docIdentifierMutation, isLoading: isDocIdentifierLoading } = useDocIdentifierMutation(updateProductFormData, displayAlert);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const uploadFile = new FormData();
@@ -135,183 +141,185 @@ const TeamUser = ({
       },
       edit_date: new Date(),
     };
-    dispatch(docIdentifier(uploadFile, formData));
+    const data = {
+      uploadFile,
+      formData,
+    };
+    docIdentifierMutation(data);
     handleNext();
   };
 
   return (
-    <div>
-      <form className={classes.form} noValidate onSubmit={handleSubmit}>
-        <Box mb={2} mt={3}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={12}>
-              <Typography variant="h6" gutterBottom component="div">
-                What is the size of your current team and backgrounds/roles?
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={12}>
-              <FormControl component="fieldset">
-                <RadioGroup
-                  row
-                  aria-label="current-team-size"
-                  name="current-team-size-radio-group"
-                  {...teamSize.bind}
-                >
-                  <FormControlLabel
-                    value="1 - 5"
-                    control={<Radio color="info" />}
-                    label="1 - 5"
-                  />
-                  <FormControlLabel
-                    value="5 - 10"
-                    control={<Radio color="info" />}
-                    label="5 - 10"
-                  />
-                  <FormControlLabel
-                    value="10 - 20 or more"
-                    control={<Radio color="info" />}
-                    label="10 - 20 or more"
-                  />
-                </RadioGroup>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TableContainer component={Paper}>
-                <Table aria-label="simple table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Roles</TableCell>
-                      <TableCell />
-                      <TableCell>Count</TableCell>
-                      <TableCell />
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {_.map(roleCount, (row, index) => (
-                      <TableRow key={index}>
-                        <TableCell scope="row">
-                          {row.role}
-                        </TableCell>
-                        <TableCell align="right">
-                          <IconButton
-                            onClick={() => {
-                              if (row.count > 0) {
-                                const rc = _.map(roleCount, (r, i) => (
-                                  _.isEqual(row, r) ? { ...r, count: r.count - 1 } : r
-                                ));
-                                setRoleCount(rc);
-                              }
-                            }}
-                            size="large"
-                          >
-                            <RemoveIcon />
-                          </IconButton>
-                        </TableCell>
-                        <TableCell style={{ width: '30%' }}>
-                          <TextField
-                            disabled
-                            value={row.count}
-                            type="number"
-                            variant="filled"
-                          />
-                        </TableCell>
-                        <TableCell align="left">
-                          <IconButton
-                            onClick={() => {
-                              const rc = _.map(roleCount, (r, i) => (
-                                _.isEqual(row, r) ? { ...r, count: r.count + 1 } : r
-                              ));
-                              setRoleCount(rc);
-                            }}
-                            size="large"
-                          >
-                            <AddIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom component="div">
-                Do you have any existing requirements documents, mockups,
-                designs etc.?
-              </Typography>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                fullWidth
-                type="file"
-                id="uploadFiles"
-                label="Upload Files"
-                name="uploadFiles"
-                autoComplete="uploadFiles"
-                inputProps={{ multiple: true }}
-                InputLabelProps={{ shrink: true }}
-                onChange={fileChange}
-              />
-            </Grid>
-          </Grid>
-          {doc_file.value && !_.isEmpty(doc_file.value) && (
-            <>
-              <Grid item xs={12} className={classes.filesText}>
-                <Typography variant="body1" gutterBottom component="div">
-                  Already uploaded files
+    <>
+      {isDocIdentifierLoading && <Loader open={isDocIdentifierLoading} />}
+      <div>
+        <form className={classes.form} noValidate onSubmit={handleSubmit}>
+          <Box mb={2} mt={3}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={12}>
+                <Typography variant="h6" gutterBottom component="div">
+                  What is the size of your current team and backgrounds/roles?
                 </Typography>
               </Grid>
-              <ImageList sx={{ width: '100%', height: 200 }} cols={4} rowHeight={200} gap={40}>
-                {_.map(doc_file.value, (file, index) => (
-                  <ImageListItem key={`${index}-${file}`}>
-                    <a href={file} target="_blank" rel="noopener noreferrer">
-                      <img
-                        src={`${file}?w=164&h=164&fit=crop&auto=format`}
-                        srcSet={`${file}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                        alt={`Uploaded file ${index + 1}`}
-                        loading="lazy"
-                        className={classes.uploadedFiles}
-                      />
-                    </a>
-                  </ImageListItem>
-                ))}
-              </ImageList>
-            </>
-          )}
-          <Grid container spacing={3} className={classes.buttonContainer}>
-            <Grid item xs={12} sm={4}>
-              <Button
-                type="button"
-                variant="outlined"
-                color="primary"
-                fullWidth
-                onClick={handleBack}
-                className={classes.submit}
-              >
-                Back
-              </Button>
+              <Grid item xs={12} sm={12}>
+                <FormControl component="fieldset">
+                  <RadioGroup
+                    row
+                    aria-label="current-team-size"
+                    name="current-team-size-radio-group"
+                    {...teamSize.bind}
+                  >
+                    <FormControlLabel
+                      value="1 - 5"
+                      control={<Radio color="info" />}
+                      label="1 - 5"
+                    />
+                    <FormControlLabel
+                      value="5 - 10"
+                      control={<Radio color="info" />}
+                      label="5 - 10"
+                    />
+                    <FormControlLabel
+                      value="10 - 20 or more"
+                      control={<Radio color="info" />}
+                      label="10 - 20 or more"
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <TableContainer component={Paper}>
+                  <Table aria-label="simple table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Roles</TableCell>
+                        <TableCell />
+                        <TableCell>Count</TableCell>
+                        <TableCell />
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {_.map(roleCount, (row, index) => (
+                        <TableRow key={index}>
+                          <TableCell scope="row">
+                            {row.role}
+                          </TableCell>
+                          <TableCell align="right">
+                            <IconButton
+                              onClick={() => {
+                                if (row.count > 0) {
+                                  const rc = _.map(roleCount, (r, i) => (
+                                    _.isEqual(row, r) ? { ...r, count: r.count - 1 } : r
+                                  ));
+                                  setRoleCount(rc);
+                                }
+                              }}
+                              size="large"
+                            >
+                              <RemoveIcon />
+                            </IconButton>
+                          </TableCell>
+                          <TableCell style={{ width: '30%' }}>
+                            <TextField
+                              disabled
+                              value={row.count}
+                              type="number"
+                              variant="filled"
+                            />
+                          </TableCell>
+                          <TableCell align="left">
+                            <IconButton
+                              onClick={() => {
+                                const rc = _.map(roleCount, (r, i) => (
+                                  _.isEqual(row, r) ? { ...r, count: r.count + 1 } : r
+                                ));
+                                setRoleCount(rc);
+                              }}
+                              size="large"
+                            >
+                              <AddIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="h6" gutterBottom component="div">
+                  Do you have any existing requirements documents, mockups,
+                  designs etc.?
+                </Typography>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  type="file"
+                  id="uploadFiles"
+                  label="Upload Files"
+                  name="uploadFiles"
+                  autoComplete="uploadFiles"
+                  inputProps={{ multiple: true }}
+                  InputLabelProps={{ shrink: true }}
+                  onChange={fileChange}
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={4}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                className={classes.submit}
-              >
-                Next
-              </Button>
+            {doc_file.value && !_.isEmpty(doc_file.value) && (
+              <>
+                <Grid item xs={12} className={classes.filesText}>
+                  <Typography variant="body1" gutterBottom component="div">
+                    Already uploaded files
+                  </Typography>
+                </Grid>
+                <ImageList sx={{ width: '100%', height: 200 }} cols={4} rowHeight={200} gap={40}>
+                  {_.map(doc_file.value, (file, index) => (
+                    <ImageListItem key={`${index}-${file}`}>
+                      <a href={file} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={`${file}?w=164&h=164&fit=crop&auto=format`}
+                          srcSet={`${file}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
+                          alt={`Uploaded file ${index + 1}`}
+                          loading="lazy"
+                          className={classes.uploadedFiles}
+                        />
+                      </a>
+                    </ImageListItem>
+                  ))}
+                </ImageList>
+              </>
+            )}
+            <Grid container spacing={3} className={classes.buttonContainer}>
+              <Grid item xs={12} sm={4}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  color="primary"
+                  fullWidth
+                  onClick={handleBack}
+                  className={classes.submit}
+                >
+                  Back
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  className={classes.submit}
+                >
+                  Next
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
-        </Box>
-      </form>
-    </div>
+          </Box>
+        </form>
+      </div>
+    </>
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  productFormData: state.productReducer.productFormData,
-});
-
-export default connect(mapStateToProps)(TeamUser);
+export default TeamUser;

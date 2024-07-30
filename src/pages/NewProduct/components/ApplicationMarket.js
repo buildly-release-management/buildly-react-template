@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -19,8 +18,8 @@ import {
   TextField,
 } from '@mui/material';
 import { useInput } from '@hooks/useInput';
-import { saveProductFormData } from '@redux/product/actions/product.actions';
 import { AVAILABLE_USER_TYPES, BUSSINESS_SEGMENTS } from '../ProductFormConstants';
+import { useStore } from '../../../zustand/product/productStore';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -65,13 +64,13 @@ const useStyles = makeStyles((theme) => ({
 export let checkIfApplicationMarketEdited;
 
 const ApplicationMarket = ({
-  productFormData,
   handleNext,
   handleBack,
-  dispatch,
   editData,
 }) => {
   const classes = useStyles();
+
+  const { productFormData, updateProductFormData } = useStore();
 
   const applicationType = useInput((editData && editData.product_info
     && editData.product_info.application_type)
@@ -122,7 +121,7 @@ const ApplicationMarket = ({
       },
       edit_date: new Date(),
     };
-    dispatch(saveProductFormData(formData));
+    updateProductFormData(formData);
     handleNext();
   };
 
@@ -304,9 +303,4 @@ const ApplicationMarket = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  productFormData: state.productReducer.productFormData,
-});
-
-export default connect(mapStateToProps)(ApplicationMarket);
+export default ApplicationMarket;

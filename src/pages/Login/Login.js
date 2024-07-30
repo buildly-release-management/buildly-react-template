@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
 import makeStyles from '@mui/styles/makeStyles';
+import { useLocation } from 'react-router-dom';
 import {
   Button,
   CssBaseline,
@@ -17,9 +17,12 @@ import Copyright from '@components/Copyright/Copyright';
 import GithubLogin from '@components/SocialLogin/GithubLogin';
 import Loader from '@components/Loader/Loader';
 import { useInput } from '@hooks/useInput';
-import { login, validateResetPasswordToken } from '@redux/authuser/actions/authuser.actions';
+import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
+import { useResetPasswordCheckMutation } from '../../react-query/mutation/authUser/resetPasswordCheckMutation';
+import { useLoginMutation } from '../../react-query/mutation/authUser/loginMutation';
+import { useSocialLoginMutation } from '../../react-query/mutation/authUser/socialLoginMutation';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {
@@ -68,13 +71,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Login = ({
-  dispatch, loading, history, socialLogin,
-}) => {
+const Login = ({ history }) => {
   const classes = useStyles();
   const username = useInput('', { required: true });
   const password = useInput('', { required: true });
   const [error, setError] = useState({});
+  const location = useLocation();
+
+  const { displayAlert } = useAlert();
+
+  const { mutate: resetPasswordCheckMutation, isLoading: isPasswordCheckLoading } = useResetPasswordCheckMutation(history, routes.RESET_PASSWORD, routes.LOGIN, displayAlert);
+
+  const { mutate: loginMutation, isLoading: isLoginLoading } = useLoginMutation(history, routes.PRODUCT_PORTFOLIO, displayAlert);
+
+  const { mutate: socialLoginMutation, isLoading: isSocialLoginLoading } = useSocialLoginMutation(history, routes.MISSING_DATA, routes.PRODUCT_PORTFOLIO, displayAlert);
 
   useEffect(() => {
     const [uid, token] = location.pathname
@@ -86,7 +96,7 @@ const Login = ({
       .slice(1);
     if (location.pathname.includes(routes.RESET_PASSWORD)) {
       const values = { uid, token };
-      dispatch(validateResetPasswordToken(values, history));
+      resetPasswordCheckMutation(values);
     }
   }, []);
 
@@ -96,7 +106,7 @@ const Login = ({
       username: username.value,
       password: password.value,
     };
-    dispatch(login(loginFormValue, history));
+    loginMutation(loginFormValue);
   };
 
   const handleBlur = (e, validation, input) => {
@@ -130,7 +140,7 @@ const Login = ({
 
   return (
     <>
-      {(loading || socialLogin) && <Loader open={loading || socialLogin} />}
+      {(isLoginLoading || isPasswordCheckLoading || isSocialLoginLoading) && <Loader open={isLoginLoading || isPasswordCheckLoading || isSocialLoginLoading} />}
       <div className={classes.logoDiv}>
         <img src={logo} alt="Logo" className={classes.logo} />
       </div>
@@ -185,7 +195,7 @@ const Login = ({
                     variant="contained"
                     color="primary"
                     className={classes.submit}
-                    disabled={loading || submitDisabled()}
+                    disabled={isLoginLoading || isPasswordCheckLoading || isSocialLoginLoading || submitDisabled()}
                   >
                     Sign in
                   </Button>
@@ -197,9 +207,9 @@ const Login = ({
                 </Grid>
                 <Grid item xs={12} className={classes.socialAuth}>
                   <GithubLogin
-                    dispatch={dispatch}
+                    socialLoginMutation={socialLoginMutation}
                     history={history}
-                    disabled={loading && socialLogin}
+                    disabled={isLoginLoading || isPasswordCheckLoading || isSocialLoginLoading}
                   />
                 </Grid>
                 <Grid item xs className={classes.link}>
@@ -226,9 +236,4 @@ const Login = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  ...state.authReducer,
-});
-
-export default connect(mapStateToProps)(Login);
+export default Login;

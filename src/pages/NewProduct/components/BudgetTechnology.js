@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import makeStyles from '@mui/styles/makeStyles';
@@ -16,10 +15,10 @@ import {
 } from '@mui/material';
 import DatePickerComponent from '@components/DatePicker/DatePicker';
 import { useInput } from '@hooks/useInput';
-import { saveProductFormData } from '@redux/product/actions/product.actions';
 import {
   BUDGET_CATEGORY, DATABASES, DEPLOYMENTS, HOSTING, LANGUAGES, STORAGES,
 } from '../ProductFormConstants';
+import { useStore } from '../../../zustand/product/productStore';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -61,13 +60,13 @@ const useStyles = makeStyles((theme) => ({
 export let checkIfBudgetTechnologyEdited;
 
 const BudgetTechnology = ({
-  productFormData,
   handleNext,
   handleBack,
-  dispatch,
   editData,
 }) => {
   const classes = useStyles();
+
+  const { productFormData, updateProductFormData } = useStore();
 
   const [firstUserDate, handlefirstUserDateChange] = useState(moment(
     (editData && editData.product_info && editData.product_info.first_user_date)
@@ -142,7 +141,7 @@ const BudgetTechnology = ({
       },
       edit_date: new Date(),
     };
-    dispatch(saveProductFormData(formData));
+    updateProductFormData(formData);
     handleNext();
   };
 
@@ -344,9 +343,4 @@ const BudgetTechnology = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  productFormData: state.productReducer.productFormData,
-});
-
-export default connect(mapStateToProps)(BudgetTechnology);
+export default BudgetTechnology;

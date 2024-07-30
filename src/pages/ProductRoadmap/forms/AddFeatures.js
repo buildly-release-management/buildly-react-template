@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -20,10 +19,12 @@ import {
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
 import SmartInput from '@components/SmartInput/SmartInput';
+import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
-import { createFeature, updateFeature } from '@redux/release/actions/release.actions';
 import { validators } from '@utils/validators';
 import { PRIORITIES } from '../ProductRoadmapConstants';
+import { useCreateFeatureMutation } from '../../../react-query/mutation/release/createFeatureMutation';
+import { useUpdateFeatureMutation } from '../../../react-query/mutation/release/updateFeatureMutation';
 
 const useStyles = makeStyles((theme) => ({
   formTitle: {
@@ -53,26 +54,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const AddFeatures = ({
-  location,
-  statuses,
-  releases,
-  dispatch,
-  products,
-  credentials,
-  loading,
-  history,
-  features,
-}) => {
+const AddFeatures = ({ location, history }) => {
   const classes = useStyles();
   const redirectTo = location.state && location.state.from;
   const editPage = location.state && (location.state.type === 'edit' || location.state.type === 'view');
   const editData = (editPage && location.state.data) || {};
-  const product_uuid = location.state && location.state.product_uuid;
+  const {
+    product_uuid, statusData, productData, featureData, credentialData, releaseData,
+  } = location && location.state;
   const viewPage = (location.state && location.state.type === 'view') || false;
   // eslint-disable-next-line no-nested-ternary
   const formTitle = viewPage ? 'View Feature' : editPage ? 'Edit Feature' : 'Add Feature';
   const buttonText = editPage ? 'Save' : 'Add Feature';
+
+  const { displayAlert } = useAlert();
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
@@ -83,8 +78,7 @@ const AddFeatures = ({
   const [formError, setFormError] = useState({});
   const [assigneeData, setAssigneeData] = useState([]);
 
-  // form fields definition
-  const name = useInput((editData && editData.name) || '', { required: true, productFeatures: features });
+  const name = useInput((editData && editData.name) || '', { required: true, productFeatures: featureData });
   const description = useInput((editData && editData.description) || '', { required: true });
   const priority = useInput((editData && editData.priority) || '', { required: true });
 
@@ -142,26 +136,27 @@ const AddFeatures = ({
   const valuetext = (value) => value.toString();
 
   useEffect(() => {
-    const prod = _.find(products, { product_uuid });
+    const prod = _.find(productData, { product_uuid });
     const assigneeOptions = _.map(prod?.feature_tool_detail?.user_list, 'username') || [];
-
     setAssigneeData(assigneeOptions);
     setTagList(prod?.feature_tool_detail?.labels || []);
-  }, [products]);
+  }, [productData]);
 
   useEffect(() => {
     if (editData) {
-      const sts = _.find(statuses, { status_uuid: editData.status });
+      const sts = _.find(statusData, { status_uuid: editData.status });
       setStatus(sts);
       setColID(sts?.status_tracking_id);
     }
-  }, [statuses]);
+  }, [statusData]);
+
+  const { mutate: createFeatureMutation, isLoading: isCreatingFeatureLoading } = useCreateFeatureMutation(product_uuid, history, redirectTo, displayAlert);
+  const { mutate: updateFeatureMutation, isLoading: isUpdatingFeatureLoading } = useUpdateFeatureMutation(product_uuid, history, redirectTo, displayAlert);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-    const featCred = _.find(credentials, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'feature'));
-
+    const featCred = _.find(credentialData, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'feature'));
     const formData = {
       ...editData,
       edit_date: dateTime,
@@ -189,16 +184,13 @@ const AddFeatures = ({
         )),
       },
     };
-
     if (editPage) {
       formData.column_id = colID;
-      dispatch(updateFeature(formData));
+      updateFeatureMutation(formData);
     } else {
       formData.create_date = dateTime;
-      dispatch(createFeature(formData));
+      createFeatureMutation(formData);
     }
-
-    history.push(redirectTo);
   };
 
   const handleBlur = (e, validation, input, parentId) => {
@@ -224,7 +216,6 @@ const AddFeatures = ({
 
   const submitDisabled = () => {
     const errorKeys = Object.keys(formError);
-
     if (
       !name.value
       || !sanitizeString(description.value).length
@@ -238,37 +229,34 @@ const AddFeatures = ({
     ) {
       return true;
     }
-
     let errorExists = false;
     _.forEach(errorKeys, (key) => {
       if (formError[key].error) {
         errorExists = true;
       }
     });
-
     return errorExists;
   };
 
   const handleClose = () => {
     const dataHasChanged = (
       name.hasChanged()
-    || priority.hasChanged()
-    || statusID.hasChanged()
-    || collecting_data.hasChanged()
-    || field_desc.hasChanged()
-    || displaying_data.hasChanged()
-    || display_desc.hasChanged()
-    || business_logic.hasChanged()
-    || enabled.hasChanged()
-    || enabled_desc.hasChanged()
-    || search_or_nav.hasChanged()
-    || links.hasChanged()
-    || (!editPage && (!_.isEmpty(tags) || !_.isEmpty(assignees)))
-    || !!(editPage && editData && !_.isEqual((editData.tags || []), tags))
-    || !!(editPage && editData && editData.feature_detail
-      && !_.isEqual(_.map(editData.feature_detail.assigneees, 'username'), assignees))
+      || priority.hasChanged()
+      || statusID.hasChanged()
+      || collecting_data.hasChanged()
+      || field_desc.hasChanged()
+      || displaying_data.hasChanged()
+      || display_desc.hasChanged()
+      || business_logic.hasChanged()
+      || enabled.hasChanged()
+      || enabled_desc.hasChanged()
+      || search_or_nav.hasChanged()
+      || links.hasChanged()
+      || (!editPage && (!_.isEmpty(tags) || !_.isEmpty(assignees)))
+      || !!(editPage && editData && !_.isEqual((editData.tags || []), tags))
+      || !!(editPage && editData && editData.feature_detail
+        && !_.isEqual(_.map(editData.feature_detail.assigneees, 'username'), assignees))
     );
-
     if (dataHasChanged) {
       setConfirmModal(true);
     } else {
@@ -291,10 +279,9 @@ const AddFeatures = ({
           setConfirmModal={setConfirmModal}
           handleConfirmModal={(e) => history.push(redirectTo)}
         >
-          {loading && <Loader open={loading} />}
+          {(isCreatingFeatureLoading || isUpdatingFeatureLoading) && <Loader open={isCreatingFeatureLoading || isUpdatingFeatureLoading} />}
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
-              {/* Name */}
               <Grid item xs={12}>
                 <TextField
                   variant="outlined"
@@ -319,8 +306,6 @@ const AddFeatures = ({
                   disabled={viewPage}
                 />
               </Grid>
-
-              {/* Description */}
               <Grid item xs={12}>
                 <SmartInput
                   onEditorValueChange={description.setNewValue}
@@ -329,10 +314,7 @@ const AddFeatures = ({
                 />
               </Grid>
             </Grid>
-
             <Grid container spacing={2}>
-
-              {/* Release */}
               <Grid item xs={12}>
                 <TextField
                   variant="outlined"
@@ -352,7 +334,7 @@ const AddFeatures = ({
                     releaseUuid.setNewValue(selectedRelease);
                   }}
                 >
-                  {_.map(releases, (rl) => (
+                  {_.map(releaseData, (rl) => (
                     <MenuItem
                       key={`release-${rl.release_uuid}-${rl.name}`}
                       value={rl.release_uuid}
@@ -362,8 +344,6 @@ const AddFeatures = ({
                   ))}
                 </TextField>
               </Grid>
-
-              {/* Complexity */}
               <Grid item xs={12}>
                 <Typography gutterBottom>Complexity</Typography>
                 <Slider
@@ -382,8 +362,6 @@ const AddFeatures = ({
                   }}
                 />
               </Grid>
-
-              {/* Status */}
               <Grid item xs={12} md={8}>
                 <TextField
                   variant="outlined"
@@ -404,7 +382,7 @@ const AddFeatures = ({
                     setColID(stat.status_tracking_id);
                   }}
                 >
-                  {_.map(statuses, (sts) => (
+                  {_.map(statusData, (sts) => (
                     <MenuItem
                       key={`status-${sts.status_uuid}-${sts.name}`}
                       value={sts}
@@ -414,8 +392,6 @@ const AddFeatures = ({
                   ))}
                 </TextField>
               </Grid>
-
-              {/* Priority */}
               <Grid item xs={12} md={4}>
                 <TextField
                   variant="outlined"
@@ -451,8 +427,6 @@ const AddFeatures = ({
                 </TextField>
               </Grid>
             </Grid>
-
-            {/* Tags */}
             {!_.isEmpty(tagList) && (
               <Grid item xs={12}>
                 <Autocomplete
@@ -484,8 +458,6 @@ const AddFeatures = ({
                 />
               </Grid>
             )}
-
-            {/* Assignees */}
             {!_.isEmpty(assigneeData) && (
               <Grid item xs={12} md={8}>
                 <Autocomplete
@@ -517,7 +489,6 @@ const AddFeatures = ({
                 />
               </Grid>
             )}
-
             <Grid container spacing={isDesktop ? 2 : 0} className={classes.processSection}>
               <Grid item xs={12}>
                 <FormControl fullWidth component="fieldset" disabled={viewPage}>
@@ -542,7 +513,6 @@ const AddFeatures = ({
                   </RadioGroup>
                 </FormControl>
               </Grid>
-
               {collecting_data.value === 'yes' && (
                 <Grid item xs={12}>
                   <TextField
@@ -566,7 +536,6 @@ const AddFeatures = ({
                   />
                 </Grid>
               )}
-
               <Grid item xs={12}>
                 <FormControl fullWidth component="fieldset" disabled={viewPage}>
                   <FormLabel component="legend">
@@ -590,7 +559,6 @@ const AddFeatures = ({
                   </RadioGroup>
                 </FormControl>
               </Grid>
-
               {displaying_data.value === 'yes' && (
                 <Grid item xs={12}>
                   <TextField
@@ -614,7 +582,6 @@ const AddFeatures = ({
                   />
                 </Grid>
               )}
-
               {displaying_data.value === 'yes' && (
                 <Grid item xs={12}>
                   <FormControl fullWidth component="fieldset" disabled={viewPage}>
@@ -641,7 +608,6 @@ const AddFeatures = ({
                   </FormControl>
                 </Grid>
               )}
-
               <Grid item xs={12}>
                 <FormControl fullWidth component="fieldset" disabled={viewPage}>
                   <FormLabel component="legend">
@@ -665,7 +631,6 @@ const AddFeatures = ({
                   </RadioGroup>
                 </FormControl>
               </Grid>
-
               {enabled.value === 'yes' && (
                 <Grid item xs={12}>
                   <TextField
@@ -689,7 +654,6 @@ const AddFeatures = ({
                   />
                 </Grid>
               )}
-
               {business_logic.value === 'no' && (
                 <Grid item xs={12}>
                   <FormControl fullWidth component="fieldset" disabled={viewPage}>
@@ -715,7 +679,6 @@ const AddFeatures = ({
                   </FormControl>
                 </Grid>
               )}
-
               {(search_or_nav.value === 'nav' || enabled.value === 'no') && (
                 <Grid item xs={12}>
                   <FormControl fullWidth component="fieldset" disabled={viewPage}>
@@ -747,7 +710,6 @@ const AddFeatures = ({
                 </Grid>
               )}
             </Grid>
-
             <Grid container spacing={3} className={classes.buttonContainer}>
               <Grid item xs={12} sm={4}>
                 <Button
@@ -761,7 +723,6 @@ const AddFeatures = ({
                   Cancel
                 </Button>
               </Grid>
-
               {!viewPage && (
                 <Grid item xs={12} sm={4}>
                   <Button
@@ -770,7 +731,7 @@ const AddFeatures = ({
                     color="primary"
                     fullWidth
                     className={classes.submit}
-                    disabled={submitDisabled()}
+                    disabled={isCreatingFeatureLoading || isUpdatingFeatureLoading || submitDisabled()}
                   >
                     {buttonText}
                   </Button>
@@ -784,14 +745,4 @@ const AddFeatures = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  loading: state.productReducer.loading || state.releaseReducer.loading,
-  statuses: state.releaseReducer.statuses,
-  products: state.productReducer.products,
-  credentials: state.productReducer.credentials,
-  features: state.releaseReducer.features,
-  releases: state.releaseReducer.releases,
-});
-
-export default connect(mapStateToProps)(AddFeatures);
+export default AddFeatures;

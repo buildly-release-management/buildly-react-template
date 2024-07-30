@@ -1,5 +1,4 @@
 import React, { useState, useContext } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -20,10 +19,13 @@ import {
   FormGroup,
   Checkbox,
 } from '@mui/material';
+import Loader from '@components/Loader/Loader';
+import { routes } from '../../routes/routesConstants';
 import { UserContext } from '@context/User.context';
 import { useInput } from '@hooks/useInput';
-import { addData } from '@redux/googleSheet/actions/googleSheet.actions';
-import { updateUser } from '@redux/authuser/actions/authuser.actions';
+import useAlert from '@hooks/useAlert';
+import { useAddDataMutation } from '../../react-query/mutation/googlesheet/addDataMutation';
+import { useUpdateUserMutation } from '../../react-query/mutation/authUser/updateUserMutation';
 import { validators } from '@utils/validators';
 
 const useStyles = makeStyles((theme) => ({
@@ -69,9 +71,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const DeveloperForm = ({ dispatch, loading, history }) => {
+const DeveloperForm = ({ loading, history }) => {
   const classes = useStyles();
   const user = useContext(UserContext);
+
+  const { displayAlert } = useAlert();
 
   const [question1, setQuestion1] = useState(null);
   const question2 = useInput('', { required: true });
@@ -101,10 +105,9 @@ const DeveloperForm = ({ dispatch, loading, history }) => {
   });
   const [formError, setFormError] = useState({});
 
-  /**
-   * Submit the form to the backend and attempts to authenticate
-   * @param {Event} event the default submit event
-   */
+  const { mutate: addDataMutation, isLoading: isAddingDataLoading } = useAddDataMutation(history, routes.PRODUCT_PORTFOLIO, displayAlert);
+  const { mutate: updateUserMutation, isLoading: isUpdateUserLoading } = useUpdateUserMutation(history, displayAlert);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = {
@@ -134,17 +137,13 @@ const DeveloperForm = ({ dispatch, loading, history }) => {
         question13.pushEmail,
       'Version Dependency Management': question13.versionDependency,
     };
-
-    dispatch(addData(formData, history));
-    dispatch(updateUser({ id: user.id, survey_status: true }));
+    const profileValues = {
+      id: user.id,
+      survey_status: true,
+    };
+    addDataMutation(formData);
+    updateUserMutation(profileValues);
   };
-
-  /**
-   * Handle input field blur event
-   * @param {Event} e Event
-   * @param {String} validation validation type if any
-   * @param {Object} input input field
-   */
 
   const handleBlur = (e, validation, input) => {
     const validateObj = validators(validation, input);
@@ -213,6 +212,7 @@ const DeveloperForm = ({ dispatch, loading, history }) => {
 
   return (
     <>
+      {(isAddingDataLoading || isUpdateUserLoading) && <Loader open={isAddingDataLoading || isUpdateUserLoading} />}
       <Typography className={classes.title} variant="body1">
         Thanks for checking out Buildly and our new Project Management offering
         Buildly Planner intended to help facilitate the communication between
@@ -670,9 +670,4 @@ const DeveloperForm = ({ dispatch, loading, history }) => {
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  ...state.googleSheetReducer,
-});
-
-export default connect(mapStateToProps)(DeveloperForm);
+export default DeveloperForm;

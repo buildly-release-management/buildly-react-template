@@ -8,6 +8,7 @@ import './index.css';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import registerServiceWorker from './serviceWorkerRegistration';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 if (window.env.PRODUCTION) {
   const script = document.createElement('script');
@@ -28,17 +29,18 @@ if (window.env.PRODUCTION) {
 
 const store = configureStore();
 
-// Make sure to call `loadStripe` outside of a component’s render to avoid
-// recreating the `Stripe` object on every render.
 const stripePromise = loadStripe(window.env.STRIPE_KEY);
 
-ReactDOM.render(
-  <Provider store={store}>
-    <Elements stripe={stripePromise}>
-      <App />
-    </Elements>
-  </Provider>,
-  document.getElementById('root'),
+const queryClient = new QueryClient();
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <QueryClientProvider client={queryClient}>
+    <Provider store={store}>
+      <Elements stripe={stripePromise}>
+        <App />
+      </Elements>
+    </Provider>
+  </QueryClientProvider>,
 );
 
 registerServiceWorker();

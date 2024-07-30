@@ -1,11 +1,10 @@
 import React, { useRef } from 'react';
 import { Button } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import { socialLogin } from '@redux/authuser/actions/authuser.actions';
 import { providers, toQuery } from '@utils/socialLogin';
 import PopupWindow from './PopupWindow';
 
-const GithubLogin = ({ dispatch, history, disabled }) => {
+const GithubLogin = ({ socialLoginMutation, history, disabled }) => {
   const popup = useRef(null);
 
   const onBtnClick = () => {
@@ -15,7 +14,6 @@ const GithubLogin = ({ dispatch, history, disabled }) => {
       `https://github.com/login/oauth/authorize?${search}`,
       { height: 800, width: 600 },
     );
-
     popup.current.then(
       (data) => onSuccess(data),
       (error) => onFailure(error),
@@ -27,8 +25,11 @@ const GithubLogin = ({ dispatch, history, disabled }) => {
     if (!data.code) {
       return onFailure(new Error("'code' not found"));
     }
-
-    dispatch(socialLogin(data.code, providers.github, history));
+    const socialData = {
+      code: data.code,
+      providers: providers.github,
+    };
+    socialLoginMutation(socialData);
   };
 
   const onFailure = (error) => {

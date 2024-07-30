@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -32,24 +31,22 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Tabular = ({
-  loading,
   selectedProduct,
+  upgrade,
+  suggestedFeatures,
   statuses,
   features,
   issues,
+  comments,
+  createSuggestedFeature,
+  removeSuggestedFeature,
   addItem,
   editItem,
   deleteItem,
   commentItem,
-  issueSuggestions,
-  upgrade,
-  suggestedFeatures,
-  createSuggestedFeature,
-  removeSuggestedFeature,
-  comments,
-  showRelatedIssues,
-  setDataLoading,
 }) => {
+  // issueSuggestions,
+  // showRelatedIssues,
   const classes = useStyles();
   const [featureRows, setFeatureRows] = useState([]);
   const [featMenuActions, setFeatMenuActions] = useState([]);
@@ -62,7 +59,8 @@ const Tabular = ({
     const fma = (
       <div>
         <Divider />
-        <MenuItem onClick={(e) => commentItem(featureRows[menuIndex])}>
+        <MenuItem>
+          {/* onClick={(e) => commentItem(featureRows[menuIndex])}> */}
           <ListItemIcon>
             <CommentIcon fontSize="small" />
           </ListItemIcon>
@@ -71,14 +69,16 @@ const Tabular = ({
           )
         </MenuItem>
         <Divider />
-        <MenuItem onClick={(e) => issueSuggestions(featureRows[menuIndex])}>
+        <MenuItem>
+          {/* onClick={(e) => issueSuggestions(featureRows[menuIndex])}> */}
           <ListItemIcon>
             <TaskIcon fontSize="small" />
           </ListItemIcon>
           Convert to issue/ticket for dev team
         </MenuItem>
         <Divider />
-        <MenuItem onClick={(e) => showRelatedIssues(featureRows[menuIndex]?.feature_uuid)}>
+        <MenuItem>
+          {/* onClick={(e) => showRelatedIssues(featureRows[menuIndex]?.feature_uuid)}> */}
           <ListItemIcon>
             <CallSplitIcon fontSize="small" />
           </ListItemIcon>
@@ -121,7 +121,6 @@ const Tabular = ({
   }, [features, issueRows, menuIndex, comments]);
 
   useEffect(() => {
-    setDataLoading(true);
     const featRows = _.map(features, (feat) => ({
       ...feat,
       _status: _.find(statuses, { status_uuid: feat.status })?.name,
@@ -136,12 +135,10 @@ const Tabular = ({
 
     setFeatureRows(featRows);
     setIssueRows(issRows);
-    setDataLoading(false);
   }, [statuses, features, issues]);
 
   useEffect(() => {
-    if (suggestedFeatures && !_.isEmpty(suggestedFeatures)) {
-      setDataLoading(true);
+    if (!_.isEmpty(suggestedFeatures)) {
       const cols = [
         {
           name: 'suggested_feature',
@@ -193,26 +190,24 @@ const Tabular = ({
         },
       ];
       setFinalSugCols(cols);
-      setDataLoading(false);
     }
   }, [suggestedFeatures]);
 
   return (
     <>
-      {(!selectedProduct || _.toNumber(selectedProduct) === 0) && (
+      {(_.isEmpty(selectedProduct) || _.toNumber(selectedProduct) === 0) && (
         <Typography className={classes.noProduct} component="div" variant="body1">
           No product selected yet. Please select a product to view related features and/or issues.
         </Typography>
       )}
-      {!!selectedProduct && upgrade && (
+      {!_.isEmpty(selectedProduct) && upgrade && _.toNumber(selectedProduct) !== 0 && (
         <Typography variant="h6" align="center">
           Upgrade to be able to create more features
         </Typography>
       )}
-      {!!selectedProduct && suggestedFeatures && !_.isEmpty(suggestedFeatures) && _.toNumber(selectedProduct) !== 0 && (
+      {!_.isEmpty(selectedProduct) && !_.isEmpty(suggestedFeatures) && _.toNumber(selectedProduct) !== 0 && (
         <div className={classes.tabular}>
           <DataTableWrapper
-            loading={loading}
             rows={suggestedFeatures}
             columns={finalSugCols}
             filename="SuggestedFeaturesList"
@@ -230,7 +225,6 @@ const Tabular = ({
           }
         >
           <DataTableWrapper
-            loading={loading}
             rows={featureRows}
             columns={featureColumns}
             filename="FeaturesList"
@@ -249,7 +243,6 @@ const Tabular = ({
       {!!selectedProduct && _.toNumber(selectedProduct) !== 0 && (
         <div className={`${classes.tabular} ${classes.tabular2}`}>
           <DataTableWrapper
-            loading={loading}
             rows={issueRows}
             columns={issueColumns}
             filename="IssuesList"
@@ -269,13 +262,4 @@ const Tabular = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  features: state.releaseReducer.features,
-  issues: state.releaseReducer.issues,
-  statuses: state.releaseReducer.statuses,
-  comments: state.releaseReducer.comments,
-  releases: state.releaseReducer.releases,
-});
-
-export default connect(mapStateToProps)(Tabular);
+export default Tabular;

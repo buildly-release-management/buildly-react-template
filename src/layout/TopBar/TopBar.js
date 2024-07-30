@@ -1,39 +1,33 @@
-/* eslint-disable no-console */
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import { styled, alpha } from '@mui/material/styles';
 import {
   Group as GroupIcon,
   Logout, Person,
 } from '@mui/icons-material';
 import {
+  AppBar,
   Avatar,
+  Box,
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
   Grid,
+  IconButton,
   ListItemIcon,
+  Menu,
+  MenuItem,
+  TextField,
+  Toolbar,
   Tooltip,
   Typography,
 } from '@mui/material';
 import logo from '@assets/buildly-product-labs-orange-white.png';
 import { UserContext } from '@context/User.context';
-import {
-  logout, loadOrgNames, loadStripeProducts, getUser, updateUser,
-} from '@redux/authuser/actions/authuser.actions';
 import { routes } from '@routes/routesConstants';
 import { hasGlobalAdminRights, hasAdminRights } from '@utils/permissions';
 import { useElements, useStripe } from '@stripe/react-stripe-js';
@@ -41,9 +35,14 @@ import StripeCard from '@components/StripeCard/StripeCard';
 import Loader from '@components/Loader/Loader';
 import { isMobile } from '@utils/mediaQuery';
 import { useInput } from '@hooks/useInput';
+import useAlert from '@hooks/useAlert';
 import { validators } from '@utils/validators';
-import { httpService } from '@modules/http/http.service';
-import { showAlert } from '@redux/alert/actions/alert.actions';
+import { oauthService } from '../../modules/oauth/oauth.service';
+import { useQuery } from 'react-query';
+import { getOrganizationNameQuery } from '../../react-query/queries/authUser/getOrganizationNameQuery';
+import { getStripeProductQuery } from '../../react-query/queries/authUser/getStripeProductQuery';
+import { useUpdateUserMutation } from '../../react-query/mutation/authUser/updateUserMutation';
+import { useAddSubscriptionMutation } from '../../react-query/mutation/authUser/addSubscriptionMutation';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -129,6 +128,7 @@ const useStyles = makeStyles((theme) => ({
     '& .MuiOutlinedInput-input': {
       padding: theme.spacing(1, 3.5, 1, 2),
     },
+    marginRight: 20,
   },
   navMenu: {
     marginRight: theme.spacing(1),
@@ -139,53 +139,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const StyledMenu = styled((props) => (
-  <Menu
-    elevation={0}
-    anchorOrigin={{
-      vertical: 'bottom',
-      horizontal: 'right',
-    }}
-    transformOrigin={{
-      vertical: 'top',
-      horizontal: 'right',
-    }}
-    {...props}
-  />
-))(({ theme }) => ({
-  '& .MuiPaper-root': {
-    borderRadius: 6,
-    marginTop: theme.spacing(1),
-    minWidth: 180,
-    boxShadow:
-      'rgb(255, 255, 255) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px',
-    '& .MuiMenu-list': {
-      padding: '4px 0',
-    },
-    '& .MuiMenuItem-root': {
-      '& .MuiSvgIcon-root': {
-        fontSize: 18,
-        color: theme.palette.text.secondary,
-        marginRight: theme.spacing(1.5),
-      },
-      '&:active': {
-        backgroundColor: alpha(
-          theme.palette.primary.main,
-          theme.palette.action.selectedOpacity,
-        ),
-      },
-    },
-  },
-}));
-
-const TopBar = ({
-  history,
-  dispatch,
-  orgNames,
-  location,
-  loading,
-  stripeProducts,
-}) => {
+const TopBar = ({ history, location }) => {
   const classes = useStyles();
   const user = useContext(UserContext);
   const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
@@ -235,8 +189,28 @@ const TopBar = ({
   const product = useInput('', { required: true });
   const [formError, setFormError] = useState({});
 
-  if (!organization) {
-    setOrganization(user.organization.name);
+  const { displayAlert } = useAlert();
+
+  const { data: orgNamesData, isLoading: isOrgNamesLoading } = useQuery(
+    ['orgNames'],
+    () => getOrganizationNameQuery(),
+    { refetchOnWindowFocus: false },
+  );
+
+  const { data: stripeProductData, isLoading: isStripeProductsLoading } = useQuery(
+    ['stripeProducts'],
+    () => getStripeProductQuery(),
+    { refetchOnWindowFocus: false },
+  );
+
+  const { mutate: updateUserMutation, isLoading: isUpdateUserLoading } = useUpdateUserMutation(history, displayAlert);
+
+  const { mutate: addSubscriptionMutation, isLoading: isAddSubscriptionLoading } = useAddSubscriptionMutation(displayAlert);
+
+  if (user) {
+    if (!organization) {
+      setOrganization(user.organization.name);
+    }
   }
 
   const handleDialogOpen = () => {
@@ -251,7 +225,7 @@ const TopBar = ({
   };
 
   const handleLogoutClick = () => {
-    dispatch(logout());
+    oauthService.logout();
     history.push('/');
   };
 
@@ -262,8 +236,7 @@ const TopBar = ({
       id: user.id,
       organization_name,
     };
-    dispatch(updateUser(profileValues));
-    history.push(routes.PRODUCT_PORTFOLIO);
+    updateUserMutation(profileValues);
   };
 
   const handleClose = () => {
@@ -271,13 +244,6 @@ const TopBar = ({
   };
 
   useEffect(() => {
-    if (!orgNames) {
-      dispatch(loadOrgNames());
-    }
-    if (window.env.STRIPE_KEY && !stripeProducts) {
-      dispatch(loadStripeProducts());
-    }
-
     if (organization) {
       setShowProducts(true);
     } else {
@@ -327,10 +293,7 @@ const TopBar = ({
     let validationError = '';
 
     if (showProducts) {
-      const {
-        error,
-        paymentMethod,
-      } = await stripe.createPaymentMethod({
+      const { error, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
         card: elements.getElement('card'),
         billing_details: {
@@ -343,27 +306,8 @@ const TopBar = ({
         product: product.value,
         card_id: paymentMethod?.id,
       };
-
       if (!validationError) {
-        try {
-          httpService.makeRequest('post',
-            `${window.env.API_URL}subscription/`,
-            formValue)
-            .then(() => {
-              dispatch(showAlert({
-                type: 'success',
-                open: true,
-                message: 'Subscription successfully saved',
-              }));
-              dispatch(getUser());
-            });
-        } catch (httpError) {
-          dispatch(showAlert({
-            type: 'error',
-            open: true,
-            message: 'Couldn\'t save subscription!',
-          }));
-        }
+        addSubscriptionMutation(formValue);
         handleDialogClose();
       }
     }
@@ -371,7 +315,7 @@ const TopBar = ({
 
   return (
     <>
-      {loading && <Loader open={loading} />}
+      {(isOrgNamesLoading || isStripeProductsLoading || isUpdateUserLoading || isAddSubscriptionLoading) && <Loader open={isOrgNamesLoading || isStripeProductsLoading || isUpdateUserLoading || isAddSubscriptionLoading} />}
       <AppBar position="fixed" className={classes.appBar}>
         <Toolbar>
           <Link to={routes.PRODUCT_ROADMAP}>
@@ -419,7 +363,7 @@ const TopBar = ({
                 value={organization}
                 onChange={handleOrganizationChange}
               >
-                {_.map(orgNames, (org, index) => (
+                {_.map(orgNamesData, (org, index) => (
                   <MenuItem
                     key={index}
                     value={org}
@@ -431,12 +375,7 @@ const TopBar = ({
             )}
             <div className={classes.userInfo}>
               <Typography>{user.first_name}</Typography>
-              <Typography>
-                {user.organization.name}
-                ,
-                {' '}
-                {user.user_type}
-              </Typography>
+              <Typography>{`${user.organization.name}, ${user.user_type}`}</Typography>
             </div>
             <Tooltip title="Account settings">
               <IconButton
@@ -556,8 +495,8 @@ const TopBar = ({
                     {...product.bind}
                   >
                     <MenuItem value="">----------</MenuItem>
-                    {stripeProducts && !_.isEmpty(stripeProducts)
-                      && _.map(stripeProducts, (prd) => (
+                    {stripeProductData && !_.isEmpty(stripeProductData)
+                      && _.map(stripeProductData, (prd) => (
                         <MenuItem key={`sub-product-${prd.id}`} value={prd.id}>
                           {`${prd.name}`}
                         </MenuItem>
@@ -595,10 +534,4 @@ const TopBar = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  ...state.authReducer,
-  ...state.googleSheetReducer,
-});
-
-export default connect(mapStateToProps)(TopBar);
+export default TopBar;

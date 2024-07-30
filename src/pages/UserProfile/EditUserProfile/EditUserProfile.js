@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './EditUserProfile.css';
 import { useInput } from '@hooks/useInput';
+import useAlert from '@hooks/useAlert';
 import {
   Avatar,
   Button,
@@ -14,16 +15,22 @@ import Loader from '@components/Loader/Loader';
 import { isMobile } from '@utils/mediaQuery';
 import { validators } from '@utils/validators';
 import { Person } from '@mui/icons-material';
-import { updateUser } from '@redux/authuser/actions/authuser.actions';
-import { connect } from 'react-redux';
+import { UserContext } from '@context/User.context';
+import { useUpdateUserMutation } from '../../../react-query/mutation/authUser/updateUserMutation';
 
-const EditUserProfile = ({ dispatch, loading, user }) => {
+const EditUserProfile = ({ history }) => {
+  const user = useContext(UserContext);
+
+  const { displayAlert } = useAlert();
+
   const [disableSubmitBtn, setBtnDisabled] = useState(true);
   const [formError, setFormError] = useState({});
 
   const first_name = useInput(user && user.first_name, { required: true });
   const last_name = useInput(user && user.last_name, { required: true });
   const userType = useInput(user && user.user_type, { required: true });
+
+  const { mutate: updateUserMutation, isLoading: isUpdateUserLoading } = useUpdateUserMutation(history, displayAlert);
 
   const handleBlur = (e, validation, input) => {
     const validateObj = validators(validation, input);
@@ -48,18 +55,16 @@ const EditUserProfile = ({ dispatch, loading, user }) => {
   const toggleSubmitBtn = () => {
     const errorKeys = Object.keys(formError);
     let errorExists = false;
-    if (
-      !first_name.value
-      || !last_name.value
-      || !userType.value
-    ) return true;
-    if (
-      first_name.hasChanged()
-      || last_name.hasChanged()
-      || userType.hasChanged()
-    ) return false;
+    if (!first_name.value || !last_name.value || !userType.value) {
+      return true;
+    }
+    if (first_name.hasChanged() || last_name.hasChanged() || userType.hasChanged()) {
+      return false;
+    }
     errorKeys.forEach((key) => {
-      if (formError[key].error) errorExists = true;
+      if (formError[key].error) {
+        errorExists = true;
+      }
     });
     return errorExists;
   };
@@ -72,39 +77,23 @@ const EditUserProfile = ({ dispatch, loading, user }) => {
       last_name: last_name.value,
       user_type: userType.value,
     };
-    dispatch(updateUser(profileValues));
+    updateUserMutation(profileValues);
     setBtnDisabled(true);
   };
 
   return (
     <>
-      {loading && <Loader open={loading} />}
+      {isUpdateUserLoading && <Loader open={isUpdateUserLoading} />}
       <div className="row border rounded">
         <div className="col-4 m-auto">
           <div className="d-flex flex-column align-items-center">
             <Avatar sx={{ width: 96, height: 96 }}>
               <Person color="secondary" sx={{ fontSize: 72 }} />
             </Avatar>
-            <Typography>
-              {user.first_name}
-              {' '}
-              {user.last_name}
-            </Typography>
-            <Typography>
-              Organization:
-              {' '}
-              {user.organization.name}
-            </Typography>
-            <Typography>
-              Username:
-              {' '}
-              {user.username}
-            </Typography>
-            <Typography>
-              Email:
-              {' '}
-              {user.email}
-            </Typography>
+            <Typography>{`${user.first_name} ${user.last_name}`}</Typography>
+            <Typography>{`Organization: ${user.organization.name}`}</Typography>
+            <Typography>{`Username: ${user.username}`}</Typography>
+            <Typography>{`Email: ${user.email}`}</Typography>
           </div>
         </div>
         <div className="col-8 border-start">
@@ -180,7 +169,7 @@ const EditUserProfile = ({ dispatch, loading, user }) => {
                 variant="contained"
                 color="primary"
                 className="submit"
-                disabled={loading || disableSubmitBtn}
+                disabled={isUpdateUserLoading || disableSubmitBtn}
               >
                 Save changes
               </Button>
@@ -192,10 +181,4 @@ const EditUserProfile = ({ dispatch, loading, user }) => {
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  ...state.authReducer,
-  user: state.authReducer.data,
-});
-
-export default connect(mapStateToProps)(EditUserProfile);
+export default EditUserProfile;

@@ -1,19 +1,8 @@
 import _ from 'lodash';
 import {
-  SAVE_PRODUCT_FORM_DATA,
-  CLEAR_PRODUCT_RELATED_PRODUCT_DATA,
-  ALL_CREDENTIALS,
-  ALL_CREDENTIALS_SUCCESS,
-  ALL_CREDENTIALS_FAILURE,
   ALL_PRODUCT_TEAMS,
   ALL_PRODUCT_TEAMS_SUCCESS,
   ALL_PRODUCT_TEAMS_FAILURE,
-  ALL_PRODUCTS,
-  ALL_PRODUCTS_SUCCESS,
-  ALL_PRODUCTS_FAILURE,
-  ALL_THIRD_PARTY_TOOLS,
-  ALL_THIRD_PARTY_TOOLS_SUCCESS,
-  ALL_THIRD_PARTY_TOOLS_FAILURE,
   GET_CREDENTIAL,
   GET_CREDENTIAL_SUCCESS,
   GET_CREDENTIAL_FAILURE,
@@ -35,9 +24,6 @@ import {
   CREATE_PRODUCT_TEAM,
   CREATE_PRODUCT_TEAM_SUCCESS,
   CREATE_PRODUCT_TEAM_FAILURE,
-  CREATE_PRODUCT,
-  CREATE_PRODUCT_SUCCESS,
-  CREATE_PRODUCT_FAILURE,
   CREATE_THIRD_PARTY_TOOL,
   CREATE_THIRD_PARTY_TOOL_SUCCESS,
   CREATE_THIRD_PARTY_TOOL_FAILURE,
@@ -50,9 +36,6 @@ import {
   UPDATE_PRODUCT_TEAM,
   UPDATE_PRODUCT_TEAM_SUCCESS,
   UPDATE_PRODUCT_TEAM_FAILURE,
-  UPDATE_PRODUCT,
-  UPDATE_PRODUCT_SUCCESS,
-  UPDATE_PRODUCT_FAILURE,
   UPDATE_THIRD_PARTY_TOOL,
   UPDATE_THIRD_PARTY_TOOL_SUCCESS,
   UPDATE_THIRD_PARTY_TOOL_FAILURE,
@@ -62,18 +45,9 @@ import {
   DELETE_PRODUCT_TEAM,
   DELETE_PRODUCT_TEAM_SUCCESS,
   DELETE_PRODUCT_TEAM_FAILURE,
-  DELETE_PRODUCT,
-  DELETE_PRODUCT_SUCCESS,
-  DELETE_PRODUCT_FAILURE,
   DELETE_THIRD_PARTY_TOOL,
   DELETE_THIRD_PARTY_TOOL_SUCCESS,
   DELETE_THIRD_PARTY_TOOL_FAILURE,
-  VALIDATE_CREDENTIAL,
-  VALIDATE_CREDENTIAL_SUCCESS,
-  VALIDATE_CREDENTIAL_FAILURE,
-  ADD_DOC_IDENTIFIER,
-  ADD_DOC_IDENTIFIER_SUCCESS,
-  ADD_DOC_IDENTIFIER_FAILURE,
 } from '../actions/product.actions';
 
 const initialState = {
@@ -93,35 +67,7 @@ const initialState = {
 // Reducer
 export default (state = initialState, action) => {
   switch (action.type) {
-    case SAVE_PRODUCT_FORM_DATA: {
-      let updatedState = {
-        ...state,
-        loading: false,
-        loaded: true,
-        productFormData: action.formData,
-      };
-      if (!action.formData) {
-        updatedState = { ...updatedState, featureCredValid: false, issueCredValid: false };
-      }
-      return updatedState;
-    }
-
-    case CLEAR_PRODUCT_RELATED_PRODUCT_DATA:
-      return {
-        ...state,
-        loading: false,
-        loaded: true,
-        credentials: [],
-        boards: {},
-        productFormData: null,
-        featureCredValid: false,
-        issueCredValid: false,
-      };
-
-    case ALL_CREDENTIALS:
     case ALL_PRODUCT_TEAMS:
-    case ALL_PRODUCTS:
-    case ALL_THIRD_PARTY_TOOLS:
     case GET_CREDENTIAL:
     case GET_PRODUCT_TEAM:
     case GET_PRODUCT:
@@ -129,30 +75,15 @@ export default (state = initialState, action) => {
     case GET_THIRD_PARTY_TOOL:
     case CREATE_CREDENTIAL:
     case CREATE_PRODUCT_TEAM:
-    case CREATE_PRODUCT:
     case CREATE_THIRD_PARTY_TOOL:
     case CREATE_BOARD:
     case UPDATE_CREDENTIAL:
     case UPDATE_PRODUCT_TEAM:
-    case UPDATE_PRODUCT:
     case UPDATE_THIRD_PARTY_TOOL:
     case DELETE_CREDENTIAL:
     case DELETE_PRODUCT_TEAM:
-    case DELETE_PRODUCT:
     case DELETE_THIRD_PARTY_TOOL:
-    case VALIDATE_CREDENTIAL:
-    case ADD_DOC_IDENTIFIER:
-      return {
-        ...state,
-        loading: true,
-        loaded: false,
-        error: null,
-      };
-
-    case ALL_CREDENTIALS_FAILURE:
     case ALL_PRODUCT_TEAMS_FAILURE:
-    case ALL_PRODUCTS_FAILURE:
-    case ALL_THIRD_PARTY_TOOLS_FAILURE:
     case GET_CREDENTIAL_FAILURE:
     case GET_PRODUCT_TEAM_FAILURE:
     case GET_PRODUCT_FAILURE:
@@ -160,34 +91,14 @@ export default (state = initialState, action) => {
     case GET_THIRD_PARTY_TOOL_FAILURE:
     case CREATE_CREDENTIAL_FAILURE:
     case CREATE_PRODUCT_TEAM_FAILURE:
-    case CREATE_PRODUCT_FAILURE:
     case CREATE_THIRD_PARTY_TOOL_FAILURE:
     case CREATE_BOARD_FAILURE:
     case UPDATE_CREDENTIAL_FAILURE:
     case UPDATE_PRODUCT_TEAM_FAILURE:
-    case UPDATE_PRODUCT_FAILURE:
     case UPDATE_THIRD_PARTY_TOOL_FAILURE:
     case DELETE_CREDENTIAL_FAILURE:
     case DELETE_PRODUCT_TEAM_FAILURE:
-    case DELETE_PRODUCT_FAILURE:
     case DELETE_THIRD_PARTY_TOOL_FAILURE:
-    case VALIDATE_CREDENTIAL_FAILURE:
-    case ADD_DOC_IDENTIFIER_FAILURE:
-      return {
-        ...state,
-        loading: false,
-        loaded: true,
-        error: action.error,
-      };
-
-    case ALL_CREDENTIALS_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        loaded: true,
-        credentials: action.data,
-      };
-
     case GET_CREDENTIAL_SUCCESS:
     case CREATE_CREDENTIAL_SUCCESS:
     case UPDATE_CREDENTIAL_SUCCESS: {
@@ -268,17 +179,7 @@ export default (state = initialState, action) => {
       };
     }
 
-    case ALL_PRODUCTS_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        loaded: true,
-        products: action.data,
-      };
-
-    case GET_PRODUCT_SUCCESS:
-    case CREATE_PRODUCT_SUCCESS:
-    case UPDATE_PRODUCT_SUCCESS: {
+    case GET_PRODUCT_SUCCESS: {
       const found = _.find(
         state.products,
         { product_uuid: action.data.product_uuid },
@@ -298,25 +199,6 @@ export default (state = initialState, action) => {
         products,
       };
     }
-
-    case DELETE_PRODUCT_SUCCESS: {
-      const prods = _.filter(state.products, (prod) => (prod.product_uuid !== action.product_uuid));
-
-      return {
-        ...state,
-        loading: false,
-        loaded: true,
-        products: prods,
-      };
-    }
-
-    case ALL_THIRD_PARTY_TOOLS_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        loaded: true,
-        thirdPartyTools: action.data,
-      };
 
     case GET_THIRD_PARTY_TOOL_SUCCESS:
     case CREATE_THIRD_PARTY_TOOL_SUCCESS:
@@ -361,36 +243,6 @@ export default (state = initialState, action) => {
         loading: false,
         loaded: true,
         boards: action.data,
-      };
-
-    case VALIDATE_CREDENTIAL_SUCCESS: {
-      let updatedState;
-      if (_.toLower(action.tool) === 'feature') {
-        updatedState = {
-          ...state,
-          loading: false,
-          loaded: true,
-          featureCredValid: true,
-        };
-      }
-      if (_.toLower(action.tool) === 'issue') {
-        updatedState = {
-          ...state,
-          loading: false,
-          loaded: true,
-          issueCredValid: true,
-        };
-      }
-
-      return updatedState;
-    }
-
-    case ADD_DOC_IDENTIFIER_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        loaded: true,
-        productFormData: action.productFormData,
       };
 
     default:

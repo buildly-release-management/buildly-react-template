@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -9,11 +8,8 @@ import {
   Hidden,
   Grid,
 } from '@mui/material';
-import Chatbot from '@components/Chatbot/Chatbot';
 import Loader from '@components/Loader/Loader';
 import FormModal from '@components/Modal/FormModal';
-import { getAllStatuses } from '@redux/release/actions/release.actions';
-import { saveProductFormData, getAllCredentials } from '@redux/product/actions/product.actions';
 import ApplicationMarket, { checkIfApplicationMarketEdited } from './components/ApplicationMarket';
 import BudgetTechnology, { checkIfBudgetTechnologyEdited } from './components/BudgetTechnology';
 import ProductSetup, { checkIfProductSetupEdited } from './components/ProductSetup';
@@ -22,6 +18,10 @@ import TeamUser, { checkIfTeamUserEdited } from './components/TeamUser';
 import UseInfo, { checkIfUseInfoEdited } from './components/UseInfo';
 import ViewDetailsWrapper from './components/ViewDetailsWrapper';
 import { routes } from '@routes/routesConstants';
+import useAlert from '@hooks/useAlert';
+import { useQuery } from 'react-query';
+import { getAllCredentialQuery } from '../../react-query/queries/product/getAllCredentialQuery';
+import { useStore } from '../../zustand/product/productStore';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -72,7 +72,6 @@ const getStepContent = (
         >
           <ProductSetup
             {...props}
-            location={props.location}
             handleNext={handleNext}
             editData={editData}
             viewPage={viewPage}
@@ -185,12 +184,13 @@ const getStepContent = (
 };
 
 const NewProductForm = (props) => {
-  const {
-    history, dispatch, location, credentials, loading, productFormData,
-  } = props;
+  const { history, location } = props;
   const classes = useStyles();
   const steps = getSteps();
   const maxSteps = steps.length;
+
+  const { displayAlert } = useAlert();
+  const { clearProductFormData } = useStore();
 
   const redirectTo = (location.state && location.state.from) || routes.PRODUCT_ROADMAP;
   const product_uuid = location.state && location.state.product_uuid;
@@ -210,17 +210,16 @@ const NewProductForm = (props) => {
   const [featCred, setFeatCred] = useState(null);
   const [issueCred, setIssueCred] = useState(null);
 
-  useEffect(() => {
-    if (product_uuid) {
-      dispatch(getAllStatuses(product_uuid));
-      dispatch(getAllCredentials(product_uuid));
-    }
-  }, [product_uuid]);
+  const { data: allCredentialData, isLoading: isAllCredentialLoading } = useQuery(
+    ['allCredentials', product_uuid],
+    () => getAllCredentialQuery(product_uuid, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) },
+  );
 
   useEffect(() => {
-    setFeatCred(_.find(credentials, { auth_detail: { tool_type: 'Feature' } }));
-    setIssueCred(_.find(credentials, { auth_detail: { tool_type: 'Issue' } }));
-  }, [credentials]);
+    setFeatCred(_.find(allCredentialData, { auth_detail: { tool_type: 'Feature' } }));
+    setIssueCred(_.find(allCredentialData, { auth_detail: { tool_type: 'Issue' } }));
+  }, [allCredentialData]);
 
   const handleNext = () => {
     setActiveStep(activeStep + 1);
@@ -236,12 +235,11 @@ const NewProductForm = (props) => {
   };
 
   const handleClose = () => {
-    if ((!editData && productFormData && !_.isEmpty(productFormData))
-      || checkIfFormEdited(activeStep)) {
+    if (checkIfFormEdited(activeStep)) {
       setConfirmModal(true);
       setConfirmModalFor(null);
     } else {
-      dispatch(saveProductFormData(null));
+      clearProductFormData();
       setFormModal(false);
       history.push(redirectTo);
     }
@@ -252,7 +250,7 @@ const NewProductForm = (props) => {
       setConfirmModal(false);
       setActiveStep(confirmModalFor);
     } else {
-      dispatch(saveProductFormData(null));
+      clearProductFormData();
       history.push(redirectTo);
     }
   };
@@ -261,22 +259,16 @@ const NewProductForm = (props) => {
     switch (currentStep) {
       case 0:
         return checkIfProductSetupEdited();
-
       case 1:
         return checkIfApplicationMarketEdited();
-
       case 2:
         return checkIfBudgetTechnologyEdited();
-
       case 3:
         return checkIfTeamUserEdited();
-
       case 4:
         return checkIfUseInfoEdited();
-
       case 5:
         return checkIfSetupEdited();
-
       default:
         return false;
     }
@@ -297,7 +289,7 @@ const NewProductForm = (props) => {
           handleConfirmModal={handleConfirmModal}
         >
           <div className={classes.root}>
-            {loading && <Loader open={loading} />}
+            {isAllCredentialLoading && <Loader open={isAllCredentialLoading} />}
             <Hidden smDown>
               <Grid container alignItems="center" justifyContent="center">
                 <Grid item sm={10}>
@@ -316,7 +308,6 @@ const NewProductForm = (props) => {
                 </Grid>
               </Grid>
             </Hidden>
-
             <div>
               {getStepContent(
                 activeStep,
@@ -334,18 +325,10 @@ const NewProductForm = (props) => {
               )}
             </div>
           </div>
-          {/* <Chatbot /> */}
         </FormModal>
       )}
     </div>
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  loading: state.productReducer.loading || state.releaseReducer.loading,
-  credentials: state.productReducer.credentials,
-  productFormData: state.productReducer.productFormData,
-});
-
-export default connect(mapStateToProps)(NewProductForm);
+export default NewProductForm;

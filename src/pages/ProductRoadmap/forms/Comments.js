@@ -1,17 +1,24 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  Button, Card, CardContent, Grid, TextField, Typography, useMediaQuery, useTheme,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
+import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
-import { createComment } from '@redux/release/actions/release.actions';
 import { UserContext } from '../../../context/User.context';
+import { useCreateCommentMutation } from '../../../react-query/mutation/release/createCommentMutation';
 
 const useStyles = makeStyles((theme) => ({
   formTitle: {
@@ -51,12 +58,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Comments = ({
-  location, history, loading, credentials, dispatch, comments,
-}) => {
+const Comments = ({ location, history }) => {
   const classes = useStyles();
   const redirectTo = location.state && location.state.from;
-  const { feature, issue } = location && location.state;
+  const {
+    feature, issue, comments, credentials, product_uuid,
+  } = location && location.state;
+
+  const { displayAlert } = useAlert();
 
   const theme = useTheme();
   const user = useContext(UserContext);
@@ -72,7 +81,6 @@ const Comments = ({
     if (!_.isEmpty(feature)) {
       setFilteredComments(_.filter(comments, { feature: feature.feature_uuid }));
     }
-
     if (!_.isEmpty(issue)) {
       setFilteredComments(_.filter(comments, { issue: issue.issue_uuid }));
     }
@@ -93,12 +101,13 @@ const Comments = ({
     history.push(redirectTo);
   };
 
+  const { mutate: createCommentMutation, isLoading: isCreatingCommentLoading } = useCreateCommentMutation(product_uuid, history, redirectTo, displayAlert);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const featCred = _.find(credentials, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'feature'));
     const issueCred = _.find(credentials, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'issue'));
     const authDetail = !_.isEmpty(feature) ? featCred?.auth_detail : issueCred?.auth_detail;
-
     const commentData = {
       ...authDetail,
       comment: commentText.value,
@@ -110,8 +119,7 @@ const Comments = ({
       user_signoff_uuid: user?.core_user_uuid,
       user_info: user,
     };
-
-    dispatch(createComment(commentData));
+    createCommentMutation(commentData);
   };
 
   const handleBlur = (e, validation, input, parentId) => {
@@ -138,14 +146,12 @@ const Comments = ({
     if (!commentText.value) {
       return true;
     }
-
     let errorExists = false;
     _.forEach(errorKeys, (key) => {
       if (formError[key].error) {
         errorExists = true;
       }
     });
-
     return errorExists;
   };
 
@@ -163,25 +169,20 @@ const Comments = ({
           setConfirmModal={setConfirmModal}
           handleConfirmModal={discardFormData}
         >
-          {loading && <Loader open={loading} />}
-
+          {isCreatingCommentLoading && <Loader open={isCreatingCommentLoading} />}
           {!_.isEmpty(filteredComments) && _.map(filteredComments, (comment, index) => (
             <Card key={comment.comment_uuid} className={classes.commentCard}>
               <CardContent>
                 <Typography variant="body1" className={classes.userName}>
-                  {comment?.user_info?.first_name} {comment?.user_info?.last_name}
+                  {`${comment?.user_info?.first_name} ${comment?.user_info?.last_name}`}
                 </Typography>
-                <Typography variant="body2">
-                  {comment.comment}
-                </Typography>
-
+                <Typography variant="body2">{comment.comment}</Typography>
                 <Typography variant="caption" component="p" className={classes.fromNow}>
                   {moment(comment.create_date).fromNow()}
                 </Typography>
               </CardContent>
             </Card>
           ))}
-
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
               <Grid item xs={12}>
@@ -199,7 +200,6 @@ const Comments = ({
                 />
               </Grid>
             </Grid>
-
             <Grid container spacing={isDesktop ? 3 : 0} justifyContent="right">
               <Grid item xs={12} sm={4}>
                 <Button
@@ -221,11 +221,4 @@ const Comments = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  loading: state.productReducer.loading || state.releaseReducer.loading,
-  credentials: state.productReducer.credentials,
-  comments: state.releaseReducer.comments,
-});
-
-export default connect(mapStateToProps)(Comments);
+export default Comments;
