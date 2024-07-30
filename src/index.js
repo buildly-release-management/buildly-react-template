@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import App from './App';
 import './i18n';
 import configureStore from './redux/store';
 import './index.css';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
 import registerServiceWorker from './serviceWorkerRegistration';
-import { QueryClient, QueryClientProvider } from 'react-query';
 
 if (window.env.PRODUCTION) {
   const script = document.createElement('script');

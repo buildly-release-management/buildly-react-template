@@ -24,8 +24,8 @@ import { isMobile } from '@utils/mediaQuery';
 import Loader from '@components/Loader/Loader';
 import { useQuery } from 'react-query';
 import { inviteTokenCheckQuery } from '../../react-query/queries/authUser/inviteTokenCheckQuery';
-import { useRegisterMutation } from '../../react-query/mutation/authUser/registerMutation';
-import { useSocialLoginMutation } from '../../react-query/mutation/authUser/socialLoginMutation';
+import { useRegisterMutation } from '../../react-query/mutations/authUser/registerMutation';
+import { useSocialLoginMutation } from '../../react-query/mutations/authUser/socialLoginMutation';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {

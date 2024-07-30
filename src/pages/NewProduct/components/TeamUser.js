@@ -29,7 +29,7 @@ import Loader from '@components/Loader/Loader';
 import { ROLES } from '../ProductFormConstants';
 import useAlert from '@hooks/useAlert';
 import { useStore } from '../../../zustand/product/productStore';
-import { useDocIdentifierMutation } from '../../../react-query/mutation/product/docIdentifierMutation';
+import { useDocIdentifierMutation } from '../../../react-query/mutations/product/docIdentifierMutation';
 
 const useStyles = makeStyles((theme) => ({
   form: {

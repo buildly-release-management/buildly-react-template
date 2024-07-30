@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -17,11 +16,12 @@ import {
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
 import SmartInput from '@components/SmartInput/SmartInput';
+import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
-import {
-  createFeature, updateFeature, generateUserStories, clearUserStories,
-} from '@redux/release/actions/release.actions';
 import { validators } from '@utils/validators';
+import { useCreateFeatureMutation } from '@react-query/mutations/release/createFeatureMutation';
+import { useUpdateFeatureMutation } from '@react-query/mutations/release/updateFeatureMutation';
+import { useGenerateUserStoriesMutation } from '@react-query/mutations/release/generateUserStories.js';
 import { PRIORITIES } from '../ProductRoadmapConstants';
 
 const useStyles = makeStyles((theme) => ({
@@ -54,27 +54,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const AddFeatures = ({
-  location,
-  statuses,
-  releases,
-  dispatch,
-  products,
-  credentials,
-  loading,
-  history,
-  features,
-  user_stories,
-}) => {
+const AddFeatures = ({ location, history }) => {
   const classes = useStyles();
   const redirectTo = location.state && location.state.from;
   const editPage = location.state && (location.state.type === 'edit' || location.state.type === 'view');
   const editData = (editPage && location.state.data) || {};
-  const product_uuid = location.state && location.state.product_uuid;
+  const {
+    product_uuid, statuses, products, features, credentials, releases,
+  } = location && location.state;
   const viewPage = (location.state && location.state.type === 'view') || false;
   // eslint-disable-next-line no-nested-ternary
   const formTitle = viewPage ? 'View Feature' : editPage ? 'Edit Feature' : 'Add Feature';
   const buttonText = editPage ? 'Save' : 'Add Feature';
+
+  const { displayAlert } = useAlert();
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
@@ -117,6 +110,7 @@ const AddFeatures = ({
     (editData && editData.feature_detail && editData.feature_detail.user_stories)
     || [],
   );
+  const [suggestedUserStories, setSuggestedUserStories] = useState([]);
 
   const complexityMarkers = [
     {
@@ -142,6 +136,11 @@ const AddFeatures = ({
   ];
 
   const valuetext = (value) => value.toString();
+
+  // react query
+  const { mutate: createFeatureMutation, isLoading: isCreatingFeatureLoading } = useCreateFeatureMutation(product_uuid, history, redirectTo, displayAlert);
+  const { mutate: updateFeatureMutation, isLoading: isUpdatingFeatureLoading } = useUpdateFeatureMutation(product_uuid, history, redirectTo, displayAlert);
+  const { mutate: generateUserStories, isLoading: isGeneratingUserStories } = useGenerateUserStoriesMutation(displayAlert);
 
   useEffect(() => {
     const prod = _.find(products, { product_uuid });
@@ -175,12 +174,6 @@ const AddFeatures = ({
       setColID(sts?.status_tracking_id);
     }
   }, [statuses]);
-
-  useEffect(() => {
-    if (!_.isEmpty(user_stories)) {
-      setUserStories(user_stories);
-    }
-  }, [user_stories]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -217,10 +210,10 @@ const AddFeatures = ({
 
     if (editPage) {
       formData.column_id = colID;
-      dispatch(updateFeature(formData));
+      updateFeatureMutation(formData);
     } else {
       formData.create_date = dateTime;
-      dispatch(createFeature(formData));
+      createFeatureMutation(formData);
     }
 
     history.push(redirectTo);
@@ -279,21 +272,20 @@ const AddFeatures = ({
     || !!(editPage && editData && editData.feature_detail
       && !_.isEqual(_.map(editData.feature_detail.assigneees, 'username'), assignees))
     )
-    || !!(editPage && editData && !_.isEqual(editData.feature_detail.user_stories, user_stories));
+    || !!(editPage && editData && !_.isEqual(editData.feature_detail.user_stories, suggestedUserStories));
 
-    dispatch(clearUserStories());
+    setSuggestedUserStories([]);
     if (dataHasChanged) {
       setConfirmModal(true);
     } else {
       setFormModal(false);
-      dispatch(clearUserStories());
       history.push(redirectTo);
     }
   };
 
   const requestUserStories = () => {
     const userTypeProfiles = _.map(userTypes, (ut) => userProfiles[ut] || '');
-    dispatch(generateUserStories(userTypes, userTypeProfiles, editData.feature_uuid));
+    setSuggestedUserStories(generateUserStories(userTypes, userTypeProfiles, editData.feature_uuid));
   };
 
   return (
@@ -310,7 +302,7 @@ const AddFeatures = ({
           setConfirmModal={setConfirmModal}
           handleConfirmModal={(e) => history.push(redirectTo)}
         >
-          {loading && <Loader open={loading} />}
+          {(isCreatingFeatureLoading || isUpdatingFeatureLoading || isGeneratingUserStories) && <Loader open={isCreatingFeatureLoading || isUpdatingFeatureLoading || isGeneratingUserStories} />}
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
               {/* Name */}
@@ -591,7 +583,7 @@ const AddFeatures = ({
                     color="primary"
                     fullWidth
                     className={classes.submit}
-                    disabled={submitDisabled()}
+                    disabled={isCreatingFeatureLoading || isUpdatingFeatureLoading || isGeneratingUserStories || submitDisabled()}
                   >
                     {buttonText}
                   </Button>
@@ -605,15 +597,4 @@ const AddFeatures = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  loading: state.productReducer.loading || state.releaseReducer.loading,
-  statuses: state.releaseReducer.statuses,
-  products: state.productReducer.products,
-  credentials: state.productReducer.credentials,
-  features: state.releaseReducer.features,
-  releases: state.releaseReducer.releases,
-  user_stories: state.releaseReducer.user_stories,
-});
-
-export default connect(mapStateToProps)(AddFeatures);
+export default AddFeatures;

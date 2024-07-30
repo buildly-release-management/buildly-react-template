@@ -97,10 +97,6 @@ import {
   THIRD_PARTY_TOOL_SYNC,
   THIRD_PARTY_TOOL_SYNC_SUCCESS,
   THIRD_PARTY_TOOL_SYNC_FAILURE,
-  GENERATE_USER_STORIES,
-  GENERATE_USER_STORIES_SUCCESS,
-  GENERATE_USER_STORIES_FAILURE,
-  CLEAR_USER_STORIES,
 } from '../actions/release.actions';
 
 const initialState = {
@@ -114,7 +110,6 @@ const initialState = {
   issues: [],
   statuses: [],
   dataSynced: false,
-  user_stories: [],
 };
 
 // Reducer
@@ -165,7 +160,6 @@ export default (state = initialState, action) => {
     case DELETE_STATUS:
     case CLEAR_PRODUCT_DATA:
     case THIRD_PARTY_TOOL_SYNC:
-    case GENERATE_USER_STORIES:
       return {
         ...state,
         loading: true,
@@ -206,7 +200,6 @@ export default (state = initialState, action) => {
     case DELETE_STATUS_FAILURE:
     case CLEAR_PRODUCT_DATA_FAILURE:
     case THIRD_PARTY_TOOL_SYNC_FAILURE:
-    case GENERATE_USER_STORIES_FAILURE:
       return {
         ...state,
         loading: false,
@@ -499,22 +492,6 @@ export default (state = initialState, action) => {
         loading: false,
         loaded: true,
         dataSynced: true,
-      };
-
-    case GENERATE_USER_STORIES_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        loaded: true,
-        user_stories: action.data,
-      };
-
-    case CLEAR_USER_STORIES:
-      return {
-        ...state,
-        loading: false,
-        loaded: true,
-        user_stories: [],
       };
 
     default:

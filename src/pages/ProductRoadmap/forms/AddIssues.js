@@ -19,11 +19,11 @@ import Loader from '@components/Loader/Loader';
 import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
-import { ISSUETYPES } from '../ProductRoadmapConstants';
 import { routes } from '@routes/routesConstants';
 import SmartInput from '@components/SmartInput/SmartInput';
-import { useCreateIssueMutation } from '../../../react-query/mutation/release/createIssueMutation';
-import { useUpdateIssueMutation } from '../../../react-query/mutation/release/UpdateIssueMutation';
+import { useCreateIssueMutation } from '@react-query/mutations/release/createIssueMutation';
+import { useUpdateIssueMutation } from '@react-query/mutations/release/UpdateIssueMutation';
+import { ISSUETYPES } from '../ProductRoadmapConstants';
 
 const useStyles = makeStyles((theme) => ({
   form: {

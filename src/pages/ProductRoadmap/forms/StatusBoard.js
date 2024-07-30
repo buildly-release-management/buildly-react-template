@@ -16,7 +16,7 @@ import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
 import { STATUSTYPES } from '../ProductRoadmapConstants';
 import useAlert from '@hooks/useAlert';
-import { useCreateStatusMutation } from '../../../react-query/mutation/release/createStatusMutation';
+import { useCreateStatusMutation } from '../../../react-query/mutations/release/createStatusMutation';
 
 const useStyles = makeStyles((theme) => ({
   form: {

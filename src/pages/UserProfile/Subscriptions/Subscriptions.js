@@ -1,27 +1,27 @@
 import React, { useContext, useEffect, useState } from 'react';
+import _ from 'lodash';
+import { useQuery } from 'react-query';
+import MUIDataTable from 'mui-datatables';
 import {
   Button, Grid, Tooltip,
 } from '@mui/material';
-import MUIDataTable from 'mui-datatables';
 import Modal from 'react-bootstrap/Modal';
-import { getUser, UserContext } from '../../../context/User.context';
-import { showAlert } from '../../../redux/alert/actions/alert.actions';
+import { UserContext } from '@context/User.context';
 import Badge from 'react-bootstrap/Badge';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import _ from 'lodash';
-import { loadStripeProducts } from '@redux/authuser/actions/authuser.actions';
 import { isMobile } from '@utils/mediaQuery';
 import { validators } from '@utils/validators';
 import { useInput } from '@hooks/useInput';
 import { useElements, useStripe } from '@stripe/react-stripe-js';
-import StripeCard from '../../../components/StripeCard/StripeCard';
+import StripeCard from '@components/StripeCard/StripeCard';
 import makeStyles from '@mui/styles/makeStyles';
-import { connect } from 'react-redux';
 import { httpService } from '@modules/http/http.service';
-import { loadOrgNames } from '../../../redux/authuser/actions/authuser.actions';
-import { loadCoreuserData } from '../../../redux/coreuser/coreuser.actions';
-import { hasAdminRights, hasGlobalAdminRights } from '../../../utils/permissions';
+import { hasAdminRights, hasGlobalAdminRights } from '@utils/permissions';
+import { getOrganizationNameQuery } from '@react-query/queries/authUser/getOrganizationNameQuery';
+import { getStripeProductQuery } from '@react-query/queries/authUser/getStripeProductQuery';
+import { useAddSubscriptionMutation } from '@react-query/mutations/authUser/addSubscriptionMutation';
+import useAlert from '@hooks/useAlert';
 
 const useStyles = makeStyles((theme) => ({
   dialogActionButtons: {
@@ -29,13 +29,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Subscriptions = ({
-  dispatch,
-  orgNames,
-  stripeProducts,
-  user,
-}) => {
+const Subscriptions = () => {
   const classes = useStyles();
+  const user = useContext(UserContext);
+  const displayAlert = useAlert();
 
   // const user = useContext(UserContext);
   const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
@@ -114,28 +111,28 @@ const Subscriptions = ({
 
   const [subscriptionToCancel, setSubscriptionToCancel] = useState(null);
 
+  const { data: orgNamesData, isLoading: isOrgNamesLoading } = useQuery(
+    ['orgNames'],
+    () => getOrganizationNameQuery(),
+    { refetchOnWindowFocus: false },
+  );
+  const { data: stripeProductData, isLoading: isStripeProductsLoading } = useQuery(
+    ['stripeProducts'],
+    () => getStripeProductQuery(),
+    { refetchOnWindowFocus: false },
+  );
+  const { mutate: addSubscriptionMutation, isLoading: isAddSubscriptionLoading } = useAddSubscriptionMutation(displayAlert);
+
   const cancelSubscription = () => {
     try {
       httpService.makeRequest('delete',
         `${window.env.API_URL}subscription/${subscriptionToCancel.subscription_uuid}`)
         .then((response) => {
           closeWarningModal();
-
-          dispatch(showAlert({
-            type: 'success',
-            open: true,
-            message: 'Subscription successfully saved',
-          }));
-
-          // getCoreUser();
-          // dispatch(getUser());
+          displayAlert('success', 'Subscription successfully saved');
         });
     } catch (httpError) {
-      dispatch(showAlert({
-        type: 'error',
-        open: true,
-        message: 'Couldn\'t cancel subscription!',
-      }));
+      displayAlert('error', 'Couldn\'t cancel subscription!');
       closeWarningModal();
     }
   };
@@ -161,13 +158,6 @@ const Subscriptions = ({
   };
 
   useEffect(() => {
-    if (!orgNames) {
-      dispatch(loadOrgNames());
-    }
-    if (window.env.STRIPE_KEY && !stripeProducts) {
-      dispatch(loadStripeProducts());
-    }
-
     if (organization) {
       setShowProducts(true);
     } else {
@@ -235,26 +225,7 @@ const Subscriptions = ({
       };
 
       if (!validationError) {
-        try {
-          httpService.makeRequest('post',
-            `${window.env.API_URL}subscription/`,
-            formValue)
-            .then(() => {
-              dispatch(showAlert({
-                type: 'success',
-                open: true,
-                message: 'Subscription successfully saved',
-              }));
-
-              dispatch(getUser());
-            });
-        } catch (httpError) {
-          dispatch(showAlert({
-            type: 'error',
-            open: true,
-            message: 'Couldn\'t save subscription!',
-          }));
-        }
+        addSubscriptionMutation(formValue);
         handleDialogClose();
       }
     }
@@ -329,8 +300,8 @@ const Subscriptions = ({
                 {...product.bind}
               >
                 <MenuItem value="">----------</MenuItem>
-                {stripeProducts && !_.isEmpty(stripeProducts)
-                && _.map(stripeProducts, (prd) => (
+                {stripeProductData && !_.isEmpty(stripeProductData)
+                && _.map(stripeProductData, (prd) => (
                   <MenuItem key={`sub-product-${prd.id}`} value={prd.id}>
                     {`${prd.name}`}
                   </MenuItem>
@@ -366,11 +337,4 @@ const Subscriptions = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  ...state.authReducer,
-  ...state.googleSheetReducer,
-  user: state.authReducer.data,
-});
-
-export default connect(mapStateToProps)(Subscriptions);
+export default Subscriptions;

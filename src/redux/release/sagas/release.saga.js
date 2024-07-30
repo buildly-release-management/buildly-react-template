@@ -101,13 +101,8 @@ import {
   THIRD_PARTY_TOOL_SYNC,
   THIRD_PARTY_TOOL_SYNC_SUCCESS,
   THIRD_PARTY_TOOL_SYNC_FAILURE,
-  GENERATE_USER_STORIES,
-  GENERATE_USER_STORIES_SUCCESS,
-  GENERATE_USER_STORIES_FAILURE,
 } from '../actions/release.actions';
-import {
-  deleteProduct, getProduct,
-} from '../../product/actions/product.actions';
+import { getProduct } from '../../product/actions/product.actions';
 
 function* allReleases(payload) {
   try {
@@ -1003,7 +998,6 @@ function* clearProductData(payload) {
       payload.data,
     );
     yield put({ type: CLEAR_PRODUCT_DATA_SUCCESS, data: payload.data });
-    yield put(deleteProduct(payload.data.product_uuid));
   } catch (error) {
     yield [
       yield put(
@@ -1076,32 +1070,6 @@ function* thirdPartyToolSync(payload) {
           message: 'Couldn\'t sync third party tool(s) data!',
         }),
       ),
-    ];
-  }
-}
-
-function* generateUserStories(payload) {
-  try {
-    const stories = yield call(
-      httpService.makeRequest,
-      'post',
-      `${window.env.API_URL}release/generate-user-stories/`,
-      { user_types: payload.user_types, user_profiles: payload.user_profiles, feature_uuid: payload.feature_uuid },
-    );
-    yield put({ type: GENERATE_USER_STORIES_SUCCESS, data: stories.data });
-  } catch (error) {
-    yield [
-      yield put(
-        showAlert({
-          type: 'error',
-          open: true,
-          message: 'Couldn\'t generate user stories!',
-        }),
-      ),
-      yield put({
-        type: GENERATE_USER_STORIES_FAILURE,
-        error,
-      }),
     ];
   }
 }
@@ -1235,10 +1203,6 @@ function* watchThirdPartyToolSync() {
   yield takeLatest(THIRD_PARTY_TOOL_SYNC, thirdPartyToolSync);
 }
 
-function* watchGenerateUserStories() {
-  yield takeLatest(GENERATE_USER_STORIES, generateUserStories);
-}
-
 export default function* releaseSaga() {
   yield all([
     watchGetAllReleases(),
@@ -1273,6 +1237,5 @@ export default function* releaseSaga() {
     watchDeleteStatus(),
     watchClearProductData(),
     watchThirdPartyToolSync(),
-    watchGenerateUserStories(),
   ]);
 }

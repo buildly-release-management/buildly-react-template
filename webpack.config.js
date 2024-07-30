@@ -82,9 +82,11 @@ module.exports = (env, argv) => {
         '@modules': path.resolve(__dirname, './src/modules'),
         '@pages': path.resolve(__dirname, './src/pages'),
         '@redux': path.resolve(__dirname, './src/redux'),
+        '@react-query': path.resolve(__dirname, './src/react-query'),
         '@routes': path.resolve(__dirname, './src/routes'),
         '@styles': path.resolve(__dirname, './src/styles'),
         '@utils': path.resolve(__dirname, './src/utils'),
+        '@zustand': path.resolve(__dirname, './src/zustand'),
       },
     },
     output: {
@@ -92,7 +94,7 @@ module.exports = (env, argv) => {
       publicPath: '/',
       filename: '[name].[hash:8].js',
       sourceMapFilename: '[name].[hash:8].map',
-      chunkFilename: '[id].[hash:8].js'
+      chunkFilename: '[id].[hash:8].js',
     },
     devServer: {
       contentBase: path.join(__dirname, 'public/'),

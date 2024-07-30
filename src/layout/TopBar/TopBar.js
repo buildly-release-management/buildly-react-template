@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
+import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Group as GroupIcon,
@@ -38,11 +39,10 @@ import { useInput } from '@hooks/useInput';
 import useAlert from '@hooks/useAlert';
 import { validators } from '@utils/validators';
 import { oauthService } from '../../modules/oauth/oauth.service';
-import { useQuery } from 'react-query';
 import { getOrganizationNameQuery } from '../../react-query/queries/authUser/getOrganizationNameQuery';
 import { getStripeProductQuery } from '../../react-query/queries/authUser/getStripeProductQuery';
-import { useUpdateUserMutation } from '../../react-query/mutation/authUser/updateUserMutation';
-import { useAddSubscriptionMutation } from '../../react-query/mutation/authUser/addSubscriptionMutation';
+import { useUpdateUserMutation } from '../../react-query/mutations/authUser/updateUserMutation';
+import { useAddSubscriptionMutation } from '../../react-query/mutations/authUser/addSubscriptionMutation';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -339,8 +339,7 @@ const TopBar = ({ history, location }) => {
                 {page.label}
               </Button>
             ))}
-            {
-              !(user && user.subscriptions && user.subscriptions.length) && (
+            {!(user && user.subscriptions && user.subscriptions.length) && (
               <Button
                 variant="contained"
                 size="small"
@@ -348,8 +347,7 @@ const TopBar = ({ history, location }) => {
               >
                 Upgrade plan
               </Button>
-              )
-            }
+            )}
           </Box>
           <div className={classes.menuRight}>
             {isSuperAdmin && (

@@ -4,7 +4,7 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import { providers, toQuery } from '@utils/socialLogin';
 import PopupWindow from './PopupWindow';
 import useAlert from '@hooks/useAlert';
-import { useSocialLoginMutation } from '../../react-query/mutation/authUser/socialLoginMutation';
+import { useSocialLoginMutation } from '../../react-query/mutations/authUser/socialLoginMutation';
 import { routes } from '../../routes/routesConstants';
 
 const TrelloLogin = ({ history, disabled }) => {

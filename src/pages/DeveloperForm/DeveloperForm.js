@@ -24,8 +24,8 @@ import { routes } from '../../routes/routesConstants';
 import { UserContext } from '@context/User.context';
 import { useInput } from '@hooks/useInput';
 import useAlert from '@hooks/useAlert';
-import { useAddDataMutation } from '../../react-query/mutation/googlesheet/addDataMutation';
-import { useUpdateUserMutation } from '../../react-query/mutation/authUser/updateUserMutation';
+import { useAddDataMutation } from '../../react-query/mutations/googlesheet/addDataMutation';
+import { useUpdateUserMutation } from '../../react-query/mutations/authUser/updateUserMutation';
 import { validators } from '@utils/validators';
 
 const useStyles = makeStyles((theme) => ({

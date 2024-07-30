@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
+import React, { useEffect, useState, useContext } from 'react';
 import _ from 'lodash';
+import { useQuery } from 'react-query';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Image from 'react-bootstrap/Image';
@@ -25,6 +25,8 @@ import RangeSlider from '@components/RangeSlider/RangeSlider';
 import FlowChartComponent from '@components/FlowChart/FlowChart';
 import Chatbot from '@components/Chatbot/Chatbot';
 import { httpService } from '@modules/http/http.service';
+import useAlert from '@hooks/useAlert';
+import { UserContext } from '@context/User.context';
 
 // architecture designs
 import microservice from '@assets/architecture-suggestions/GCP - MicroServices.png';
@@ -35,16 +37,13 @@ import { addColorsAndIcons, getReleaseBudgetData } from './utils';
 
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Grid, TextField, Typography } from '@mui/material';
-import { getAllProducts } from '@redux/product/actions/product.actions';
+import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery.js';
 
-const Insights = ({
-  dispatch,
-  reduxLoading,
-  user,
-  products,
-}) => {
+const Insights = () => {
   let displayReport = true;
   const activeProd = localStorage.getItem('activeProduct');
+  const user = useContext(UserContext);
+  const displayAlert = useAlert();
 
   // states
   const [selectedProduct, setSelectedProduct] = useState(activeProd || 0);
@@ -53,6 +52,12 @@ const Insights = ({
   const [architectureImg, setArchitectureImg] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const { data: products, isLoading: isAllProductLoading } = useQuery(
+    ['allProducts', user.organization.organization_uuid],
+    () => getAllProductQuery(user.organization.organization_uuid, displayAlert),
+    { refetchOnWindowFocus: false },
+  );
+
   // Email report modal
   const [showEmailModal, setShow] = useState(false);
   const closeEmailModal = () => setShow(false);
@@ -60,7 +65,7 @@ const Insights = ({
     closeDownloadMenu();
     setRecipients([{
       name: '',
-      email: ''
+      email: '',
     }]);
     setShow(true);
   };
@@ -76,7 +81,7 @@ const Insights = ({
   const addNewRecipient = () => {
     recipients.push({
       name: '',
-      email: ''
+      email: '',
     });
     setRecipients([...recipients]);
     disableButton(true);
@@ -116,10 +121,6 @@ const Insights = ({
   };
 
   // effects
-  useEffect(() => {
-    dispatch(getAllProducts(user.organization.organization_uuid));
-  }, [user]);
-
   useEffect(() => {
     if (selectedProduct && _.toNumber(selectedProduct) !== 0) {
       setLoading(true);
@@ -236,7 +237,7 @@ const Insights = ({
 
   return (
     <>
-      {loading && <Loader open={loading || reduxLoading}/>}
+      {loading && <Loader open={loading || isAllProductLoading} />}
       <div className="insightsSelectedProductRoot">
         <Grid container mb={2} alignItems="center">
           <Grid item md={4}>
@@ -282,7 +283,7 @@ const Insights = ({
                 aria-haspopup="true"
                 aria-expanded={open ? 'true' : undefined}
                 className="btn btn-small btn-primary"
-                endIcon={<KeyboardArrowDownIcon/>}
+                endIcon={<KeyboardArrowDownIcon />}
                 onClick={expandDownloadMenu}
               >
                 Dashboard PDF
@@ -310,7 +311,7 @@ const Insights = ({
                     {productData && productData.architecture_type ? ` (${productData?.architecture_type?.toUpperCase()})` : ''}
                   </Card.Title>
                   <div className="image-responsive m-2" style={{ height: 350 }}>
-                    <Image src={architectureImg} fluid style={{ height: '100%' }}/>
+                    <Image src={architectureImg} fluid style={{ height: '100%' }} />
                   </div>
                 </Card.Body>
               </Card>
@@ -321,7 +322,8 @@ const Insights = ({
                   <Card.Title>Buidly components</Card.Title>
                   <div className="w-100 m-2">
                     <FlowChartComponent
-                      componentsData={productData && productData.components_tree}/>
+                      componentsData={productData && productData.components_tree}
+                    />
                   </div>
                 </Card.Body>
               </Card>
@@ -356,7 +358,7 @@ const Insights = ({
                   <Card className="mb-2 row">
                     <Card.Body>
                       <div className="m-2">
-                        <RangeSlider rangeValues={productData?.budget_range}/>
+                        <RangeSlider rangeValues={productData?.budget_range} />
                       </div>
                     </Card.Body>
                   </Card>
@@ -364,18 +366,18 @@ const Insights = ({
                     <Card.Body>
                       <Table striped bordered hover>
                         <thead>
-                        <tr>
-                          <th>PLATFORM DEV EXPENSES</th>
-                          <th colSpan="2">BUDGET</th>
-                        </tr>
-                        <tr>
-                          <th className="light-header">Payroll</th>
-                          <th className="light-header">Monthly ($)</th>
-                          <th className="light-header">Total ($)</th>
-                        </tr>
+                          <tr>
+                            <th>PLATFORM DEV EXPENSES</th>
+                            <th colSpan="2">BUDGET</th>
+                          </tr>
+                          <tr>
+                            <th className="light-header">Payroll</th>
+                            <th className="light-header">Monthly ($)</th>
+                            <th className="light-header">Total ($)</th>
+                          </tr>
                         </thead>
                         <tbody>
-                        {
+                          {
                           productData && productData.budget && productData.budget?.total_roles_budget.map(
                             (item, index) => (
                               <tr key={`budget-${index}`}>
@@ -386,26 +388,26 @@ const Insights = ({
                             ),
                           )
                         }
-                        <tr>
-                          <th className="text-right totals-header">Payroll Total</th>
-                          <th className="totals-header">
-                            {`$${(productData && productData.budget
+                          <tr>
+                            <th className="text-right totals-header">Payroll Total</th>
+                            <th className="totals-header">
+                              {`$${(productData && productData.budget
                               && productData.budget?.total_monthly_budget) || '0.00'}`}
-                          </th>
-                          <th className="totals-header">
-                            {`$${(productData && productData.budget
+                            </th>
+                            <th className="totals-header">
+                              {`$${(productData && productData.budget
                               && productData.budget?.total_budget) || '0.00'}`}
-                          </th>
-                        </tr>
+                            </th>
+                          </tr>
                         </tbody>
                         <thead>
-                        <tr>
-                          <th className="light-header">Additional</th>
-                          <th className="light-header">Monthly ($)</th>
-                        </tr>
+                          <tr>
+                            <th className="light-header">Additional</th>
+                            <th className="light-header">Monthly ($)</th>
+                          </tr>
                         </thead>
                         <tbody>
-                        {
+                          {
                           productData && productData.budget
                           && productData.budget.other_costs?.map(
                             (item, index) => (
@@ -416,13 +418,13 @@ const Insights = ({
                             ),
                           )
                         }
-                        <tr>
-                          <th className="text-right totals-header">Additional Total</th>
-                          <th className="totals-header">
-                            {`$${(productData && productData.budget
+                          <tr>
+                            <th className="text-right totals-header">Additional Total</th>
+                            <th className="totals-header">
+                              {`$${(productData && productData.budget
                               && productData.budget?.other_costs_total) || '0.00'}`}
-                          </th>
-                        </tr>
+                            </th>
+                          </tr>
                         </tbody>
                       </Table>
                     </Card.Body>
@@ -519,7 +521,8 @@ const Insights = ({
                                 type="email"
                                 placeholder="Email address"
                                 name="email"
-                                onChange={(event) => updateRecipients(event, index)}/>
+                                onChange={(event) => updateRecipients(event, index)}
+                              />
                             </Form.Group>
                           </Col>
                         </Row>
@@ -576,12 +579,4 @@ const Insights = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  reduxLoading: state.authReducer.loading || state.productReducer.loading,
-  user: state.authReducer.data,
-  products: state.productReducer.products,
-});
-
-export default connect(mapStateToProps)(Insights);
-
+export default Insights;

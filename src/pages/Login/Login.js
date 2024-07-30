@@ -20,9 +20,9 @@ import { useInput } from '@hooks/useInput';
 import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
-import { useResetPasswordCheckMutation } from '../../react-query/mutation/authUser/resetPasswordCheckMutation';
-import { useLoginMutation } from '../../react-query/mutation/authUser/loginMutation';
-import { useSocialLoginMutation } from '../../react-query/mutation/authUser/socialLoginMutation';
+import { useResetPasswordCheckMutation } from '../../react-query/mutations/authUser/resetPasswordCheckMutation';
+import { useLoginMutation } from '../../react-query/mutations/authUser/loginMutation';
+import { useSocialLoginMutation } from '../../react-query/mutations/authUser/socialLoginMutation';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {

@@ -23,7 +23,7 @@ import { validators } from '@utils/validators';
 import Loader from '@components/Loader/Loader';
 import { useQuery } from 'react-query';
 import { getOrganizationNameQuery } from '../../react-query/queries/authUser/getOrganizationNameQuery';
-import { useAddOrgSocialUserMutation } from '../../react-query/mutation/authUser/addOrgSocialUserMutation';
+import { useAddOrgSocialUserMutation } from '../../react-query/mutations/authUser/addOrgSocialUserMutation';
 
 const useStyles = makeStyles((theme) => ({
   backdrop: {

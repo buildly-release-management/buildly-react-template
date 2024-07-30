@@ -16,7 +16,7 @@ import { isMobile } from '@utils/mediaQuery';
 import { validators } from '@utils/validators';
 import { Person } from '@mui/icons-material';
 import { UserContext } from '@context/User.context';
-import { useUpdateUserMutation } from '../../../react-query/mutation/authUser/updateUserMutation';
+import { useUpdateUserMutation } from '../../../react-query/mutations/authUser/updateUserMutation';
 
 const EditUserProfile = ({ history }) => {
   const user = useContext(UserContext);
