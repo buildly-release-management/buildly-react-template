@@ -1,16 +1,15 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Route } from 'react-router-dom';
+import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
+import { getAllProducts } from '@redux/product/actions/product.actions';
 import { routes } from '@routes/routesConstants';
 import AddProduct from '@pages/NewProduct/NewProduct';
-import { UserContext } from '@context/User.context';
 import { productColumns, getProductsData } from './ProductPortfolioConstants';
-import useAlert from '@hooks/useAlert';
-import { useQuery } from 'react-query';
-import { getAllProductQuery } from '../../react-query/queries/product/getAllProductQuery';
-import { useDeleteProductMutation } from '../../react-query/mutation/product/deleteProductMutation';
+import { clearProductData } from '@redux/release/actions/release.actions';
+import Chatbot from '../../components/Chatbot/Chatbot';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -19,23 +18,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ProductPortfolio = ({ history }) => {
+const ProductPortfolio = ({
+  dispatch, loading, history, products, user,
+}) => {
   const redirectTo = location.state && location.state.from;
   const classes = useStyles();
-  const user = useContext(UserContext);
-  const organization = user.organization.organization_uuid;
   const [rows, setRows] = useState([]);
   const [openConfirmModal, setConfirmModal] = useState(false);
   const [deleteItemId, setDeleteItemId] = useState('');
   const [menuIndex, setMenuIndex] = useState(0);
-
-  const { displayAlert } = useAlert();
-
-  const { data: productData, isLoading: isAllProductLoading } = useQuery(
-    ['allProducts', organization],
-    () => getAllProductQuery(organization, displayAlert),
-    { refetchOnWindowFocus: false },
-  );
 
   const addProductPath = redirectTo
     ? `${redirectTo}/product`
@@ -50,19 +41,21 @@ const ProductPortfolio = ({ history }) => {
     setConfirmModal(true);
   };
 
-  const { mutate: deleteProductMutation, isLoading: isDeletingProductLoading } = useDeleteProductMutation(organization, displayAlert);
-
   const handleConfirmModal = () => {
     const deleteData = {
       product_uuid: deleteItemId,
     };
+    dispatch(clearProductData(deleteData));
     setConfirmModal(false);
-    deleteProductMutation(deleteData);
   };
 
   useEffect(() => {
-    setRows(_.orderBy(getProductsData(productData), 'create_date', 'desc'));
-  }, [productData]);
+    dispatch(getAllProducts(user.organization.organization_uuid));
+  }, []);
+
+  useEffect(() => {
+    setRows(_.orderBy(getProductsData(products), 'create_date', 'desc'));
+  }, [products]);
 
   const onAddButtonClick = () => {
     history.push(addProductPath, {
@@ -87,7 +80,7 @@ const ProductPortfolio = ({ history }) => {
   return (
     <div className={classes.root}>
       <DataTableWrapper
-        loading={isAllProductLoading || isDeletingProductLoading}
+        loading={loading}
         rows={rows || []}
         columns={productColumns}
         filename="ProductList"
@@ -107,8 +100,15 @@ const ProductPortfolio = ({ history }) => {
         <Route path={addProductPath} component={AddProduct} />
         <Route path={`${editProductPath}/:id`} component={AddProduct} />
       </DataTableWrapper>
+      <Chatbot />
     </div>
   );
 };
 
-export default ProductPortfolio;
+const mapStateToProps = (state, ownProps) => ({
+  ...ownProps,
+  ...state.productReducer,
+  user: state.authReducer.data,
+});
+
+export default connect(mapStateToProps)(ProductPortfolio);

@@ -5,9 +5,24 @@ import {
 import { httpService } from '@modules/http/http.service';
 import { showAlert } from '@redux/alert/actions/alert.actions';
 import {
+  ALL_RELEASES,
+  ALL_RELEASES_SUCCESS,
+  ALL_RELEASES_FAILURE,
+  ALL_COMMENTS,
+  ALL_COMMENTS_SUCCESS,
+  ALL_COMMENTS_FAILURE,
+  ALL_FEATURES,
+  ALL_FEATURES_SUCCESS,
+  ALL_FEATURES_FAILURE,
   ALL_FEEDBACKS,
   ALL_FEEDBACKS_SUCCESS,
   ALL_FEEDBACKS_FAILURE,
+  ALL_ISSUES,
+  ALL_ISSUES_SUCCESS,
+  ALL_ISSUES_FAILURE,
+  ALL_STATUSES,
+  ALL_STATUSES_SUCCESS,
+  ALL_STATUSES_FAILURE,
   GET_RELEASE,
   GET_RELEASE_SUCCESS,
   GET_RELEASE_FAILURE,
@@ -29,18 +44,36 @@ import {
   CREATE_RELEASE,
   CREATE_RELEASE_SUCCESS,
   CREATE_RELEASE_FAILURE,
+  CREATE_COMMENT,
+  CREATE_COMMENT_SUCCESS,
+  CREATE_COMMENT_FAILURE,
+  CREATE_FEATURE,
+  CREATE_FEATURE_SUCCESS,
+  CREATE_FEATURE_FAILURE,
   CREATE_FEEDBACK,
   CREATE_FEEDBACK_SUCCESS,
   CREATE_FEEDBACK_FAILURE,
+  CREATE_ISSUE,
+  CREATE_ISSUE_SUCCESS,
+  CREATE_ISSUE_FAILURE,
+  CREATE_STATUS,
+  CREATE_STATUS_SUCCESS,
+  CREATE_STATUS_FAILURE,
   UPDATE_RELEASE,
   UPDATE_RELEASE_SUCCESS,
   UPDATE_RELEASE_FAILURE,
   UPDATE_COMMENT,
   UPDATE_COMMENT_SUCCESS,
   UPDATE_COMMENT_FAILURE,
+  UPDATE_FEATURE,
+  UPDATE_FEATURE_SUCCESS,
+  UPDATE_FEATURE_FAILURE,
   UPDATE_FEEDBACK,
   UPDATE_FEEDBACK_SUCCESS,
   UPDATE_FEEDBACK_FAILURE,
+  UPDATE_ISSUE,
+  UPDATE_ISSUE_SUCCESS,
+  UPDATE_ISSUE_FAILURE,
   UPDATE_STATUS,
   UPDATE_STATUS_SUCCESS,
   UPDATE_STATUS_FAILURE,
@@ -50,14 +83,56 @@ import {
   DELETE_COMMENT,
   DELETE_COMMENT_SUCCESS,
   DELETE_COMMENT_FAILURE,
+  DELETE_FEATURE,
+  DELETE_FEATURE_SUCCESS,
+  DELETE_FEATURE_FAILURE,
   DELETE_FEEDBACK,
   DELETE_FEEDBACK_SUCCESS,
   DELETE_FEEDBACK_FAILURE,
+  DELETE_ISSUE,
+  DELETE_ISSUE_SUCCESS,
+  DELETE_ISSUE_FAILURE,
   DELETE_STATUS,
   DELETE_STATUS_SUCCESS,
   DELETE_STATUS_FAILURE,
+  CLEAR_PRODUCT_DATA,
+  CLEAR_PRODUCT_DATA_SUCCESS,
+  CLEAR_PRODUCT_DATA_FAILURE,
+  THIRD_PARTY_TOOL_SYNC,
+  THIRD_PARTY_TOOL_SYNC_SUCCESS,
+  THIRD_PARTY_TOOL_SYNC_FAILURE,
+  GENERATE_USER_STORIES,
+  GENERATE_USER_STORIES_SUCCESS,
+  GENERATE_USER_STORIES_FAILURE,
 } from '../actions/release.actions';
-import { getProduct } from '../../product/actions/product.actions';
+import {
+  deleteProduct, getProduct,
+} from '../../product/actions/product.actions';
+
+function* allReleases(payload) {
+  try {
+    const releases = yield call(
+      httpService.makeRequest,
+      'get',
+      `${window.env.API_URL}release/release/?product_uuid=${payload.product_uuid}`,
+    );
+    yield put({ type: ALL_RELEASES_SUCCESS, data: releases.data });
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t fetch all Releases!',
+        }),
+      ),
+      yield put({
+        type: ALL_RELEASES_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
 
 function* getRelease(payload) {
   try {
@@ -162,6 +237,51 @@ function* deleteRelease(payload) {
   }
 }
 
+function* allComments(payload) {
+  try {
+    const comments = yield call(
+      httpService.makeRequest,
+      'get',
+      `${window.env.API_URL}release/comment/?product_uuid=${
+        payload.product_uuid || payload.searchQuery
+      }`,
+    );
+    // checking if comments array contains any value with user_signoff_uuid not null
+    if (_.some(comments?.data, (ele) => ele.user_signoff_uuid !== null)) {
+      const users = yield call(
+        httpService.makeRequest,
+        'get',
+        `${window.env.API_URL}coreuser/`,
+      );
+      // merging comments array with user information based on user_signoff_uuid compared to core_user_uuid
+      const commentsWithUserInfo = _.map(comments.data, (comment) => ({
+        ...comment,
+        user_info: _.find(users.data, {
+          core_user_uuid: comment.user_signoff_uuid,
+        }),
+      }));
+
+      yield put({ type: ALL_COMMENTS_SUCCESS, data: commentsWithUserInfo });
+    } else {
+      yield put({ type: ALL_COMMENTS_SUCCESS, data: comments.data });
+    }
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: "Couldn't fetch all Comments!",
+        }),
+      ),
+      yield put({
+        type: ALL_COMMENTS_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
 function* getComment(payload) {
   try {
     const comment = yield call(
@@ -181,6 +301,45 @@ function* getComment(payload) {
       ),
       yield put({
         type: GET_COMMENT_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* createComment(payload) {
+  try {
+    const comment = yield call(
+      httpService.makeRequest,
+      'post',
+      `${window.env.API_URL}release/comment/`,
+      payload.data,
+    );
+    // binding user_info from api payload to response of create comment
+    if ('user_info' in payload.data) {
+      comment.data.user_info = payload.data.user_info;
+    }
+    yield [
+      yield put({ type: CREATE_COMMENT_SUCCESS, data: comment.data }),
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: 'Succesfully commented on the feature/issue',
+        }),
+      ),
+    ];
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t create Comment!',
+        }),
+      ),
+      yield put({
+        type: CREATE_COMMENT_FAILURE,
         error,
       }),
     ];
@@ -239,6 +398,31 @@ function* deleteComment(payload) {
   }
 }
 
+function* allFeatures(payload) {
+  try {
+    const features = yield call(
+      httpService.makeRequest,
+      'get',
+      `${window.env.API_URL}release/feature/?product_uuid=${payload.product_uuid}`,
+    );
+    yield put({ type: ALL_FEATURES_SUCCESS, data: features.data });
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t fetch all Features!',
+        }),
+      ),
+      yield put({
+        type: ALL_FEATURES_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
 function* getFeature(payload) {
   try {
     const feature = yield call(
@@ -258,6 +442,112 @@ function* getFeature(payload) {
       ),
       yield put({
         type: GET_FEATURE_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* createFeature(payload) {
+  try {
+    const feature = yield call(
+      httpService.makeRequest,
+      'post',
+      `${window.env.API_URL}release/feature/`,
+      payload.data,
+    );
+    yield [
+      yield put({ type: CREATE_FEATURE_SUCCESS, data: feature.data }),
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: 'Created feature successfully',
+        }),
+      ),
+    ];
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t create Feature!',
+        }),
+      ),
+      yield put({
+        type: CREATE_FEATURE_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* updateFeature(payload) {
+  try {
+    const feature = yield call(
+      httpService.makeRequest,
+      'put',
+      `${window.env.API_URL}release/feature/${payload.data.feature_uuid}/`,
+      payload.data,
+    );
+    yield [
+      yield put({ type: UPDATE_FEATURE_SUCCESS, data: feature.data }),
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: 'Updated feature successfully',
+        }),
+      ),
+    ];
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t update Feature!',
+        }),
+      ),
+      yield put({
+        type: UPDATE_FEATURE_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* deleteFeature(payload) {
+  const { feature_uuid } = payload.data;
+  try {
+    const feature = yield call(
+      httpService.makeRequest,
+      'delete',
+      `${window.env.API_URL}release/feature/${feature_uuid}/`,
+      payload.data,
+    );
+    yield [
+      yield put({ type: DELETE_FEATURE_SUCCESS, feature_uuid }),
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: 'Deleted feature successfully',
+        }),
+      ),
+    ];
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t delete Feature!',
+        }),
+      ),
+      yield put({
+        type: DELETE_FEATURE_FAILURE,
         error,
       }),
     ];
@@ -392,6 +682,31 @@ function* deleteFeedback(payload) {
   }
 }
 
+function* allIssues(payload) {
+  try {
+    const issues = yield call(
+      httpService.makeRequest,
+      'get',
+      `${window.env.API_URL}release/issue/?product_uuid=${payload.product_uuid}`,
+    );
+    yield put({ type: ALL_ISSUES_SUCCESS, data: issues.data });
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t fetch all Issues!',
+        }),
+      ),
+      yield put({
+        type: ALL_ISSUES_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
 function* getIssue(payload) {
   try {
     const issue = yield call(
@@ -417,6 +732,150 @@ function* getIssue(payload) {
   }
 }
 
+function* createIssue(payload) {
+  const { data } = payload;
+  try {
+    if (Array.isArray(data)) {
+      const issues = yield all(_.map(data, (issue_data) => (
+        call(
+          httpService.makeRequest,
+          'post',
+          `${window.env.API_URL}release/issue/`,
+          issue_data,
+        )
+      )));
+      yield put({ type: CREATE_ISSUE_SUCCESS, data: _.flatMap(_.map(issues, 'data')) });
+    } else {
+      const issue = yield call(
+        httpService.makeRequest,
+        'post',
+        `${window.env.API_URL}release/issue/`,
+        data,
+      );
+      yield [
+        yield put({ type: CREATE_ISSUE_SUCCESS, data: issue.data }),
+        yield put(
+          showAlert({
+            type: 'success',
+            open: true,
+            message: 'Created Issue successfully',
+          }),
+        ),
+      ];
+    }
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Could not create Issue!',
+        }),
+      ),
+      yield put({
+        type: CREATE_ISSUE_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* updateIssue(payload) {
+  try {
+    const issue = yield call(
+      httpService.makeRequest,
+      'put',
+      `${window.env.API_URL}release/issue/${payload.data.issue_uuid}/`,
+      payload.data,
+    );
+    yield [
+      yield put({ type: UPDATE_ISSUE_SUCCESS, data: issue.data }),
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: 'Updated Issue successfully',
+        }),
+      ),
+    ];
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t update Issue!',
+        }),
+      ),
+      yield put({
+        type: UPDATE_ISSUE_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* deleteIssue(payload) {
+  const { issue_uuid } = payload.data;
+  try {
+    const issue = yield call(
+      httpService.makeRequest,
+      'delete',
+      `${window.env.API_URL}release/issue/${issue_uuid}/`,
+      payload.data,
+    );
+    yield [
+      yield put({ type: DELETE_ISSUE_SUCCESS, issue_uuid }),
+      yield put(
+        showAlert({
+          type: 'success',
+          open: true,
+          message: 'Deleted Issue successfully',
+        }),
+      ),
+    ];
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t delete Issue!',
+        }),
+      ),
+      yield put({
+        type: DELETE_ISSUE_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* allStatuses(payload) {
+  try {
+    const statuses = yield call(
+      httpService.makeRequest,
+      'get',
+      `${window.env.API_URL}release/status/?product_uuid=${payload.product_uuid}`,
+    );
+    yield put({ type: ALL_STATUSES_SUCCESS, data: statuses.data });
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t fetch all Statuses!',
+        }),
+      ),
+      yield put({
+        type: ALL_STATUSES_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
 function* getStatus(payload) {
   try {
     const status = yield call(
@@ -436,6 +895,47 @@ function* getStatus(payload) {
       ),
       yield put({
         type: GET_STATUS_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* createStatus(payload) {
+  const { data } = payload;
+  try {
+    const { product_uuid } = data[0];
+    if (_.size(data) > 1) {
+      const statuses = yield all(_.map(data, (status_data) => (
+        call(
+          httpService.makeRequest,
+          'post',
+          `${window.env.API_URL}release/status/`,
+          status_data,
+        )
+      )));
+      yield put({ type: CREATE_STATUS_SUCCESS, data: _.flatMap(_.map(statuses, 'data')) });
+    } else {
+      const status = yield call(
+        httpService.makeRequest,
+        'post',
+        `${window.env.API_URL}release/status/`,
+        data,
+      );
+      yield put({ type: CREATE_STATUS_SUCCESS, data: status.data });
+    }
+    yield put(getProduct(product_uuid));
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t create Status!',
+        }),
+      ),
+      yield put({
+        type: CREATE_STATUS_FAILURE,
         error,
       }),
     ];
@@ -494,7 +994,123 @@ function* deleteStatus(payload) {
   }
 }
 
+function* clearProductData(payload) {
+  try {
+    const product = yield call(
+      httpService.makeRequest,
+      'post',
+      `${window.env.API_URL}release/clear-product-data/`,
+      payload.data,
+    );
+    yield put({ type: CLEAR_PRODUCT_DATA_SUCCESS, data: payload.data });
+    yield put(deleteProduct(payload.data.product_uuid));
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t clear product!',
+        }),
+      ),
+      yield put({
+        type: CLEAR_PRODUCT_DATA_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
+function* thirdPartyToolSync(payload) {
+  const { creds } = payload;
+  try {
+    const toolSyncResponse = yield call(
+      httpService.makeRequest,
+      'post',
+      `${window.env.API_URL}release/third_party_tool_sync/`,
+      creds,
+    );
+    if (toolSyncResponse && toolSyncResponse.data) {
+      let status = true;
+      _.forEach(toolSyncResponse.data, (tool) => {
+        status = status && !_.isEmpty(tool) && _.isEmpty(tool.details);
+      });
+
+      if (status) {
+        yield [
+          yield put({ type: THIRD_PARTY_TOOL_SYNC_SUCCESS }),
+          yield put(
+            showAlert({
+              type: 'success',
+              open: true,
+              message: 'Third party tool(s) data synced successfully',
+            }),
+          ),
+        ];
+      } else {
+        yield [
+          yield put({
+            type: THIRD_PARTY_TOOL_SYNC_FAILURE,
+            error: 'Couldn\'t sync third party tool(s) data!',
+          }),
+          yield put(
+            showAlert({
+              type: 'success',
+              open: true,
+              message: 'Couldn\'t sync third party tool(s) data!',
+            }),
+          ),
+        ];
+      }
+    }
+  } catch (error) {
+    yield [
+      yield put({
+        type: THIRD_PARTY_TOOL_SYNC_FAILURE,
+        error,
+      }),
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t sync third party tool(s) data!',
+        }),
+      ),
+    ];
+  }
+}
+
+function* generateUserStories(payload) {
+  try {
+    const stories = yield call(
+      httpService.makeRequest,
+      'post',
+      `${window.env.API_URL}release/generate-user-stories/`,
+      { user_types: payload.user_types, user_profiles: payload.user_profiles, feature_uuid: payload.feature_uuid },
+    );
+    yield put({ type: GENERATE_USER_STORIES_SUCCESS, data: stories.data });
+  } catch (error) {
+    yield [
+      yield put(
+        showAlert({
+          type: 'error',
+          open: true,
+          message: 'Couldn\'t generate user stories!',
+        }),
+      ),
+      yield put({
+        type: GENERATE_USER_STORIES_FAILURE,
+        error,
+      }),
+    ];
+  }
+}
+
 // Watchers
+function* watchGetAllReleases() {
+  yield takeLatest(ALL_RELEASES, allReleases);
+}
+
 function* watchGetRelease() {
   yield takeLatest(GET_RELEASE, getRelease);
 }
@@ -511,8 +1127,16 @@ function* watchDeleteRelease() {
   yield takeLatest(DELETE_RELEASE, deleteRelease);
 }
 
+function* watchGetAllComments() {
+  yield takeLatest(ALL_COMMENTS, allComments);
+}
+
 function* watchGetComment() {
   yield takeLatest(GET_COMMENT, getComment);
+}
+
+function* watchCreateComment() {
+  yield takeLatest(CREATE_COMMENT, createComment);
 }
 
 function* watchUpdateComment() {
@@ -523,8 +1147,24 @@ function* watchDeleteComment() {
   yield takeLatest(DELETE_COMMENT, deleteComment);
 }
 
+function* watchGetAllFeatures() {
+  yield takeLatest(ALL_FEATURES, allFeatures);
+}
+
 function* watchGetFeature() {
   yield takeLatest(GET_FEATURE, getFeature);
+}
+
+function* watchCreateFeature() {
+  yield takeLatest(CREATE_FEATURE, createFeature);
+}
+
+function* watchUpdateFeature() {
+  yield takeLatest(UPDATE_FEATURE, updateFeature);
+}
+
+function* watchDeleteFeature() {
+  yield takeLatest(DELETE_FEATURE, deleteFeature);
 }
 
 function* watchGetAllFeedbacks() {
@@ -547,12 +1187,36 @@ function* watchDeleteFeedback() {
   yield takeLatest(DELETE_FEEDBACK, deleteFeedback);
 }
 
+function* watchGetAllIssues() {
+  yield takeLatest(ALL_ISSUES, allIssues);
+}
+
 function* watchGetIssue() {
   yield takeLatest(GET_ISSUE, getIssue);
 }
 
+function* watchCreateIssue() {
+  yield takeLatest(CREATE_ISSUE, createIssue);
+}
+
+function* watchUpdateIssue() {
+  yield takeLatest(UPDATE_ISSUE, updateIssue);
+}
+
+function* watchDeleteIssue() {
+  yield takeLatest(DELETE_ISSUE, deleteIssue);
+}
+
+function* watchGetAllStatuses() {
+  yield takeLatest(ALL_STATUSES, allStatuses);
+}
+
 function* watchGetStatus() {
   yield takeLatest(GET_STATUS, getStatus);
+}
+
+function* watchCreateStatus() {
+  yield takeLatest(CREATE_STATUS, createStatus);
 }
 
 function* watchUpdateStatus() {
@@ -563,9 +1227,26 @@ function* watchDeleteStatus() {
   yield takeLatest(DELETE_STATUS, deleteStatus);
 }
 
+function* watchClearProductData() {
+  yield takeLatest(CLEAR_PRODUCT_DATA, clearProductData);
+}
+
+function* watchThirdPartyToolSync() {
+  yield takeLatest(THIRD_PARTY_TOOL_SYNC, thirdPartyToolSync);
+}
+
+function* watchGenerateUserStories() {
+  yield takeLatest(GENERATE_USER_STORIES, generateUserStories);
+}
+
 export default function* releaseSaga() {
   yield all([
+    watchGetAllReleases(),
+    watchGetAllComments(),
+    watchGetAllFeatures(),
     watchGetAllFeedbacks(),
+    watchGetAllIssues(),
+    watchGetAllStatuses(),
     watchGetRelease(),
     watchGetComment(),
     watchGetFeature(),
@@ -573,14 +1254,25 @@ export default function* releaseSaga() {
     watchGetIssue(),
     watchGetStatus(),
     watchCreateRelease(),
+    watchCreateComment(),
+    watchCreateFeature(),
     watchCreateFeedback(),
+    watchCreateIssue(),
+    watchCreateStatus(),
     watchUpdateRelease(),
     watchUpdateComment(),
+    watchUpdateFeature(),
     watchUpdateFeedback(),
+    watchUpdateIssue(),
     watchUpdateStatus(),
     watchDeleteRelease(),
     watchDeleteComment(),
+    watchDeleteFeature(),
     watchDeleteFeedback(),
+    watchDeleteIssue(),
     watchDeleteStatus(),
+    watchClearProductData(),
+    watchThirdPartyToolSync(),
+    watchGenerateUserStories(),
   ]);
 }

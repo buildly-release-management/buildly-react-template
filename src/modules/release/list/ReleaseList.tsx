@@ -268,7 +268,7 @@ function ReleaseList({ loading, loaded, dispatch, features, issues }: any) {
   }
 
   const initProgressBar = (row: any) => {
-    const value = (row.features_done / row.features_count) * 100;
+    const value = Math.round((row.features_done / row.features_count) * 100) ;
     const theme = value > 74 ? "info" : value > 40 ? "warning" : "danger";
     return { value, theme };
   };
@@ -763,7 +763,7 @@ function ReleaseList({ loading, loaded, dispatch, features, issues }: any) {
           </Modal>
         </>
       )}
-      {/* <Chatbot /> */}
+      <Chatbot />
     </>
   );
 }

@@ -8,28 +8,18 @@ import {
   FaRegCalendarCheck, FaCloudsmith, FaQuestionCircle, FaPlaneDeparture, FaHubspot,
 } from 'react-icons/fa';
 
-export const getReleaseBudgetData = (teamData, releases) => {
-  if (releases) {
-    return releases.map((release) => {
-      const budgetDict = { ...release };
-      let data = [];
-      if (teamData) {
-        data = teamData.map((team) => (
-          {
-            title: team.role,
-            cost: +team.budget,
-            count: team.count,
-          }
-        ));
-      }
+export const getReleaseBudgetData = (budgetData, releaseData) => {
+  // make a deep copy of the data
+  const releaseDataCopy = JSON.parse(JSON.stringify(releaseData || []));
+  return releaseDataCopy.map((release) => {
+    const releaseCopy = { ...release };
+    const teamData = budgetData.find((budgetItem) => budgetItem.release === release.name);
+    releaseCopy.team = teamData ? teamData?.team : [];
 
-      budgetDict.team = data;
-      budgetDict.totalCost = data.map((x) => x.cost)
-        .reduce((prev, next) => prev + next);
-      return budgetDict;
-    });
-  }
-  return [];
+    // // add team.budget to get release total
+    releaseCopy.totalCost = (teamData ? teamData.team.reduce((acc, curr) => acc + curr.budget, 0) : 0);
+    return releaseCopy;
+  });
 };
 
 export const addColorsAndIcons = (releaseData) => {

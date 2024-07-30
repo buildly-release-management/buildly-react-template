@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -10,21 +11,18 @@ import {
   Autocomplete,
   MenuItem,
   Chip,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio, Slider, Typography,
+  Slider,
+  Typography,
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
 import SmartInput from '@components/SmartInput/SmartInput';
-import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
+import {
+  createFeature, updateFeature, generateUserStories, clearUserStories,
+} from '@redux/release/actions/release.actions';
 import { validators } from '@utils/validators';
 import { PRIORITIES } from '../ProductRoadmapConstants';
-import { useCreateFeatureMutation } from '../../../react-query/mutation/release/createFeatureMutation';
-import { useUpdateFeatureMutation } from '../../../react-query/mutation/release/updateFeatureMutation';
 
 const useStyles = makeStyles((theme) => ({
   formTitle: {
@@ -40,9 +38,6 @@ const useStyles = makeStyles((theme) => ({
       margin: 'auto',
     },
   },
-  processSection: {
-    marginTop: theme.spacing(2),
-  },
   submit: {
     margin: theme.spacing(3, 0, 2),
     borderRadius: '18px',
@@ -52,22 +47,34 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  userStoryButton: {
+    margin: theme.spacing(3, 0, 2),
+    borderRadius: '18px',
+    float: 'right',
+  },
 }));
 
-const AddFeatures = ({ location, history }) => {
+const AddFeatures = ({
+  location,
+  statuses,
+  releases,
+  dispatch,
+  products,
+  credentials,
+  loading,
+  history,
+  features,
+  user_stories,
+}) => {
   const classes = useStyles();
   const redirectTo = location.state && location.state.from;
   const editPage = location.state && (location.state.type === 'edit' || location.state.type === 'view');
   const editData = (editPage && location.state.data) || {};
-  const {
-    product_uuid, statusData, productData, featureData, credentialData, releaseData,
-  } = location && location.state;
+  const product_uuid = location.state && location.state.product_uuid;
   const viewPage = (location.state && location.state.type === 'view') || false;
   // eslint-disable-next-line no-nested-ternary
   const formTitle = viewPage ? 'View Feature' : editPage ? 'Edit Feature' : 'Add Feature';
   const buttonText = editPage ? 'Save' : 'Add Feature';
-
-  const { displayAlert } = useAlert();
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
@@ -78,7 +85,8 @@ const AddFeatures = ({ location, history }) => {
   const [formError, setFormError] = useState({});
   const [assigneeData, setAssigneeData] = useState([]);
 
-  const name = useInput((editData && editData.name) || '', { required: true, productFeatures: featureData });
+  // form fields definition
+  const name = useInput((editData && editData.name) || '', { required: true, productFeatures: features });
   const description = useInput((editData && editData.description) || '', { required: true });
   const priority = useInput((editData && editData.priority) || '', { required: true });
 
@@ -100,15 +108,15 @@ const AddFeatures = ({ location, history }) => {
     || [],
   );
 
-  const collecting_data = useInput((editData && editData.feature_detail?.collecting_data) || '');
-  const field_desc = useInput((editData && editData.feature_detail?.field_desc) || '', { required: true });
-  const displaying_data = useInput((editData && editData.feature_detail?.displaying_data) || '');
-  const display_desc = useInput((editData && editData.feature_detail?.display_desc) || '', { required: true });
-  const business_logic = useInput((editData && editData.feature_detail?.business_logic) || '');
-  const enabled = useInput((editData && editData.feature_detail?.enabled) || '');
-  const enabled_desc = useInput((editData && editData.feature_detail?.enabled_desc) || '', { required: true });
-  const search_or_nav = useInput((editData && editData.feature_detail?.search_or_nav) || '');
-  const links = useInput((editData && editData.feature_detail?.links) || '');
+  const [userTypes, setUserTypes] = useState(
+    (editData && editData.feature_detail && _.keys(editData.feature_detail.user_stories))
+    || [],
+  );
+  const [userProfiles, setUserProfiles] = useState({});
+  const [userStories, setUserStories] = useState(
+    (editData && editData.feature_detail && editData.feature_detail.user_stories)
+    || [],
+  );
 
   const complexityMarkers = [
     {
@@ -136,27 +144,57 @@ const AddFeatures = ({ location, history }) => {
   const valuetext = (value) => value.toString();
 
   useEffect(() => {
-    const prod = _.find(productData, { product_uuid });
+    const prod = _.find(products, { product_uuid });
     const assigneeOptions = _.map(prod?.feature_tool_detail?.user_list, 'username') || [];
+    const productUserTypes = _.map((prod?.product_info?.user_labels || []), 'label');
+    let productUserProfiles = {};
+
+    _.forEach(prod?.product_info?.user_labels || [], (ul) => {
+      productUserProfiles = {
+        ...productUserProfiles,
+        [ul.label]: ul.profile,
+      };
+    });
+
     setAssigneeData(assigneeOptions);
     setTagList(prod?.feature_tool_detail?.labels || []);
-  }, [productData]);
+    setUserProfiles(productUserProfiles);
+
+    if (_.isEmpty(userTypes)) {
+      setUserTypes(productUserTypes);
+    }
+    if (_.isEmpty(userStories)) {
+      setUserStories(_.map(productUserTypes, (p) => ''));
+    }
+  }, [products]);
 
   useEffect(() => {
     if (editData) {
-      const sts = _.find(statusData, { status_uuid: editData.status });
+      const sts = _.find(statuses, { status_uuid: editData.status });
       setStatus(sts);
       setColID(sts?.status_tracking_id);
     }
-  }, [statusData]);
+  }, [statuses]);
 
-  const { mutate: createFeatureMutation, isLoading: isCreatingFeatureLoading } = useCreateFeatureMutation(product_uuid, history, redirectTo, displayAlert);
-  const { mutate: updateFeatureMutation, isLoading: isUpdatingFeatureLoading } = useUpdateFeatureMutation(product_uuid, history, redirectTo, displayAlert);
+  useEffect(() => {
+    if (!_.isEmpty(user_stories)) {
+      setUserStories(user_stories);
+    }
+  }, [user_stories]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const dateTime = new Date();
-    const featCred = _.find(credentialData, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'feature'));
+    const featCred = _.find(credentials, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'feature'));
+    let finalUserStories = {};
+
+    _.forEach(userTypes, (ut) => {
+      finalUserStories = {
+        ...finalUserStories,
+        [ut]: userStories[ut],
+      };
+    });
+
     const formData = {
       ...editData,
       edit_date: dateTime,
@@ -170,27 +208,22 @@ const AddFeatures = ({ location, history }) => {
       product_uuid,
       ...featCred?.auth_detail,
       feature_detail: {
-        collecting_data: collecting_data.value,
-        field_desc: field_desc.value,
-        displaying_data: displaying_data.value,
-        display_desc: display_desc.value,
-        business_logic: business_logic.value,
-        enabled: enabled.value,
-        enabled_desc: enabled_desc.value,
-        search_or_nav: search_or_nav.value,
-        links: links.value,
         assigneees: _.filter(assigneeData, (user) => (
           !!user && _.includes(assignees, user.username)
         )),
+        user_stories: finalUserStories,
       },
     };
+
     if (editPage) {
       formData.column_id = colID;
-      updateFeatureMutation(formData);
+      dispatch(updateFeature(formData));
     } else {
       formData.create_date = dateTime;
-      createFeatureMutation(formData);
+      dispatch(createFeature(formData));
     }
+
+    history.push(redirectTo);
   };
 
   const handleBlur = (e, validation, input, parentId) => {
@@ -216,53 +249,51 @@ const AddFeatures = ({ location, history }) => {
 
   const submitDisabled = () => {
     const errorKeys = Object.keys(formError);
+
     if (
       !name.value
       || !sanitizeString(description.value).length
       || !statusID.value
       || !priority.value
-      || (collecting_data.value === 'yes' && !field_desc.value)
-      || (displaying_data.value === 'yes' && !display_desc.value)
-      || (displaying_data.value === 'yes' && !business_logic.value)
-      || (enabled.value === 'yes' && !enabled_desc.value)
-      || (business_logic.value === 'no' && !search_or_nav.value)
     ) {
       return true;
     }
+
     let errorExists = false;
     _.forEach(errorKeys, (key) => {
       if (formError[key].error) {
         errorExists = true;
       }
     });
+
     return errorExists;
   };
 
   const handleClose = () => {
     const dataHasChanged = (
       name.hasChanged()
-      || priority.hasChanged()
-      || statusID.hasChanged()
-      || collecting_data.hasChanged()
-      || field_desc.hasChanged()
-      || displaying_data.hasChanged()
-      || display_desc.hasChanged()
-      || business_logic.hasChanged()
-      || enabled.hasChanged()
-      || enabled_desc.hasChanged()
-      || search_or_nav.hasChanged()
-      || links.hasChanged()
-      || (!editPage && (!_.isEmpty(tags) || !_.isEmpty(assignees)))
-      || !!(editPage && editData && !_.isEqual((editData.tags || []), tags))
-      || !!(editPage && editData && editData.feature_detail
-        && !_.isEqual(_.map(editData.feature_detail.assigneees, 'username'), assignees))
-    );
+    || priority.hasChanged()
+    || statusID.hasChanged()
+    || (!editPage && (!_.isEmpty(tags) || !_.isEmpty(assignees)))
+    || !!(editPage && editData && !_.isEqual((editData.tags || []), tags))
+    || !!(editPage && editData && editData.feature_detail
+      && !_.isEqual(_.map(editData.feature_detail.assigneees, 'username'), assignees))
+    )
+    || !!(editPage && editData && !_.isEqual(editData.feature_detail.user_stories, user_stories));
+
+    dispatch(clearUserStories());
     if (dataHasChanged) {
       setConfirmModal(true);
     } else {
       setFormModal(false);
+      dispatch(clearUserStories());
       history.push(redirectTo);
     }
+  };
+
+  const requestUserStories = () => {
+    const userTypeProfiles = _.map(userTypes, (ut) => userProfiles[ut] || '');
+    dispatch(generateUserStories(userTypes, userTypeProfiles, editData.feature_uuid));
   };
 
   return (
@@ -279,9 +310,10 @@ const AddFeatures = ({ location, history }) => {
           setConfirmModal={setConfirmModal}
           handleConfirmModal={(e) => history.push(redirectTo)}
         >
-          {(isCreatingFeatureLoading || isUpdatingFeatureLoading) && <Loader open={isCreatingFeatureLoading || isUpdatingFeatureLoading} />}
+          {loading && <Loader open={loading} />}
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
+              {/* Name */}
               <Grid item xs={12}>
                 <TextField
                   variant="outlined"
@@ -306,6 +338,8 @@ const AddFeatures = ({ location, history }) => {
                   disabled={viewPage}
                 />
               </Grid>
+
+              {/* Description */}
               <Grid item xs={12}>
                 <SmartInput
                   onEditorValueChange={description.setNewValue}
@@ -314,7 +348,10 @@ const AddFeatures = ({ location, history }) => {
                 />
               </Grid>
             </Grid>
+
             <Grid container spacing={2}>
+
+              {/* Release */}
               <Grid item xs={12}>
                 <TextField
                   variant="outlined"
@@ -334,7 +371,7 @@ const AddFeatures = ({ location, history }) => {
                     releaseUuid.setNewValue(selectedRelease);
                   }}
                 >
-                  {_.map(releaseData, (rl) => (
+                  {_.map(releases, (rl) => (
                     <MenuItem
                       key={`release-${rl.release_uuid}-${rl.name}`}
                       value={rl.release_uuid}
@@ -344,6 +381,8 @@ const AddFeatures = ({ location, history }) => {
                   ))}
                 </TextField>
               </Grid>
+
+              {/* Complexity */}
               <Grid item xs={12}>
                 <Typography gutterBottom>Complexity</Typography>
                 <Slider
@@ -362,6 +401,8 @@ const AddFeatures = ({ location, history }) => {
                   }}
                 />
               </Grid>
+
+              {/* Status */}
               <Grid item xs={12} md={8}>
                 <TextField
                   variant="outlined"
@@ -382,7 +423,7 @@ const AddFeatures = ({ location, history }) => {
                     setColID(stat.status_tracking_id);
                   }}
                 >
-                  {_.map(statusData, (sts) => (
+                  {_.map(statuses, (sts) => (
                     <MenuItem
                       key={`status-${sts.status_uuid}-${sts.name}`}
                       value={sts}
@@ -392,6 +433,8 @@ const AddFeatures = ({ location, history }) => {
                   ))}
                 </TextField>
               </Grid>
+
+              {/* Priority */}
               <Grid item xs={12} md={4}>
                 <TextField
                   variant="outlined"
@@ -427,6 +470,8 @@ const AddFeatures = ({ location, history }) => {
                 </TextField>
               </Grid>
             </Grid>
+
+            {/* Tags */}
             {!_.isEmpty(tagList) && (
               <Grid item xs={12}>
                 <Autocomplete
@@ -458,6 +503,8 @@ const AddFeatures = ({ location, history }) => {
                 />
               </Grid>
             )}
+
+            {/* Assignees */}
             {!_.isEmpty(assigneeData) && (
               <Grid item xs={12} md={8}>
                 <Autocomplete
@@ -489,227 +536,39 @@ const AddFeatures = ({ location, history }) => {
                 />
               </Grid>
             )}
-            <Grid container spacing={isDesktop ? 2 : 0} className={classes.processSection}>
-              <Grid item xs={12}>
-                <FormControl fullWidth component="fieldset" disabled={viewPage}>
-                  <FormLabel component="legend">
-                    Are we collecting any data from the user?
-                  </FormLabel>
-                  <RadioGroup
-                    aria-label="collecting-data"
-                    name="collecting_data"
-                    {...collecting_data.bind}
-                  >
-                    <FormControlLabel
-                      value="yes"
-                      control={<Radio color="info" />}
-                      label="Yes"
-                    />
-                    <FormControlLabel
-                      value="no"
-                      control={<Radio color="info" />}
-                      label="No"
-                    />
-                  </RadioGroup>
-                </FormControl>
-              </Grid>
-              {collecting_data.value === 'yes' && (
-                <Grid item xs={12}>
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="field_desc"
-                    label="Describe the fields"
-                    name="field_desc"
-                    autoComplete="field_desc"
-                    error={formError.field_desc && formError.field_desc.error}
-                    helperText={
-                      formError && formError.field_desc
-                        ? formError.field_desc.message
-                        : ''
-                    }
-                    onBlur={(e) => handleBlur(e, 'required', field_desc)}
-                    {...field_desc.bind}
-                    disabled={viewPage}
-                  />
-                </Grid>
-              )}
-              <Grid item xs={12}>
-                <FormControl fullWidth component="fieldset" disabled={viewPage}>
-                  <FormLabel component="legend">
-                    Is the collected or stored data to be displayed to the user?
-                  </FormLabel>
-                  <RadioGroup
-                    aria-label="displaying-data"
-                    name="displaying_data"
-                    {...displaying_data.bind}
-                  >
-                    <FormControlLabel
-                      value="yes"
-                      label="Yes"
-                      control={<Radio color="info" />}
-                    />
-                    <FormControlLabel
-                      value="no"
-                      label="No"
-                      control={<Radio color="info" />}
-                    />
-                  </RadioGroup>
-                </FormControl>
-              </Grid>
-              {displaying_data.value === 'yes' && (
-                <Grid item xs={12}>
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="display_desc"
-                    label="Describe how data will be displayed"
-                    name="display_desc"
-                    autoComplete="display_desc"
-                    error={formError.display_desc && formError.display_desc.error}
-                    helperText={
-                      formError && formError.display_desc
-                        ? formError.display_desc.message
-                        : ''
-                    }
-                    onBlur={(e) => handleBlur(e, 'required', display_desc)}
-                    {...display_desc.bind}
-                    disabled={viewPage}
-                  />
-                </Grid>
-              )}
-              {displaying_data.value === 'yes' && (
-                <Grid item xs={12}>
-                  <FormControl fullWidth component="fieldset" disabled={viewPage}>
-                    <FormLabel component="legend">
-                      Is there any particular flow or logic to be followed for the
-                      collected or stored data?
-                    </FormLabel>
-                    <RadioGroup
-                      aria-label="business-logic"
-                      name="business_logic"
-                      {...business_logic.bind}
-                    >
-                      <FormControlLabel
-                        value="yes"
-                        label="Yes"
-                        control={<Radio color="info" />}
-                      />
-                      <FormControlLabel
-                        value="no"
-                        label="No"
-                        control={<Radio color="info" />}
-                      />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
-              )}
-              <Grid item xs={12}>
-                <FormControl fullWidth component="fieldset" disabled={viewPage}>
-                  <FormLabel component="legend">
-                    Are we making any important decisions that need to be notified or displayed?
-                  </FormLabel>
-                  <RadioGroup
-                    aria-label="making-decision"
-                    name="enabled"
-                    {...enabled.bind}
-                  >
-                    <FormControlLabel
-                      value="yes"
-                      label="Yes"
-                      control={<Radio color="info" />}
-                    />
-                    <FormControlLabel
-                      value="no"
-                      label="No"
-                      control={<Radio color="info" />}
-                    />
-                  </RadioGroup>
-                </FormControl>
-              </Grid>
-              {enabled.value === 'yes' && (
-                <Grid item xs={12}>
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="enabled_desc"
-                    label="Describe how decision will be displayed"
-                    name="enabled_desc"
-                    autoComplete="enabled_desc"
-                    error={formError.enabled_desc && formError.enabled_desc.error}
-                    helperText={
-                      formError && formError.enabled_desc
-                        ? formError.enabled_desc.message
-                        : ''
-                    }
-                    onBlur={(e) => handleBlur(e, 'required', enabled_desc)}
-                    {...enabled_desc.bind}
-                    disabled={viewPage}
-                  />
-                </Grid>
-              )}
-              {business_logic.value === 'no' && (
-                <Grid item xs={12}>
-                  <FormControl fullWidth component="fieldset" disabled={viewPage}>
-                    <FormLabel component="legend">
-                      How does a user find this data?
-                    </FormLabel>
-                    <RadioGroup
-                      aria-label="user-find-data"
-                      name="search_or_nav"
-                      {...search_or_nav.bind}
-                    >
-                      <FormControlLabel
-                        value="search"
-                        label="Search"
-                        control={<Radio color="info" />}
-                      />
-                      <FormControlLabel
-                        value="nav"
-                        label="Nav"
-                        control={<Radio color="info" />}
-                      />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
-              )}
-              {(search_or_nav.value === 'nav' || enabled.value === 'no') && (
-                <Grid item xs={12}>
-                  <FormControl fullWidth component="fieldset" disabled={viewPage}>
-                    <FormLabel component="legend">
-                      Where do you want to display links?
-                    </FormLabel>
-                    <RadioGroup
-                      aria-label="links"
-                      name="links"
-                      {...links.bind}
-                    >
-                      <FormControlLabel
-                        value="top"
-                        label="Top"
-                        control={<Radio color="info" />}
-                      />
-                      <FormControlLabel
-                        value="secondary"
-                        label="Secondary"
-                        control={<Radio color="info" />}
-                      />
-                      <FormControlLabel
-                        value="tertiary"
-                        label="Tertiary"
-                        control={<Radio color="info" />}
-                      />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
-              )}
-            </Grid>
+
+            {/* User Stories */}
+            {!_.isEmpty(userTypes) && (
+              <Button
+                type="button"
+                variant="outlined"
+                color="primary"
+                onClick={requestUserStories}
+                className={classes.userStoryButton}
+              >
+                Generate User Stories
+              </Button>
+            )}
+            {!_.isEmpty(userTypes) && _.map(userTypes, (ut, index) => (
+              <TextField
+                key={`${ut}-${index}`}
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                multiline
+                maxRows={5}
+                id={`${ut}-user-story`}
+                label={`User Story for ${_.capitalize(ut)}`}
+                name={`${ut}-user-story`}
+                value={userStories[ut]}
+                autoComplete={`${ut}-user-story`}
+                disabled={viewPage}
+                onChange={(e) => {
+                  setUserStories({ ...userStories, [ut]: e.target.value });
+                }}
+              />
+            ))}
+
             <Grid container spacing={3} className={classes.buttonContainer}>
               <Grid item xs={12} sm={4}>
                 <Button
@@ -723,6 +582,7 @@ const AddFeatures = ({ location, history }) => {
                   Cancel
                 </Button>
               </Grid>
+
               {!viewPage && (
                 <Grid item xs={12} sm={4}>
                   <Button
@@ -731,7 +591,7 @@ const AddFeatures = ({ location, history }) => {
                     color="primary"
                     fullWidth
                     className={classes.submit}
-                    disabled={isCreatingFeatureLoading || isUpdatingFeatureLoading || submitDisabled()}
+                    disabled={submitDisabled()}
                   >
                     {buttonText}
                   </Button>
@@ -745,4 +605,15 @@ const AddFeatures = ({ location, history }) => {
   );
 };
 
-export default AddFeatures;
+const mapStateToProps = (state, ownProps) => ({
+  ...ownProps,
+  loading: state.productReducer.loading || state.releaseReducer.loading,
+  statuses: state.releaseReducer.statuses,
+  products: state.productReducer.products,
+  credentials: state.productReducer.credentials,
+  features: state.releaseReducer.features,
+  releases: state.releaseReducer.releases,
+  user_stories: state.releaseReducer.user_stories,
+});
+
+export default connect(mapStateToProps)(AddFeatures);

@@ -1,4 +1,10 @@
 // Release Action types
+export const CLEAR_PRODUCT_RELATED_RELEASE_DATA = 'RELEASE/CLEAR_PRODUCT_RELATED_RELEASE_DATA';
+
+export const ALL_RELEASES = 'RELEASE/ALL_RELEASES';
+export const ALL_RELEASES_SUCCESS = 'RELEASE/ALL_RELEASES_SUCCESS';
+export const ALL_RELEASES_FAILURE = 'RELEASE/ALL_RELEASES_FAILURE';
+
 export const GET_RELEASE = 'RELEASE/GET_RELEASE';
 export const GET_RELEASE_SUCCESS = 'RELEASE/GET_RELEASE_SUCCESS';
 export const GET_RELEASE_FAILURE = 'RELEASE/GET_RELEASE_FAILURE';
@@ -15,9 +21,17 @@ export const DELETE_RELEASE = 'RELEASE/DELETE_RELEASE';
 export const DELETE_RELEASE_SUCCESS = 'RELEASE/DELETE_RELEASE_SUCCESS';
 export const DELETE_RELEASE_FAILURE = 'RELEASE/DELETE_RELEASE_FAILURE';
 
+export const ALL_COMMENTS = 'RELEASE/ALL_COMMENTS';
+export const ALL_COMMENTS_SUCCESS = 'RELEASE/ALL_COMMENTS_SUCCESS';
+export const ALL_COMMENTS_FAILURE = 'RELEASE/ALL_COMMENTS_FAILURE';
+
 export const GET_COMMENT = 'RELEASE/GET_COMMENT';
 export const GET_COMMENT_SUCCESS = 'RELEASE/GET_COMMENT_SUCCESS';
 export const GET_COMMENT_FAILURE = 'RELEASE/GET_COMMENT_FAILURE';
+
+export const CREATE_COMMENT = 'RELEASE/CREATE_COMMENT';
+export const CREATE_COMMENT_SUCCESS = 'RELEASE/CREATE_COMMENT_SUCCESS';
+export const CREATE_COMMENT_FAILURE = 'RELEASE/CREATE_COMMENT_FAILURE';
 
 export const UPDATE_COMMENT = 'RELEASE/UPDATE_COMMENT';
 export const UPDATE_COMMENT_SUCCESS = 'RELEASE/UPDATE_COMMENT_SUCCESS';
@@ -27,9 +41,25 @@ export const DELETE_COMMENT = 'RELEASE/DELETE_COMMENT';
 export const DELETE_COMMENT_SUCCESS = 'RELEASE/DELETE_COMMENT_SUCCESS';
 export const DELETE_COMMENT_FAILURE = 'RELEASE/DELETE_COMMENT_FAILURE';
 
+export const ALL_FEATURES = 'RELEASE/ALL_FEATURES';
+export const ALL_FEATURES_SUCCESS = 'RELEASE/ALL_FEATURES_SUCCESS';
+export const ALL_FEATURES_FAILURE = 'RELEASE/ALL_FEATURES_FAILURE';
+
 export const GET_FEATURE = 'RELEASE/GET_FEATURE';
 export const GET_FEATURE_SUCCESS = 'RELEASE/GET_FEATURE_SUCCESS';
 export const GET_FEATURE_FAILURE = 'RELEASE/GET_FEATURE_FAILURE';
+
+export const CREATE_FEATURE = 'RELEASE/CREATE_FEATURE';
+export const CREATE_FEATURE_SUCCESS = 'RELEASE/CREATE_FEATURE_SUCCESS';
+export const CREATE_FEATURE_FAILURE = 'RELEASE/CREATE_FEATURE_FAILURE';
+
+export const UPDATE_FEATURE = 'RELEASE/UPDATE_FEATURE';
+export const UPDATE_FEATURE_SUCCESS = 'RELEASE/UPDATE_FEATURE_SUCCESS';
+export const UPDATE_FEATURE_FAILURE = 'RELEASE/UPDATE_FEATURE_FAILURE';
+
+export const DELETE_FEATURE = 'RELEASE/DELETE_FEATURE';
+export const DELETE_FEATURE_SUCCESS = 'RELEASE/DELETE_FEATURE_SUCCESS';
+export const DELETE_FEATURE_FAILURE = 'RELEASE/DELETE_FEATURE_FAILURE';
 
 export const ALL_FEEDBACKS = 'RELEASE/ALL_FEEDBACKS';
 export const ALL_FEEDBACKS_SUCCESS = 'RELEASE/ALL_FEEDBACKS_SUCCESS';
@@ -51,13 +81,37 @@ export const DELETE_FEEDBACK = 'RELEASE/DELETE_FEEDBACK';
 export const DELETE_FEEDBACK_SUCCESS = 'RELEASE/DELETE_FEEDBACK_SUCCESS';
 export const DELETE_FEEDBACK_FAILURE = 'RELEASE/DELETE_FEEDBACK_FAILURE';
 
+export const ALL_ISSUES = 'RELEASE/ALL_ISSUES';
+export const ALL_ISSUES_SUCCESS = 'RELEASE/ALL_ISSUES_SUCCESS';
+export const ALL_ISSUES_FAILURE = 'RELEASE/ALL_ISSUES_FAILURE';
+
 export const GET_ISSUE = 'RELEASE/GET_ISSUE';
 export const GET_ISSUE_SUCCESS = 'RELEASE/GET_ISSUE_SUCCESS';
 export const GET_ISSUE_FAILURE = 'RELEASE/GET_ISSUE_FAILURE';
 
+export const CREATE_ISSUE = 'RELEASE/CREATE_ISSUE';
+export const CREATE_ISSUE_SUCCESS = 'RELEASE/CREATE_ISSUE_SUCCESS';
+export const CREATE_ISSUE_FAILURE = 'RELEASE/CREATE_ISSUE_FAILURE';
+
+export const UPDATE_ISSUE = 'RELEASE/UPDATE_ISSUE';
+export const UPDATE_ISSUE_SUCCESS = 'RELEASE/UPDATE_ISSUE_SUCCESS';
+export const UPDATE_ISSUE_FAILURE = 'RELEASE/UPDATE_ISSUE_FAILURE';
+
+export const DELETE_ISSUE = 'RELEASE/DELETE_ISSUE';
+export const DELETE_ISSUE_SUCCESS = 'RELEASE/DELETE_ISSUE_SUCCESS';
+export const DELETE_ISSUE_FAILURE = 'RELEASE/DELETE_ISSUE_FAILURE';
+
+export const ALL_STATUSES = 'RELEASE/ALL_STATUSES';
+export const ALL_STATUSES_SUCCESS = 'RELEASE/ALL_STATUSES_SUCCESS';
+export const ALL_STATUSES_FAILURE = 'RELEASE/ALL_STATUSES_FAILURE';
+
 export const GET_STATUS = 'RELEASE/GET_STATUS';
 export const GET_STATUS_SUCCESS = 'RELEASE/GET_STATUS_SUCCESS';
 export const GET_STATUS_FAILURE = 'RELEASE/GET_STATUS_FAILURE';
+
+export const CREATE_STATUS = 'RELEASE/CREATE_STATUS';
+export const CREATE_STATUS_SUCCESS = 'RELEASE/CREATE_STATUS_SUCCESS';
+export const CREATE_STATUS_FAILURE = 'RELEASE/CREATE_STATUS_FAILURE';
 
 export const UPDATE_STATUS = 'RELEASE/UPDATE_STATUS';
 export const UPDATE_STATUS_SUCCESS = 'RELEASE/UPDATE_STATUS_SUCCESS';
@@ -66,6 +120,26 @@ export const UPDATE_STATUS_FAILURE = 'RELEASE/UPDATE_STATUS_FAILURE';
 export const DELETE_STATUS = 'RELEASE/DELETE_STATUS';
 export const DELETE_STATUS_SUCCESS = 'RELEASE/DELETE_STATUS_SUCCESS';
 export const DELETE_STATUS_FAILURE = 'RELEASE/DELETE_STATUS_FAILURE';
+
+export const CLEAR_PRODUCT_DATA = 'RELEASE/CLEAR_PRODUCT_DATA';
+export const CLEAR_PRODUCT_DATA_SUCCESS = 'RELEASE/CLEAR_PRODUCT_DATA_SUCCESS';
+export const CLEAR_PRODUCT_DATA_FAILURE = 'RELEASE/CLEAR_PRODUCT_DATA_FAILURE';
+
+export const THIRD_PARTY_TOOL_SYNC = 'RELEASE/THIRD_PARTY_TOOL_SYNC';
+export const THIRD_PARTY_TOOL_SYNC_SUCCESS = 'RELEASE/THIRD_PARTY_TOOL_SYNC_SUCCESS';
+export const THIRD_PARTY_TOOL_SYNC_FAILURE = 'RELEASE/THIRD_PARTY_TOOL_SYNC_FAILURE';
+
+export const GENERATE_USER_STORIES = 'RELEASE/GENERATE_USER_STORIES';
+export const GENERATE_USER_STORIES_SUCCESS = 'RELEASE/GENERATE_USER_STORIES_SUCCESS';
+export const GENERATE_USER_STORIES_FAILURE = 'RELEASE/GENERATE_USER_STORIES_FAILURE';
+
+export const CLEAR_USER_STORIES = 'RELEASE/CLEAR_USER_STORIES';
+
+/**
+ * Get all Releases
+ * @param {uuid} product_uuid
+ */
+export const getAllReleases = (product_uuid) => ({ type: ALL_RELEASES, product_uuid });
 
 /**
  * Get a Release
@@ -104,12 +178,30 @@ export const deleteRelease = (release_uuid) => ({
 });
 
 /**
+ * Get all Comments
+ * @param {String} searchQuery
+ */
+export const getAllComments = (searchQuery) => ({
+  type: ALL_COMMENTS,
+  searchQuery,
+});
+
+/**
  * Get a Comment
  * @param {uuid} comment_uuid
  */
 export const getComment = (comment_uuid) => ({
   type: GET_COMMENT,
   comment_uuid,
+});
+
+/**
+ * Create a Comment
+ * @param {Object} data
+ */
+export const createComment = (data) => ({
+  type: CREATE_COMMENT,
+  data,
 });
 
 /**
@@ -131,12 +223,48 @@ export const deleteComment = (comment_uuid) => ({
 });
 
 /**
+ * Get all Features
+ * @param {uuid} product_uuid
+ */
+export const getAllFeatures = (product_uuid) => ({
+  type: ALL_FEATURES,
+  product_uuid,
+});
+
+/**
  * Get a Feature
  * @param {uuid} feature_uuid
  */
 export const getFeature = (feature_uuid) => ({
   type: GET_FEATURE,
   feature_uuid,
+});
+
+/**
+ * Create a Feature
+ * @param {Object} data
+ */
+export const createFeature = (data) => ({
+  type: CREATE_FEATURE,
+  data,
+});
+
+/**
+ * Update a Feature
+ * @param {Object} data
+ */
+export const updateFeature = (data) => ({
+  type: UPDATE_FEATURE,
+  data,
+});
+
+/**
+ * Delete a Feature
+ * @param {uuid} feature_uuid
+ */
+export const deleteFeature = (data) => ({
+  type: DELETE_FEATURE,
+  data,
 });
 
 /**
@@ -181,6 +309,15 @@ export const deleteFeedback = (feedback_uuid) => ({
 });
 
 /**
+ * Get all Issues
+ * @param {uuid} product_uuid
+ */
+export const getAllIssues = (product_uuid) => ({
+  type: ALL_ISSUES,
+  product_uuid,
+});
+
+/**
  * Get an Issue
  * @param {uuid} issue_uuid
  */
@@ -190,12 +327,57 @@ export const getIssue = (issue_uuid) => ({
 });
 
 /**
+ * Create an Issue
+ * @param {Object} data
+ */
+export const createIssue = (data) => ({
+  type: CREATE_ISSUE,
+  data,
+});
+
+/**
+ * Update an Issue
+ * @param {Object} data
+ */
+export const updateIssue = (data) => ({
+  type: UPDATE_ISSUE,
+  data,
+});
+
+/**
+ * Delete an Issue
+ * @param {uuid} issue_uuid
+ */
+export const deleteIssue = (data) => ({
+  type: DELETE_ISSUE,
+  data,
+});
+
+/**
+ * Get all Statuses
+ * @param {uuid} product_uuid
+ */
+export const getAllStatuses = (product_uuid) => ({
+  type: ALL_STATUSES,
+  product_uuid,
+});
+
+/**
  * Get a Status
  * @param {uuid} product_uuid
  */
 export const getStatus = (product_uuid) => ({
   type: GET_STATUS,
   product_uuid,
+});
+
+/**
+ * Create a Status
+ * @param {Object} data
+ */
+export const createStatus = (data) => ({
+  type: CREATE_STATUS,
+  data,
 });
 
 /**
@@ -215,3 +397,46 @@ export const deleteStatus = (status_uuid) => ({
   type: DELETE_STATUS,
   status_uuid,
 });
+
+/**
+ * Clear Product Features and Issues
+ * @param {Object} data
+ */
+export const clearProductData = (data) => ({
+  type: CLEAR_PRODUCT_DATA,
+  data,
+});
+
+/**
+ * Clear Product related data
+ */
+export const clearProductRelatedReleaseData = () => ({
+  type: CLEAR_PRODUCT_RELATED_RELEASE_DATA,
+});
+
+/**
+ * Sync data from third party tool(s)
+ * @param {Array} creds
+ */
+export const thirdPartyToolSync = (creds) => ({
+  type: THIRD_PARTY_TOOL_SYNC,
+  creds,
+});
+
+/**
+ * Generate user stories
+ * @param {Array} user_types
+ * @param {Array} user_profiles
+ * @param {uuid} feature_uuid
+ */
+export const generateUserStories = (user_types, user_profiles, feature_uuid) => ({
+  type: GENERATE_USER_STORIES,
+  user_types,
+  user_profiles,
+  feature_uuid,
+});
+
+/**
+ * Clear User Stories
+ */
+export const clearUserStories = () => ({ type: CLEAR_USER_STORIES });
