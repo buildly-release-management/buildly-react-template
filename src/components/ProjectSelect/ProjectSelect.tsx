@@ -1,9 +1,9 @@
 import React, { useState, useContext } from "react";
 import { useActor, useSelector } from "@xstate/react";
+import { GlobalStateContext } from "@context/globalState";
 import Select from "../Select";
 import CustomModal from "../ReleaseModal/Modal";
 import "./ProjectSelect.css";
-import { GlobalStateContext } from "../../context/globalState";
 
 const ProjectSelect = ({ orgUuid }: any) => {
   const [show, setShow] = useState(false);

@@ -1,5 +1,6 @@
 import { useActor, useSelector } from "@xstate/react";
 import Table from "react-bootstrap/Table";
+import { useQuery } from 'react-query';
 import { Release } from "../../../interfaces/release";
 import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -31,16 +32,14 @@ import Form from "react-bootstrap/Form";
 import { HttpService } from "../../../services/http.service";
 import Tooltip from "@mui/material/Tooltip";
 import "./ReleaseList.css";
-import { GlobalStateContext } from "../../../context/globalState";
-import Chatbot from "../../../components/Chatbot/Chatbot";
-import { routes } from "../../../routes/routesConstants";
-import Loader from "../../../components/Loader/Loader";
-import { connect } from "react-redux";
-import {
-  getAllFeatures,
-  getAllIssues,
-} from "../../../redux/release/actions/release.actions";
+import { GlobalStateContext } from "@context/globalState";
+import Chatbot from "@components/Chatbot/Chatbot";
+import { routes } from "@routes/routesConstants";
+import Loader from "@components/Loader/Loader";
 import _ from "lodash";
+import useAlert from '@hooks/useAlert';
+import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
+import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
 
 const httpService = new HttpService();
 
@@ -51,7 +50,9 @@ interface BarChartData {
   data: number[];
 }
 
-function ReleaseList({ loading, loaded, dispatch, features, issues }: any) {
+function ReleaseList() {
+  const displayAlert = useAlert();
+
   const [releasesSummary, setReleasesSummary] = useState(null as any);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
@@ -77,12 +78,17 @@ function ReleaseList({ loading, loaded, dispatch, features, issues }: any) {
     selectReleases
   );
 
-  useEffect(() => {
-    if (currentProduct) {
-      dispatch(getAllFeatures(currentProduct.product_uuid));
-      dispatch(getAllIssues(currentProduct.product_uuid));
-    }
-  }, [currentProduct]);
+  const { data: features, isLoading: isAllFeatureLoading } = useQuery(
+    ['allFeatures', selectCurrentProduct],
+    () => getAllFeatureQuery(selectCurrentProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectCurrentProduct) && !_.isEqual(_.toNumber(selectCurrentProduct), 0) },
+  );
+
+  const { data: issues, isLoading: isAllIssueLoading } = useQuery(
+    ['allIssues', selectCurrentProduct],
+    () => getAllIssueQuery(selectCurrentProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectCurrentProduct) && !_.isEqual(_.toNumber(selectCurrentProduct), 0) },
+  );
 
   useEffect(() => {
     if (releases && releases.length > 0) {
@@ -494,8 +500,8 @@ function ReleaseList({ loading, loaded, dispatch, features, issues }: any) {
   return (
     <>
       {summaryLoading ||
-      loading ||
-      !loaded ||
+      isAllFeatureLoading ||
+      isAllIssueLoading ||
       releaseState.matches("Entry.Loading") ||
       releaseState.matches("Submitting") ||
       releaseState.matches("Submitting.Creating") ||
@@ -507,8 +513,8 @@ function ReleaseList({ loading, loaded, dispatch, features, issues }: any) {
             <Loader
               open={
                 summaryLoading ||
-                loading ||
-                !loaded ||
+                isAllFeatureLoading ||
+                isAllIssueLoading ||
                 releaseState.matches("Entry.Loading") ||
                 releaseState.matches("Submitting") ||
                 releaseState.matches("Submitting.Creating") ||
@@ -768,12 +774,4 @@ function ReleaseList({ loading, loaded, dispatch, features, issues }: any) {
   );
 }
 
-const mapStateToProps = (state: any, ownProps: any) => ({
-  ...ownProps,
-  loading: state.releaseReducer.loading,
-  loaded: state.releaseReducer.loaded,
-  features: state.releaseReducer.features,
-  issues: state.releaseReducer.issues,
-});
-
-export default connect(mapStateToProps)(ReleaseList);
+export default ReleaseList;

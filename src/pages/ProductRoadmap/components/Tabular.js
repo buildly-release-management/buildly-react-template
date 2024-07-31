@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
+import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Divider, IconButton, ListItemIcon, MenuItem, Typography,
@@ -13,6 +14,12 @@ import {
   Task as TaskIcon,
 } from '@mui/icons-material';
 import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
+import Loader from '@components/Loader/Loader';
+import useAlert from '@hooks/useAlert';
+import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
+import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
+import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
+import { getAllCommentQuery } from '@react-query/queries/release/getAllCommentQuery';
 import { featureColumns, issueColumns } from '../ProductRoadmapConstants';
 
 const useStyles = makeStyles((theme) => ({
@@ -32,22 +39,20 @@ const useStyles = makeStyles((theme) => ({
 
 const Tabular = ({
   selectedProduct,
-  upgrade,
-  suggestedFeatures,
-  statuses,
-  features,
-  issues,
-  comments,
-  createSuggestedFeature,
-  removeSuggestedFeature,
   addItem,
   editItem,
   deleteItem,
   commentItem,
+  issueSuggestions,
+  upgrade,
+  suggestedFeatures,
+  createSuggestedFeature,
+  removeSuggestedFeature,
+  showRelatedIssues,
 }) => {
-  // issueSuggestions,
-  // showRelatedIssues,
   const classes = useStyles();
+  const displayAlert = useAlert();
+
   const [featureRows, setFeatureRows] = useState([]);
   const [featMenuActions, setFeatMenuActions] = useState([]);
   const [issueRows, setIssueRows] = useState([]);
@@ -55,12 +60,33 @@ const Tabular = ({
   const [finalSugCols, setFinalSugCols] = useState([]);
   const [menuIndex, setMenuIndex] = useState(0);
 
+  const { data: statuses, isLoading: isAllStatusLoading } = useQuery(
+    ['allStatuses', selectedProduct],
+    () => getAllStatusQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+  const { data: features, isLoading: isAllFeatureLoading } = useQuery(
+    ['allFeatures', selectedProduct],
+    () => getAllFeatureQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+  const { data: issues, isLoading: isAllIssueLoading } = useQuery(
+    ['allIssues', selectedProduct],
+    () => getAllIssueQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+
+  const { data: comments, isLoading: isAllCommentLoading } = useQuery(
+    ['allComments', selectedProduct],
+    () => getAllCommentQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+
   useEffect(() => {
     const fma = (
       <div>
         <Divider />
-        <MenuItem>
-          {/* onClick={(e) => commentItem(featureRows[menuIndex])}> */}
+        <MenuItem onClick={(e) => commentItem(featureRows[menuIndex])}>
           <ListItemIcon>
             <CommentIcon fontSize="small" />
           </ListItemIcon>
@@ -69,16 +95,14 @@ const Tabular = ({
           )
         </MenuItem>
         <Divider />
-        <MenuItem>
-          {/* onClick={(e) => issueSuggestions(featureRows[menuIndex])}> */}
+        <MenuItem onClick={(e) => issueSuggestions(featureRows[menuIndex])}>
           <ListItemIcon>
             <TaskIcon fontSize="small" />
           </ListItemIcon>
           Convert to issue/ticket for dev team
         </MenuItem>
         <Divider />
-        <MenuItem>
-          {/* onClick={(e) => showRelatedIssues(featureRows[menuIndex]?.feature_uuid)}> */}
+        <MenuItem onClick={(e) => showRelatedIssues(featureRows[menuIndex]?.feature_uuid)}>
           <ListItemIcon>
             <CallSplitIcon fontSize="small" />
           </ListItemIcon>
@@ -195,17 +219,20 @@ const Tabular = ({
 
   return (
     <>
-      {(_.isEmpty(selectedProduct) || _.toNumber(selectedProduct) === 0) && (
+      {(isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading) && (
+        <Loader open={isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading} />
+      )}
+      {(_.isEmpty(selectedProduct) || _.isEqual(_.toNumber(selectedProduct), 0)) && (
         <Typography className={classes.noProduct} component="div" variant="body1">
           No product selected yet. Please select a product to view related features and/or issues.
         </Typography>
       )}
-      {!_.isEmpty(selectedProduct) && upgrade && _.toNumber(selectedProduct) !== 0 && (
+      {!_.isEmpty(selectedProduct) && upgrade && !_.isEqual(_.toNumber(selectedProduct), 0) && (
         <Typography variant="h6" align="center">
           Upgrade to be able to create more features
         </Typography>
       )}
-      {!_.isEmpty(selectedProduct) && !_.isEmpty(suggestedFeatures) && _.toNumber(selectedProduct) !== 0 && (
+      {!_.isEmpty(selectedProduct) && !_.isEmpty(suggestedFeatures) && !_.isEqual(_.toNumber(selectedProduct), 0) && (
         <div className={classes.tabular}>
           <DataTableWrapper
             rows={suggestedFeatures}
@@ -216,7 +243,7 @@ const Tabular = ({
           />
         </div>
       )}
-      {!!selectedProduct && _.toNumber(selectedProduct) !== 0 && (
+      {!!selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0) && (
         <div
           className={
             suggestedFeatures && !_.isEmpty(suggestedFeatures)

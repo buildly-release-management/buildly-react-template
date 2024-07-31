@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
-import { useStore } from '../../../zustand/product/productStore';
+import { useStore } from '@zustand/product/productStore';
 
 const useStyles = makeStyles((theme) => ({
   form: {

@@ -2,7 +2,7 @@ import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { IconButton, Slide, Snackbar } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { useStore } from '../../zustand/alert/alertStore';
+import { useStore } from '@zustand/alert/alertStore';
 
 const useStyles = makeStyles((theme) => ({
   root: {

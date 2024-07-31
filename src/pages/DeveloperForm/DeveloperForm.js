@@ -20,12 +20,12 @@ import {
   Checkbox,
 } from '@mui/material';
 import Loader from '@components/Loader/Loader';
-import { routes } from '../../routes/routesConstants';
+import { routes } from '@routes/routesConstants';
 import { UserContext } from '@context/User.context';
 import { useInput } from '@hooks/useInput';
 import useAlert from '@hooks/useAlert';
-import { useAddDataMutation } from '../../react-query/mutations/googlesheet/addDataMutation';
-import { useUpdateUserMutation } from '../../react-query/mutations/authUser/updateUserMutation';
+import { useAddDataMutation } from '@react-query/mutations/googlesheet/addDataMutation';
+import { useUpdateUserMutation } from '@react-query/mutations/authUser/updateUserMutation';
 import { validators } from '@utils/validators';
 
 const useStyles = makeStyles((theme) => ({

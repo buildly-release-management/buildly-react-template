@@ -11,6 +11,7 @@ import useAlert from '@hooks/useAlert';
 import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery';
 import { useDeleteProductMutation } from '@react-query/mutations/product/deleteProductMutation';
 import AddProduct from '@pages/NewProduct/NewProduct';
+import { useStore } from '@zustand/product/productStore';
 import { productColumns, getProductsData } from './ProductPortfolioConstants';
 
 const useStyles = makeStyles((theme) => ({
@@ -31,6 +32,7 @@ const ProductPortfolio = ({ history }) => {
   const user = useContext(UserContext);
   const organization = user.organization.organization_uuid;
   const { displayAlert } = useAlert();
+  const { setActiveProduct } = useStore();
 
   const { data: productData, isLoading: isAllProductLoading } = useQuery(
     ['allProducts', organization],
@@ -80,7 +82,7 @@ const ProductPortfolio = ({ history }) => {
   };
 
   const viewProductRoadmap = (item) => {
-    localStorage.setItem('activeProduct', item.product_uuid);
+    setActiveProduct(item.product_uuid);
     history.push(routes.PRODUCT_ROADMAP_REPORT);
   };
 

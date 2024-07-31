@@ -1,6 +1,7 @@
 /* eslint-disable no-shadow */
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
+import { useQuery } from 'react-query';
 import moment from 'moment-timezone';
 import {
   DragDropContext,
@@ -37,7 +38,16 @@ import {
   Delete as DeleteIcon,
   Task as TaskIcon,
 } from '@mui/icons-material';
-// import { updateFeature, updateIssue } from '@redux/release/actions/release.actions';
+import Loader from '@components/Loader/Loader';
+import useAlert from '@hooks/useAlert';
+import { getAllCredentialQuery } from '@react-query/queries/product/getAllCredentialQuery';
+import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
+import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
+import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
+import { getAllCommentQuery } from '@react-query/queries/release/getAllCommentQuery';
+import { useUpdateFeatureMutation } from '@react-query/mutations/release/updateFeatureMutation';
+import { useUpdateIssueMutation } from '@react-query/mutations/release/UpdateIssueMutation';
+import { routes } from '@routes/routesConstants';
 
 const useStyles = makeStyles((theme) => ({
   noProduct: {
@@ -120,135 +130,164 @@ const useStyles = makeStyles((theme) => ({
 
 const Kanban = ({
   selectedProduct,
+  addItem,
+  editItem,
+  deleteItem,
+  commentItem,
+  issueSuggestions,
   upgrade,
+  suggestedFeatures,
+  createSuggestedFeature,
+  removeSuggestedFeature,
+  showRelatedIssues,
 }) => {
-  // dispatch,
-  // features,
-  // issues,
-  // statuses,
-  // credentials,
-  // addItem,
-  // editItem,
-  // deleteItem,
-  // commentItem,
-  // issueSuggestions,
-  // suggestedFeatures,
-  // createSuggestedFeature,
-  // removeSuggestedFeature,
-  // comments,
-  // showRelatedIssues,
   const classes = useStyles();
+  const displayAlert = useAlert();
+
   const [columns, setColumns] = useState({});
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentNumber, setCurrentNumber] = useState(null);
   const [addAnchorEl, setAddAnchorEl] = useState(null);
   const [currentColId, setCurrentColId] = useState(null);
 
-  // const handleClick = (event, number) => {
-  //   setAnchorEl(event.currentTarget);
-  //   setCurrentNumber(number);
-  // };
+  const { data: credentials, isLoading: isAllCredentialLoading } = useQuery(
+    ['allCredentials', selectedProduct],
+    () => getAllCredentialQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+  const { data: statuses, isLoading: isAllStatusLoading } = useQuery(
+    ['allStatuses', selectedProduct],
+    () => getAllStatusQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+  const { data: features, isLoading: isAllFeatureLoading } = useQuery(
+    ['allFeatures', selectedProduct],
+    () => getAllFeatureQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+  const { data: issues, isLoading: isAllIssueLoading } = useQuery(
+    ['allIssues', selectedProduct],
+    () => getAllIssueQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
 
-  // const handleClose = () => {
-  //   setAnchorEl(null);
-  //   setCurrentNumber(null);
-  // };
+  const { data: comments, isLoading: isAllCommentLoading } = useQuery(
+    ['allComments', selectedProduct],
+    () => getAllCommentQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
 
-  // const handleAddClick = (event, id) => {
-  //   setAddAnchorEl(event.currentTarget);
-  //   setCurrentColId(id);
-  // };
+  const { mutate: updateFeatureMutation } = useUpdateFeatureMutation(selectedProduct, history, routes.PRODUCT_ROADMAP_KANBAN, displayAlert);
+  const { mutate: updateIssueMutation } = useUpdateIssueMutation(selectedProduct, history, routes.PRODUCT_ROADMAP_KANBAN, displayAlert);
 
-  // const handleAddClose = () => {
-  //   setAddAnchorEl(null);
-  //   setCurrentColId(null);
-  // };
+  const handleClick = (event, number) => {
+    setAnchorEl(event.currentTarget);
+    setCurrentNumber(number);
+  };
 
-  // useEffect(() => {
-  //   let cols = {};
-  //   if (statuses && !_.isEmpty(statuses)) {
-  //     _.forEach(statuses, (sts) => {
-  //       const feats = _.filter(features, { status: sts.status_uuid });
-  //       const iss = _.filter(issues, { status: sts.status_uuid });
-  //       const items = [...feats, ...iss];
-  //       cols = {
-  //         ...cols,
-  //         [sts.status_uuid]: {
-  //           name: sts.name,
-  //           items: _.orderBy(items, 'create_date', 'desc'),
-  //         },
-  //       };
-  //       if (sts.name === 'No Status' && !items.length) {
-  //         delete cols[sts.status_uuid];
-  //       }
-  //     });
-  //     setColumns(cols);
-  //   }
-  // }, [statuses, features, issues]);
+  const handleClose = () => {
+    setAnchorEl(null);
+    setCurrentNumber(null);
+  };
 
-  // const onDragEnd = (result, columns, setColumns) => {
-  //   const featCred = _.find(credentials, { auth_detail: { tool_type: 'Feature' } });
-  //   const issueCred = _.find(credentials, { auth_detail: { tool_type: 'Issue' } });
+  const handleAddClick = (event, id) => {
+    setAddAnchorEl(event.currentTarget);
+    setCurrentColId(id);
+  };
 
-  //   if (!result.destination) return;
-  //   const { source, destination } = result;
+  const handleAddClose = () => {
+    setAddAnchorEl(null);
+    setCurrentColId(null);
+  };
 
-  //   if (source.droppableId !== destination.droppableId) {
-  //     const sourceColumn = columns[source.droppableId];
-  //     const destColumn = columns[destination.droppableId];
-  //     const sourceItems = [...sourceColumn.items];
-  //     const destItems = [...destColumn.items];
-  //     const [removed] = sourceItems.splice(source.index, 1);
-  //     destItems.splice(destination.index, 0, removed);
-  //     setColumns({
-  //       ...columns,
-  //       [source.droppableId]: {
-  //         ...sourceColumn,
-  //         items: sourceItems,
-  //       },
-  //       [destination.droppableId]: {
-  //         ...destColumn,
-  //         items: destItems,
-  //       },
-  //     });
+  useEffect(() => {
+    let cols = {};
+    if (statuses && !_.isEmpty(statuses)) {
+      _.forEach(statuses, (sts) => {
+        const feats = _.filter(features, { status: sts.status_uuid });
+        const iss = _.filter(issues, { status: sts.status_uuid });
+        const items = [...feats, ...iss];
+        cols = {
+          ...cols,
+          [sts.status_uuid]: {
+            name: sts.name,
+            items: _.orderBy(items, 'create_date', 'desc'),
+          },
+        };
+        if (sts.name === 'No Status' && !items.length) {
+          delete cols[sts.status_uuid];
+        }
+      });
+      setColumns(cols);
+    }
+  }, [statuses, features, issues]);
 
-  //     // Update status of the card on drag and drop to other column
-  //     removed.status = destination.droppableId;
-  //     const currentStatData = _.find(statuses, { status_uuid: destination.droppableId });
-  //     removed.column_id = currentStatData.status_tracking_id;
+  const onDragEnd = (result, columns, setColumns) => {
+    const featCred = _.find(credentials, { auth_detail: { tool_type: 'Feature' } });
+    const issueCred = _.find(credentials, { auth_detail: { tool_type: 'Issue' } });
 
-  //     let updateData = {};
-  //     if (removed.issue_uuid) {
-  //       removed.assignees = removed.assignees || [];
-  //       updateData = {
-  //         ...removed,
-  //         ...issueCred?.auth_detail,
-  //       };
-  //       dispatch(updateIssue(updateData));
-  //     } else {
-  //       updateData = {
-  //         ...removed,
-  //         ...featCred?.auth_detail,
-  //       };
-  //       dispatch(updateFeature(updateData));
-  //     }
-  //   } else {
-  //     const column = columns[source.droppableId];
-  //     const copiedItems = [...column.items];
-  //     const [removed] = copiedItems.splice(source.index, 1);
-  //     copiedItems.splice(destination.index, 0, removed);
-  //     setColumns({
-  //       ...columns,
-  //       [source.droppableId]: {
-  //         ...column,
-  //         items: copiedItems,
-  //       },
-  //     });
-  //   }
-  // };
+    if (!result.destination) return;
+    const { source, destination } = result;
+
+    if (source.droppableId !== destination.droppableId) {
+      const sourceColumn = columns[source.droppableId];
+      const destColumn = columns[destination.droppableId];
+      const sourceItems = [...sourceColumn.items];
+      const destItems = [...destColumn.items];
+      const [removed] = sourceItems.splice(source.index, 1);
+      destItems.splice(destination.index, 0, removed);
+      setColumns({
+        ...columns,
+        [source.droppableId]: {
+          ...sourceColumn,
+          items: sourceItems,
+        },
+        [destination.droppableId]: {
+          ...destColumn,
+          items: destItems,
+        },
+      });
+
+      // Update status of the card on drag and drop to other column
+      removed.status = destination.droppableId;
+      const currentStatData = _.find(statuses, { status_uuid: destination.droppableId });
+      removed.column_id = currentStatData.status_tracking_id;
+
+      let updateData = {};
+      if (removed.issue_uuid) {
+        removed.assignees = removed.assignees || [];
+        updateData = {
+          ...removed,
+          ...issueCred?.auth_detail,
+        };
+        updateIssueMutation(updateData);
+      } else {
+        updateData = {
+          ...removed,
+          ...featCred?.auth_detail,
+        };
+        updateFeatureMutation(updateData);
+      }
+    } else {
+      const column = columns[source.droppableId];
+      const copiedItems = [...column.items];
+      const [removed] = copiedItems.splice(source.index, 1);
+      copiedItems.splice(destination.index, 0, removed);
+      setColumns({
+        ...columns,
+        [source.droppableId]: {
+          ...column,
+          items: copiedItems,
+        },
+      });
+    }
+  };
 
   return (
     <>
+      {(isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading) && (
+        <Loader open={isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading} />
+      )}
       {(_.isEmpty(selectedProduct) || _.toNumber(selectedProduct) === 0) && (
         <Typography className={classes.noProduct} component="div" variant="body1">
           No product selected yet. Please select a product to view related features and/or issues.
@@ -259,7 +298,7 @@ const Kanban = ({
           Upgrade to be able to create more features
         </FormHelperText>
       )}
-      {/*
+
       {!!selectedProduct && _.toNumber(selectedProduct) !== 0 && (
         <DragDropContext
           onDragEnd={(result) => {
@@ -565,7 +604,7 @@ const Kanban = ({
             ))}
           </Grid>
         </DragDropContext>
-      )} */}
+      )}
     </>
   );
 };

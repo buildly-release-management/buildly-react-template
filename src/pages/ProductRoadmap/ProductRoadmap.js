@@ -18,15 +18,12 @@ import { getAllProductQuery } from '@react-query/queries/product/getAllProductQu
 import { getAllCredentialQuery } from '@react-query/queries/product/getAllCredentialQuery';
 import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
 import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
-import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
-import { getAllCommentQuery } from '@react-query/queries/release/getAllCommentQuery';
-import { getAllReleaseQuery } from '@react-query/queries/release/getAllReleaseQuery';
-import { getBoardQuery } from '@react-query/queries/product/getBoardQuery';
 import { useThirdPartyToolSyncMutation } from '@react-query/mutations/release/thirdPartyToolSyncMutation';
 import { useCreateFeatureMutation } from '@react-query/mutations/release/createFeatureMutation';
 import { useUpdateProductMutation } from '@react-query/mutations/product/updateProductMutation';
 import { useDeleteFeatureMutation } from '@react-query/mutations/release/deleteFeatureMutation';
 import { useDeleteIssueMutation } from '@react-query/mutations/release/deleteIssueMutation';
+import { useStore } from '@zustand/product/productStore';
 import Kanban from './components/Kanban';
 import Tabular from './components/Tabular';
 import AddFeatures from './forms/AddFeatures';
@@ -94,6 +91,7 @@ const ProductRoadmap = ({ history }) => {
   const organization = user.organization.organization_uuid;
 
   const displayAlert = useAlert();
+  const { activeProduct, setActiveProduct } = useStore();
 
   const subNav = [
     {
@@ -110,8 +108,7 @@ const ProductRoadmap = ({ history }) => {
     || subNav.find((item) => item.value.toLowerCase() === 'tabular')
   ).value;
   const [view, setView] = useState(viewPath);
-  const [selectedProduct, setSelectedProduct] = useState((history && history.location
-    && history.location.state && history.location.state.selected_product) || 0);
+  const [selectedProduct, setSelectedProduct] = useState(activeProduct || 0);
   const [product, setProduct] = useState(null);
   const [upgrade, setUpgrade] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -144,30 +141,6 @@ const ProductRoadmap = ({ history }) => {
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
   );
 
-  const { data: issueData, isLoading: isAllIssueLoading } = useQuery(
-    ['allIssues', selectedProduct],
-    () => getAllIssueQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
-  );
-
-  const { data: commentData, isLoading: isAllCommentLoading } = useQuery(
-    ['allComments', selectedProduct],
-    () => getAllCommentQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
-  );
-
-  const { data: releaseData, isLoading: isAllReleaseLoading } = useQuery(
-    ['allreleases', selectedProduct],
-    () => getAllReleaseQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
-  );
-
-  const { data: boardData, isLoading: isBoardLoading } = useQuery(
-    ['board', selectedProduct],
-    () => getBoardQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
-  );
-
   const { mutate: thirdPartyToolSyncMutation, isLoading: isThirdPartyToolSyncLoading } = useThirdPartyToolSyncMutation(displayAlert);
   const { mutate: createFeatureMutation, isLoading: isCreatingFeatureLoading } = useCreateFeatureMutation(selectedProduct, null, null, displayAlert);
   const { mutate: updateProductMutation, isLoading: isUpdatingProductLoading } = useUpdateProductMutation(organization, null, null, null, displayAlert);
@@ -192,11 +165,6 @@ const ProductRoadmap = ({ history }) => {
       setProduct(_.find(productData, { product_uuid: selectedProduct }));
     }
   }, [selectedProduct, productData]);
-
-  const setActiveProduct = (prod) => {
-    localStorage.setItem('activeProduct', prod);
-    setSelectedProduct(prod);
-  };
 
   const addItem = (type) => {
     let path;
@@ -390,13 +358,12 @@ const ProductRoadmap = ({ history }) => {
 
   return (
     <>
-      {(isAllProductLoading || isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading || isAllReleaseLoading
-      || isBoardLoading || isThirdPartyToolSyncLoading || isCreatingFeatureLoading || isUpdatingProductLoading || isDeletingFeatureLoading || isDeletingIssueLoading)
+      {(isAllProductLoading || isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isThirdPartyToolSyncLoading
+      || isCreatingFeatureLoading || isUpdatingProductLoading || isDeletingFeatureLoading || isDeletingIssueLoading)
         ? (
           <Loader
-            open={isAllProductLoading || isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading
-            || isAllReleaseLoading || isBoardLoading || isThirdPartyToolSyncLoading || isCreatingFeatureLoading || isUpdatingProductLoading
-            || isDeletingFeatureLoading || isDeletingIssueLoading}
+            open={isAllProductLoading || isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isThirdPartyToolSyncLoading
+              || isCreatingFeatureLoading || isUpdatingProductLoading || isDeletingFeatureLoading || isDeletingIssueLoading}
           />
         ) : (
           user.survey_status
@@ -425,6 +392,7 @@ const ProductRoadmap = ({ history }) => {
                           });
                         } else {
                           setActiveProduct(e.target.value);
+                          setSelectedProduct(e.target.value);
                         }
                       }}
                     >
@@ -529,14 +497,11 @@ const ProductRoadmap = ({ history }) => {
                             issueSuggestions={issueSuggestions}
                             upgrade={upgrade}
                             suggestedFeatures={
-                            product && product.product_info && product.product_info.suggestions
-                          }
+                              product && product.product_info && product.product_info.suggestions
+                            }
                             createSuggestedFeature={createSuggestedFeature}
                             removeSuggestedFeature={removeSuggestedFeature}
                             showRelatedIssues={showRelatedIssues}
-                            setDataLoading={isAllProductLoading || isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading
-                            || isAllCommentLoading || isAllReleaseLoading || isBoardLoading || isThirdPartyToolSyncLoading || isCreatingFeatureLoading
-                            || isUpdatingProductLoading || isDeletingFeatureLoading || isDeletingIssueLoading}
                           />
                         )}
                       />
@@ -568,7 +533,12 @@ const ProductRoadmap = ({ history }) => {
                       <Route path={routes.EDIT_ISSUE} component={AddIssues} />
                       <Route path={routes.FEATURE_TO_ISSUE} component={AddIssues} />
                       <Route path={routes.COMMENTS} component={Comments} />
-                      <Route path={routes.SHOW_RELATED_ISSUES} component={ShowRelatedIssues} />
+                      <Route
+                        path={routes.SHOW_RELATED_ISSUES}
+                        render={(renderProps) => (
+                          <ShowRelatedIssues {...renderProps} selectedProduct={selectedProduct} />
+                        )}
+                      />
                       <Route
                         path={routes.ISSUE_SUGGESTIONS}
                         render={(renderProps) => (

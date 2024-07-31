@@ -18,7 +18,7 @@ import { useInput } from '@hooks/useInput';
 import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
-import { useSendPasswordResetLinkMutation } from '../../react-query/mutations/authUser/sendPasswordResetLinkMutation';
+import { useSendPasswordResetLinkMutation } from '@react-query/mutations/authUser/sendPasswordResetLinkMutation';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {

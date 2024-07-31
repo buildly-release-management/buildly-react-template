@@ -1,4 +1,5 @@
 import {assign, createMachine} from 'xstate';
+import { useStore } from '@zustand/product/productStore';
 
 import {loadProducts} from './actions';
 
@@ -43,10 +44,10 @@ export const productMachine = createMachine({
         actions: {
             addProductsToCxt: assign(
                 (cxt, event) => {
-                    const activeProd = localStorage.getItem('activeProduct');
+                    const { activeProduct } = useStore();
 
                     const data: any = event.data
-                    const selectedProduct: any = data.find((item: any) => item.product_uuid === activeProd) || data[0]
+                    const selectedProduct: any = data.find((item: any) => item.product_uuid === activeProduct) || data[0]
                     return {products: data, selectedProduct}
                 }
             ),

@@ -21,9 +21,9 @@ import { useInput } from '@hooks/useInput';
 import { getOrganization } from '@context/User.context';
 import useAlert from '@hooks/useAlert';
 import { useQuery } from 'react-query';
-import { useStore } from '../../../zustand/product/productStore';
-import { getAllThirdPartyToolQuery } from '../../../react-query/queries/product/getAllThirdPartyToolQuery';
-import { useValidateCredentialMutation } from '../../../react-query/mutations/product/validateCredentialMutation';
+import { useStore } from '@zustand/product/productStore';
+import { getAllThirdPartyToolQuery } from '@react-query/queries/product/getAllThirdPartyToolQuery';
+import { useValidateCredentialMutation } from '@react-query/mutations/product/validateCredentialMutation';
 
 const useStyles = makeStyles((theme) => ({
   form: {

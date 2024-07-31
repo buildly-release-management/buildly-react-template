@@ -17,8 +17,8 @@ import Loader from '@components/Loader/Loader';
 import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
-import { UserContext } from '../../../context/User.context';
-import { useCreateCommentMutation } from '../../../react-query/mutations/release/createCommentMutation';
+import { UserContext } from '@context/User.context';
+import { useCreateCommentMutation } from '@react-query/mutations/release/createCommentMutation';
 
 const useStyles = makeStyles((theme) => ({
   formTitle: {

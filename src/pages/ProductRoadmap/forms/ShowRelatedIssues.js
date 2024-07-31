@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import parse from 'html-react-parser';
+import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Card, CardContent, Typography,
 } from '@mui/material';
 import Loader from '@components/Loader/Loader';
 import FormModal from '@components/Modal/FormModal';
+import useAlert from '@hooks/useAlert';
+import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
 
 const useStyles = makeStyles((theme) => ({
   formTitle: {
@@ -28,14 +30,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ShowRelatedIssues = ({
-  location, history, loading, issues,
-}) => {
+const ShowRelatedIssues = ({ location, history, selectedProduct }) => {
   const classes = useStyles();
+  const displayAlert = useAlert();
+
   const redirectTo = location.state && location.state.from;
   const feature = location.state && location.state.feature_uuid;
   const [openFormModal, setFormModal] = useState(true);
   const [relatedIssues, setRelatedIssues] = useState([]);
+
+  const { data: issues, isLoading: isAllIssueLoading } = useQuery(
+    ['allIssues', selectedProduct],
+    () => getAllIssueQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
 
   useEffect(() => {
     setRelatedIssues(_.filter(issues, { feature }));
@@ -57,7 +65,7 @@ const ShowRelatedIssues = ({
           maxWidth="md"
           className={classes.form}
         >
-          {loading && <Loader open={loading} />}
+          {isAllIssueLoading && <Loader open={isAllIssueLoading} />}
           {_.isEmpty(relatedIssues) && (
             <Typography variant="body1" component="div">
               No related issues found.
@@ -81,10 +89,4 @@ const ShowRelatedIssues = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  loading: state.releaseReducer.loading,
-  issues: state.releaseReducer.issues,
-});
-
-export default connect(mapStateToProps)(ShowRelatedIssues);
+export default ShowRelatedIssues;

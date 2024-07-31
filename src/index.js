@@ -1,12 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import App from './App';
 import './i18n';
-import configureStore from './redux/store';
 import './index.css';
 import registerServiceWorker from './serviceWorkerRegistration';
 
@@ -27,19 +25,15 @@ if (window.env.PRODUCTION) {
   document.body.appendChild(script2);
 }
 
-const store = configureStore();
-
 const stripePromise = loadStripe(window.env.STRIPE_KEY);
 
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <QueryClientProvider client={queryClient}>
-    <Provider store={store}>
-      <Elements stripe={stripePromise}>
-        <App />
-      </Elements>
-    </Provider>
+    <Elements stripe={stripePromise}>
+      <App />
+    </Elements>
   </QueryClientProvider>,
 );
 

@@ -5,7 +5,7 @@ import useAlert from '@hooks/useAlert';
 import { Typography } from '@mui/material';
 import Loader from '@components/Loader/Loader';
 import { routes } from '@routes/routesConstants';
-import { useVerifyEmailMutation } from '../../react-query/mutations/authUser/verifyEmailMutation';
+import { useVerifyEmailMutation } from '@react-query/mutations/authUser/verifyEmailMutation';
 
 const useStyles = makeStyles((theme) => ({
   root: {

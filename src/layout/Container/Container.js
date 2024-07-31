@@ -1,4 +1,5 @@
 import React from 'react';
+import _ from 'lodash';
 import { Route, Redirect, Switch } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { Container } from '@mui/material';
@@ -12,11 +13,10 @@ import NewProduct from '@pages/NewProduct/NewProduct';
 import DeveloperForm from '@pages/DeveloperForm/DeveloperForm';
 import ProductPortfolio from '@pages/ProductPortfolio/ProductPortfolio';
 import UserProfile from '@pages/UserProfile/UserProfile';
-import ReleaseList from '../../modules/release/list/ReleaseList';
-import ReleaseDetails from '../../modules/release/details/ReleaseDetails';
-import { GlobalStateProvider } from '../../context/globalState';
-import _ from 'lodash';
-import ProjectSelect from '../../components/ProjectSelect/ProjectSelect';
+import ReleaseList from '@modules/release/list/ReleaseList';
+import ReleaseDetails from '@modules/release/details/ReleaseDetails';
+import { GlobalStateProvider } from '@context/globalState';
+import ProjectSelect from '@components/ProjectSelect/ProjectSelect';
 
 const useStyles = makeStyles((theme) => ({
   root: {

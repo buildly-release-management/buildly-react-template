@@ -15,10 +15,10 @@ import {
 } from '@mui/material';
 import DatePickerComponent from '@components/DatePicker/DatePicker';
 import { useInput } from '@hooks/useInput';
+import { useStore } from '@zustand/product/productStore';
 import {
   BUDGET_CATEGORY, DATABASES, DEPLOYMENTS, HOSTING, LANGUAGES, STORAGES,
 } from '../ProductFormConstants';
-import { useStore } from '../../../zustand/product/productStore';
 
 const useStyles = makeStyles((theme) => ({
   form: {

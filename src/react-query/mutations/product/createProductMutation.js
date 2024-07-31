@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from 'react-query';
 import { httpService } from '@modules/http/http.service';
+import { useStore } from '@zustand/product/productStore';
 
 export const useCreateProductMutation = (organization, history, redirectTo, clearProductFormData, displayAlert) => {
   const queryClient = useQueryClient();
+  const { setActiveProduct } = useStore();
 
   return useMutation(
     async (createProductData) => {
@@ -19,7 +21,7 @@ export const useCreateProductMutation = (organization, history, redirectTo, clea
         clearProductFormData();
         displayAlert('success', 'Product created successfully');
         if (history) {
-          localStorage.setItem('activeProduct', data.data.product_uuid);
+          setActiveProduct(data.data.product_uuid);
           history.push(redirectTo, { selected_product: data.data.product_uuid });
         }
       },

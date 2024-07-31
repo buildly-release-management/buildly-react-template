@@ -38,11 +38,11 @@ import { isMobile } from '@utils/mediaQuery';
 import { useInput } from '@hooks/useInput';
 import useAlert from '@hooks/useAlert';
 import { validators } from '@utils/validators';
-import { oauthService } from '../../modules/oauth/oauth.service';
-import { getOrganizationNameQuery } from '../../react-query/queries/authUser/getOrganizationNameQuery';
-import { getStripeProductQuery } from '../../react-query/queries/authUser/getStripeProductQuery';
-import { useUpdateUserMutation } from '../../react-query/mutations/authUser/updateUserMutation';
-import { useAddSubscriptionMutation } from '../../react-query/mutations/authUser/addSubscriptionMutation';
+import { oauthService } from '@modules/oauth/oauth.service';
+import { getOrganizationNameQuery } from '@react-query/queries/authUser/getOrganizationNameQuery';
+import { getStripeProductQuery } from '@react-query/queries/authUser/getStripeProductQuery';
+import { useUpdateUserMutation } from '@react-query/mutations/authUser/updateUserMutation';
+import { useAddSubscriptionMutation } from '@react-query/mutations/authUser/addSubscriptionMutation';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {

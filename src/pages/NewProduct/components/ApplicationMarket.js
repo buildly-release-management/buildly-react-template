@@ -18,8 +18,8 @@ import {
   TextField,
 } from '@mui/material';
 import { useInput } from '@hooks/useInput';
+import { useStore } from '@zustand/product/productStore';
 import { AVAILABLE_USER_TYPES, BUSSINESS_SEGMENTS } from '../ProductFormConstants';
-import { useStore } from '../../../zustand/product/productStore';
 
 const useStyles = makeStyles((theme) => ({
   form: {

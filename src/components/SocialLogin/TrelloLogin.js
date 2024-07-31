@@ -2,10 +2,10 @@ import React, { useRef } from 'react';
 import { Button } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { providers, toQuery } from '@utils/socialLogin';
-import PopupWindow from './PopupWindow';
 import useAlert from '@hooks/useAlert';
-import { useSocialLoginMutation } from '../../react-query/mutations/authUser/socialLoginMutation';
-import { routes } from '../../routes/routesConstants';
+import { useSocialLoginMutation } from '@react-query/mutations/authUser/socialLoginMutation';
+import { routes } from '@routes/routesConstants';
+import PopupWindow from './PopupWindow';
 
 const TrelloLogin = ({ history, disabled }) => {
   const popup = useRef(null);

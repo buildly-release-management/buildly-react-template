@@ -38,21 +38,22 @@ import { addColorsAndIcons, getReleaseBudgetData } from './utils';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Grid, TextField, Typography } from '@mui/material';
 import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery.js';
+import { useStore } from '@zustand/product/productStore';
 
 const Insights = () => {
   let displayReport = true;
-  const activeProd = localStorage.getItem('activeProduct');
+  const { activeProduct, setActiveProduct } = useStore();
   const user = useContext(UserContext);
   const displayAlert = useAlert();
 
   // states
-  const [selectedProduct, setSelectedProduct] = useState(activeProd || 0);
+  const [selectedProduct, setSelectedProduct] = useState(activeProduct || 0);
   const [productData, setProductData] = useState([]);
   const [releaseData, setReleaseData] = useState([]);
   const [architectureImg, setArchitectureImg] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const { data: products, isLoading: isAllProductLoading } = useQuery(
+  const { data: products, isLoading: areProductsLoading } = useQuery(
     ['allProducts', user.organization.organization_uuid],
     () => getAllProductQuery(user.organization.organization_uuid, displayAlert),
     { refetchOnWindowFocus: false },
@@ -229,15 +230,9 @@ const Insights = () => {
     setAnchorEl(null);
   };
 
-  // Set selected product
-  const setActiveProduct = (prod) => {
-    localStorage.setItem('activeProduct', prod);
-    setSelectedProduct(prod);
-  };
-
   return (
     <>
-      {loading && <Loader open={loading || isAllProductLoading} />}
+      {loading && <Loader open={loading || areProductsLoading} />}
       <div className="insightsSelectedProductRoot">
         <Grid container mb={2} alignItems="center">
           <Grid item md={4}>
@@ -257,6 +252,7 @@ const Insights = () => {
               value={selectedProduct}
               onChange={(e) => {
                 setActiveProduct(e.target.value);
+                setSelectedProduct(e.target.value);
               }}
             >
               <MenuItem value={0}>Select</MenuItem>

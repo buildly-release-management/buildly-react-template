@@ -19,7 +19,7 @@ import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
 import { isMobile } from '@utils/mediaQuery';
-import { useResetPasswordMutation } from '../../react-query/mutations/authUser/resetPasswordMutation';
+import { useResetPasswordMutation } from '@react-query/mutations/authUser/resetPasswordMutation';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {

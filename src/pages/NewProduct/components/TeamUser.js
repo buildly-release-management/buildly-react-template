@@ -26,10 +26,10 @@ import {
 import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
 import { useInput } from '@hooks/useInput';
 import Loader from '@components/Loader/Loader';
-import { ROLES } from '../ProductFormConstants';
 import useAlert from '@hooks/useAlert';
-import { useStore } from '../../../zustand/product/productStore';
-import { useDocIdentifierMutation } from '../../../react-query/mutations/product/docIdentifierMutation';
+import { useStore } from '@zustand/product/productStore';
+import { useDocIdentifierMutation } from '@react-query/mutations/product/docIdentifierMutation';
+import { ROLES } from '../ProductFormConstants';
 
 const useStyles = makeStyles((theme) => ({
   form: {

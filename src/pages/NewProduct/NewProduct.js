@@ -212,7 +212,7 @@ const NewProductForm = (props) => {
   const [featCred, setFeatCred] = useState(null);
   const [issueCred, setIssueCred] = useState(null);
 
-  const { data: allCredentialData, isLoading: isAllCredentialLoading } = useQuery(
+  const { data: allCredentialData, isLoading: areCredentialsLoading } = useQuery(
     ['allCredentials', product_uuid],
     () => getAllCredentialQuery(product_uuid, displayAlert),
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) },
@@ -298,7 +298,7 @@ const NewProductForm = (props) => {
           handleConfirmModal={handleConfirmModal}
         >
           <div className={classes.root}>
-            {isAllCredentialLoading && <Loader open={isAllCredentialLoading} />}
+            {areCredentialsLoading && <Loader open={areCredentialsLoading} />}
             <Hidden smDown>
               <Grid container alignItems="center" justifyContent="center">
                 <Grid item sm={10}>
