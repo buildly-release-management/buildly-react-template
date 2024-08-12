@@ -321,6 +321,7 @@ const ProductRoadmap = ({
   };
 
   const configureStatus = () => {
+    console.log('configureStatus');
     history.push(routes.STATUS_BOARD, {
       from: location.pathname,
       product_uuid: selectedProduct,
@@ -371,226 +372,228 @@ const ProductRoadmap = ({
 
   return (
     <>
-      {(loading || !loaded || !user || isDataLoading) ? <Loader open={loading || !loaded || !user || isDataLoading} /> : (
-        user.survey_status === true ? (
-          <div className={classes.roadmapRoot}>
-            <Grid container mb={2} alignItems="center">
-              <Grid item md={4}>
-                <Typography variant="h4">
-                  Product Roadmap
-                </Typography>
+      {(loading || !loaded || !user || isDataLoading) ?
+        <Loader open={loading || !loaded || !user || isDataLoading}/> : (
+          user.survey_status === true ? (
+            <div className={classes.roadmapRoot}>
+              <Grid container mb={2} alignItems="center">
+                <Grid item md={4}>
+                  <Typography variant="h4">
+                    Product Roadmap
+                  </Typography>
+                </Grid>
+                <Grid item md={8} className={classes.menuRight}>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    select
+                    id="selected-product"
+                    color="primary"
+                    label="Product Options"
+                    className={classes.selectedProduct}
+                    value={selectedProduct}
+                    onChange={(e) => {
+                      if (e.target.value === -1) {
+                        history.push(routes.NEW_PRODUCT, {
+                          from: routes.PRODUCT_ROADMAP_TABULAR,
+                        });
+                      } else {
+                        setActiveProduct(e.target.value);
+                      }
+                    }}
+                  >
+                    <MenuItem value={0}>Select</MenuItem>
+                    <MenuItem value={-1}>Create New Product</MenuItem>
+                    {products && !_.isEmpty(products)
+                      && _.map(products, (prod) => (
+                        <MenuItem
+                          key={`product-${prod.product_uuid}`}
+                          value={prod.product_uuid}
+                        >
+                          {prod.name}
+                        </MenuItem>
+                      ))}
+                  </TextField>
+                  {
+                    (
+                      product && !_.isEmpty(product.third_party_tool)
+                      && _.includes(_.uniq(_.map(statuses, 'product_uuid')), selectedProduct) && (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={syncDataFromTools}
+                          className={classes.syncDataFromTools}
+                        >
+                          <SyncIcon/>
+                          {' '}
+                          Sync Data from Tool(s)
+                        </Button>
+                      )
+                    )
+                  }
+                </Grid>
               </Grid>
-              <Grid item md={8} className={classes.menuRight}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  select
-                  id="selected-product"
-                  color="primary"
-                  label="Product Options"
-                  className={classes.selectedProduct}
-                  value={selectedProduct}
-                  onChange={(e) => {
-                    if (e.target.value === -1) {
-                      history.push(routes.NEW_PRODUCT, {
-                        from: routes.PRODUCT_ROADMAP_TABULAR,
-                      });
-                    } else {
-                      setActiveProduct(e.target.value);
-                    }
-                  }}
-                >
-                  <MenuItem value={0}>Select</MenuItem>
-                  <MenuItem value={-1}>Create New Product</MenuItem>
-                  {products && !_.isEmpty(products)
-                    && _.map(products, (prod) => (
-                      <MenuItem
-                        key={`product-${prod.product_uuid}`}
-                        value={prod.product_uuid}
-                      >
-                        {prod.name}
-                      </MenuItem>
+              <Grid mb={3} container justifyContent="center">
+                <Grid item className={classes.viewTabs}>
+                  <Tabs value={view} onChange={(event, vw) => setView(vw)}>
+                    {subNav.map((itemProps, index) => (
+                      <Tab {...itemProps} key={`tab${index}:${itemProps.value}`}/>
                     ))}
-                </TextField>
-                {
-                  (
-                    product && !_.isEmpty(product.third_party_tool)
-                    && _.includes(_.uniq(_.map(statuses, 'product_uuid')), selectedProduct) && (
+                  </Tabs>
+                </Grid>
+              </Grid>
+              {selectedProduct && _.toNumber(selectedProduct) !== 0 && !_.includes(_.uniq(_.map(statuses, 'product_uuid')), selectedProduct)
+                ? (
+                  <>
+                    <Grid item xs={4} className={classes.configBoard}>
+                      <Typography component="div" variant="h4" align="center">
+                        Configure Project Board
+                      </Typography>
+                      <Typography variant="subtitle1" align="center">
+                        Add a configuration to get started
+                      </Typography>
                       <Button
                         variant="contained"
                         color="primary"
-                        onClick={syncDataFromTools}
-                        className={classes.syncDataFromTools}
+                        onClick={() => {
+                          if (product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
+                            && (
+                              (_.isEqual(_.size(product.third_party_tool), 2) && _.isEmpty(product.feature_tool_detail) && _.isEmpty(product.issue_tool_detail))
+                              || (_.isEqual(_.size(product.third_party_tool), 1) && (_.isEmpty(product.feature_tool_detail) || _.isEmpty(product.issue_tool_detail)))
+                            )) {
+                            configureBoard();
+                          } else {
+                            configureStatus();
+                          }
+                        }}
+                        className={classes.configBoardButton}
                       >
-                        <SyncIcon />
-                        {' '}
-                        Sync Data from Tool(s)
+                        Add Configuration
                       </Button>
-                    )
-                  )
-                }
-              </Grid>
-            </Grid>
-            <Grid mb={3} container justifyContent="center">
-              <Grid item className={classes.viewTabs}>
-                <Tabs value={view} onChange={(event, vw) => setView(vw)}>
-                  {subNav.map((itemProps, index) => (
-                    <Tab {...itemProps} key={`tab${index}:${itemProps.value}`} />
-                  ))}
-                </Tabs>
-              </Grid>
-            </Grid>
-            {selectedProduct && _.toNumber(selectedProduct) !== 0 && !_.includes(_.uniq(_.map(statuses, 'product_uuid')), selectedProduct)
-              ? (
-                <>
-                  <Grid item xs={4} className={classes.configBoard}>
-                    <Typography component="div" variant="h4" align="center">
-                      Configure Project Board
-                    </Typography>
-                    <Typography variant="subtitle1" align="center">
-                      Add a configuration to get started
-                    </Typography>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        if (product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
-                          && (
-                            (_.isEqual(_.size(product.third_party_tool), 2) && _.isEmpty(product.feature_tool_detail) && _.isEmpty(product.issue_tool_detail))
-                            || (_.isEqual(_.size(product.third_party_tool), 1) && (_.isEmpty(product.feature_tool_detail) || _.isEmpty(product.issue_tool_detail)))
-                          )) {
-                          configureBoard();
-                        } else {
-                          configureStatus();
-                        }
-                      }}
-                      className={classes.configBoardButton}
-                    >
-                      Add Configuration
-                    </Button>
-                  </Grid>
-                  {
-                    product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
+                    </Grid>
+                    {
+                      product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
                       && (
                         (_.isEqual(_.size(product.third_party_tool), 2) && _.isEmpty(product.feature_tool_detail) && _.isEmpty(product.issue_tool_detail))
                         || (_.isEqual(_.size(product.third_party_tool), 1) && (_.isEmpty(product.feature_tool_detail) || _.isEmpty(product.issue_tool_detail)))
                       )
-                      ? <Route path={routes.TOOL_BOARD} component={ToolBoard} />
-                      : <Route path={routes.STATUS_BOARD} component={StatusBoard} />
-                  }
-                </>
-              ) : (
-                <>
-                  <ConfirmModal
-                    open={openDeleteModal}
-                    setOpen={setOpenDeleteModal}
-                    submitAction={handleDeleteModal}
-                    title="Are you sure you want to delete?"
-                    submitText="Delete"
-                  />
-                  <Route
-                    path={routes.PRODUCT_ROADMAP_TABULAR}
-                    render={(prps) => (
-                      <Tabular
-                        {...prps}
-                        selectedProduct={selectedProduct}
-                        addItem={addItem}
-                        editItem={editItem}
-                        deleteItem={deleteItem}
-                        commentItem={commentItem}
-                        issueSuggestions={issueSuggestions}
-                        upgrade={upgrade}
-                        suggestedFeatures={
-                          product && product.product_info && product.product_info.suggestions
-                        }
-                        createSuggestedFeature={createSuggestedFeature}
-                        removeSuggestedFeature={removeSuggestedFeature}
-                        showRelatedIssues={showRelatedIssues}
-                        setDataLoading={setDataLoading}
-                      />
-                    )}
-                  />
-                  <Route
-                    path={routes.PRODUCT_ROADMAP_KANBAN}
-                    render={(prps) => (
-                      <Kanban
-                        {...prps}
-                        selectedProduct={selectedProduct}
-                        addItem={addItem}
-                        editItem={editItem}
-                        deleteItem={deleteItem}
-                        commentItem={commentItem}
-                        issueSuggestions={issueSuggestions}
-                        upgrade={upgrade}
-                        suggestedFeatures={
-                          product && product.product_info && product.product_info.suggestions
-                        }
-                        createSuggestedFeature={createSuggestedFeature}
-                        removeSuggestedFeature={removeSuggestedFeature}
-                        showRelatedIssues={showRelatedIssues}
-                      />
-                    )}
-                  />
-                  <Route path={routes.ADD_FEATURE} component={AddFeatures} />
-                  <Route path={routes.EDIT_FEATURE} component={AddFeatures} />
-                  <Route path={routes.VIEW_FEATURE} component={AddFeatures} />
-                  <Route path={routes.ADD_ISSUE} component={AddIssues} />
-                  <Route path={routes.EDIT_ISSUE} component={AddIssues} />
-                  <Route path={routes.FEATURE_TO_ISSUE} component={AddIssues} />
-                  <Route path={routes.COMMENTS} component={Comments} />
-                  <Route path={routes.SHOW_RELATED_ISSUES} component={ShowRelatedIssues} />
-                  <Route
-                    path={routes.ISSUE_SUGGESTIONS}
-                    render={(renderProps) => (
-                      <IssueSuggestions {...renderProps} convertIssue={convertIssue} />
-                    )}
-                  />
-                </>
-              )}
-          </div>
-        ) : (
-          <div className={classes.firstTimeMessage}>
-            {user.user_type.toLowerCase() === 'developer'
-              ? (
-                <>
-                  <Typography variant="h6" component="h6">
-                    Thanks for registering.
-                    It will be greatly appreciated if you could complete out a
-                    short survey to assist us guide the application's future path
-                    and find a match within the Buildly ecosystem of tools.
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    type="button"
-                    className={classes.firstTimeButton}
-                    onClick={() => history.push(routes.DEVELOPER_FORM)}
-                  >
-                    Fill in the developer survey form!
-                  </Button>
-                </>
-              )
-              : (
-                <>
-                  <Typography variant="h6" component="h6">
-                    Thanks for registering.
-                    To get you started we want to take your through a new product
-                    wizard. This will help you get oriented with the system, and
-                    create your first product with Buildly Product Labs!
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    type="button"
-                    className={classes.firstTimeButton}
-                    onClick={() => history.push(routes.NEW_PRODUCT)}
-                  >
-                    Let's get started!
-                  </Button>
-                </>
-              )}
-          </div>
-        )
-      )}
-      <Chatbot />
+                        ? <Route path={routes.TOOL_BOARD} component={ToolBoard}/>
+                        : <Route path={routes.STATUS_BOARD} component={StatusBoard}/>
+                    }
+                  </>
+                ) : (
+                  <>
+                    <ConfirmModal
+                      open={openDeleteModal}
+                      setOpen={setOpenDeleteModal}
+                      submitAction={handleDeleteModal}
+                      title="Are you sure you want to delete?"
+                      submitText="Delete"
+                    />
+                    <Route
+                      path={routes.PRODUCT_ROADMAP_TABULAR}
+                      render={(prps) => (
+                        <Tabular
+                          {...prps}
+                          selectedProduct={selectedProduct}
+                          addItem={addItem}
+                          editItem={editItem}
+                          deleteItem={deleteItem}
+                          commentItem={commentItem}
+                          issueSuggestions={issueSuggestions}
+                          upgrade={upgrade}
+                          suggestedFeatures={
+                            product && product.product_info && product.product_info.suggestions
+                          }
+                          createSuggestedFeature={createSuggestedFeature}
+                          removeSuggestedFeature={removeSuggestedFeature}
+                          showRelatedIssues={showRelatedIssues}
+                          setDataLoading={setDataLoading}
+                        />
+                      )}
+                    />
+                    <Route
+                      path={routes.PRODUCT_ROADMAP_KANBAN}
+                      render={(prps) => (
+                        <Kanban
+                          {...prps}
+                          selectedProduct={selectedProduct}
+                          addItem={addItem}
+                          editItem={editItem}
+                          deleteItem={deleteItem}
+                          commentItem={commentItem}
+                          issueSuggestions={issueSuggestions}
+                          editBoard={configureBoard}
+                          upgrade={upgrade}
+                          suggestedFeatures={
+                            product && product.product_info && product.product_info.suggestions
+                          }
+                          createSuggestedFeature={createSuggestedFeature}
+                          removeSuggestedFeature={removeSuggestedFeature}
+                          showRelatedIssues={showRelatedIssues}
+                        />
+                      )}
+                    />
+                    <Route path={routes.ADD_FEATURE} component={AddFeatures}/>
+                    <Route path={routes.EDIT_FEATURE} component={AddFeatures}/>
+                    <Route path={routes.VIEW_FEATURE} component={AddFeatures}/>
+                    <Route path={routes.ADD_ISSUE} component={AddIssues}/>
+                    <Route path={routes.EDIT_ISSUE} component={AddIssues}/>
+                    <Route path={routes.FEATURE_TO_ISSUE} component={AddIssues}/>
+                    <Route path={routes.COMMENTS} component={Comments}/>
+                    <Route path={routes.SHOW_RELATED_ISSUES} component={ShowRelatedIssues}/>
+                    <Route
+                      path={routes.ISSUE_SUGGESTIONS}
+                      render={(renderProps) => (
+                        <IssueSuggestions {...renderProps} convertIssue={convertIssue}/>
+                      )}
+                    />
+                  </>
+                )}
+            </div>
+          ) : (
+            <div className={classes.firstTimeMessage}>
+              {user.user_type.toLowerCase() === 'developer'
+                ? (
+                  <>
+                    <Typography variant="h6" component="h6">
+                      Thanks for registering.
+                      It will be greatly appreciated if you could complete out a
+                      short survey to assist us guide the application's future path
+                      and find a match within the Buildly ecosystem of tools.
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      type="button"
+                      className={classes.firstTimeButton}
+                      onClick={() => history.push(routes.DEVELOPER_FORM)}
+                    >
+                      Fill in the developer survey form!
+                    </Button>
+                  </>
+                )
+                : (
+                  <>
+                    <Typography variant="h6" component="h6">
+                      Thanks for registering.
+                      To get you started we want to take your through a new product
+                      wizard. This will help you get oriented with the system, and
+                      create your first product with Buildly Product Labs!
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      type="button"
+                      className={classes.firstTimeButton}
+                      onClick={() => history.push(routes.NEW_PRODUCT)}
+                    >
+                      Let's get started!
+                    </Button>
+                  </>
+                )}
+            </div>
+          )
+        )}
+      <Chatbot/>
     </>
   );
 };

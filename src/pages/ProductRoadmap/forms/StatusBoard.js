@@ -133,6 +133,7 @@ const StatusBoard = ({
 
   return (
     <>
+      <h1>Configure Project Board</h1>
       {openFormModal && (
         <FormModal
           open={openFormModal}
