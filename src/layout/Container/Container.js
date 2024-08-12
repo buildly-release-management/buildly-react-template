@@ -13,10 +13,8 @@ import NewProduct from '@pages/NewProduct/NewProduct';
 import DeveloperForm from '@pages/DeveloperForm/DeveloperForm';
 import ProductPortfolio from '@pages/ProductPortfolio/ProductPortfolio';
 import UserProfile from '@pages/UserProfile/UserProfile';
-import ReleaseList from '@modules/release/list/ReleaseList';
-import ReleaseDetails from '@modules/release/details/ReleaseDetails';
-import { GlobalStateProvider } from '@context/globalState';
-import ProjectSelect from '@components/ProjectSelect/ProjectSelect';
+import ReleaseList from '@pages/ReleaseList/ReleaseList';
+import ReleaseDetails from '@pages/ReleaseDetails/ReleaseDetails';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -35,39 +33,33 @@ const useStyles = makeStyles((theme) => ({
 
 const ContainerDashboard = ({ location, history }) => {
   const classes = useStyles();
-  const { organization } = getUser();
 
   return (
     <div className={classes.root}>
-      <GlobalStateProvider>
-        <UserContext.Provider value={getUser()}>
-          <TopBar
-            location={location}
-            history={history}
-          />
-          <Container className={classes.content}>
-            {location && location.pathname && _.includes(routes.RELEASE, location.pathname) && (
-              <ProjectSelect orgUuid={organization?.organization_uuid} />
-            )}
-            <Switch>
-              <Route
-                exact
-                path={routes.APP}
-                render={() => <Redirect to={routes.PRODUCT_PORTFOLIO} />}
-              />
-              <Route exact path={`${routes.RELEASE}/:releaseUuid`} component={ReleaseDetails} />
-              <Route path={routes.PRODUCT_ROADMAP} component={ProductRoadmap} />
-              <Route path={routes.USER_PROFILE} component={UserProfile} />
-              <Route path={routes.USER_MANAGEMENT} component={UserManagement} />
-              <Route path={routes.NEW_PRODUCT} component={NewProduct} />
-              <Route path={routes.DEVELOPER_FORM} component={DeveloperForm} />
-              <Route path={routes.PRODUCT_PORTFOLIO} component={ProductPortfolio} />
-              <Route path={routes.RELEASE} component={ReleaseList} />
-              <Route path={routes.INSIGHTS} component={Insights} />
-            </Switch>
-          </Container>
-        </UserContext.Provider>
-      </GlobalStateProvider>
+      <UserContext.Provider value={getUser()}>
+        <TopBar
+          location={location}
+          history={history}
+        />
+        <Container className={classes.content}>
+          <Switch>
+            <Route
+              exact
+              path={routes.APP}
+              render={() => <Redirect to={routes.PRODUCT_PORTFOLIO} />}
+            />
+            <Route exact path={`${routes.RELEASE}/:releaseUuid`} component={ReleaseDetails} />
+            <Route path={routes.PRODUCT_ROADMAP} component={ProductRoadmap} />
+            <Route path={routes.USER_PROFILE} component={UserProfile} />
+            <Route path={routes.USER_MANAGEMENT} component={UserManagement} />
+            <Route path={routes.NEW_PRODUCT} component={NewProduct} />
+            <Route path={routes.DEVELOPER_FORM} component={DeveloperForm} />
+            <Route path={routes.PRODUCT_PORTFOLIO} component={ProductPortfolio} />
+            <Route path={routes.RELEASE} component={ReleaseList} />
+            <Route path={routes.INSIGHTS} component={Insights} />
+          </Switch>
+        </Container>
+      </UserContext.Provider>
     </div>
   );
 };

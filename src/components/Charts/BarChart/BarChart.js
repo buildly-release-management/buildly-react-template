@@ -1,5 +1,4 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8,8 +7,8 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js";
-import { Bar } from "react-chartjs-2";
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -17,20 +16,14 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 // style={{ maxHeight: "600px" }}
 
 const BarChart = ({
-  id,
-  labels,
-  label,
-  data,
-  backgroundColor,
-  borderWidth,
-  borderColor,
-}: any) => {
+  id, labels, label, data, backgroundColor, borderWidth, borderColor,
+}) => {
   const options = {
     plugins: {
       title: {
@@ -54,16 +47,6 @@ const BarChart = ({
     datasets: data,
   };
   return <Bar id={id} options={options} data={chartData} />;
-};
-
-BarChart.propTypes = {
-  id: PropTypes.string.isRequired,
-  labels: PropTypes.array.isRequired,
-  label: PropTypes.string,
-  data: PropTypes.array.isRequired,
-  backgroundColor: PropTypes.string,
-  borderWidth: PropTypes.number,
-  borderColor: PropTypes.string,
 };
 
 export default BarChart;

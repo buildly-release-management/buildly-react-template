@@ -1,3 +1,28 @@
+.release-list-menu-right {
+  margin-top: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.release-list-selected-product {
+  width: 250px;
+}
+.release-list-selected-product .MuiOutlinedInput-notchedOutline {
+  border-color: #F9943B;
+}
+.release-list-selected-product .MuiInputBase-input {
+  padding-top: 9.6px;
+  padding-bottom: 9.6px;
+}
+
+.release-list-no-product {
+  margin-top: 150px;
+  text-align: center;
+}
+
 .releases-list-header {
   max-width: 100% !important;
   display: flex;

@@ -1,5 +1,4 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -7,13 +6,15 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js";
-import { Doughnut } from "react-chartjs-2";
+} from 'chart.js';
+import { Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, LinearScale, Title, Tooltip, Legend);
 
-const DoughnutChart = ({ id, labels, label, data }: any) => {
-  const backgroundColor = ["#0D5595", "#C91B1A", "#F8943C"];
+const DoughnutChart = ({
+  id, labels, label, data,
+}) => {
+  const backgroundColor = ['#0D5595', '#C91B1A', '#F8943C'];
   const chartData = { labels, datasets: [{ label, data, backgroundColor }] };
 
   const options = {
@@ -26,7 +27,7 @@ const DoughnutChart = ({ id, labels, label, data }: any) => {
         text: label,
       },
       emptyDoughnut: {
-        color: "rgba(255, 128, 0, 0.5)",
+        color: 'rgba(255, 128, 0, 0.5)',
         width: 2,
         radiusDecrease: 20,
       },
@@ -34,13 +35,6 @@ const DoughnutChart = ({ id, labels, label, data }: any) => {
   };
 
   return <Doughnut id={id} options={options} data={chartData} />;
-};
-
-DoughnutChart.propTypes = {
-  id: PropTypes.string.isRequired,
-  labels: PropTypes.array.isRequired,
-  label: PropTypes.string.isRequired,
-  data: PropTypes.array.isRequired,
 };
 
 export default DoughnutChart;

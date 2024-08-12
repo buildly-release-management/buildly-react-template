@@ -1,14 +1,14 @@
-import "./ReleaseForm.css";
-import Form from "react-bootstrap/Form";
-import React, { useEffect, useState } from "react";
-import { Release } from "../../../../interfaces/release";
-import { Button } from "@mui/material";
-import { ReleaseService } from "../../../../services/release.service";
+import React, { useEffect, useState } from 'react';
+import Form from 'react-bootstrap/Form';
+import { Button } from '@mui/material';
+import Loader from '@components/Loader/Loader';
+import { useUpdateReleaseMutation } from '@react-query/mutations/release/updateReleaseMutation';
+import './ReleaseForm.css';
 
-const releaseService = new ReleaseService();
+const ReleaseForm = ({ releasesDetails, displayAlert }) => {
+  const [formData, setFormData] = useState({});
 
-function ReleaseForm({ releasesDetails }: any) {
-  const [formData, setFormData] = useState<Release | any>({});
+  const { mutate: updateReleaseMutation, isLoading: isUpdatingReleaseLoading } = useUpdateReleaseMutation(releasesDetails.release_uuid, displayAlert);
 
   useEffect(() => {
     setFormData({});
@@ -23,16 +23,16 @@ function ReleaseForm({ releasesDetails }: any) {
     }
   }, []);
 
-  const updateFormData = (e: any) => {
+  const updateFormData = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
-
-  const submitRelease = (event: any) => {
+  console.log(formData);
+  const submitRelease = (event) => {
     event.preventDefault();
-    releaseService.submitRelease(formData).then();
+    updateReleaseMutation(formData);
   };
 
   const resetForm = () => {
@@ -47,6 +47,7 @@ function ReleaseForm({ releasesDetails }: any) {
 
   return (
     <>
+      {isUpdatingReleaseLoading && <Loader open={isUpdatingReleaseLoading} />}
       <Form noValidate>
         <Form.Group className="mb-3 col-md-6 col-sm-12" controlId="name">
           <Form.Label>Name*</Form.Label>
@@ -83,6 +84,7 @@ function ReleaseForm({ releasesDetails }: any) {
           />
         </Form.Group>
       </Form>
+
       <div className="d-flex flex-row justify-content-end">
         <Button
           className="mx-2"
@@ -108,6 +110,6 @@ function ReleaseForm({ releasesDetails }: any) {
       </div>
     </>
   );
-}
+};
 
 export default ReleaseForm;

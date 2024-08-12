@@ -1,12 +1,10 @@
-import { useActor, useSelector } from "@xstate/react";
-import Table from "react-bootstrap/Table";
+import React, { useContext, useEffect, useState } from 'react';
+import _ from 'lodash';
 import { useQuery } from 'react-query';
-import { Release } from "../../../interfaces/release";
-import React, { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Dropdown, ProgressBar } from "react-bootstrap";
-import DoughnutChart from "../../../components/Charts/Doughnut";
-import BarChart from "../../../components/Charts/BarChart";
+import { Link } from 'react-router-dom';
+import { Dropdown, ProgressBar } from 'react-bootstrap';
+import DoughnutChart from '@components/Charts/Doughnut/DoughnutChart';
+import BarChart from '@components/Charts/BarChart/BarChart';
 import {
   Autocomplete,
   Box,
@@ -14,6 +12,7 @@ import {
   Checkbox,
   Collapse,
   IconButton,
+  Paper,
   TableBody,
   TableCell,
   TableContainer,
@@ -21,303 +20,224 @@ import {
   TableRow,
   TextField,
   Typography,
-} from "@mui/material";
-import Paper from "@mui/material/Paper";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
-import Modal from "react-bootstrap/Modal";
-import Form from "react-bootstrap/Form";
-import { HttpService } from "../../../services/http.service";
-import Tooltip from "@mui/material/Tooltip";
-import "./ReleaseList.css";
-import { GlobalStateContext } from "@context/globalState";
-import Chatbot from "@components/Chatbot/Chatbot";
-import { routes } from "@routes/routesConstants";
-import Loader from "@components/Loader/Loader";
-import _ from "lodash";
+  Tooltip,
+  MenuItem,
+  Grid,
+} from '@mui/material';
+import {
+  KeyboardArrowUp as KeyboardArrowUpIcon,
+  KeyboardArrowDown as KeyboardArrowDownIcon,
+  CheckBox as CheckBoxIcon,
+  CheckBoxOutlineBlank as CheckBoxOutlineBlankIcon,
+} from '@mui/icons-material';
+import { Modal, Form, Table } from 'react-bootstrap';
+import Chatbot from '@components/Chatbot/Chatbot';
+import Loader from '@components/Loader/Loader';
+import { UserContext } from '@context/User.context';
 import useAlert from '@hooks/useAlert';
+import { routes } from '@routes/routesConstants';
+import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery';
+import { getAllReleaseQuery } from '@react-query/queries/release/getAllReleaseQuery';
 import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
 import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
+import { getReleaseSummaryQuery } from '@react-query/queries/release/getReleaseSummaryQuery';
+import { useCreateReleaseMutation } from '@react-query/mutations/release/createReleaseMutation';
+import { useDeleteReleaseMutation } from '@react-query/mutations/release/deleteReleaseMutation';
+import { useStore } from '@zustand/product/productStore';
+import './ReleaseList.css';
 
-const httpService = new HttpService();
+const ReleaseList = () => {
+  const user = useContext(UserContext);
+  const organization = user.organization.organization_uuid;
 
-interface BarChartData {
-  label: string;
-  key: string;
-  backgroundColor: string;
-  data: number[];
-}
-
-function ReleaseList() {
   const displayAlert = useAlert();
+  const { activeProduct, setActiveProduct } = useStore();
 
-  const [releasesSummary, setReleasesSummary] = useState(null as any);
-  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(activeProduct || 0);
+  const [releasesSummary, setReleasesSummary] = useState(null);
+  const [displayReleases, setDisplayReleases] = useState([]);
 
-  const globalContext = useContext(GlobalStateContext);
-  const [productState] = useActor(globalContext.productMachineService);
-  const [releaseState, sendRelease] = useActor(
-    globalContext.releaseMachineService
-  );
-  const selectCurrentProduct = (state: any) => state.context.selectedProduct;
-  const selectReleases = (state: any) => state.context.releases;
+  const [selectedFeatures, setSelectedFeatures] = useState([]);
 
-  const [selectedFeatures, setSelectedFeatures] = useState<any>([]);
+  const [showReleaseModal, setShow] = useState(false);
+  const [formData, setFormData] = useState({});
 
   const uncheckedIcon = <CheckBoxOutlineBlankIcon fontSize="small" />;
   const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
-  const currentProduct = useSelector(
-    globalContext.productMachineService,
-    selectCurrentProduct
+  const { data: productData, isLoading: isAllProductLoading } = useQuery(
+    ['allProducts', organization],
+    () => getAllProductQuery(organization, displayAlert),
+    { refetchOnWindowFocus: false },
   );
-  const releases = useSelector(
-    globalContext.releaseMachineService,
-    selectReleases
+
+  const { data: releases, isLoading: isAllReleaseLoading } = useQuery(
+    ['allReleases', selectedProduct],
+    () => getAllReleaseQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
   );
 
   const { data: features, isLoading: isAllFeatureLoading } = useQuery(
-    ['allFeatures', selectCurrentProduct],
-    () => getAllFeatureQuery(selectCurrentProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectCurrentProduct) && !_.isEqual(_.toNumber(selectCurrentProduct), 0) },
+    ['allFeatures', selectedProduct],
+    () => getAllFeatureQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
   );
 
   const { data: issues, isLoading: isAllIssueLoading } = useQuery(
-    ['allIssues', selectCurrentProduct],
-    () => getAllIssueQuery(selectCurrentProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectCurrentProduct) && !_.isEqual(_.toNumber(selectCurrentProduct), 0) },
+    ['allIssues', selectedProduct],
+    () => getAllIssueQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
   );
 
+  const { data: releaseDetails, isLoading: isReleaseDetailsLoading } = useQuery(
+    ['releaseSummary', selectedProduct],
+    () => getReleaseSummaryQuery(null, selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+  );
+
+  const { mutate: createReleaseMutation, isLoading: isCreatingReleaseLoading } = useCreateReleaseMutation(selectedProduct, null, null, displayAlert);
+  const { mutate: deleteReleaseMutation, isLoading: isDeletingReleaseLoading } = useDeleteReleaseMutation(selectedProduct, null, null, displayAlert);
+
+  let featuresReleaseNames = [];
+  let issuesReleaseNames = [];
+
   useEffect(() => {
-    if (releases && releases.length > 0) {
-      setSummaryLoading(true);
-      releases.sort((a: any, b: any) =>
-        a.release_date.localeCompare(b.release_date)
+    if (!_.isEmpty(releases)) {
+      _.orderBy(releases, 'release_date');
+      let modifiedReleases = [];
+      _.forEach(releases, (rel) => {
+        modifiedReleases = [
+          ...modifiedReleases,
+          {
+            ...rel,
+            featuresList: _.filter(features, { release_uuid: rel.release_uuid }),
+          },
+        ];
+      });
+      console.log(modifiedReleases);
+      setDisplayReleases(modifiedReleases);
+    }
+  }, [releases, features]);
+
+  useEffect(() => {
+    if (!_.isEmpty(releaseDetails)) {
+      const issuesSummaryObj = generateBarChartData(
+        releaseDetails.issues,
+        'issues_data',
       );
-      releases.forEach((release: any, index: number) => {
-        try {
-          httpService
-            .fetchData(
-              `/feature/?release_features__release_uuid=${release.release_uuid}`,
-              "release"
-            )
-            .then((response: any) => {
-              if (response.data) {
-                releases[index].featuresList = response.data;
-              }
-            });
-        } catch (httpError) {
-          setSummaryLoading(false);
-        }
+      issuesReleaseNames = issuesSummaryObj.releaseNames;
+      const featuresSummaryObj = generateBarChartData(
+        releaseDetails.features,
+        'features_data',
+      );
+      featuresReleaseNames = featuresSummaryObj.releaseNames;
+      setReleasesSummary({
+        releases: Object.values(releaseDetails.releases),
+        features: featuresSummaryObj.barChartSummaryData,
+        issues: issuesSummaryObj.barChartSummaryData,
       });
-      setSummaryLoading(false);
     }
-  }, [releases]);
+  }, [releaseDetails]);
 
-  let featuresReleaseNames: string[] = [];
-  let issuesReleaseNames: string[] = [];
-
-  useEffect(() => {
-    if (currentProduct) {
-      sendRelease({
-        type: "LoadReleases",
-        product_uuid: currentProduct.product_uuid,
-      });
-      setSummaryLoading(true);
-      try {
-        httpService
-          .fetchData(
-            `/release/release_summary/?product_uuid=${currentProduct.product_uuid}`,
-            "release"
-          )
-          .then((response: any) => {
-            const issuesSummaryObj = generateBarChartData(
-              response.data.issues,
-              "issues_data"
-            );
-            issuesReleaseNames = issuesSummaryObj.releaseNames;
-            const featuresSummaryObj = generateBarChartData(
-              response.data.features,
-              "features_data"
-            );
-            featuresReleaseNames = featuresSummaryObj.releaseNames;
-            setReleasesSummary({
-              releases: Object.values(response.data.releases),
-              features: featuresSummaryObj.barChartSummaryData,
-              issues: issuesSummaryObj.barChartSummaryData,
-            });
-            setSummaryLoading(false);
-          });
-      } catch (httpError) {
-        setSummaryLoading(false);
-      }
-    }
-  }, [productState, currentProduct]);
-
-  const generateBarChartData = (data: any, dataField: string) => {
-    setSummaryLoading(true);
-    const releaseNames: string[] = [];
-    const barChartSummaryData: BarChartData[] = [
+  const generateBarChartData = (data, dataField) => {
+    const releaseNames = [];
+    const barChartSummaryData = [
       {
-        label: "Completed",
-        key: "completed",
-        backgroundColor: "#0D5595",
+        label: 'Completed',
+        key: 'completed',
+        backgroundColor: '#0D5595',
         data: [],
       },
       {
-        label: "In progress",
-        key: "in_progress",
-        backgroundColor: "#F8943C",
+        label: 'In progress',
+        key: 'in_progress',
+        backgroundColor: '#F8943C',
         data: [],
       },
       {
-        label: "Overdue",
-        key: "overdue",
-        backgroundColor: "#C91B1A",
+        label: 'Overdue',
+        key: 'overdue',
+        backgroundColor: '#C91B1A',
         data: [],
       },
     ];
-    data.forEach((entry: any) => {
+    _.forEach(data, (entry) => {
       releaseNames.push(entry.release);
       Object.keys(entry[dataField]).forEach((key) => {
         const index = barChartSummaryData.findIndex(
-          (summaryEntry) => summaryEntry.key === key
+          (summaryEntry) => summaryEntry.key === key,
         );
         if (index > -1) {
           barChartSummaryData[index].data.push(entry[dataField][key]);
         }
       });
     });
-    setSummaryLoading(false);
     return { releaseNames, barChartSummaryData };
   };
-
-  const [showReleaseModal, setShow] = useState(false);
 
   const handleShow = () => {
     setFormData({
       ...formData,
-      name: "",
-      release_date: "",
+      name: '',
+      release_date: '',
     });
     setShow(true);
   };
 
   const handleClose = () => setShow(false);
 
-  const [formData, setFormData] = useState({} as Release);
-
-  const updateFormData = (e: any) => {
+  const updateFormData = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const submitRelease = (event: any) => {
+  const submitRelease = (event) => {
     event.preventDefault();
-    if (currentProduct) {
+    if (selectedProduct) {
       const data = {
-        product_uuid: currentProduct.product_uuid,
-        features:
-          selectedFeatures &&
-          selectedFeatures.map((obj: any) => obj.feature_uuid),
         ...formData,
+        product_uuid: selectedProduct,
+        features: _.map(selectedFeatures, (obj) => obj.feature_uuid),
       };
-      sendRelease({ type: "Submit", release: data });
+      createReleaseMutation(data);
       handleClose();
     }
   };
 
-  const deleteRelease = (row: any) => {
-    sendRelease({ type: "Delete", release_uuid: row.release_uuid });
+  const deleteRelease = (row) => {
+    deleteReleaseMutation(row);
   };
 
-  const pieChartLabels = ["Completed", "Overdue", "In progress"];
-  const backgroundColor = "#02b844";
+  const pieChartLabels = ['Completed', 'Overdue', 'In progress'];
+  const backgroundColor = '#02b844';
   const borderWidth = 1;
-  const borderColor = "#000000";
+  const borderColor = '#000000';
 
-  function createData(
-    release_uuid: string,
-    name: string,
-    features_done: number,
-    features_count: number,
-    issues_count: number,
-    release_date: string,
-    featuresList: any[]
-  ) {
-    const barValue = (features_done / features_count) * 100;
-    return {
-      release_uuid,
-      name,
-      features_done,
-      features_count,
-      issues_count,
-      release_date,
-      featuresList,
-      history: [
-        {
-          date: "2020-01-05",
-          customerId: "11091700",
-          amount: 3,
-        },
-        {
-          date: "2020-01-02",
-          customerId: "Anonymous",
-          amount: 1,
-        },
-      ],
-    };
-  }
-
-  const initProgressBar = (row: any) => {
-    const value = Math.round((row.features_done / row.features_count) * 100) ;
-    const theme = value > 74 ? "info" : value > 40 ? "warning" : "danger";
+  const initProgressBar = (row) => {
+    const value = Math.round((row.features_done / row.features_count) * 100);
+    // eslint-disable-next-line no-nested-ternary
+    const theme = value > 74 ? 'info' : value > 40 ? 'warning' : 'danger';
     return { value, theme };
   };
 
-  function Row(props: { row: ReturnType<typeof createData> }) {
+  const Row = (props) => {
     const { row } = props;
     const [open, setOpen] = React.useState(false);
 
     let progressBarObj = {
       value: 0,
-      theme: "danger",
+      theme: 'danger',
     };
 
     if (row.features_count > 0) {
       progressBarObj = initProgressBar(row);
     }
 
-    if (open && row) {
-      try {
-        httpService
-          .fetchData(
-            `/feature/?release_features__release_uuid=${row.release_uuid}`,
-            "release"
-          )
-          .then((response: any) => {
-            if (response.data) {
-              const releaseEntryIndex = releases.findIndex(
-                (r: any) => r.release_uuid === row.release_uuid
-              );
-              if (releaseEntryIndex > -1) {
-                releases[releaseEntryIndex].featuresList = response.data;
-                row.featuresList = response.data;
-              }
-            }
-          });
-      } catch (httpError) {
-        console.log("httpError : ", httpError);
-      }
-    }
-
     return (
-      <React.Fragment>
-        <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+      <>
+        <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
           <TableCell>
             <IconButton
               aria-label="expand row"
@@ -328,7 +248,8 @@ function ReleaseList() {
             </IconButton>
           </TableCell>
           <TableCell>
-            <Link to={`${routes.RELEASE}/${row.release_uuid}`}>{row.name}</Link>{" "}
+            <Link to={`${routes.RELEASE}/${row.release_uuid}`}>{row.name}</Link>
+            {' '}
           </TableCell>
           <TableCell>
             <Tooltip
@@ -348,7 +269,7 @@ function ReleaseList() {
           <TableCell align="right">
             <Dropdown>
               <Dropdown.Toggle variant="light" id="dropdown-basic">
-                <IconButton aria-label="expand row" size="small"></IconButton>
+                <IconButton aria-label="expand row" size="small" />
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item onClick={() => deleteRelease(row)}>
@@ -364,7 +285,7 @@ function ReleaseList() {
               paddingBottom: 0,
               paddingTop: 0,
               paddingLeft: 8,
-              backgroundColor: "#f5f5f5",
+              backgroundColor: '#f5f5f5',
             }}
             colSpan={12}
           >
@@ -383,14 +304,14 @@ function ReleaseList() {
                   </TableHead>
                   <TableBody>
                     {row?.featuresList?.length > 0 ? (
-                      row.featuresList.map((feature: any) => (
+                      row.featuresList.map((feature) => (
                         <FeatureRow
                           key={feature.feature_uuid}
                           feature={feature}
                         />
                       ))
                     ) : (
-                      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+                      <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
                         <TableCell />
                         <TableCell>No features to display</TableCell>
                         <TableCell />
@@ -405,28 +326,27 @@ function ReleaseList() {
             </Collapse>
           </TableCell>
         </TableRow>
-      </React.Fragment>
+      </>
     );
-  }
+  };
 
-  function FeatureRow(props: any) {
-    const { feature }: any = props;
+  const FeatureRow = (props) => {
+    const { feature } = props;
     const [featureOpen, setFeatureOpen] = React.useState(false);
-    const [relatedIssues, setRelatedIssues] = React.useState<any>([]);
+    const [relatedIssues, setRelatedIssues] = React.useState([]);
 
     useEffect(() => {
       setRelatedIssues(
         _.filter(
           issues,
-          (issueItem) =>
-            _.toString(issueItem.feature) === _.toString(feature.feature_uuid)
-        )
+          (issueItem) => _.isEqual(_.toString(issueItem.feature), _.toString(feature.feature_uuid)),
+        ),
       );
     }, [feature]);
 
     return (
-      <React.Fragment>
-        <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+      <>
+        <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
           <TableCell>
             <IconButton
               aria-label="expand row"
@@ -452,7 +372,7 @@ function ReleaseList() {
               paddingBottom: 0,
               paddingTop: 0,
               paddingLeft: 8,
-              backgroundColor: "#f5f5f5",
+              backgroundColor: '#f5f5f5',
             }}
             colSpan={12}
           >
@@ -469,7 +389,7 @@ function ReleaseList() {
                   </TableHead>
                   <TableBody>
                     {relatedIssues.length > 0 ? (
-                      relatedIssues.map((issue: any) => (
+                      relatedIssues.map((issue) => (
                         <TableRow key={issue.issue_uuid}>
                           <TableCell>{issue.name}</TableCell>
                           <TableCell>{issue.progress}</TableCell>
@@ -480,7 +400,7 @@ function ReleaseList() {
                         </TableRow>
                       ))
                     ) : (
-                      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+                      <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
                         <TableCell>No issues to display</TableCell>
                         <TableCell />
                         <TableCell />
@@ -493,42 +413,60 @@ function ReleaseList() {
             </Collapse>
           </TableCell>
         </TableRow>
-      </React.Fragment>
+      </>
     );
-  }
+  };
 
   return (
     <>
-      {summaryLoading ||
-      isAllFeatureLoading ||
-      isAllIssueLoading ||
-      releaseState.matches("Entry.Loading") ||
-      releaseState.matches("Submitting") ||
-      releaseState.matches("Submitting.Creating") ||
-      releaseState.matches("Submitting.Updating") ||
-      releaseState.matches("Deleting") ||
-      productState.matches("Products Loading") ? (
+      <Grid item xs={12} className="release-list-menu-right">
+        <TextField
+          variant="outlined"
+          margin="normal"
+          select
+          id="selected-product"
+          color="primary"
+          label="Product Options"
+          className="release-list-selected-product"
+          value={selectedProduct}
+          onChange={(e) => {
+            setActiveProduct(e.target.value);
+            setSelectedProduct(e.target.value);
+          }}
+        >
+          <MenuItem value={0}>Select</MenuItem>
+          {productData && !_.isEmpty(productData)
+          && _.map(productData, (prod) => (
+            <MenuItem
+              key={`product-${prod.product_uuid}`}
+              value={prod.product_uuid}
+            >
+              {prod.name}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Grid>
+
+      {(_.isEmpty(selectedProduct) || _.isEqual(_.toNumber(selectedProduct), 0)) && (
+        <Typography className="release-list-no-product" component="div" variant="body1">
+          No product selected yet. Please select a product to view related features and/or issues.
+        </Typography>
+      )}
+
+      {(isAllProductLoading || isAllReleaseLoading || isAllFeatureLoading || isAllIssueLoading
+      || isReleaseDetailsLoading || isCreatingReleaseLoading || isDeletingReleaseLoading) && (
+        <Loader
+          open={
+              isAllProductLoading || isAllReleaseLoading || isAllFeatureLoading
+              || isAllIssueLoading || isReleaseDetailsLoading
+              || isCreatingReleaseLoading || isDeletingReleaseLoading
+            }
+        />
+      )}
+      {!_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) && (
         <>
-          <div className="d-flex flex-column align-items-center justify-content-center h-50">
-            <Loader
-              open={
-                summaryLoading ||
-                isAllFeatureLoading ||
-                isAllIssueLoading ||
-                releaseState.matches("Entry.Loading") ||
-                releaseState.matches("Submitting") ||
-                releaseState.matches("Submitting.Creating") ||
-                releaseState.matches("Submitting.Updating") ||
-                releaseState.matches("Deleting") ||
-                productState.matches("Products Loading")
-              }
-            />
-          </div>
-        </>
-      ) : (
-        <>
-          {" "}
-          {releases.length ? (
+          {' '}
+          {!_.isEmpty(displayReleases) ? (
             <>
               <div className="d-flex justify-content-between">
                 <Typography variant="h6">Releases summary</Typography>
@@ -542,36 +480,36 @@ function ReleaseList() {
                   New release
                 </Button>
               </div>
-              {releasesSummary ? (
+              {!_.isEmpty(releasesSummary) && (
                 <div className="container-fluid charts-parent-container">
                   <div
                     className="row flex-nowrap justify-content-between"
-                    style={{ height: "100%" }}
+                    style={{ height: '100%' }}
                   >
                     <div
                       className="chart-container"
                       style={{
-                        width: "32%",
+                        width: '32%',
                       }}
                     >
                       <DoughnutChart
                         id="releases"
                         labels={pieChartLabels}
                         label="Releases summary"
-                        data={releasesSummary?.releases}
+                        data={releasesSummary.releases}
                       />
                     </div>
                     <div
                       className="chart-container"
                       style={{
-                        width: "32%",
+                        width: '32%',
                       }}
                     >
                       <BarChart
                         id="features"
                         label="Features summary"
                         labels={featuresReleaseNames}
-                        data={releasesSummary?.features}
+                        data={releasesSummary.features}
                         backgroundColor={backgroundColor}
                         borderWidth={borderWidth}
                         borderColor={borderColor}
@@ -580,14 +518,14 @@ function ReleaseList() {
                     <div
                       className="chart-container"
                       style={{
-                        width: "32%",
+                        width: '32%',
                       }}
                     >
                       <BarChart
                         id="issues"
                         label="Issues summary"
                         labels={issuesReleaseNames}
-                        data={releasesSummary?.issues}
+                        data={releasesSummary.issues}
                         backgroundColor={backgroundColor}
                         borderWidth={borderWidth}
                         borderColor={borderColor}
@@ -595,7 +533,7 @@ function ReleaseList() {
                     </div>
                   </div>
                 </div>
-              ) : null}
+              )}
               <div className="d-flex justify-content-between">
                 <Typography variant="h6">Releases</Typography>
               </div>
@@ -603,15 +541,15 @@ function ReleaseList() {
                 <Table aria-label="collapsible table">
                   <TableHead
                     sx={{
-                      "& .MuiTableCell-root": {
-                        backgroundColor: "#EDEDED",
+                      '& .MuiTableCell-root': {
+                        backgroundColor: '#EDEDED',
                       },
                     }}
                   >
                     <TableRow
                       sx={{
-                        "& th": {
-                          fontWeight: "500",
+                        '& th': {
+                          fontWeight: '500',
                         },
                       }}
                     >
@@ -625,10 +563,10 @@ function ReleaseList() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {releases.length
-                      ? releases.map((row: any) => (
-                          <Row key={row.release_uuid} row={row} />
-                        ))
+                    {!_.isEmpty(displayReleases)
+                      ? displayReleases.map((row) => (
+                        <Row key={row.release_uuid} row={row} />
+                      ))
                       : []}
                   </TableBody>
                 </Table>
@@ -637,10 +575,12 @@ function ReleaseList() {
             </>
           ) : (
             <>
-              {" "}
+              {' '}
               <div className="d-flex flex-column align-items-center justify-content-center h-50">
                 <Typography variant="h6" className="text-center pb-2">
-                  No releases to display for the current product. <br />
+                  No releases to display for the current product.
+                  {' '}
+                  <br />
                   To get you started, create a release!
                 </Typography>
                 <Button
@@ -667,7 +607,7 @@ function ReleaseList() {
               <Modal.Title>New release</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              {" "}
+              {' '}
               <Form noValidate>
                 <Form.Group className="mb-3" controlId="name">
                   <Form.Label>Name*</Form.Label>
@@ -710,7 +650,7 @@ function ReleaseList() {
                     id="features-multiple"
                     disableCloseOnSelect
                     filterSelectedOptions
-                    options={_.orderBy(features, ["name"], ["asc"])}
+                    options={_.orderBy(features, ['name'], ['asc'])}
                     getOptionLabel={(option) => option && option.name}
                     value={selectedFeatures}
                     onChange={(event, newValue) => {
@@ -756,9 +696,9 @@ function ReleaseList() {
                 size="small"
                 disabled={
                   !(
-                    formData?.name?.trim().length > 0 &&
-                    formData?.release_date?.length > 0 &&
-                    selectedFeatures.length > 0
+                    formData?.name?.trim().length > 0
+                    && formData?.release_date?.length > 0
+                    && selectedFeatures.length > 0
                   )
                 }
                 onClick={(event) => submitRelease(event)}
@@ -769,9 +709,10 @@ function ReleaseList() {
           </Modal>
         </>
       )}
+
       <Chatbot />
     </>
   );
-}
+};
 
 export default ReleaseList;
