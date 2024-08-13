@@ -1,6 +1,7 @@
 /* eslint-disable no-nested-ternary */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
+import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   useTheme,
@@ -15,6 +16,7 @@ import {
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
 import useAlert from '@hooks/useAlert';
+import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
 import { useCreateStatusMutation } from '@react-query/mutations/release/createStatusMutation';
 import { STATUSTYPES } from '../ProductRoadmapConstants';
 
@@ -57,6 +59,19 @@ const StatusBoard = ({ history, location }) => {
   const [status, setStatus] = useState([]);
   const [defaultStatus, setDefaultStatus] = useState('');
   const [formError, setFormError] = useState({});
+
+  const { data: statuses, isLoading: isAllStatusLoading } = useQuery(
+    ['allStatuses', product_uuid],
+    () => getAllStatusQuery(product_uuid, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
+  );
+
+  useEffect(() => {
+    const filteredStatus = _.filter(statuses, { product_uuid });
+    const statusDefault = _.find(filteredStatus, (s) => s.is_default_status);
+    setStatus(_.map(filteredStatus, 'name'));
+    setDefaultStatus(statusDefault.name || '');
+  }, [statuses]);
 
   const closeFormModal = () => {
     const dataHasChanged = (
@@ -140,7 +155,7 @@ const StatusBoard = ({ history, location }) => {
           setConfirmModal={setConfirmModal}
           handleConfirmModal={discardFormData}
         >
-          {isCreatingStatusLoading && <Loader open={isCreatingStatusLoading} />}
+          {(isCreatingStatusLoading || isAllStatusLoading) && <Loader open={isCreatingStatusLoading || isAllStatusLoading} />}
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
               <Grid item xs={12}>

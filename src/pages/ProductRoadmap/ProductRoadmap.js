@@ -465,15 +465,13 @@ const ProductRoadmap = ({ history }) => {
                           Add Configuration
                         </Button>
                       </Grid>
-                      {
-                      product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
+                      {product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
                         && (
                           (_.isEqual(_.size(product.third_party_tool), 2) && _.isEmpty(product.feature_tool_detail) && _.isEmpty(product.issue_tool_detail))
                           || (_.isEqual(_.size(product.third_party_tool), 1) && (_.isEmpty(product.feature_tool_detail) || _.isEmpty(product.issue_tool_detail)))
                         )
                         ? <Route path={routes.TOOL_BOARD} component={ToolBoard} />
-                        : <Route path={routes.STATUS_BOARD} component={StatusBoard} />
-                    }
+                        : <Route path={routes.STATUS_BOARD} component={StatusBoard} />}
                     </>
                   ) : (
                     <>
@@ -523,6 +521,15 @@ const ProductRoadmap = ({ history }) => {
                             createSuggestedFeature={createSuggestedFeature}
                             removeSuggestedFeature={removeSuggestedFeature}
                             showRelatedIssues={showRelatedIssues}
+                            editBoard={
+                              product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
+                              && (
+                                (_.isEqual(_.size(product.third_party_tool), 2) && _.isEmpty(product.feature_tool_detail) && _.isEmpty(product.issue_tool_detail))
+                                || (_.isEqual(_.size(product.third_party_tool), 1) && (_.isEmpty(product.feature_tool_detail) || _.isEmpty(product.issue_tool_detail)))
+                              )
+                                ? configureBoard
+                                : configureStatus
+                            }
                           />
                         )}
                       />
@@ -545,6 +552,8 @@ const ProductRoadmap = ({ history }) => {
                           <IssueSuggestions {...renderProps} convertIssue={convertIssue} />
                         )}
                       />
+                      <Route path={routes.TOOL_BOARD} component={ToolBoard} />
+                      <Route path={routes.STATUS_BOARD} component={StatusBoard} />
                     </>
                   )}
               </div>

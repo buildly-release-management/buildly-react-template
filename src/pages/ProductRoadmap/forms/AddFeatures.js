@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import _ from 'lodash';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   useTheme,
@@ -75,7 +75,6 @@ const AddFeatures = ({ location, history }) => {
   const user = useContext(UserContext);
   const organization = user.organization.organization_uuid;
   const { displayAlert } = useAlert();
-  const queryClient = useQueryClient();
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
@@ -326,7 +325,6 @@ const AddFeatures = ({ location, history }) => {
 
   const requestUserStories = async () => {
     const userTypeProfiles = _.map(userTypes, (ut) => userProfiles[ut] || '');
-    await queryClient.invalidateQueries({ queryKey: ['userStories'] });
     setUserStoriesData({ user_types: userTypes, user_profiles: userTypeProfiles, feature_uuid: editData.feature_uuid });
   };
 

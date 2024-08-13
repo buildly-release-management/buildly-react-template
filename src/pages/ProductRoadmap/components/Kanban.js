@@ -10,6 +10,7 @@ import {
 } from 'react-beautiful-dnd';
 import { makeStyles } from '@mui/styles';
 import {
+  Button,
   Card,
   CardContent,
   CardHeader,
@@ -37,6 +38,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Task as TaskIcon,
+  Sync as SyncIcon,
 } from '@mui/icons-material';
 import Loader from '@components/Loader/Loader';
 import useAlert from '@hooks/useAlert';
@@ -140,6 +142,7 @@ const Kanban = ({
   createSuggestedFeature,
   removeSuggestedFeature,
   showRelatedIssues,
+  editBoard,
 }) => {
   const classes = useStyles();
   const { displayAlert } = useAlert();
@@ -305,6 +308,16 @@ const Kanban = ({
             onDragEnd(result, columns, setColumns);
           }}
         >
+          <Button
+            variant="contained"
+            color="secondary"
+            className="mb-2"
+            onClick={editBoard}
+          >
+            <EditIcon />
+            {' '}
+            Edit board
+          </Button>
           <Grid container rowGap={2} columnGap={4} className={classes.container}>
             {!!selectedProduct && suggestedFeatures && !_.isEmpty(suggestedFeatures) && (
               <Grid item xs={2.6} sm={2.75} lg={2.85} className={classes.swimlane}>
