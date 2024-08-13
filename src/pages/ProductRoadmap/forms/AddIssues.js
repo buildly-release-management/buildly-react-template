@@ -1,7 +1,8 @@
 /* eslint-disable no-nested-ternary */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import _ from 'lodash';
 import moment from 'moment-timezone';
+import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   useTheme,
@@ -19,8 +20,12 @@ import Loader from '@components/Loader/Loader';
 import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
-import { routes } from '@routes/routesConstants';
+import { UserContext } from '@context/User.context';
 import SmartInput from '@components/SmartInput/SmartInput';
+import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery';
+import { getAllCredentialQuery } from '@react-query/queries/product/getAllCredentialQuery';
+import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
+import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
 import { useCreateIssueMutation } from '@react-query/mutations/release/createIssueMutation';
 import { useUpdateIssueMutation } from '@react-query/mutations/release/UpdateIssueMutation';
 import { ISSUETYPES } from '../ProductRoadmapConstants';
@@ -56,13 +61,13 @@ const AddIssues = ({ history, location }) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
 
+  const user = useContext(UserContext);
+  const organization = user.organization.organization_uuid;
   const { displayAlert } = useAlert();
 
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
-  const {
-    product_uuid, statusData, productData, featureData, credentialData,
-  } = location && location.state;
+  const { product_uuid } = location && location.state;
 
   const [description, setDescription] = useState((editData && editData.description) || '');
   const name = useInput((editData && editData.name) || '', { required: true });
@@ -93,6 +98,28 @@ const AddIssues = ({ history, location }) => {
   const [status, setStatus] = useState('');
   const [colID, setColID] = useState((editData && status?.status_tracking_id) || '');
   const [formError, setFormError] = useState({});
+
+  // react query
+  const { data: statusData, isLoading: isAllStatusLoading } = useQuery(
+    ['allStatuses', product_uuid],
+    () => getAllStatusQuery(product_uuid, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
+  );
+  const { data: productData, isLoading: isAllProductLoading } = useQuery(
+    ['allProducts', organization],
+    () => getAllProductQuery(organization, displayAlert),
+    { refetchOnWindowFocus: false },
+  );
+  const { data: featureData, isLoading: isAllFeatureLoading } = useQuery(
+    ['allFeatures', product_uuid],
+    () => getAllFeatureQuery(product_uuid, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
+  );
+  const { data: credentialData, isLoading: isAllCredentialLoading } = useQuery(
+    ['allCredentials', product_uuid],
+    () => getAllCredentialQuery(product_uuid, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
+  );
 
   useEffect(() => {
     const prod = _.find(productData, { product_uuid });
@@ -229,7 +256,8 @@ const AddIssues = ({ history, location }) => {
           setConfirmModal={setConfirmModal}
           handleConfirmModal={(e) => history.push(redirectTo)}
         >
-          {(isCreatingIssueLoading || isUpdatingIssueLoading) && <Loader open={isCreatingIssueLoading || isUpdatingIssueLoading} />}
+          {(isCreatingIssueLoading || isUpdatingIssueLoading || isAllStatusLoading || isAllProductLoading || isAllFeatureLoading || isAllCredentialLoading)
+          && <Loader open={isCreatingIssueLoading || isUpdatingIssueLoading || isAllStatusLoading || isAllProductLoading || isAllFeatureLoading || isAllCredentialLoading} />}
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
               <Grid item xs={12}>
@@ -528,7 +556,15 @@ const AddIssues = ({ history, location }) => {
                   variant="contained"
                   color="primary"
                   className={classes.submit}
-                  disabled={isCreatingIssueLoading || isUpdatingIssueLoading || submitDisabled()}
+                  disabled={
+                    isCreatingIssueLoading
+                    || isUpdatingIssueLoading
+                    || isAllStatusLoading
+                    || isAllProductLoading
+                    || isAllFeatureLoading
+                    || isAllCredentialLoading
+                    || submitDisabled()
+                  }
                 >
                   {buttonText}
                 </Button>

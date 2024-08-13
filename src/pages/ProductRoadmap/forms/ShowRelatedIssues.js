@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
 
 const ShowRelatedIssues = ({ location, history, selectedProduct }) => {
   const classes = useStyles();
-  const displayAlert = useAlert();
+  const { displayAlert } = useAlert();
 
   const redirectTo = location.state && location.state.from;
   const feature = location.state && location.state.feature_uuid;

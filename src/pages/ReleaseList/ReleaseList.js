@@ -50,7 +50,7 @@ const ReleaseList = () => {
   const user = useContext(UserContext);
   const organization = user.organization.organization_uuid;
 
-  const displayAlert = useAlert();
+  const { displayAlert } = useAlert();
   const { activeProduct, setActiveProduct } = useStore();
 
   const [selectedProduct, setSelectedProduct] = useState(activeProduct || 0);
@@ -114,7 +114,6 @@ const ReleaseList = () => {
           },
         ];
       });
-      console.log(modifiedReleases);
       setDisplayReleases(modifiedReleases);
     }
   }, [releases, features]);

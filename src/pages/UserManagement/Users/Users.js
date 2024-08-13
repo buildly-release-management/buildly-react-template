@@ -10,7 +10,6 @@ import { IconButton, MenuItem, Select } from '@mui/material';
 import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
 import { getUser } from '@context/User.context';
 import useAlert from '@hooks/useAlert';
-import { getAllOrganizationQuery } from '@react-query/queries/authUser/getAllOrganizationQuery';
 import { getCoregroupQuery } from '@react-query/queries/coregroup/getCoregroupQuery';
 import { getCoreuserQuery } from '@react-query/queries/coreuser/getCoreuserQuery';
 import { useEditCoreuserMutation } from '@react-query/mutations/coreuser/editCoreuserMutation';
@@ -20,6 +19,7 @@ import '../UserManagementStyles.css';
 
 const Users = () => {
   const user = getUser();
+  const { organization } = user;
 
   const { displayAlert } = useAlert();
   const [rows, setRows] = useState([]);
@@ -37,19 +37,14 @@ const Users = () => {
     { refetchOnWindowFocus: false },
   );
 
-  const { data: organizations, isLoading: isLoadingOrganizations } = useQuery(
-    ['organizations'],
-    () => getAllOrganizationQuery(displayAlert),
-    { refetchOnWindowFocus: false },
-  );
-
   const { mutate: editUserMutation, isLoading: isEditingUser } = useEditCoreuserMutation(displayAlert);
 
   const { mutate: deleteUserMutation, isLoading: isDeletingUser } = useDeleteCoreuserMutation(displayAlert);
 
   useEffect(() => {
     if (!_.isEmpty(coreuserData)) {
-      const formattedUsers = getUserFormattedRows(coreuserData);
+      const filteredUsers = _.filter(coreuserData, (u) => _.isEqual(u.organization.organization_uuid, organization.organization_uuid));
+      const formattedUsers = getUserFormattedRows(filteredUsers);
       const signedInUser = _.remove(formattedUsers, { id: user.id });
 
       setRows([...signedInUser, ...formattedUsers]);
@@ -57,10 +52,11 @@ const Users = () => {
   }, [coreuserData]);
 
   useEffect(() => {
-    if (!_.isEmpty(coregroupData) && !_.isEmpty(organizations)) {
-      setGroups(getGroupsFormattedRow(coregroupData, organizations));
+    if (!_.isEmpty(coregroupData)) {
+      const filteredGroups = _.filter(coregroupData, (cg) => cg.is_global || _.isEqual(cg.organization, organization.organization_uuid));
+      setGroups(getGroupsFormattedRow(filteredGroups, organization.name));
     }
-  }, [coregroupData, organizations]);
+  }, [coregroupData]);
 
   const activateDeactivateUser = (coreuser) => {
     const editData = { id: coreuser.id, is_active: !coreuser.is_active };
@@ -86,7 +82,6 @@ const Users = () => {
         tableHeader="Users"
         loading={isLoadingCoreuser
           || isLoadingCoregroup
-          || isLoadingOrganizations
           || isEditingUser
           || isDeletingUser}
         rows={rows || []}

@@ -90,7 +90,7 @@ const ProductRoadmap = ({ history }) => {
   const user = useContext(UserContext);
   const organization = user.organization.organization_uuid;
 
-  const displayAlert = useAlert();
+  const { displayAlert } = useAlert();
   const { activeProduct, setActiveProduct } = useStore();
 
   const subNav = [
@@ -229,7 +229,7 @@ const ProductRoadmap = ({ history }) => {
   };
 
   const commentItem = (item) => {
-    let data = { from: location.pathname };
+    let data = { from: location.pathname, product_uuid: selectedProduct };
     if (item.issue_uuid) {
       data = {
         ...data,

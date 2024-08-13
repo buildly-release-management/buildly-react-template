@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
 
 const ToolBoard = ({ history }) => {
   const classes = useStyles();
-  const displayAlert = useAlert();
+  const { displayAlert } = useAlert();
 
   const redirectTo = location.state && location.state.from;
   const product_uuid = location.state && location.state.product_uuid;
@@ -146,7 +146,6 @@ const ToolBoard = ({ history }) => {
     }));
 
     createBoardMutation(formData, statusData);
-    history.push(redirectTo);
   };
 
   const submitDisabled = () => {

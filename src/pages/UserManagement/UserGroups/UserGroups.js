@@ -4,12 +4,15 @@ import { Switch } from '@mui/material';
 import { useQuery } from 'react-query';
 import useAlert from '@hooks/useAlert';
 import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
+import { getUser } from '@context/User.context';
 import { getCoregroupQuery } from '@react-query/queries/coregroup/getCoregroupQuery';
-import { getAllOrganizationQuery } from '@react-query/queries/authUser/getAllOrganizationQuery';
 import { getGroupsFormattedRow } from '@utils/constants';
 import { useEditCoregroupMutation } from '@react-query/mutations/coregroup/editCoregroupMutation';
 
 const UserGroups = () => {
+  const user = getUser();
+  const { organization } = user;
+
   const { displayAlert } = useAlert();
   const [rows, setRows] = useState([]);
 
@@ -19,20 +22,15 @@ const UserGroups = () => {
     { refetchOnWindowFocus: false },
   );
 
-  const { data: organizations, isLoading: isLoadingOrganizations } = useQuery(
-    ['organizations'],
-    () => getAllOrganizationQuery(displayAlert),
-    { refetchOnWindowFocus: false },
-  );
-
   const { mutate: editGroupMutation, isLoading: isEditingGroup } = useEditCoregroupMutation(displayAlert);
 
   useEffect(() => {
-    if (!_.isEmpty(coregroupData) && !_.isEmpty(organizations)) {
-      const grps = getGroupsFormattedRow(coregroupData, organizations);
+    if (!_.isEmpty(coregroupData)) {
+      const filteredGroups = _.filter(coregroupData, (cg) => cg.is_global || _.isEqual(cg.organization, organization.organization_uuid));
+      const grps = getGroupsFormattedRow(filteredGroups, organization.name);
       setRows(_.filter(grps, (g) => !_.isEqual(g.id, 1)));
     }
-  }, [coregroupData, organizations]);
+  }, [coregroupData]);
 
   const updatePermissions = (e, group) => {
     const editData = {
@@ -53,7 +51,7 @@ const UserGroups = () => {
         centerLabel
         filename="User Groups"
         tableHeader="User Groups"
-        loading={isLoadingCoregroup || isLoadingOrganizations || isEditingGroup}
+        loading={isLoadingCoregroup || isEditingGroup}
         rows={rows || []}
         columns={[
           {

@@ -142,7 +142,7 @@ const Kanban = ({
   showRelatedIssues,
 }) => {
   const classes = useStyles();
-  const displayAlert = useAlert();
+  const { displayAlert } = useAlert();
 
   const [columns, setColumns] = useState({});
   const [anchorEl, setAnchorEl] = useState(null);

@@ -38,26 +38,40 @@ import { addColorsAndIcons, getReleaseBudgetData } from './utils';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Grid, TextField, Typography } from '@mui/material';
 import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery.js';
+import { useEmailReportMutation } from '@react-query/mutations/product/emailReportMutation';
+import { getProductReportQuery } from '@react-query/queries/product/getProductReportQuery';
+import { getReleaseProductReportQuery } from '@react-query/queries/release/getReleaseProductReportQuery';
 import { useStore } from '@zustand/product/productStore';
 
 const Insights = () => {
   let displayReport = true;
   const { activeProduct, setActiveProduct } = useStore();
   const user = useContext(UserContext);
-  const displayAlert = useAlert();
+  const { displayAlert } = useAlert();
 
   // states
   const [selectedProduct, setSelectedProduct] = useState(activeProduct || 0);
   const [productData, setProductData] = useState([]);
   const [releaseData, setReleaseData] = useState([]);
   const [architectureImg, setArchitectureImg] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const { data: products, isLoading: areProductsLoading } = useQuery(
     ['allProducts', user.organization.organization_uuid],
     () => getAllProductQuery(user.organization.organization_uuid, displayAlert),
     { refetchOnWindowFocus: false },
   );
+  const { data: reportData, isLoading: isGettingProductReport } = useQuery(
+    ['productReport', selectedProduct],
+    () => getProductReportQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+  );
+  const { data: releaseReport, isLoading: isGettingReleaseProductReport } = useQuery(
+    ['releaseProductReport', selectedProduct],
+    () => getReleaseProductReportQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+  );
+
+  const { mutate: emailReportMutation, isLoading: isEmailingReport } = useEmailReportMutation(selectedProduct, displayAlert);
 
   // Email report modal
   const [showEmailModal, setShow] = useState(false);
@@ -99,23 +113,14 @@ const Insights = () => {
     event.preventDefault();
     try {
       closeEmailModal();
-      httpService.sendDirectServiceRequest(
-        `pdf_report/${selectedProduct}/`,
-        'POST',
-        {
-          senders_name: `${user.first_name} ${user.last_name}`,
-          senders_title: user.title,
-          company_name: user.organization.name,
-          contact_information: user.contact_info,
-          recipients,
-        },
-        'product',
-      )
-        .then((response) => (
-          <Alert key="success" variant="success">
-            Report successfully emailed!
-          </Alert>
-        ));
+      const emailData = {
+        senders_name: `${user.first_name} ${user.last_name}`,
+        senders_title: user.title,
+        company_name: user.organization.name,
+        contact_information: user.contact_info,
+        recipients,
+      };
+      emailReportMutation(emailData);
     } catch (error) {
       console.log(error);
     }
@@ -123,76 +128,39 @@ const Insights = () => {
 
   // effects
   useEffect(() => {
-    if (selectedProduct && _.toNumber(selectedProduct) !== 0) {
-      setLoading(true);
-      // define requests
-      const requestsArray = [];
-      // Load product data
-      [`product/${selectedProduct}/report/`, `product_report/${selectedProduct}/`].forEach(
-        (url, index) => {
-          if (index === 0) {
-            requestsArray.push(
-              httpService.sendDirectServiceRequest(
-                `product/${selectedProduct}/report/`,
-                'GET',
-                null,
-                'product',
-              ),
-            );
-          } else {
-            requestsArray.push(
-              httpService.sendDirectServiceRequest(
-                `product_report/${selectedProduct}/`,
-                'GET',
-                null,
-                'release',
-              ),
-            );
-          }
-        },
-      );
-      // handle promises
-      Promise.all(requestsArray)
-        .then((results) => {
-          const reportData = results[0].data;
-          const releaseReport = results[1].data;
+    if (selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0)) {
+      if (reportData && reportData.budget) {
+        // set the image to display
+        let img = null;
+        if (reportData.architecture_type.toLowerCase() === 'monolith') {
+          img = monolith;
+        } else if (reportData.architecture_type.toLowerCase() === 'microservice') {
+          img = microservice;
+        } else if (['micro-app', 'mini-app'].includes(reportData.architecture_type.toLowerCase())) {
+          img = microApp;
+        } else if (reportData.architecture_type.toLowerCase() === 'multicloud microservice') {
+          img = multiCloud;
+        }
+        // set states
+        setProductData(reportData);
+        setArchitectureImg(img);
 
-          if (reportData && reportData.budget) {
-            // set the image to display
-            let img = null;
-            if (reportData.architecture_type.toLowerCase() === 'monolith') {
-              img = monolith;
-            } else if (reportData.architecture_type.toLowerCase() === 'microservice') {
-              img = microservice;
-            } else if (['micro-app', 'mini-app'].includes(reportData.architecture_type.toLowerCase())) {
-              img = microApp;
-            } else if (reportData.architecture_type.toLowerCase() === 'multicloud microservice') {
-              img = multiCloud;
-            }
-            // set states
-            setProductData(reportData);
-            setArchitectureImg(img);
+        // get release data
+        releaseReport.release_data = getReleaseBudgetData(
+          reportData.budget?.release_data, releaseReport?.release_data,
+        );
 
-            // get release data
-            releaseReport.release_data = getReleaseBudgetData(
-              reportData.budget?.release_data, releaseReport?.release_data,
-            );
+        releaseReport.release_data = addColorsAndIcons(
+          releaseReport.release_data,
+        );
 
-            releaseReport.release_data = addColorsAndIcons(
-              releaseReport.release_data,
-            );
-
-            // set release data
-            setReleaseData(releaseReport);
-            setLoading(false);
-          }
-        })
-        .catch((error) => {
-          setLoading(false);
-          displayReport = false;
-        });
+        // set release data
+        setReleaseData(releaseReport);
+      }
+    } else {
+      displayReport = false;
     }
-  }, [selectedProduct]);
+  }, [selectedProduct, reportData, releaseReport]);
 
   /**
    * Download pdf report
@@ -232,7 +200,8 @@ const Insights = () => {
 
   return (
     <>
-      {loading && <Loader open={loading || areProductsLoading} />}
+      {(areProductsLoading || isEmailingReport || isGettingProductReport || isGettingReleaseProductReport)
+      && <Loader open={areProductsLoading || isEmailingReport || isGettingProductReport || isGettingReleaseProductReport} />}
       <div className="insightsSelectedProductRoot">
         <Grid container mb={2} alignItems="center">
           <Grid item md={4}>

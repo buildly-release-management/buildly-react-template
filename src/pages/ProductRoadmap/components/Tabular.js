@@ -51,7 +51,7 @@ const Tabular = ({
   showRelatedIssues,
 }) => {
   const classes = useStyles();
-  const displayAlert = useAlert();
+  const { displayAlert } = useAlert();
 
   const [featureRows, setFeatureRows] = useState([]);
   const [featMenuActions, setFeatMenuActions] = useState([]);

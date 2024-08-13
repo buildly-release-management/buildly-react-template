@@ -61,14 +61,12 @@ export const userColumns = () => ([
   },
 ]);
 
-export const getGroupsFormattedRow = (groups, orgs) => {
+export const getGroupsFormattedRow = (groups, orgName) => {
   const formattedData = _.map(groups, (g) => ({
     ...g,
     display_permission_name: _.isEqual(g.id, 1)
       ? g.name
-      : `${g.name} - ${_.find(orgs, { organization_uuid: g.organization })
-        ? _.find(orgs, { organization_uuid: g.organization }).name
-        : ''}`,
+      : `${g.name} - ${orgName}`,
   }));
 
   return _.orderBy(formattedData, 'display_permission_name', 'asc');

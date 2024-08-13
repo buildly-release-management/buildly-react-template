@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import _ from 'lodash';
 import moment from 'moment-timezone';
+import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Button,
@@ -18,6 +19,8 @@ import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
 import { UserContext } from '@context/User.context';
+import { getAllCredentialQuery } from '@react-query/queries/product/getAllCredentialQuery';
+import { getAllCommentQuery } from '@react-query/queries/release/getAllCommentQuery';
 import { useCreateCommentMutation } from '@react-query/mutations/release/createCommentMutation';
 
 const useStyles = makeStyles((theme) => ({
@@ -61,9 +64,7 @@ const useStyles = makeStyles((theme) => ({
 const Comments = ({ location, history }) => {
   const classes = useStyles();
   const redirectTo = location.state && location.state.from;
-  const {
-    feature, issue, comments, credentials, product_uuid,
-  } = location && location.state;
+  const { feature, issue, product_uuid } = location && location.state;
 
   const { displayAlert } = useAlert();
 
@@ -76,6 +77,17 @@ const Comments = ({ location, history }) => {
   const [openConfirmModal, setConfirmModal] = useState(false);
   const commentText = useInput('');
   const [formError, setFormError] = useState({});
+
+  const { data: comments, isLoading: isAllCommentsLoading } = useQuery(
+    ['allComments', product_uuid],
+    () => getAllCommentQuery(product_uuid, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
+  );
+  const { data: credentials, isLoading: isAllCredentialLoading } = useQuery(
+    ['allCredentials', product_uuid],
+    () => getAllCredentialQuery(product_uuid, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
+  );
 
   useEffect(() => {
     if (!_.isEmpty(feature)) {
@@ -169,7 +181,7 @@ const Comments = ({ location, history }) => {
           setConfirmModal={setConfirmModal}
           handleConfirmModal={discardFormData}
         >
-          {isCreatingCommentLoading && <Loader open={isCreatingCommentLoading} />}
+          {(isCreatingCommentLoading || isAllCommentsLoading || isAllCredentialLoading) && <Loader open={isCreatingCommentLoading || isAllCommentsLoading || isAllCredentialLoading} />}
           {!_.isEmpty(filteredComments) && _.map(filteredComments, (comment, index) => (
             <Card key={comment.comment_uuid} className={classes.commentCard}>
               <CardContent>
@@ -208,7 +220,7 @@ const Comments = ({ location, history }) => {
                   variant="contained"
                   color="primary"
                   className={classes.submit}
-                  disabled={submitDisabled()}
+                  disabled={isAllCommentsLoading || isAllCredentialLoading || submitDisabled()}
                 >
                   Comment
                 </Button>

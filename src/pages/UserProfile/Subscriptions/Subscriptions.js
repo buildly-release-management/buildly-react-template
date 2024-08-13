@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
 const Subscriptions = () => {
   const classes = useStyles();
   const user = useContext(UserContext);
-  const displayAlert = useAlert();
+  const { displayAlert } = useAlert();
 
   // const user = useContext(UserContext);
   const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);

@@ -35,7 +35,7 @@ import './ReleaseDetails.css';
 
 const ReleaseDetails = ({ history }) => {
   const { releaseUuid } = useParams();
-  const displayAlert = useAlert();
+  const { displayAlert } = useAlert();
 
   const [releaseSummary, setReleaseSummary] = useState([]);
   const [progressSummaryLabels, setProgressSummaryLabels] = useState([]);

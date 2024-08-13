@@ -58,7 +58,7 @@ const IssueSuggestions = ({
 }) => {
   const classes = useStyles();
   const user = useContext(UserContext);
-  const displayAlert = useAlert();
+  const { displayAlert } = useAlert();
 
   const redirectTo = location.state && location.state.from;
   const editData = (
@@ -128,7 +128,6 @@ const IssueSuggestions = ({
     }));
 
     createIssueMutation(issueSuggestionsData);
-    history.push(redirectTo);
   };
 
   const closeFormModal = () => {
