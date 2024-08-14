@@ -1,12 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
-import App from './App';
-import './i18n';
-import configureStore from './redux/store';
-import './index.css';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import App from './App';
+import './i18n';
+import './index.css';
 import registerServiceWorker from './serviceWorkerRegistration';
 
 if (window.env.PRODUCTION) {
@@ -26,19 +25,16 @@ if (window.env.PRODUCTION) {
   document.body.appendChild(script2);
 }
 
-const store = configureStore();
-
-// Make sure to call `loadStripe` outside of a component’s render to avoid
-// recreating the `Stripe` object on every render.
 const stripePromise = loadStripe(window.env.STRIPE_KEY);
 
-ReactDOM.render(
-  <Provider store={store}>
+const queryClient = new QueryClient();
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <QueryClientProvider client={queryClient}>
     <Elements stripe={stripePromise}>
       <App />
     </Elements>
-  </Provider>,
-  document.getElementById('root'),
+  </QueryClientProvider>,
 );
 
 registerServiceWorker();

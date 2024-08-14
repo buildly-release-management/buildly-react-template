@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
+import { useQuery } from 'react-query';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -15,7 +15,9 @@ import {
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
-import { createBoard } from '@redux/product/actions/product.actions';
+import useAlert from '@hooks/useAlert';
+import { getBoardQuery } from '@react-query/queries/product/getBoardQuery';
+import { useCreateBoardMutation } from '@react-query/mutations/product/createBoardMutation.js';
 import { STATUSTYPES } from '../ProductRoadmapConstants';
 
 const useStyles = makeStyles((theme) => ({
@@ -38,15 +40,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ToolBoard = ({
-  dispatch,
-  history,
-  location,
-  boards,
-  loaded,
-  loading,
-}) => {
+const ToolBoard = ({ history }) => {
   const classes = useStyles();
+  const { displayAlert } = useAlert();
+
   const redirectTo = location.state && location.state.from;
   const product_uuid = location.state && location.state.product_uuid;
 
@@ -66,6 +63,13 @@ const ToolBoard = ({
   const [defaultStatus, setDefaultStatus] = useState('');
 
   const [formError, setFormError] = useState({});
+
+  const { data: boards, isLoading: isBoardLoading } = useQuery(
+    ['board', product_uuid],
+    () => getBoardQuery(product_uuid, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
+  );
+  const { mutate: createBoardMutation, isLoading: isCreatingBoardLoading } = useCreateBoardMutation(history, redirectTo, displayAlert);
 
   useEffect(() => {
     if (!_.isEmpty(boards)) {
@@ -141,8 +145,7 @@ const ToolBoard = ({
       is_default_status: !!(sts.column_name === defaultStatus),
     }));
 
-    dispatch(createBoard(formData, statusData));
-    history.push(redirectTo);
+    createBoardMutation(formData, statusData);
   };
 
   const submitDisabled = () => {
@@ -178,10 +181,10 @@ const ToolBoard = ({
           setConfirmModal={setConfirmModal}
           handleConfirmModal={discardFormData}
         >
-          {loading && <Loader open={loading} />}
+          {(isBoardLoading || isCreatingBoardLoading) && <Loader open={isBoardLoading || isCreatingBoardLoading} />}
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
-              {loaded && !_.isEmpty(featOrgList) && (
+              {!(isBoardLoading || isCreatingBoardLoading) && !_.isEmpty(featOrgList) && (
                 <Grid item xs={12}>
                   <TextField
                     variant="outlined"
@@ -210,7 +213,7 @@ const ToolBoard = ({
                 </Grid>
               )}
 
-              {loaded && !_.isEmpty(featBoardList) && (
+              {!(isBoardLoading || isCreatingBoardLoading) && !_.isEmpty(featBoardList) && (
                 <Grid item xs={12}>
                   <TextField
                     variant="outlined"
@@ -239,7 +242,7 @@ const ToolBoard = ({
                 </Grid>
               )}
 
-              {loaded && _.isEmpty(featOrgList) && (
+              {!(isBoardLoading || isCreatingBoardLoading) && _.isEmpty(featOrgList) && (
                 <Grid item xs={12}>
                   <Autocomplete
                     fullWidth
@@ -301,7 +304,7 @@ const ToolBoard = ({
                 </Grid>
               )}
 
-              {loaded && !_.isEmpty(issueOrgList) && (
+              {!(isBoardLoading || isCreatingBoardLoading) && !_.isEmpty(issueOrgList) && (
                 <Grid item xs={12}>
                   <TextField
                     variant="outlined"
@@ -364,11 +367,4 @@ const ToolBoard = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  loading: state.productReducer.loading || state.releaseReducer.loading,
-  loaded: state.productReducer.loaded && state.releaseReducer.loaded,
-  boards: state.productReducer.boards,
-});
-
-export default connect(mapStateToProps)(ToolBoard);
+export default ToolBoard;

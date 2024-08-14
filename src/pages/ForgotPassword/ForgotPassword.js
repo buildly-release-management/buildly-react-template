@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Button,
@@ -16,9 +15,10 @@ import logo from '@assets/buildly-product-labs-logo.png';
 import Copyright from '@components/Copyright/Copyright';
 import Loader from '@components/Loader/Loader';
 import { useInput } from '@hooks/useInput';
-import { sendPasswordResetLink } from '@redux/authuser/actions/authuser.actions';
+import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
+import { useSendPasswordResetLinkMutation } from '@react-query/mutations/authUser/sendPasswordResetLinkMutation';
 
 const useStyles = makeStyles((theme) => ({
   logoDiv: {
@@ -53,17 +53,21 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ForgotPassword = ({ dispatch, loading }) => {
+const ForgotPassword = () => {
   const classes = useStyles();
   const email = useInput('', { required: true });
   const [error, setError] = useState({});
+
+  const { displayAlert } = useAlert();
+
+  const { mutate: sendPasswordResetLinkMutation, isLoading: isSendPasswordResetLinkLoading } = useSendPasswordResetLinkMutation(displayAlert);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const loginFormValue = {
       email: email.value,
     };
-    dispatch(sendPasswordResetLink(loginFormValue));
+    sendPasswordResetLinkMutation(loginFormValue);
   };
 
   const handleBlur = (e, validation, input) => {
@@ -97,7 +101,7 @@ const ForgotPassword = ({ dispatch, loading }) => {
 
   return (
     <>
-      {loading && <Loader open={loading} />}
+      {isSendPasswordResetLinkLoading && <Loader open={isSendPasswordResetLinkLoading} />}
       <div className={classes.logoDiv}>
         <img src={logo} alt="Logo" className={classes.logo} />
       </div>
@@ -132,7 +136,7 @@ const ForgotPassword = ({ dispatch, loading }) => {
                     variant="contained"
                     color="primary"
                     className={classes.submit}
-                    disabled={loading || submitDisabled()}
+                    disabled={isSendPasswordResetLinkLoading || submitDisabled()}
                   >
                     Submit
                   </Button>
@@ -163,9 +167,4 @@ const ForgotPassword = ({ dispatch, loading }) => {
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  ...state.authReducer,
-});
-
-export default connect(mapStateToProps)(ForgotPassword);
+export default ForgotPassword;

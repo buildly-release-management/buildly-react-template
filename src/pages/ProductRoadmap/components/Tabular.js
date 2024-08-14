@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
+import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Divider, IconButton, ListItemIcon, MenuItem, Typography,
@@ -14,6 +14,12 @@ import {
   Task as TaskIcon,
 } from '@mui/icons-material';
 import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
+import Loader from '@components/Loader/Loader';
+import useAlert from '@hooks/useAlert';
+import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
+import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
+import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
+import { getAllCommentQuery } from '@react-query/queries/release/getAllCommentQuery';
 import { featureColumns, issueColumns } from '../ProductRoadmapConstants';
 
 const useStyles = makeStyles((theme) => ({
@@ -32,11 +38,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Tabular = ({
-  loading,
   selectedProduct,
-  statuses,
-  features,
-  issues,
   addItem,
   editItem,
   deleteItem,
@@ -46,17 +48,39 @@ const Tabular = ({
   suggestedFeatures,
   createSuggestedFeature,
   removeSuggestedFeature,
-  comments,
   showRelatedIssues,
-  setDataLoading,
 }) => {
   const classes = useStyles();
+  const { displayAlert } = useAlert();
+
   const [featureRows, setFeatureRows] = useState([]);
   const [featMenuActions, setFeatMenuActions] = useState([]);
   const [issueRows, setIssueRows] = useState([]);
   const [issueMenuActions, setIssueMenuActions] = useState([]);
   const [finalSugCols, setFinalSugCols] = useState([]);
   const [menuIndex, setMenuIndex] = useState(0);
+
+  const { data: statuses, isLoading: isAllStatusLoading } = useQuery(
+    ['allStatuses', selectedProduct],
+    () => getAllStatusQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+  const { data: features, isLoading: isAllFeatureLoading } = useQuery(
+    ['allFeatures', selectedProduct],
+    () => getAllFeatureQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+  const { data: issues, isLoading: isAllIssueLoading } = useQuery(
+    ['allIssues', selectedProduct],
+    () => getAllIssueQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+
+  const { data: comments, isLoading: isAllCommentLoading } = useQuery(
+    ['allComments', selectedProduct],
+    () => getAllCommentQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
 
   useEffect(() => {
     const fma = (
@@ -121,7 +145,6 @@ const Tabular = ({
   }, [features, issueRows, menuIndex, comments]);
 
   useEffect(() => {
-    setDataLoading(true);
     const featRows = _.map(features, (feat) => ({
       ...feat,
       _status: _.find(statuses, { status_uuid: feat.status })?.name,
@@ -136,12 +159,10 @@ const Tabular = ({
 
     setFeatureRows(featRows);
     setIssueRows(issRows);
-    setDataLoading(false);
   }, [statuses, features, issues]);
 
   useEffect(() => {
-    if (suggestedFeatures && !_.isEmpty(suggestedFeatures)) {
-      setDataLoading(true);
+    if (!_.isEmpty(suggestedFeatures)) {
       const cols = [
         {
           name: 'suggested_feature',
@@ -193,26 +214,27 @@ const Tabular = ({
         },
       ];
       setFinalSugCols(cols);
-      setDataLoading(false);
     }
   }, [suggestedFeatures]);
 
   return (
     <>
-      {(!selectedProduct || _.toNumber(selectedProduct) === 0) && (
+      {(isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading) && (
+        <Loader open={isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading} />
+      )}
+      {(_.isEmpty(selectedProduct) || _.isEqual(_.toNumber(selectedProduct), 0)) && (
         <Typography className={classes.noProduct} component="div" variant="body1">
           No product selected yet. Please select a product to view related features and/or issues.
         </Typography>
       )}
-      {!!selectedProduct && upgrade && (
+      {!_.isEmpty(selectedProduct) && upgrade && !_.isEqual(_.toNumber(selectedProduct), 0) && (
         <Typography variant="h6" align="center">
           Upgrade to be able to create more features
         </Typography>
       )}
-      {!!selectedProduct && suggestedFeatures && !_.isEmpty(suggestedFeatures) && _.toNumber(selectedProduct) !== 0 && (
+      {!_.isEmpty(selectedProduct) && !_.isEmpty(suggestedFeatures) && !_.isEqual(_.toNumber(selectedProduct), 0) && (
         <div className={classes.tabular}>
           <DataTableWrapper
-            loading={loading}
             rows={suggestedFeatures}
             columns={finalSugCols}
             filename="SuggestedFeaturesList"
@@ -221,7 +243,7 @@ const Tabular = ({
           />
         </div>
       )}
-      {!!selectedProduct && _.toNumber(selectedProduct) !== 0 && (
+      {!!selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0) && (
         <div
           className={
             suggestedFeatures && !_.isEmpty(suggestedFeatures)
@@ -230,7 +252,6 @@ const Tabular = ({
           }
         >
           <DataTableWrapper
-            loading={loading}
             rows={featureRows}
             columns={featureColumns}
             filename="FeaturesList"
@@ -249,7 +270,6 @@ const Tabular = ({
       {!!selectedProduct && _.toNumber(selectedProduct) !== 0 && (
         <div className={`${classes.tabular} ${classes.tabular2}`}>
           <DataTableWrapper
-            loading={loading}
             rows={issueRows}
             columns={issueColumns}
             filename="IssuesList"
@@ -269,13 +289,4 @@ const Tabular = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  features: state.releaseReducer.features,
-  issues: state.releaseReducer.issues,
-  statuses: state.releaseReducer.statuses,
-  comments: state.releaseReducer.comments,
-  releases: state.releaseReducer.releases,
-});
-
-export default connect(mapStateToProps)(Tabular);
+export default Tabular;

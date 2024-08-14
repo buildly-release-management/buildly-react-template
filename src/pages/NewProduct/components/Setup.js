@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useContext } from 'react';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import makeStyles from '@mui/styles/makeStyles';
@@ -17,12 +16,17 @@ import {
   Select,
   Checkbox,
   ListItemText,
-  Autocomplete,
 } from '@mui/material';
+import Loader from '@components/Loader/Loader';
+import { UserContext } from '@context/User.context';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
-import { updateUser } from '@redux/authuser/actions/authuser.actions';
-import { createProduct, updateProduct } from '@redux/product/actions/product.actions';
+import useAlert from '@hooks/useAlert';
+import { useStore } from '@zustand/product/productStore';
+import { useUpdateUserMutation } from '@react-query/mutations/authUser/updateUserMutation';
+import { useCreateProductMutation } from '@react-query/mutations/product/createProductMutation';
+import { useUpdateProductMutation } from '@react-query/mutations/product/updateProductMutation';
+import { routes } from '@routes/routesConstants.js';
 import {
   EXPECTED_TRAFFIC, INTEGRATION_TYPES, PRODUCT_SETUP, PRODUCT_TYPE,
 } from '../ProductFormConstants';
@@ -51,18 +55,21 @@ const useStyles = makeStyles((theme) => ({
 export let checkIfSetupEdited;
 
 const Setup = ({
-  dispatch,
   history,
-  productFormData,
   editData,
   handleBack,
   editPage,
   product_uuid,
   redirectTo,
-  user,
 }) => {
   const classes = useStyles();
   const buttonText = editPage ? 'Save' : 'Create Product';
+
+  const user = useContext(UserContext);
+  const organization = user.organization.organization_uuid;
+
+  const { productFormData, clearProductFormData } = useStore();
+  const { displayAlert } = useAlert();
 
   const productSetup = useInput((editData && editData.product_info
     && editData.product_info.product_setup)
@@ -113,6 +120,10 @@ const Setup = ({
     || true, { required: true });
 
   const [formError, setFormError] = useState({});
+
+  const { mutate: updateUserMutation, isLoading: isUpdateUserLoading } = useUpdateUserMutation(history, displayAlert);
+  const { mutate: createProductMutation, isLoading: isCreatingProductLoading } = useCreateProductMutation(organization, history, routes.PRODUCT_ROADMAP, clearProductFormData, displayAlert);
+  const { mutate: updateProductMutation, isLoading: isUpdatingProductLoading } = useUpdateProductMutation(organization, history, redirectTo, clearProductFormData, displayAlert);
 
   const handleBlur = (e, validation, input, parentId) => {
     const validateObj = validators(validation, input);
@@ -181,19 +192,20 @@ const Setup = ({
       edit_date: new Date(),
     };
     if (user && !user.survey_status) {
-      dispatch(updateUser({ id: user.id, survey_status: true }));
+      updateUserMutation({ id: user.id, survey_status: true });
     }
     if (editPage) {
       formData.product_uuid = product_uuid;
-      dispatch(updateProduct(formData));
+      updateProductMutation(formData);
       history.push(redirectTo);
     } else {
-      dispatch(createProduct(formData, history));
+      createProductMutation(formData, history);
     }
   };
 
   return (
     <div>
+      {(isUpdateUserLoading || isCreatingProductLoading || isUpdatingProductLoading) && <Loader open={isUpdateUserLoading || isCreatingProductLoading || isUpdatingProductLoading} />}
       <form className={classes.form} noValidate onSubmit={handleSubmit}>
         <Box mb={2} mt={3}>
           <Grid container spacing={2}>
@@ -421,10 +433,4 @@ const Setup = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  user: state.authReducer.data,
-  productFormData: state.productReducer.productFormData,
-});
-
-export default connect(mapStateToProps)(Setup);
+export default Setup;

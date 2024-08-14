@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
+import React, { useEffect, useState, useContext } from 'react';
 import _ from 'lodash';
+import { useQuery } from 'react-query';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Image from 'react-bootstrap/Image';
@@ -25,6 +25,8 @@ import RangeSlider from '@components/RangeSlider/RangeSlider';
 import FlowChartComponent from '@components/FlowChart/FlowChart';
 import Chatbot from '@components/Chatbot/Chatbot';
 import { httpService } from '@modules/http/http.service';
+import useAlert from '@hooks/useAlert';
+import { UserContext } from '@context/User.context';
 
 // architecture designs
 import microservice from '@assets/architecture-suggestions/GCP - MicroServices.png';
@@ -35,23 +37,41 @@ import { addColorsAndIcons, getReleaseBudgetData } from './utils';
 
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Grid, TextField, Typography } from '@mui/material';
-import { getAllProducts } from '@redux/product/actions/product.actions';
+import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery.js';
+import { useEmailReportMutation } from '@react-query/mutations/product/emailReportMutation';
+import { getProductReportQuery } from '@react-query/queries/product/getProductReportQuery';
+import { getReleaseProductReportQuery } from '@react-query/queries/release/getReleaseProductReportQuery';
+import { useStore } from '@zustand/product/productStore';
 
-const Insights = ({
-  dispatch,
-  reduxLoading,
-  user,
-  products,
-}) => {
+const Insights = () => {
   let displayReport = true;
-  const activeProd = localStorage.getItem('activeProduct');
+  const { activeProduct, setActiveProduct } = useStore();
+  const user = useContext(UserContext);
+  const { displayAlert } = useAlert();
 
   // states
-  const [selectedProduct, setSelectedProduct] = useState(activeProd || 0);
+  const [selectedProduct, setSelectedProduct] = useState(activeProduct || 0);
   const [productData, setProductData] = useState([]);
   const [releaseData, setReleaseData] = useState([]);
   const [architectureImg, setArchitectureImg] = useState(null);
-  const [loading, setLoading] = useState(false);
+
+  const { data: products, isLoading: areProductsLoading } = useQuery(
+    ['allProducts', user.organization.organization_uuid],
+    () => getAllProductQuery(user.organization.organization_uuid, displayAlert),
+    { refetchOnWindowFocus: false },
+  );
+  const { data: reportData, isLoading: isGettingProductReport } = useQuery(
+    ['productReport', selectedProduct],
+    () => getProductReportQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+  );
+  const { data: releaseReport, isLoading: isGettingReleaseProductReport } = useQuery(
+    ['releaseProductReport', selectedProduct],
+    () => getReleaseProductReportQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+  );
+
+  const { mutate: emailReportMutation, isLoading: isEmailingReport } = useEmailReportMutation(selectedProduct, displayAlert);
 
   // Email report modal
   const [showEmailModal, setShow] = useState(false);
@@ -60,7 +80,7 @@ const Insights = ({
     closeDownloadMenu();
     setRecipients([{
       name: '',
-      email: ''
+      email: '',
     }]);
     setShow(true);
   };
@@ -76,7 +96,7 @@ const Insights = ({
   const addNewRecipient = () => {
     recipients.push({
       name: '',
-      email: ''
+      email: '',
     });
     setRecipients([...recipients]);
     disableButton(true);
@@ -93,23 +113,14 @@ const Insights = ({
     event.preventDefault();
     try {
       closeEmailModal();
-      httpService.sendDirectServiceRequest(
-        `pdf_report/${selectedProduct}/`,
-        'POST',
-        {
-          senders_name: `${user.first_name} ${user.last_name}`,
-          senders_title: user.title,
-          company_name: user.organization.name,
-          contact_information: user.contact_info,
-          recipients,
-        },
-        'product',
-      )
-        .then((response) => (
-          <Alert key="success" variant="success">
-            Report successfully emailed!
-          </Alert>
-        ));
+      const emailData = {
+        senders_name: `${user.first_name} ${user.last_name}`,
+        senders_title: user.title,
+        company_name: user.organization.name,
+        contact_information: user.contact_info,
+        recipients,
+      };
+      emailReportMutation(emailData);
     } catch (error) {
       console.log(error);
     }
@@ -117,80 +128,39 @@ const Insights = ({
 
   // effects
   useEffect(() => {
-    dispatch(getAllProducts(user.organization.organization_uuid));
-  }, [user]);
+    if (selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0)) {
+      if (reportData && reportData.budget) {
+        // set the image to display
+        let img = null;
+        if (reportData.architecture_type.toLowerCase() === 'monolith') {
+          img = monolith;
+        } else if (reportData.architecture_type.toLowerCase() === 'microservice') {
+          img = microservice;
+        } else if (['micro-app', 'mini-app'].includes(reportData.architecture_type.toLowerCase())) {
+          img = microApp;
+        } else if (reportData.architecture_type.toLowerCase() === 'multicloud microservice') {
+          img = multiCloud;
+        }
+        // set states
+        setProductData(reportData);
+        setArchitectureImg(img);
 
-  useEffect(() => {
-    if (selectedProduct && _.toNumber(selectedProduct) !== 0) {
-      setLoading(true);
-      // define requests
-      const requestsArray = [];
-      // Load product data
-      [`product/${selectedProduct}/report/`, `product_report/${selectedProduct}/`].forEach(
-        (url, index) => {
-          if (index === 0) {
-            requestsArray.push(
-              httpService.sendDirectServiceRequest(
-                `product/${selectedProduct}/report/`,
-                'GET',
-                null,
-                'product',
-              ),
-            );
-          } else {
-            requestsArray.push(
-              httpService.sendDirectServiceRequest(
-                `product_report/${selectedProduct}/`,
-                'GET',
-                null,
-                'release',
-              ),
-            );
-          }
-        },
-      );
-      // handle promises
-      Promise.all(requestsArray)
-        .then((results) => {
-          const reportData = results[0].data;
-          const releaseReport = results[1].data;
+        // get release data
+        releaseReport.release_data = getReleaseBudgetData(
+          reportData.budget?.release_data, releaseReport?.release_data,
+        );
 
-          if (reportData && reportData.budget) {
-            // set the image to display
-            let img = null;
-            if (reportData.architecture_type.toLowerCase() === 'monolith') {
-              img = monolith;
-            } else if (reportData.architecture_type.toLowerCase() === 'microservice') {
-              img = microservice;
-            } else if (['micro-app', 'mini-app'].includes(reportData.architecture_type.toLowerCase())) {
-              img = microApp;
-            } else if (reportData.architecture_type.toLowerCase() === 'multicloud microservice') {
-              img = multiCloud;
-            }
-            // set states
-            setProductData(reportData);
-            setArchitectureImg(img);
+        releaseReport.release_data = addColorsAndIcons(
+          releaseReport.release_data,
+        );
 
-            // get release data
-            releaseReport.release_data = getReleaseBudgetData(
-              reportData.budget?.release_data, releaseReport?.release_data,
-            );
-
-            releaseReport.release_data = addColorsAndIcons(
-              releaseReport.release_data,
-            );
-
-            // set release data
-            setReleaseData(releaseReport);
-            setLoading(false);
-          }
-        })
-        .catch((error) => {
-          setLoading(false);
-          displayReport = false;
-        });
+        // set release data
+        setReleaseData(releaseReport);
+      }
+    } else {
+      displayReport = false;
     }
-  }, [selectedProduct]);
+  }, [selectedProduct, reportData, releaseReport]);
 
   /**
    * Download pdf report
@@ -228,15 +198,10 @@ const Insights = ({
     setAnchorEl(null);
   };
 
-  // Set selected product
-  const setActiveProduct = (prod) => {
-    localStorage.setItem('activeProduct', prod);
-    setSelectedProduct(prod);
-  };
-
   return (
     <>
-      {loading && <Loader open={loading || reduxLoading}/>}
+      {(areProductsLoading || isEmailingReport || isGettingProductReport || isGettingReleaseProductReport)
+      && <Loader open={areProductsLoading || isEmailingReport || isGettingProductReport || isGettingReleaseProductReport} />}
       <div className="insightsSelectedProductRoot">
         <Grid container mb={2} alignItems="center">
           <Grid item md={4}>
@@ -256,6 +221,7 @@ const Insights = ({
               value={selectedProduct}
               onChange={(e) => {
                 setActiveProduct(e.target.value);
+                setSelectedProduct(e.target.value);
               }}
             >
               <MenuItem value={0}>Select</MenuItem>
@@ -282,7 +248,7 @@ const Insights = ({
                 aria-haspopup="true"
                 aria-expanded={open ? 'true' : undefined}
                 className="btn btn-small btn-primary"
-                endIcon={<KeyboardArrowDownIcon/>}
+                endIcon={<KeyboardArrowDownIcon />}
                 onClick={expandDownloadMenu}
               >
                 Dashboard PDF
@@ -310,7 +276,7 @@ const Insights = ({
                     {productData && productData.architecture_type ? ` (${productData?.architecture_type?.toUpperCase()})` : ''}
                   </Card.Title>
                   <div className="image-responsive m-2" style={{ height: 350 }}>
-                    <Image src={architectureImg} fluid style={{ height: '100%' }}/>
+                    <Image src={architectureImg} fluid style={{ height: '100%' }} />
                   </div>
                 </Card.Body>
               </Card>
@@ -321,7 +287,8 @@ const Insights = ({
                   <Card.Title>Buidly components</Card.Title>
                   <div className="w-100 m-2">
                     <FlowChartComponent
-                      componentsData={productData && productData.components_tree}/>
+                      componentsData={productData && productData.components_tree}
+                    />
                   </div>
                 </Card.Body>
               </Card>
@@ -356,7 +323,7 @@ const Insights = ({
                   <Card className="mb-2 row">
                     <Card.Body>
                       <div className="m-2">
-                        <RangeSlider rangeValues={productData?.budget_range}/>
+                        <RangeSlider rangeValues={productData?.budget_range} />
                       </div>
                     </Card.Body>
                   </Card>
@@ -364,18 +331,18 @@ const Insights = ({
                     <Card.Body>
                       <Table striped bordered hover>
                         <thead>
-                        <tr>
-                          <th>PLATFORM DEV EXPENSES</th>
-                          <th colSpan="2">BUDGET</th>
-                        </tr>
-                        <tr>
-                          <th className="light-header">Payroll</th>
-                          <th className="light-header">Monthly ($)</th>
-                          <th className="light-header">Total ($)</th>
-                        </tr>
+                          <tr>
+                            <th>PLATFORM DEV EXPENSES</th>
+                            <th colSpan="2">BUDGET</th>
+                          </tr>
+                          <tr>
+                            <th className="light-header">Payroll</th>
+                            <th className="light-header">Monthly ($)</th>
+                            <th className="light-header">Total ($)</th>
+                          </tr>
                         </thead>
                         <tbody>
-                        {
+                          {
                           productData && productData.budget && productData.budget?.total_roles_budget.map(
                             (item, index) => (
                               <tr key={`budget-${index}`}>
@@ -386,26 +353,26 @@ const Insights = ({
                             ),
                           )
                         }
-                        <tr>
-                          <th className="text-right totals-header">Payroll Total</th>
-                          <th className="totals-header">
-                            {`$${(productData && productData.budget
+                          <tr>
+                            <th className="text-right totals-header">Payroll Total</th>
+                            <th className="totals-header">
+                              {`$${(productData && productData.budget
                               && productData.budget?.total_monthly_budget) || '0.00'}`}
-                          </th>
-                          <th className="totals-header">
-                            {`$${(productData && productData.budget
+                            </th>
+                            <th className="totals-header">
+                              {`$${(productData && productData.budget
                               && productData.budget?.total_budget) || '0.00'}`}
-                          </th>
-                        </tr>
+                            </th>
+                          </tr>
                         </tbody>
                         <thead>
-                        <tr>
-                          <th className="light-header">Additional</th>
-                          <th className="light-header">Monthly ($)</th>
-                        </tr>
+                          <tr>
+                            <th className="light-header">Additional</th>
+                            <th className="light-header">Monthly ($)</th>
+                          </tr>
                         </thead>
                         <tbody>
-                        {
+                          {
                           productData && productData.budget
                           && productData.budget.other_costs?.map(
                             (item, index) => (
@@ -416,13 +383,13 @@ const Insights = ({
                             ),
                           )
                         }
-                        <tr>
-                          <th className="text-right totals-header">Additional Total</th>
-                          <th className="totals-header">
-                            {`$${(productData && productData.budget
+                          <tr>
+                            <th className="text-right totals-header">Additional Total</th>
+                            <th className="totals-header">
+                              {`$${(productData && productData.budget
                               && productData.budget?.other_costs_total) || '0.00'}`}
-                          </th>
-                        </tr>
+                            </th>
+                          </tr>
                         </tbody>
                       </Table>
                     </Card.Body>
@@ -519,7 +486,8 @@ const Insights = ({
                                 type="email"
                                 placeholder="Email address"
                                 name="email"
-                                onChange={(event) => updateRecipients(event, index)}/>
+                                onChange={(event) => updateRecipients(event, index)}
+                              />
                             </Form.Group>
                           </Col>
                         </Row>
@@ -576,12 +544,4 @@ const Insights = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  reduxLoading: state.authReducer.loading || state.productReducer.loading,
-  user: state.authReducer.data,
-  products: state.productReducer.products,
-});
-
-export default connect(mapStateToProps)(Insights);
-
+export default Insights;

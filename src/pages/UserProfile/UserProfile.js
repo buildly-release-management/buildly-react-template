@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Grid, Tabs, Tab, Typography,
+  Grid,
+  Tabs,
+  Tab,
+  Typography,
 } from '@mui/material';
 import { Route } from 'react-router-dom';
 import { routes } from '@routes/routesConstants';
@@ -22,9 +25,11 @@ const UserProfile = ({ history, location }) => {
       icon: <AccountBalanceWalletIcon />,
     },
   ];
+
   const viewPath = (
     subNav.find((item) => location.pathname.endsWith(item.value)) || subNav[0]
   ).value;
+
   const [view, setView] = useState(viewPath);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useEffect, useContext } from 'react';
 import _ from 'lodash';
+import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   useTheme,
@@ -13,11 +13,13 @@ import {
   AccordionDetails,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { UserContext } from '@context/User.context';
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
-import {
-  createIssue,
-} from '@redux/release/actions/release.actions';
+import useAlert from '@hooks/useAlert';
+import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery.js';
+import { getAllCredentialQuery } from '@react-query/queries/product/getAllCredentialQuery';
+import { useCreateIssueMutation } from '@react-query/mutations/release/createIssueMutation';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -52,13 +54,12 @@ const useStyles = makeStyles((theme) => ({
 const IssueSuggestions = ({
   history,
   location,
-  dispatch,
-  credentials,
-  products,
   convertIssue,
-  loading,
 }) => {
   const classes = useStyles();
+  const user = useContext(UserContext);
+  const { displayAlert } = useAlert();
+
   const redirectTo = location.state && location.state.from;
   const editData = (
     location.state
@@ -78,6 +79,18 @@ const IssueSuggestions = ({
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
   const [product, setProduct] = useState('');
+
+  const { data: products, isLoading: areProductsLoading } = useQuery(
+    ['allProducts', user.organization.organization_uuid],
+    () => getAllProductQuery(user.organization.organization_uuid, displayAlert),
+    { refetchOnWindowFocus: false },
+  );
+  const { data: credentials, isLoading: areCredentialsLoading } = useQuery(
+    ['allCredentials', product_uuid],
+    () => getAllCredentialQuery(product_uuid, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) },
+  );
+  const { mutate: createIssueMutation, isLoading: isCreatingIssueLoading } = useCreateIssueMutation(product_uuid, history, redirectTo, displayAlert);
 
   useEffect(() => {
     const prod = _.find(products, { product_uuid });
@@ -114,8 +127,7 @@ const IssueSuggestions = ({
       issue_type: issue.ticket_type,
     }));
 
-    dispatch(createIssue(issueSuggestionsData));
-    history.push(redirectTo);
+    createIssueMutation(issueSuggestionsData);
   };
 
   const closeFormModal = () => {
@@ -143,7 +155,7 @@ const IssueSuggestions = ({
           setConfirmModal={setConfirmModal}
           handleConfirmModal={discardFormData}
         >
-          {loading && <Loader open={loading} />}
+          {(areProductsLoading || areCredentialsLoading || isCreatingIssueLoading) && <Loader open={areProductsLoading || areCredentialsLoading || isCreatingIssueLoading} />}
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container rowGap={2}>
               {showData && _.isEmpty(showData.suggested_issues) && (
@@ -204,11 +216,4 @@ const IssueSuggestions = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  loading: state.productReducer.loading || state.releaseReducer.loading,
-  products: state.productReducer.products,
-  credentials: state.productReducer.credentials,
-});
-
-export default connect(mapStateToProps)(IssueSuggestions);
+export default IssueSuggestions;

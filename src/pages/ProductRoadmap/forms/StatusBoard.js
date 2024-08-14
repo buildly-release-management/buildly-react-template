@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
-import React, { useState } from 'react';
-import { connect } from 'react-redux';
+import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
+import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   useTheme,
@@ -15,7 +15,9 @@ import {
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
-import { createStatus } from '@redux/release/actions/release.actions';
+import useAlert from '@hooks/useAlert';
+import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
+import { useCreateStatusMutation } from '@react-query/mutations/release/createStatusMutation';
 import { STATUSTYPES } from '../ProductRoadmapConstants';
 
 const useStyles = makeStyles((theme) => ({
@@ -38,12 +40,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const StatusBoard = ({
-  dispatch,
-  history,
-  location,
-  loading,
-}) => {
+const StatusBoard = ({ history, location }) => {
   const classes = useStyles();
   const editData = (
     location.state
@@ -55,12 +52,26 @@ const StatusBoard = ({
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
+  const { displayAlert } = useAlert();
 
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
   const [status, setStatus] = useState([]);
   const [defaultStatus, setDefaultStatus] = useState('');
   const [formError, setFormError] = useState({});
+
+  const { data: statuses, isLoading: isAllStatusLoading } = useQuery(
+    ['allStatuses', product_uuid],
+    () => getAllStatusQuery(product_uuid, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
+  );
+
+  useEffect(() => {
+    const filteredStatus = _.filter(statuses, { product_uuid });
+    const statusDefault = _.find(filteredStatus, (s) => s.is_default_status);
+    setStatus(_.map(filteredStatus, 'name'));
+    setDefaultStatus(statusDefault.name || '');
+  }, [statuses]);
 
   const closeFormModal = () => {
     const dataHasChanged = (
@@ -86,7 +97,6 @@ const StatusBoard = ({
     }
   };
 
-  // Handle statuses list
   const onStatusChange = (value) => {
     switch (true) {
       case (value.length > status.length):
@@ -102,6 +112,8 @@ const StatusBoard = ({
     }
   };
 
+  const { mutate: createStatusMutation, isLoading: isCreatingStatusLoading } = useCreateStatusMutation(history, redirectTo, product_uuid, discardFormData, displayAlert);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const statusData = _.map(status, (col) => ({
@@ -111,9 +123,7 @@ const StatusBoard = ({
       status_tracking_id: null,
       is_default_status: !!(col === defaultStatus),
     }));
-
-    dispatch(createStatus(statusData));
-    history.push(redirectTo);
+    createStatusMutation(statusData);
   };
 
   const submitDisabled = () => {
@@ -145,7 +155,7 @@ const StatusBoard = ({
           setConfirmModal={setConfirmModal}
           handleConfirmModal={discardFormData}
         >
-          {loading && <Loader open={loading} />}
+          {(isCreatingStatusLoading || isAllStatusLoading) && <Loader open={isCreatingStatusLoading || isAllStatusLoading} />}
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
               <Grid item xs={12}>
@@ -177,7 +187,6 @@ const StatusBoard = ({
                   )}
                 />
               </Grid>
-
               {!_.isEmpty(status) && (
                 <Grid item xs={12}>
                   <TextField
@@ -203,7 +212,6 @@ const StatusBoard = ({
                 </Grid>
               )}
             </Grid>
-
             <Grid container spacing={isDesktop ? 3 : 0} justifyContent="center">
               <Grid item xs={12} sm={4}>
                 <Button
@@ -217,7 +225,6 @@ const StatusBoard = ({
                   Configure Board
                 </Button>
               </Grid>
-
               <Grid item xs={12} sm={4}>
                 <Button
                   type="button"
@@ -238,9 +245,4 @@ const StatusBoard = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  loading: state.productReducer.loading || state.releaseReducer.loading,
-});
-
-export default connect(mapStateToProps)(StatusBoard);
+export default StatusBoard;

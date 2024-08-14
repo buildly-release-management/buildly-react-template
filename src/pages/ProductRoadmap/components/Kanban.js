@@ -1,7 +1,7 @@
 /* eslint-disable no-shadow */
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
+import { useQuery } from 'react-query';
 import moment from 'moment-timezone';
 import {
   DragDropContext,
@@ -10,6 +10,7 @@ import {
 } from 'react-beautiful-dnd';
 import { makeStyles } from '@mui/styles';
 import {
+  Button,
   Card,
   CardContent,
   CardHeader,
@@ -37,8 +38,18 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Task as TaskIcon,
+  Sync as SyncIcon,
 } from '@mui/icons-material';
-import { updateFeature, updateIssue } from '@redux/release/actions/release.actions';
+import Loader from '@components/Loader/Loader';
+import useAlert from '@hooks/useAlert';
+import { getAllCredentialQuery } from '@react-query/queries/product/getAllCredentialQuery';
+import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
+import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
+import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
+import { getAllCommentQuery } from '@react-query/queries/release/getAllCommentQuery';
+import { useUpdateFeatureMutation } from '@react-query/mutations/release/updateFeatureMutation';
+import { useUpdateIssueMutation } from '@react-query/mutations/release/UpdateIssueMutation';
+import { routes } from '@routes/routesConstants';
 
 const useStyles = makeStyles((theme) => ({
   noProduct: {
@@ -120,12 +131,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Kanban = ({
-  dispatch,
   selectedProduct,
-  features,
-  issues,
-  statuses,
-  credentials,
   addItem,
   editItem,
   deleteItem,
@@ -135,15 +141,47 @@ const Kanban = ({
   suggestedFeatures,
   createSuggestedFeature,
   removeSuggestedFeature,
-  comments,
   showRelatedIssues,
+  editBoard,
 }) => {
   const classes = useStyles();
+  const { displayAlert } = useAlert();
+
   const [columns, setColumns] = useState({});
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentNumber, setCurrentNumber] = useState(null);
   const [addAnchorEl, setAddAnchorEl] = useState(null);
   const [currentColId, setCurrentColId] = useState(null);
+
+  const { data: credentials, isLoading: isAllCredentialLoading } = useQuery(
+    ['allCredentials', selectedProduct],
+    () => getAllCredentialQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+  const { data: statuses, isLoading: isAllStatusLoading } = useQuery(
+    ['allStatuses', selectedProduct],
+    () => getAllStatusQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+  const { data: features, isLoading: isAllFeatureLoading } = useQuery(
+    ['allFeatures', selectedProduct],
+    () => getAllFeatureQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+  const { data: issues, isLoading: isAllIssueLoading } = useQuery(
+    ['allIssues', selectedProduct],
+    () => getAllIssueQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+
+  const { data: comments, isLoading: isAllCommentLoading } = useQuery(
+    ['allComments', selectedProduct],
+    () => getAllCommentQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+
+  const { mutate: updateFeatureMutation } = useUpdateFeatureMutation(selectedProduct, history, routes.PRODUCT_ROADMAP_KANBAN, displayAlert);
+  const { mutate: updateIssueMutation } = useUpdateIssueMutation(selectedProduct, history, routes.PRODUCT_ROADMAP_KANBAN, displayAlert);
 
   const handleClick = (event, number) => {
     setAnchorEl(event.currentTarget);
@@ -225,13 +263,13 @@ const Kanban = ({
           ...removed,
           ...issueCred?.auth_detail,
         };
-        dispatch(updateIssue(updateData));
+        updateIssueMutation(updateData);
       } else {
         updateData = {
           ...removed,
           ...featCred?.auth_detail,
         };
-        dispatch(updateFeature(updateData));
+        updateFeatureMutation(updateData);
       }
     } else {
       const column = columns[source.droppableId];
@@ -250,12 +288,14 @@ const Kanban = ({
 
   return (
     <>
-      {(!selectedProduct || _.toNumber(selectedProduct) === 0) && (
+      {(isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading) && (
+        <Loader open={isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading} />
+      )}
+      {(_.isEmpty(selectedProduct) || _.toNumber(selectedProduct) === 0) && (
         <Typography className={classes.noProduct} component="div" variant="body1">
           No product selected yet. Please select a product to view related features and/or issues.
         </Typography>
       )}
-
       {!!selectedProduct && upgrade && (
         <FormHelperText error style={{ marginBottom: '16px' }}>
           Upgrade to be able to create more features
@@ -268,6 +308,16 @@ const Kanban = ({
             onDragEnd(result, columns, setColumns);
           }}
         >
+          <Button
+            variant="contained"
+            color="secondary"
+            className="mb-2"
+            onClick={editBoard}
+          >
+            <EditIcon />
+            {' '}
+            Edit board
+          </Button>
           <Grid container rowGap={2} columnGap={4} className={classes.container}>
             {!!selectedProduct && suggestedFeatures && !_.isEmpty(suggestedFeatures) && (
               <Grid item xs={2.6} sm={2.75} lg={2.85} className={classes.swimlane}>
@@ -572,13 +622,4 @@ const Kanban = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  features: state.releaseReducer.features,
-  issues: state.releaseReducer.issues,
-  statuses: state.releaseReducer.statuses,
-  credentials: state.productReducer.credentials,
-  comments: state.releaseReducer.comments,
-});
-
-export default connect(mapStateToProps)(Kanban);
+export default Kanban;

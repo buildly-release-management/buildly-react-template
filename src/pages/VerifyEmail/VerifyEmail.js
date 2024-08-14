@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
+import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
+import useAlert from '@hooks/useAlert';
 import { Typography } from '@mui/material';
-import { verifyEmail } from '@redux/authuser/actions/authuser.actions';
 import Loader from '@components/Loader/Loader';
+import { routes } from '@routes/routesConstants';
+import { useVerifyEmailMutation } from '@react-query/mutations/authUser/verifyEmailMutation';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -15,27 +17,32 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const VerifyEmail = ({
-  dispatch, history, token, loading, loaded, error,
-}) => {
+const VerifyEmail = ({ history }) => {
   const classes = useStyles();
 
+  const { displayAlert } = useAlert();
+
+  const { mutate: verifyEmailMutation, isLoading: isVerifyEmailLoading, isError: verifyEmailError } = useVerifyEmailMutation(history, routes.LOGIN, displayAlert);
+
   useEffect(() => {
-    if (token) {
-      dispatch(verifyEmail({ token }, history));
-    }
-  }, [token]);
+    const path = window.location.pathname;
+    const parts = path.split('/');
+    const token = parts[parts.length - 1];
+    const data = {
+      token,
+    };
+    verifyEmailMutation(data);
+  }, []);
 
   return (
     <div className={classes.root}>
-      {loading && <Loader open={loading} />}
-      {loading && (
-      <Typography variant="h5" component="h5">
-        Verifying email using the verification link
-      </Typography>
+      {isVerifyEmailLoading && <Loader open={isVerifyEmailLoading} />}
+      {isVerifyEmailLoading && (
+        <Typography variant="h5" component="h5">
+          Verifying email using the verification link
+        </Typography>
       )}
-
-      {loaded && error && (
+      {verifyEmailError && (
         <Typography variant="h5" component="h5">
           Something doesn't seem right. Please check the link and try again.
         </Typography>
@@ -44,10 +51,4 @@ const VerifyEmail = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  ...state.authReducer,
-  token: ownProps.match.params.token,
-});
-
-export default connect(mapStateToProps)(VerifyEmail);
+export default VerifyEmail;
