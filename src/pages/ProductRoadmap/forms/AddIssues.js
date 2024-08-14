@@ -27,7 +27,7 @@ import { getAllCredentialQuery } from '@react-query/queries/product/getAllCreden
 import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
 import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
 import { useCreateIssueMutation } from '@react-query/mutations/release/createIssueMutation';
-import { useUpdateIssueMutation } from '@react-query/mutations/release/UpdateIssueMutation';
+import { useUpdateIssueMutation } from '@react-query/mutations/release/updateIssueMutation';
 import { ISSUETYPES } from '../ProductRoadmapConstants';
 
 const useStyles = makeStyles((theme) => ({

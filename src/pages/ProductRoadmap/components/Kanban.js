@@ -48,7 +48,7 @@ import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQu
 import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
 import { getAllCommentQuery } from '@react-query/queries/release/getAllCommentQuery';
 import { useUpdateFeatureMutation } from '@react-query/mutations/release/updateFeatureMutation';
-import { useUpdateIssueMutation } from '@react-query/mutations/release/UpdateIssueMutation';
+import { useUpdateIssueMutation } from '@react-query/mutations/release/updateIssueMutation';
 import { routes } from '@routes/routesConstants';
 
 const useStyles = makeStyles((theme) => ({
