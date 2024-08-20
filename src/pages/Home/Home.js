@@ -20,7 +20,7 @@ const Home = () => {
         title="Buildly Product Labs Home Page"
         loading="lazy"
         className={classes.iframe}
-        src={`https://storage.googleapis.com/insights-landing/index.html?origin=${window.env.PRODUCTION ? 'https://insights.buildly.io/' : 'https://rm-dev.buildly.io/'}`}
+        src={`https://storage.googleapis.com/insights-landing/index.html?origin=${window.env.PRODUCTION ? 'https://labs.buildly.io/' : 'https://rm-dev.buildly.io/'}`}
         allowFullScreen
       />
       <Copyright />
