@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ToolBoard = ({ history }) => {
+const ToolBoard = ({ history, location }) => {
   const classes = useStyles();
   const { displayAlert } = useAlert();
 
