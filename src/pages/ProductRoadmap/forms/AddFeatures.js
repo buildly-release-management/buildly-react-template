@@ -315,6 +315,7 @@ const AddFeatures = ({ location, history }) => {
     )
     || !!(editPage && editData && !_.isEmpty(suggestedUserStories) && !_.isEqual(editData.feature_detail.user_stories, suggestedUserStories));
 
+    dispatch(clearUserStories());
     if (dataHasChanged) {
       setConfirmModal(true);
     } else {
