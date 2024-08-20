@@ -43,7 +43,8 @@ const Users = () => {
 
   useEffect(() => {
     if (!_.isEmpty(coreuserData)) {
-      const filteredUsers = _.filter(coreuserData, (u) => _.isEqual(u.organization.organization_uuid, organization.organization_uuid));
+      const validUsers = _.filter(coreuserData, (cu) => !!cu && !!cu.organization)
+      const filteredUsers = _.filter(validUsers, (u) => _.isEqual(u.organization.organization_uuid, organization.organization_uuid));
       const formattedUsers = getUserFormattedRows(filteredUsers);
       const signedInUser = _.remove(formattedUsers, { id: user.id });
 
