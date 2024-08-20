@@ -1,9 +1,8 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import makeStyles from '@mui/styles/makeStyles';
 import { IconButton, Slide, Snackbar } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { hideAlert } from '@redux/alert/actions/alert.actions';
+import { useStore } from '@zustand/alert/alertStore';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,13 +29,17 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Alerts = ({ data, dispatch }) => {
+const Alerts = () => {
+  const { data, hideAlert } = useStore();
   const classes = useStyles();
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
-    dispatch(hideAlert());
+    hideAlert();
+    if (data && data.onClose) {
+      data.onClose(data.id);
+    }
   };
 
   return (
@@ -45,7 +48,7 @@ const Alerts = ({ data, dispatch }) => {
         <Snackbar
           key={`${data.type}-${data.message}`}
           open={data.open || false}
-          autoHideDuration={4000}
+          autoHideDuration={2000}
           onClose={handleClose}
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
           message={data.message}
@@ -73,9 +76,4 @@ const Alerts = ({ data, dispatch }) => {
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  ...state.alertReducer,
-});
-
-export default connect(mapStateToProps)(Alerts);
+export default Alerts;

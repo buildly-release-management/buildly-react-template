@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import makeStyles from '@mui/styles/makeStyles';
 import {
@@ -15,7 +14,7 @@ import {
 } from '@mui/material';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
-import { saveProductFormData } from '@redux/product/actions/product.actions';
+import { useStore } from '@zustand/product/productStore';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -57,13 +56,13 @@ const useStyles = makeStyles((theme) => ({
 export let checkIfUseInfoEdited;
 
 const UseInfo = ({
-  productFormData,
   handleBack,
-  dispatch,
   editData,
   handleNext,
 }) => {
   const classes = useStyles();
+
+  const { productFormData, updateProductFormData } = useStore();
 
   const productUse = useInput((editData && editData.product_info && editData.product_info.use)
     || (productFormData && productFormData.product_info && productFormData.product_info.use)
@@ -160,7 +159,7 @@ const UseInfo = ({
       },
       edit_date: new Date(),
     };
-    dispatch(saveProductFormData(formData));
+    updateProductFormData(formData);
     handleNext();
   };
 
@@ -309,9 +308,4 @@ const UseInfo = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  productFormData: state.productReducer.productFormData,
-});
-
-export default connect(mapStateToProps)(UseInfo);
+export default UseInfo;

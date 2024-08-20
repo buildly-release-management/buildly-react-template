@@ -1,12 +1,18 @@
 import React, { useRef } from 'react';
 import { Button } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import { socialLogin } from '@redux/authuser/actions/authuser.actions';
 import { providers, toQuery } from '@utils/socialLogin';
+import useAlert from '@hooks/useAlert';
+import { useSocialLoginMutation } from '@react-query/mutations/authUser/socialLoginMutation';
+import { routes } from '@routes/routesConstants';
 import PopupWindow from './PopupWindow';
 
-const TrelloLogin = ({ dispatch, history, disabled }) => {
+const TrelloLogin = ({ history, disabled }) => {
   const popup = useRef(null);
+
+  const { displayAlert } = useAlert();
+
+  const { mutate: socialLoginMutation } = useSocialLoginMutation(history, routes.MISSING_DATA, routes.PRODUCT_PORTFOLIO, displayAlert);
 
   const onBtnClick = () => {
     const search = toQuery({ key: window.env.TRELLO_API_KEY });
@@ -27,8 +33,11 @@ const TrelloLogin = ({ dispatch, history, disabled }) => {
     if (!data.code) {
       return onFailure(new Error("'code' not found"));
     }
-
-    dispatch(socialLogin(data.code, providers.trello, history));
+    const socialData = {
+      code: data.code,
+      providers: providers.trello,
+    };
+    socialLoginMutation(socialData);
   };
 
   const onFailure = (error) => {

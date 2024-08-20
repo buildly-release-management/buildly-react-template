@@ -1,0 +1,67 @@
+.release-list-menu-right {
+  margin-top: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.release-list-selected-product {
+  width: 250px;
+}
+.release-list-selected-product .MuiOutlinedInput-notchedOutline {
+  border-color: #F9943B;
+}
+.release-list-selected-product .MuiInputBase-input {
+  padding-top: 9.6px;
+  padding-bottom: 9.6px;
+}
+
+.release-list-no-product {
+  margin-top: 150px;
+  text-align: center;
+}
+
+.releases-list-header {
+  max-width: 100% !important;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.charts-parent-container {
+  height: 40%;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.chart-container {
+  background-color: #ffffff;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  padding: 12px;
+  width: 32%;
+  text-align: -webkit-center;
+}
+
+.releaseFeaturesAdd .MuiAutocomplete-root .MuiFormControl-root div fieldset,
+.releaseFeaturesAdd
+  .MuiAutocomplete-root
+  .MuiFormControl-root
+  div
+  fieldset:hover {
+  border-color: #dee2e6 !important;
+}
+
+.releaseFeaturesAdd
+  .MuiAutocomplete-root
+  .MuiFormControl-root:focus-within
+  fieldset {
+  border-color: #86b7fe !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}

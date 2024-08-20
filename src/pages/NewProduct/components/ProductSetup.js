@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import makeStyles from '@mui/styles/makeStyles';
@@ -16,12 +15,15 @@ import {
 } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGithub, faTrello } from '@fortawesome/free-brands-svg-icons';
+import Loader from '@components/Loader/Loader';
 import DatePickerComponent from '@components/DatePicker/DatePicker';
 import { useInput } from '@hooks/useInput';
 import { getOrganization } from '@context/User.context';
-import {
-  saveProductFormData, getAllThirdPartyTools, validateCredential,
-} from '@redux/product/actions/product.actions';
+import useAlert from '@hooks/useAlert';
+import { useQuery } from 'react-query';
+import { useStore } from '@zustand/product/productStore';
+import { getAllThirdPartyToolQuery } from '@react-query/queries/product/getAllThirdPartyToolQuery';
+import { useValidateCredentialMutation } from '@react-query/mutations/product/validateCredentialMutation';
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -83,18 +85,16 @@ const StyledRadio = (props) => (
 );
 
 const ProductSetup = ({
-  productFormData,
   handleNext,
-  dispatch,
-  thirdPartyTools,
   editData,
   viewPage,
   featCred,
   issueCred,
-  featureCredValid,
-  issueCredValid,
 }) => {
   const classes = useStyles();
+
+  const { displayAlert } = useAlert();
+  const { productFormData, updateProductFormData } = useStore();
 
   const name = useInput((editData && editData.name)
     || (productFormData && productFormData.product_name)
@@ -134,6 +134,14 @@ const ProductSetup = ({
   ).toISOString());
 
   const [formError, setFormError] = useState({});
+
+  const { data: allThirdPartyToolData, isLoading: isAllThirdPartyToolLoading } = useQuery(
+    ['allThirdPartyToolCredentials'],
+    () => getAllThirdPartyToolQuery(displayAlert),
+    { refetchOnWindowFocus: false },
+  );
+
+  const { mutate: validateCredentialMutation, isLoading: isValidatingCredentialLoading, isSuccess: isValidateCredentailSuccess } = useValidateCredentialMutation(displayAlert);
 
   useEffect(() => {
     if (productFormData && !_.isEmpty(productFormData.featureCreds)) {
@@ -191,17 +199,14 @@ const ProductSetup = ({
   }, [editData]);
 
   useEffect(() => {
-    if (!thirdPartyTools || _.isEmpty(thirdPartyTools)) {
-      dispatch(getAllThirdPartyTools());
-    }
     if (productFormData
       && productFormData.third_party_tool
       && !_.isEmpty(productFormData.third_party_tool)
-      && thirdPartyTools
-      && !_.isEmpty(thirdPartyTools)
+      && allThirdPartyToolData
+      && !_.isEmpty(allThirdPartyToolData)
     ) {
       _.forEach(productFormData.third_party_tool, (id) => {
-        const tool = _.find(thirdPartyTools, { thirdpartytool_uuid: id });
+        const tool = _.find(allThirdPartyToolData, { thirdpartytool_uuid: id });
         if (tool) {
           if (_.toLower(tool.tool_type) === 'feature') {
             featuresTool.setNewValue(_.toLower(tool.name));
@@ -213,11 +218,11 @@ const ProductSetup = ({
     } else if (editData
       && editData.third_party_tool
       && !_.isEmpty(editData.third_party_tool)
-      && thirdPartyTools
-      && !_.isEmpty(thirdPartyTools)
+      && allThirdPartyToolData
+      && !_.isEmpty(allThirdPartyToolData)
     ) {
       _.forEach(editData.third_party_tool, (id) => {
-        const tool = _.find(thirdPartyTools, { thirdpartytool_uuid: id });
+        const tool = _.find(allThirdPartyToolData, { thirdpartytool_uuid: id });
         if (tool) {
           if (_.toLower(tool.tool_type) === 'feature') {
             featuresTool.setNewValue(_.toLower(tool.name));
@@ -227,15 +232,15 @@ const ProductSetup = ({
         }
       });
     }
-  }, [thirdPartyTools]);
+  }, [allThirdPartyToolData]);
 
   const submitDisabled = () => {
     const errorKeys = Object.keys(formError);
     if (!name.value
       || (featuresTool.value === 'trello' && (!trelloAuth.access_token || !trelloAuth.trello_key))
       || (issuesTool.value === 'github' && (!githubIssueAuth.access_token || !githubIssueAuth.owner_name))
-      || (featuresTool.value !== 'start fresh' && !featureCredValid)
-      || (issuesTool.value !== 'start fresh' && !issueCredValid)
+      || (featuresTool.value !== 'start fresh' && !isValidateCredentailSuccess)
+      || (issuesTool.value !== 'start fresh' && !isValidateCredentailSuccess)
     ) {
       return true;
     }
@@ -249,7 +254,7 @@ const ProductSetup = ({
   };
 
   checkIfProductSetupEdited = () => {
-    const tools = _.filter(thirdPartyTools, (tool) => (
+    const tools = _.filter(allThirdPartyToolData, (tool) => (
       (editData && _.includes(editData.third_party_tool, tool.thirdpartytool_uuid))
       || (productFormData && _.includes(productFormData.third_party_tool, tool.thirdpartytool_uuid))
     ));
@@ -278,7 +283,7 @@ const ProductSetup = ({
       default:
         break;
     }
-    dispatch(validateCredential({ ...authDetail }));
+    validateCredentialMutation({ ...authDetail });
   };
 
   const handleIssueCredential = (event) => {
@@ -291,7 +296,7 @@ const ProductSetup = ({
       default:
         break;
     }
-    dispatch(validateCredential({ ...authDetail }));
+    validateCredentialMutation({ ...authDetail });
   };
 
   const handleSubmit = (event) => {
@@ -302,7 +307,7 @@ const ProductSetup = ({
     let newIssueCred;
     switch (featuresTool.value) {
       case 'trello': {
-        const ft = _.find(thirdPartyTools, (tool) => (
+        const ft = _.find(allThirdPartyToolData, (tool) => (
           _.toLower(tool.name) === 'trello'
           && _.toLower(tool.tool_type) === 'feature'
         ));
@@ -318,7 +323,7 @@ const ProductSetup = ({
     }
     switch (issuesTool.value) {
       case 'github': {
-        const it = _.find(thirdPartyTools, (tool) => (
+        const it = _.find(allThirdPartyToolData, (tool) => (
           _.toLower(tool.name) === 'github'
           && _.toLower(tool.tool_type) === 'issue'
         ));
@@ -367,275 +372,269 @@ const ProductSetup = ({
           auth_detail: { ...issueCred?.auth_detail, ...newIssueCred?.auth_detail },
         } : newIssueCred,
     };
-
-    dispatch(saveProductFormData(formData));
+    updateProductFormData(formData);
     handleNext();
   };
 
   return (
-    <div>
-      <form className={classes.form} noValidate onSubmit={handleSubmit}>
-        <Box mb={2} mt={3}>
-          <Grid container spacing={2}>
-            <Grid className={classes.inputWithTooltip} item xs={12} sm={12}>
-              <TextField
-                variant="outlined"
-                margin="normal"
+    <>
+      {(isAllThirdPartyToolLoading || isValidatingCredentialLoading) && <Loader open={isAllThirdPartyToolLoading || isValidatingCredentialLoading} />}
+      <div>
+        <form className={classes.form} noValidate onSubmit={handleSubmit}>
+          <Box mb={2} mt={3}>
+            <Grid container spacing={2}>
+              <Grid className={classes.inputWithTooltip} item xs={12} sm={12}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  required
+                  id="name"
+                  label="Product name"
+                  name="name"
+                  autoComplete="name"
+                  error={formError.name && formError.name.error}
+                  {...name.bind}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Grid container spacing={2}>
+                  <Grid className={classes.inputWithTooltip} item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      fullWidth
+                      multiline
+                      rows={6}
+                      id="description"
+                      label="Product description"
+                      name="description"
+                      autoComplete="description"
+                      {...description.bind}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item xs={12}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <DatePickerComponent
+                      label="Start Date"
+                      selectedDate={startDate}
+                      handleDateChange={setStartDate}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <DatePickerComponent
+                      label="End Date"
+                      selectedDate={endDate}
+                      handleDateChange={setEndDate}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="h6">Features</Typography>
+                <Box sx={{ border: '1px solid', borderRadius: '4px', padding: '0 12px' }}>
+                  <Typography variant="subtitle1" align="center" mt={2}>Connect to supported tool</Typography>
+                  <FormControl component="fieldset" required>
+                    <RadioGroup
+                      row
+                      aria-label="features"
+                      name="features-radio-buttons-group"
+                      {...featuresTool.bind}
+                      className={classes.radioButton}
+                    >
+                      <FormControlLabel
+                        value="trello"
+                        control={<StyledRadio />}
+                        disabled={viewPage}
+                        label={(
+                          <>
+                            <FontAwesomeIcon icon={faTrello} className="fa-4x" />
+                            <Typography align="center">Trello</Typography>
+                          </>
+                        )}
+                      />
+                      <FormControlLabel
+                        value="start fresh"
+                        className={classes.radioLeft}
+                        disabled={viewPage}
+                        control={<Radio color="info" />}
+                        label="Start Fresh"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                  {featuresTool.value === 'trello' && (
+                    <>
+                      <Grid item>
+                        <a href="https://docs.google.com/document/d/1QYosDQAyaTGJJ0TbiojPHQptbDEKI5NEvvwWvZI5Rhk/edit" target="_blank" rel="noopener noreferrer">
+                          How to get the access token?
+                        </a>
+                      </Grid>
+                      <Grid item>
+                        <TextField
+                          required
+                          fullWidth
+                          variant="outlined"
+                          margin="normal"
+                          id="trello-access-token"
+                          label="Trello Access Token"
+                          name="trello-access-token"
+                          autoComplete="trello-access-token"
+                          value={trelloAuth.access_token}
+                          onChange={(e) => setTrelloAuth({
+                            ...trelloAuth,
+                            access_token: e.target.value,
+                          })}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <TextField
+                          required
+                          fullWidth
+                          variant="outlined"
+                          margin="normal"
+                          id="trello-key"
+                          label="Trello Key"
+                          name="trello-key"
+                          autoComplete="trello-key"
+                          value={trelloAuth.trello_key}
+                          onChange={(e) => setTrelloAuth({
+                            ...trelloAuth,
+                            trello_key: e.target.value,
+                          })}
+                        />
+                      </Grid>
+                    </>
+                  )}
+                  {featuresTool.value !== 'start fresh' && (
+                    <Grid item>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        className={classes.submit}
+                        onClick={handleFeatureCredential}
+                      >
+                        Validate
+                      </Button>
+                    </Grid>
+                  )}
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="h6">Issues</Typography>
+                <Box sx={{ border: '1px solid', borderRadius: '4px', padding: '0 12px' }}>
+                  <Typography variant="subtitle1" align="center" mt={2}>Connect to supported tool</Typography>
+                  <FormControl component="fieldset" required>
+                    <RadioGroup
+                      row
+                      aria-label="issues"
+                      name="issues-radio-buttons-group"
+                      {...issuesTool.bind}
+                      className={classes.radioButton}
+                    >
+                      <FormControlLabel
+                        value="github"
+                        control={<StyledRadio />}
+                        disabled={viewPage}
+                        label={(
+                          <>
+                            <FontAwesomeIcon icon={faGithub} className="fa-4x" />
+                            <Typography align="center">Github</Typography>
+                          </>
+                        )}
+                      />
+                      <FormControlLabel
+                        value="start fresh"
+                        className={classes.radioLeft}
+                        disabled={viewPage}
+                        control={<Radio color="info" />}
+                        label="Start Fresh"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                  {issuesTool.value === 'github' && (
+                    <>
+                      <Grid item>
+                        <a href="https://docs.google.com/document/d/1T04LhZjsNsS7ufRZmp-ZGBD60iEOAcMR0aAtAAkdxgs/edit" target="_blank" rel="noopener noreferrer">
+                          How to get the access token?
+                        </a>
+                      </Grid>
+                      <Grid item>
+                        <TextField
+                          required
+                          fullWidth
+                          variant="outlined"
+                          margin="normal"
+                          id="github-issues-access-token"
+                          label="Github Access Token"
+                          name="github-issue-access-token"
+                          autoComplete="github-issue-access-token"
+                          value={githubIssueAuth.access_token}
+                          onChange={(e) => setGithubIssueAuth({
+                            ...githubIssueAuth,
+                            access_token: e.target.value,
+                          })}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <TextField
+                          required
+                          fullWidth
+                          variant="outlined"
+                          margin="normal"
+                          id="github-issue-owner-name"
+                          label="Github Owner Name"
+                          name="github-issue-owner-name"
+                          autoComplete="github-issue-owner-name"
+                          value={githubIssueAuth.owner_name}
+                          onChange={(e) => setGithubIssueAuth({
+                            ...githubIssueAuth,
+                            owner_name: e.target.value,
+                          })}
+                        />
+                      </Grid>
+                    </>
+                  )}
+                  {issuesTool.value !== 'start fresh' && (
+                    <Grid item>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        onClick={handleIssueCredential}
+                        className={classes.submit}
+                      >
+                        Validate
+                      </Button>
+                    </Grid>
+                  )}
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+          <Grid container spacing={3} className={classes.buttonContainer}>
+            <Grid item xs={12} sm={4}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
                 fullWidth
-                required
-                id="name"
-                label="Product name"
-                name="name"
-                autoComplete="name"
-                error={formError.name && formError.name.error}
-                {...name.bind}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Grid container spacing={2}>
-                <Grid className={classes.inputWithTooltip} item xs={12}>
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    fullWidth
-                    multiline
-                    rows={6}
-                    id="description"
-                    label="Product description"
-                    name="description"
-                    autoComplete="description"
-                    {...description.bind}
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid item xs={12}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <DatePickerComponent
-                    label="Start Date"
-                    selectedDate={startDate}
-                    handleDateChange={setStartDate}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <DatePickerComponent
-                    label="End Date"
-                    selectedDate={endDate}
-                    handleDateChange={setEndDate}
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="h6">Features</Typography>
-              <Box sx={{ border: '1px solid', borderRadius: '4px', padding: '0 12px' }}>
-                <Typography variant="subtitle1" align="center" mt={2}>Connect to supported tool</Typography>
-                <FormControl component="fieldset" required>
-                  <RadioGroup
-                    row
-                    aria-label="features"
-                    name="features-radio-buttons-group"
-                    {...featuresTool.bind}
-                    className={classes.radioButton}
-                  >
-                    <FormControlLabel
-                      value="trello"
-                      control={<StyledRadio />}
-                      disabled={viewPage}
-                      label={(
-                        <>
-                          <FontAwesomeIcon icon={faTrello} className="fa-4x" />
-                          <Typography align="center">Trello</Typography>
-                        </>
-                      )}
-                    />
-                    <FormControlLabel
-                      value="start fresh"
-                      className={classes.radioLeft}
-                      disabled={viewPage}
-                      control={<Radio color="info" />}
-                      label="Start Fresh"
-                    />
-                  </RadioGroup>
-                </FormControl>
-                {featuresTool.value === 'trello' && (
-                  <>
-                    <Grid item>
-                      <a href="https://docs.google.com/document/d/1QYosDQAyaTGJJ0TbiojPHQptbDEKI5NEvvwWvZI5Rhk/edit" target="_blank" rel="noopener noreferrer">
-                        How to get the access token?
-                      </a>
-                    </Grid>
-                    <Grid item>
-                      <TextField
-                        required
-                        fullWidth
-                        variant="outlined"
-                        margin="normal"
-                        id="trello-access-token"
-                        label="Trello Access Token"
-                        name="trello-access-token"
-                        autoComplete="trello-access-token"
-                        value={trelloAuth.access_token}
-                        onChange={(e) => setTrelloAuth({
-                          ...trelloAuth,
-                          access_token: e.target.value,
-                        })}
-                      />
-                    </Grid>
-                    <Grid item>
-                      <TextField
-                        required
-                        fullWidth
-                        variant="outlined"
-                        margin="normal"
-                        id="trello-key"
-                        label="Trello Key"
-                        name="trello-key"
-                        autoComplete="trello-key"
-                        value={trelloAuth.trello_key}
-                        onChange={(e) => setTrelloAuth({
-                          ...trelloAuth,
-                          trello_key: e.target.value,
-                        })}
-                      />
-                    </Grid>
-                  </>
-                )}
-                {featuresTool.value !== 'start fresh' && (
-                  <Grid item>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      className={classes.submit}
-                      onClick={handleFeatureCredential}
-                    >
-                      Validate
-                    </Button>
-                  </Grid>
-                )}
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="h6">Issues</Typography>
-              <Box sx={{ border: '1px solid', borderRadius: '4px', padding: '0 12px' }}>
-                <Typography variant="subtitle1" align="center" mt={2}>Connect to supported tool</Typography>
-                <FormControl component="fieldset" required>
-                  <RadioGroup
-                    row
-                    aria-label="issues"
-                    name="issues-radio-buttons-group"
-                    {...issuesTool.bind}
-                    className={classes.radioButton}
-                  >
-                    <FormControlLabel
-                      value="github"
-                      control={<StyledRadio />}
-                      disabled={viewPage}
-                      label={(
-                        <>
-                          <FontAwesomeIcon icon={faGithub} className="fa-4x" />
-                          <Typography align="center">Github</Typography>
-                        </>
-                      )}
-                    />
-                    <FormControlLabel
-                      value="start fresh"
-                      className={classes.radioLeft}
-                      disabled={viewPage}
-                      control={<Radio color="info" />}
-                      label="Start Fresh"
-                    />
-                  </RadioGroup>
-                </FormControl>
-                {issuesTool.value === 'github' && (
-                  <>
-                    <Grid item>
-                      <a href="https://docs.google.com/document/d/1T04LhZjsNsS7ufRZmp-ZGBD60iEOAcMR0aAtAAkdxgs/edit" target="_blank" rel="noopener noreferrer">
-                        How to get the access token?
-                      </a>
-                    </Grid>
-                    <Grid item>
-                      <TextField
-                        required
-                        fullWidth
-                        variant="outlined"
-                        margin="normal"
-                        id="github-issues-access-token"
-                        label="Github Access Token"
-                        name="github-issue-access-token"
-                        autoComplete="github-issue-access-token"
-                        value={githubIssueAuth.access_token}
-                        onChange={(e) => setGithubIssueAuth({
-                          ...githubIssueAuth,
-                          access_token: e.target.value,
-                        })}
-                      />
-                    </Grid>
-                    <Grid item>
-                      <TextField
-                        required
-                        fullWidth
-                        variant="outlined"
-                        margin="normal"
-                        id="github-issue-owner-name"
-                        label="Github Owner Name"
-                        name="github-issue-owner-name"
-                        autoComplete="github-issue-owner-name"
-                        value={githubIssueAuth.owner_name}
-                        onChange={(e) => setGithubIssueAuth({
-                          ...githubIssueAuth,
-                          owner_name: e.target.value,
-                        })}
-                      />
-                    </Grid>
-                  </>
-                )}
-                {issuesTool.value !== 'start fresh' && (
-                  <Grid item>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      onClick={handleIssueCredential}
-                      className={classes.submit}
-                    >
-                      Validate
-                    </Button>
-                  </Grid>
-                )}
-              </Box>
+                disabled={submitDisabled()}
+                className={classes.submit}
+              >
+                Next
+              </Button>
             </Grid>
           </Grid>
-        </Box>
-        <Grid container spacing={3} className={classes.buttonContainer}>
-          <Grid item xs={12} sm={4}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              disabled={submitDisabled()}
-              className={classes.submit}
-            >
-              Next
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
-    </div>
+        </form>
+      </div>
+    </>
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  productFormData: state.productReducer.productFormData,
-  thirdPartyTools: state.productReducer.thirdPartyTools,
-  featureCredValid: state.productReducer.featureCredValid,
-  issueCredValid: state.productReducer.issueCredValid,
-});
-
-export default connect(mapStateToProps)(ProductSetup);
+export default ProductSetup;

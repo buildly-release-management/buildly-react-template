@@ -70,7 +70,7 @@ const Support = () => {
         <MenuItem onClick={handleClose}>
           <Link
             className={classes.link}
-            href="https://buildly.io/developer-community/"
+            href="https://buildly.io/community/"
             target="_blank"
             rel="noopener"
           >
@@ -80,7 +80,7 @@ const Support = () => {
         <MenuItem onClick={handleClose}>
           <Link
             className={classes.link}
-            href="https://buildly.io/contact-us/"
+            href="https://buildly.io/#contact/"
             target="_blank"
             rel="noopener"
           >

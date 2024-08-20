@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import _ from 'lodash';
-import { connect } from 'react-redux';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   Backdrop,
@@ -14,16 +13,17 @@ import {
   Radio,
   MenuItem,
 } from '@mui/material';
+import { getUser } from '@context/User.context';
 import Autocomplete from '@mui/material/Autocomplete';
 import FormModal from '@components/Modal/FormModal';
 import { useInput } from '@hooks/useInput';
-import {
-  loadOrgNames,
-  addOrgSocialUser,
-} from '@redux/authuser/actions/authuser.actions';
+import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
 import { validators } from '@utils/validators';
 import Loader from '@components/Loader/Loader';
+import { useQuery } from 'react-query';
+import { getOrganizationNameQuery } from '@react-query/queries/authUser/getOrganizationNameQuery';
+import { useAddOrgSocialUserMutation } from '@react-query/mutations/authUser/addOrgSocialUserMutation';
 
 const useStyles = makeStyles((theme) => ({
   backdrop: {
@@ -50,10 +50,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const MissingData = ({
-  user, dispatch, loading, history, orgNames,
-}) => {
+const MissingData = ({ history }) => {
   const classes = useStyles();
+  const user = getUser();
 
   const userType = useInput('', { required: true });
   const email = useInput('', { required: true });
@@ -61,22 +60,16 @@ const MissingData = ({
   const [orgName, setOrgName] = useState('');
   const [formError, setFormError] = useState({});
 
-  useEffect(() => {
-    if (!orgNames) {
-      dispatch(loadOrgNames());
-    }
-  }, []);
+  const { displayAlert } = useAlert();
 
-  useEffect(() => {
-    if (!user) {
-      history.push(routes.LOGIN);
-    }
-  }, [user]);
+  const { data: orgNamesData, isLoading: isOrgNamesLoading } = useQuery(
+    ['orgNames'],
+    () => getOrganizationNameQuery(),
+    { refetchOnWindowFocus: false },
+  );
 
-  /**
-   * Submit the form to the backend and attempts to authenticate
-   * @param {Event} event the default submit event
-   */
+  const { mutate: addOrgSocialUserMutation, isLoading: isAddOrgSocialUserLoading } = useAddOrgSocialUserMutation(history, _.includes(orgNamesData, orgName), routes.LOGIN, routes.PRODUCT_PORTFOLIO, displayAlert);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const updateForm = {
@@ -87,18 +80,8 @@ const MissingData = ({
     if (email.value) {
       updateForm.email = email.value;
     }
-
-    dispatch(
-      addOrgSocialUser(updateForm, _.includes(orgNames, orgName), history),
-    );
+    addOrgSocialUserMutation(updateForm);
   };
-
-  /**
-   * Handle input field blur event
-   * @param {Event} e Event
-   * @param {String} validation validation type if any
-   * @param {Object} input input field
-   */
 
   const handleBlur = (e, validation, input) => {
     const validateObj = validators(validation, input);
@@ -135,18 +118,17 @@ const MissingData = ({
   };
 
   const handleRadio = (event) => {
-    if (event.target.value === 'no') {
-      dispatch(loadOrgNames());
-    } else {
+    if (event.target.value !== 'no') {
       setOrgName('default organization');
+    } else {
+      setOrgName('');
     }
-
     setRadioValue(event.target.value);
   };
 
   return (
     <div>
-      {loading && <Loader open={loading} />}
+      {isOrgNamesLoading && <Loader open={isOrgNamesLoading} />}
       <Backdrop className={classes.backdrop} open>
         <FormModal
           open
@@ -155,7 +137,10 @@ const MissingData = ({
           maxWidth="sm"
           wantConfirm={false}
         >
-          <form noValidate onSubmit={handleSubmit}>
+          <form
+            noValidate
+            onSubmit={handleSubmit}
+          >
             <Grid container>
               <Grid item xs={12}>
                 <TextField
@@ -230,7 +215,7 @@ const MissingData = ({
                     disableClearable
                     id="organization_name"
                     name="organization_name"
-                    options={orgNames || []}
+                    options={orgNamesData || []}
                     getOptionLabel={(label) => _.capitalize(label)}
                     value={orgName}
                     onChange={(e, newValue) => setOrgName(newValue || '')}
@@ -259,7 +244,7 @@ const MissingData = ({
                   variant="contained"
                   color="primary"
                   className={classes.submit}
-                  disabled={loading || submitDisabled()}
+                  disabled={isOrgNamesLoading || submitDisabled()}
                 >
                   Update
                 </Button>
@@ -272,10 +257,4 @@ const MissingData = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  ...ownProps,
-  ...state.authReducer,
-  user: state.authReducer.data,
-});
-
-export default connect(mapStateToProps)(MissingData);
+export default MissingData;
