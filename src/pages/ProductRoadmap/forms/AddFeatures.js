@@ -244,6 +244,7 @@ const AddFeatures = ({ location, history }) => {
       product_uuid,
       ...featCred?.auth_detail,
       feature_detail: {
+        ...(editData.feature_detail || {}),
         assigneees: _.filter(assigneeData, (u) => (
           !!u && _.includes(assignees, u.username)
         )),
