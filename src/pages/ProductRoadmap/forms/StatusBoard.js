@@ -18,6 +18,8 @@ import Loader from '@components/Loader/Loader';
 import useAlert from '@hooks/useAlert';
 import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
 import { useCreateStatusMutation } from '@react-query/mutations/release/createStatusMutation';
+import { useUpdateStatusMutation } from '@react-query/mutations/release/updateStatusMutation';
+import { useDeleteStatusMutation } from '@react-query/mutations/release/deleteStatusMutation';
 import { STATUSTYPES } from '../ProductRoadmapConstants';
 
 const useStyles = makeStyles((theme) => ({
@@ -42,11 +44,7 @@ const useStyles = makeStyles((theme) => ({
 
 const StatusBoard = ({ history, location }) => {
   const classes = useStyles();
-  const editData = (
-    location.state
-    && location.state.type === 'edit'
-    && location.state.data
-  ) || {};
+  const editStatus = location.state && location.state.editStatus;
   const product_uuid = location.state && location.state.product_uuid;
   const redirectTo = location.state && location.state.from;
 
@@ -70,13 +68,20 @@ const StatusBoard = ({ history, location }) => {
     const filteredStatus = _.filter(statuses, { product_uuid });
     const statusDefault = _.find(filteredStatus, (s) => s.is_default_status);
     setStatus(_.map(filteredStatus, 'name'));
-    setDefaultStatus(statusDefault.name || '');
+    setDefaultStatus((!!statusDefault && statusDefault.name) || '');
   }, [statuses]);
 
   const closeFormModal = () => {
+    const filteredStatus = _.filter(statuses, { product_uuid });
+    const statusDefault = _.find(filteredStatus, (s) => s.is_default_status);
+
     const dataHasChanged = (
-      (!_.isEmpty(editData) && !_.isEqual(status, editData.status))
-      || (_.isEmpty(editData) && !_.isEmpty(status))
+      (editStatus && !_.isEqual(status, _.map(statuses, 'name')))
+      || (editStatus && (
+        (!statusDefault && !!defaultStatus)
+        || (!!statusDefault && !_.isEqual(defaultStatus, statusDefault.name))
+      ))
+      || (!editStatus && !_.isEmpty(status))
     );
 
     if (dataHasChanged) {
@@ -113,17 +118,70 @@ const StatusBoard = ({ history, location }) => {
   };
 
   const { mutate: createStatusMutation, isLoading: isCreatingStatusLoading } = useCreateStatusMutation(history, redirectTo, product_uuid, discardFormData, displayAlert);
+  const { mutate: updateStatusMutation, isLoading: isUpdatingStatusLoading } = useUpdateStatusMutation(history, redirectTo, product_uuid, discardFormData, displayAlert);
+  const { mutate: deleteStatusMutation, isLoading: isDeletingStatusLoading } = useDeleteStatusMutation(history, redirectTo, product_uuid, discardFormData, displayAlert);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const statusData = _.map(status, (col) => ({
-      product_uuid,
-      name: col,
-      description: col,
-      status_tracking_id: null,
-      is_default_status: !!(col === defaultStatus),
-    }));
-    createStatusMutation(statusData);
+    if (!editStatus) {
+      const statusData = _.map(status, (col) => ({
+        product_uuid,
+        name: col,
+        description: col,
+        status_tracking_id: null,
+        is_default_status: _.isEqual(col, defaultStatus),
+      }));
+
+      createStatusMutation(statusData);
+    } else {
+      let createStatusData = [];
+      let editStatusData = [];
+      let deleteStatusData = [];
+
+      // Existing status
+      const filteredStatus = _.filter(statuses, { product_uuid });
+      const statusDefault = _.find(filteredStatus, (s) => s.is_default_status);
+      const nameList = _.map(filteredStatus, 'name');
+
+      _.forEach(nameList, (name) => {
+        if (!_.includes(status, name)) {
+          const st = _.find(filteredStatus, { name });
+          if (!_.isEmpty(st)) {
+            deleteStatusData = [...deleteStatusData, st];
+          }
+        }
+      });
+
+      _.forEach(status, (st) => {
+        if (_.includes(nameList, st)) {
+          const existingStatus = _.find(filteredStatus, { name: st });
+          if (!_.isEmpty(existingStatus)) {
+            editStatusData = [...editStatusData, { ...existingStatus, is_default_status: _.isEqual(st, defaultStatus) }];
+          }
+        } else {
+          createStatusData = [
+            ...createStatusData,
+            {
+              product_uuid,
+              name: st,
+              description: st,
+              status_tracking_id: null,
+              is_default_status: _.isEqual(st, defaultStatus),
+            },
+          ];
+        }
+      });
+
+      if (!_.isEmpty(deleteStatusData)) {
+        deleteStatusMutation(deleteStatusData);
+      }
+      if (!_.isEmpty(editStatusData)) {
+        updateStatusMutation(editStatusData);
+      }
+      if (!_.isEmpty(createStatusData)) {
+        createStatusMutation(createStatusData);
+      }
+    }
   };
 
   const submitDisabled = () => {
@@ -155,7 +213,8 @@ const StatusBoard = ({ history, location }) => {
           setConfirmModal={setConfirmModal}
           handleConfirmModal={discardFormData}
         >
-          {(isCreatingStatusLoading || isAllStatusLoading) && <Loader open={isCreatingStatusLoading || isAllStatusLoading} />}
+          {(isCreatingStatusLoading || isUpdatingStatusLoading || isDeletingStatusLoading || isAllStatusLoading)
+          && <Loader open={isCreatingStatusLoading || isUpdatingStatusLoading || isDeletingStatusLoading || isAllStatusLoading} />}
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
               <Grid item xs={12}>

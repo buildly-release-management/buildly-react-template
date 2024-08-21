@@ -311,6 +311,7 @@ const ProductRoadmap = ({ history }) => {
     history.push(routes.STATUS_BOARD, {
       from: location.pathname,
       product_uuid: selectedProduct,
+      editStatus: selectedProduct && _.toNumber(selectedProduct) !== 0 && _.includes(_.uniq(_.map(statusData, 'product_uuid')), selectedProduct),
     });
   };
 
