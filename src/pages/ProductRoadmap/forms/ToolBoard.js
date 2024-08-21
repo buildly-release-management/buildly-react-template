@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
+import { getUser } from '@context/User.context';
 import useAlert from '@hooks/useAlert';
 import { getBoardQuery } from '@react-query/queries/product/getBoardQuery';
 import { useCreateBoardMutation } from '@react-query/mutations/product/createBoardMutation.js';
@@ -40,8 +41,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ToolBoard = ({ history }) => {
+const ToolBoard = ({ history, location }) => {
   const classes = useStyles();
+  const user = getUser();
+  const organization = user.organization.organization_uuid;
   const { displayAlert } = useAlert();
 
   const redirectTo = location.state && location.state.from;
@@ -69,7 +72,7 @@ const ToolBoard = ({ history }) => {
     () => getBoardQuery(product_uuid, displayAlert),
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
   );
-  const { mutate: createBoardMutation, isLoading: isCreatingBoardLoading } = useCreateBoardMutation(history, redirectTo, displayAlert);
+  const { mutate: createBoardMutation, isLoading: isCreatingBoardLoading } = useCreateBoardMutation(organization, product_uuid, history, redirectTo, displayAlert);
 
   useEffect(() => {
     if (!_.isEmpty(boards)) {
@@ -137,7 +140,7 @@ const ToolBoard = ({ history }) => {
     const statusCols = !_.isEmpty(status)
       ? _.map(status, (sts) => ({ column_name: sts }))
       : featStatusList;
-    const statusData = _.map(statusCols, (sts) => ({
+    const newStatusData = _.map(statusCols, (sts) => ({
       product_uuid,
       name: sts.column_name,
       description: sts.column_name,
@@ -145,7 +148,7 @@ const ToolBoard = ({ history }) => {
       is_default_status: !!(sts.column_name === defaultStatus),
     }));
 
-    createBoardMutation(formData, statusData);
+    createBoardMutation({ formData, newStatusData });
   };
 
   const submitDisabled = () => {
