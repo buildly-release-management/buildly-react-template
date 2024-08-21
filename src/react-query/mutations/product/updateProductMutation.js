@@ -16,8 +16,10 @@ export const useUpdateProductMutation = (organization, history, redirectTo, clea
     {
       onSuccess: async (data) => {
         await queryClient.invalidateQueries({ queryKey: ['allProducts', organization] });
-        clearProductFormData();
         displayAlert('success', 'Product updated successfully');
+        if (clearProductFormData) {
+          clearProductFormData();
+        }
         if (history) {
           history.push(redirectTo);
         }

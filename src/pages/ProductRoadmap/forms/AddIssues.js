@@ -186,6 +186,7 @@ const AddIssues = ({ history, location }) => {
       repository: repo.value,
       column_id: colID,
       issue_detail: {
+        ...(editData.issue_detail || {}),
         assignees,
       },
       ...issueCred?.auth_detail,
