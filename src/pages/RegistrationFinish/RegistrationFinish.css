@@ -1,0 +1,12 @@
+.main-container {
+    margin-top: 20vh;
+}
+
+.btn-space {
+    margin-right: 10px;
+}
+
+.actions {
+    display: flex;
+    flex-direction: row-reverse;
+}

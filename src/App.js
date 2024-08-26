@@ -17,6 +17,7 @@ import theme from './styles/theme';
 import MissingData from '@pages/MissingData/MissingData';
 import Home from '@pages/Home/Home';
 import VerifyEmail from '@pages/VerifyEmail/VerifyEmail';
+import RegistrationFinish from '@pages/RegistrationFinish/RegistrationFinish';
 
 const App = () => (
   <Router>
@@ -32,6 +33,7 @@ const App = () => (
           <Route exact path={`${routes.VERIFY_EMAIL}/:token`} component={VerifyEmail} />
           <Route path={routes.LOGIN} component={Login} />
           <Route path={routes.REGISTER} component={Register} />
+          <Route path={routes.REGISTER_FINISH} component={RegistrationFinish} />
           <Route path={routes.MISSING_DATA} component={MissingData} />
           <Route path={routes.FORGOT_PASSWORD} component={ForgotPassword} />
           <Route path={routes.RESET_PASSWORD} component={ResetPassword} />
