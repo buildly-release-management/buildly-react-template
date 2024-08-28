@@ -15,6 +15,7 @@ import StripeCard from '@components/StripeCard/StripeCard';
 import { useQuery } from 'react-query';
 import { getStripeProductQuery } from '@react-query/queries/authUser/getStripeProductQuery';
 import './RegistrationFinish.css';
+import { submitCardDetails } from '@utils/registration';
 
 const RegistrationFinish = () => {
   const {
@@ -28,6 +29,27 @@ const RegistrationFinish = () => {
   const cardError = () => {
   };
   const setCardError = () => {
+  };
+
+  const handleBlur = (e, type, value) => {
+    if (type === 'required') {
+      if (!value) {
+        setCardError('Product is required');
+      } else {
+        setCardError('');
+      }
+    }
+  };
+
+  // submit card details to activate 30 day free trial
+  const handleSubmit = (cardDetails) => {
+    submitCardDetails(cardDetails)
+      .then((response) => {
+        if (response) {
+          // redirect to the next page
+          console.log('response', response);
+        }
+      });
   };
   return (
     <>
@@ -53,6 +75,9 @@ const RegistrationFinish = () => {
                   required
                   label="Select a Product"
                   autoComplete="product"
+                  onBlur={(e) => {
+                    handleBlur(e, 'required', product);
+                  }}
                 >
                   <MenuItem value="">----------</MenuItem>
                   {stripeProductData && !_.isEmpty(stripeProductData)
@@ -81,6 +106,7 @@ const RegistrationFinish = () => {
                 variant="contained"
                 color="primary"
                 className="btn-space"
+                onClick={handleSubmit}
               >
                 Submit
               </Button>
