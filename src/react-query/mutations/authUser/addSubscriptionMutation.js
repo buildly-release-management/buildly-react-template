@@ -3,7 +3,7 @@ import { httpService } from '@modules/http/http.service';
 import { oauthService } from '@modules/oauth/oauth.service';
 import _ from 'lodash';
 
-export const useAddSubscriptionMutation = (displayAlert) => useMutation(
+export const useAddSubscriptionMutation = (displayAlert, history, redirectTo) => useMutation(
   async (data) => {
     const response = await httpService.makeRequest(
       'post',
@@ -33,6 +33,9 @@ export const useAddSubscriptionMutation = (displayAlert) => useMutation(
   {
     onSuccess: () => {
       displayAlert('success', 'Subscription successfully saved');
+      if (redirectTo) {
+        history.push(redirectTo);
+      }
     },
   },
   {
