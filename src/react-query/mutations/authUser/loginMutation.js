@@ -26,10 +26,11 @@ export const useLoginMutation = (
   {
     onSuccess: async (response) => {
       if (response.data) {
-        if (response.data?.subscriptions.length) {
-          history.push(routes.REGISTER_FINISH);
-        } else {
+        console.log('response.data : ', response.data);
+        if (response.data?.subscription_active) {
           history.push(redirectTo);
+        } else {
+          history.push(routes.REGISTER_FINISH);
         }
       }
     },

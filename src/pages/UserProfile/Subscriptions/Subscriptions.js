@@ -33,8 +33,6 @@ const Subscriptions = () => {
   const classes = useStyles();
   const user = useContext(UserContext);
   const { displayAlert } = useAlert();
-
-  // const user = useContext(UserContext);
   const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
 
   const [organization, setOrganization] = useState(null);
