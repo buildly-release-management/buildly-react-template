@@ -101,7 +101,8 @@ const Register = ({ history }) => {
   const userType = useInput('', { required: true });
   const first_name = useInput('', { required: true });
   const last_name = useInput('');
-  const coupon_code = useInput(window.env.FREE_COUPON_CODE || '');
+  const coupon_code = useInput(''); // window.env.FREE_COUPON_CODE ||
+  const referralCode = new URLSearchParams(location.search).get('referral_code');
   const [formError, setFormError] = useState({});
   const [checked, setChecked] = React.useState(false);
 
@@ -147,7 +148,7 @@ const Register = ({ history }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const registerFormValue = {
+    let registerFormValue = {
       username: username.value,
       email: email.value,
       password: password.value,
@@ -155,8 +156,19 @@ const Register = ({ history }) => {
       user_type: userType.value,
       first_name: first_name.value,
       last_name: last_name.value,
-      coupon_code: coupon_code.value,
     };
+    if (referralCode) {
+      registerFormValue = {
+        ...registerFormValue,
+        referral_code: referralCode,
+      };
+    } else {
+      registerFormValue = {
+        ...registerFormValue,
+        coupon_code: coupon_code.value,
+      };
+    }
+
     if (!inviteTokenCheckData && _.includes(_.toLower(_.trim(organization_name.value)), 'buildly')) {
       displayAlert('error', 'Organization name cannot have word Buildly in it.');
     } else {
@@ -395,6 +407,7 @@ const Register = ({ history }) => {
                     />
                   </Grid>
                 </Grid>
+                {!(referralCode) && (
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12}>
                     <TextField
@@ -407,14 +420,15 @@ const Register = ({ history }) => {
                       autoComplete="coupon_code"
                       error={formError.coupon_code && formError.coupon_code.error}
                       helperText={
-                        formError.coupon_code ? formError.coupon_code.message : ''
-                      }
+                              formError.coupon_code ? formError.coupon_code.message : ''
+                            }
                       className={classes.textField}
                       onBlur={(e) => handleBlur(e, '', coupon_code)}
                       {...coupon_code.bind}
                     />
                   </Grid>
                 </Grid>
+                )}
                 <Grid container spacing={isMobile() ? 0 : 3}>
                   <Grid item xs={12}>
                     <div className={classes.consentContainer}>
