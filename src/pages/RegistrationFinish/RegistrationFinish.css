@@ -15,4 +15,9 @@
     flex-direction: row-reverse;
 }
 
+.footer {
+    position: absolute;
+    bottom: 0;
+}
+
 
