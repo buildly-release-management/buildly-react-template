@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Grid,
   Tabs,
@@ -11,20 +11,27 @@ import EditUserProfile from './EditUserProfile/EditUserProfile';
 import Subscriptions from './Subscriptions/Subscriptions';
 import PersonIcon from '@mui/icons-material/Person';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import { UserContext } from '../../context/User.context';
+import { hasAdminRights, hasGlobalAdminRights } from '../../utils/permissions';
 
 const UserProfile = ({ history, location }) => {
+  const user = useContext(UserContext);
+  const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
   const subNav = [
     {
       label: 'Profile',
       value: 'edit-profile',
       icon: <PersonIcon />,
     },
-    {
+  ];
+
+  if (isAdmin) {
+    subNav.push({
       label: 'Subscriptions',
       value: 'subscriptions',
       icon: <AccountBalanceWalletIcon />,
-    },
-  ];
+    });
+  }
 
   const viewPath = (
     subNav.find((item) => location.pathname.endsWith(item.value)) || subNav[0]

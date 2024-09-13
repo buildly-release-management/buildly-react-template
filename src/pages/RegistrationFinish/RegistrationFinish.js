@@ -191,6 +191,11 @@ const RegistrationFinish = ({ history }) => {
           </>
         )}
       </Container>
+      {isAdmin && (
+      <Typography variant="body2" sx={{ color: 'text.secondary', m: 1.5 }} className="footer">
+        At Buildly Labs, we offer a 30-day free trial for each new organization to help you explore and evaluate our platform without any initial cost. To start your trial, we request a credit card to ensure a seamless transition from trial to paid subscription if you choose to continue. Rest assured, before any charges are made, we will notify you via email, giving you ample time to review and decide if Buildly Labs is the right fit for your needs. This approach ensures you have a full opportunity to assess our platform's capabilities and benefits for your entire team, there is only one monthly plan fee that covers your entire team, so please explore the full platform and feel free to send us feedback or questions help@buildly.io
+      </Typography>
+      )}
     </>
   );
 };

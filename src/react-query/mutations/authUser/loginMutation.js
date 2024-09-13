@@ -26,7 +26,6 @@ export const useLoginMutation = (
   {
     onSuccess: async (response) => {
       if (response.data) {
-        console.log('response.data : ', response.data);
         if (response.data?.subscription_active) {
           history.push(redirectTo);
         } else {
