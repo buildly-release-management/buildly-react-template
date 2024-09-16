@@ -1,6 +1,7 @@
 import { useMutation } from 'react-query';
 import { httpService } from '@modules/http/http.service';
 import { oauthService } from '@modules/oauth/oauth.service';
+import { routes } from '@routes/routesConstants';
 
 export const useLoginMutation = (
   history,
@@ -23,8 +24,14 @@ export const useLoginMutation = (
     return user;
   },
   {
-    onSuccess: async () => {
-      history.push(redirectTo);
+    onSuccess: async (response) => {
+      if (response.data) {
+        if (response.data?.subscription_active) {
+          history.push(redirectTo);
+        } else {
+          history.push(routes.REGISTER_FINISH);
+        }
+      }
     },
   },
   {

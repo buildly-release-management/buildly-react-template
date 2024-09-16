@@ -151,9 +151,6 @@ const TopBar = ({ history, location }) => {
   maxDate.setHours(0, 0, 0, 0);
   maxDate.setDate(maxDate.getDate() + 1);
 
-  const activePlan = user.subscriptions
-    .find((subscription) => new Date(subscription.subscription_end_date) > maxDate);
-
   const pages = [{
     label: 'Product Portfolio',
     value: routes.PRODUCT_PORTFOLIO,
@@ -168,7 +165,7 @@ const TopBar = ({ history, location }) => {
     label: 'Releases',
     value: routes.RELEASE,
     pathName: [routes.RELEASE],
-    disabled: !activePlan,
+    disabled: !user?.subscription_active,
   },
   {
     label: 'Insights',
@@ -339,7 +336,7 @@ const TopBar = ({ history, location }) => {
                 {page.label}
               </Button>
             ))}
-            {!(user && user.subscriptions && user.subscriptions.length) && (
+            {!(user && user.subscription_active) && (
               <Button
                 variant="contained"
                 size="small"

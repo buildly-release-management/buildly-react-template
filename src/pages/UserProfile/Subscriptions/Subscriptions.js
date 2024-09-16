@@ -33,8 +33,6 @@ const Subscriptions = () => {
   const classes = useStyles();
   const user = useContext(UserContext);
   const { displayAlert } = useAlert();
-
-  // const user = useContext(UserContext);
   const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
 
   const [organization, setOrganization] = useState(null);
@@ -72,10 +70,10 @@ const Subscriptions = () => {
         empty: true,
         customBodyRenderLite: (dataIndex) => (
           <>
-            {(isAdmin && (maxDate < new Date(user.subscriptions[dataIndex].subscription_end_date))) && (
-              (user.subscriptions[dataIndex].cancelled) ? (
+            {(isAdmin && (maxDate < new Date(user.organization.subscriptions[dataIndex].subscription_end_date))) && (
+              (user.organization.subscriptions[dataIndex].cancelled) ? (
                 <Tooltip
-                  title={`Cancelled on: ${new Date(user.subscriptions[dataIndex].cancelled_date)}`}
+                  title={`Cancelled on: ${new Date(user.organization.subscriptions[dataIndex].cancelled_date)}`}
                   placement="right-start"
                 >
                   <Badge bg="secondary">Cancelled</Badge>
@@ -86,7 +84,7 @@ const Subscriptions = () => {
                   variant="outlined"
                   color="primary"
                   size="small"
-                  onClick={() => openWarningModal(user.subscriptions[dataIndex])}
+                  onClick={() => openWarningModal(user.organization.subscriptions[dataIndex])}
                 >
                   Cancel
                 </Button>
@@ -248,7 +246,7 @@ const Subscriptions = () => {
 
       <Grid item xs={12}>
         <MUIDataTable
-          data={user.subscriptions}
+          data={user.organization.subscriptions}
           columns={columns}
           options={options}
         />
