@@ -45,10 +45,30 @@ const UserProfile = ({ history, location }) => {
 
   return (
     <>
-      <Grid container my={3} justifyContent="space-between" alignItems="start">
-        <Typography variant="h4">
-          My account
-        </Typography>
+      <Grid container mt={2}>
+        <Grid item xs={3}>
+          <Typography variant="h4">
+            My account
+          </Typography>
+        </Grid>
+
+        <Grid item xs={9} textAlign="end">
+          <Grid item>
+            <Typography variant="caption" component="span">
+              Platform Version:
+              {' '}
+              {VERSION}
+            </Typography>
+          </Grid>
+
+          <Grid item>
+            <Typography variant="caption" component="span">
+              Build Date:
+              {' '}
+              {BUILDDATE}
+            </Typography>
+          </Grid>
+        </Grid>
       </Grid>
       <Grid mb={3} sx={{ width: '100%' }}>
         <Grid item>
