@@ -206,6 +206,7 @@ const Kanban = ({
   useEffect(() => {
     let cols = {};
     if (statuses && !_.isEmpty(statuses)) {
+      statuses.sort((a, b) => (a.order_id > b.order_id ? 1 : -1));
       _.forEach(statuses, (sts) => {
         const feats = _.filter(features, { status: sts.status_uuid });
         const iss = _.filter(issues, { status: sts.status_uuid });
