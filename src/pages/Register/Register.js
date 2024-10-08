@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import logo from '@assets/buildly-product-labs-logo.png';
 import Copyright from '@components/Copyright/Copyright';
-import GithubLogin from '@components/SocialLogin/GithubLogin';
+// import GithubLogin from '@components/SocialLogin/GithubLogin';
 import { useInput } from '@hooks/useInput';
 import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
@@ -460,7 +460,7 @@ const Register = ({ history }) => {
                 </div>
               </form>
               <Grid container>
-                <Grid item xs={12} className={classes.or}>
+                {/* <Grid item xs={12} className={classes.or}>
                   <Typography variant="body1">----OR----</Typography>
                 </Grid>
                 <Grid item xs={12} className={classes.socialAuth}>
@@ -469,7 +469,7 @@ const Register = ({ history }) => {
                     history={history}
                     disabled={isRegisterLoading || isSocialLoginLoading || isInviteTokenCheckLoading}
                   />
-                </Grid>
+                </Grid> */}
                 <Grid item className={classes.link}>
                   <Link href={routes.LOGIN} variant="body2" color="secondary">
                     Already have an account? Sign in
