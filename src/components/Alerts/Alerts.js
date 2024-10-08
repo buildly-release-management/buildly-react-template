@@ -14,18 +14,22 @@ const useStyles = makeStyles((theme) => ({
   success: {
     backgroundColor: '#009900',
     color: '#000',
+    whiteSpace: 'pre-wrap',
   },
   info: {
     backgroundColor: '#0099CC',
     color: '#000',
+    whiteSpace: 'pre-wrap',
   },
   warning: {
     backgroundColor: '#FFCC33',
     color: '#000',
+    whiteSpace: 'pre-wrap',
   },
   error: {
     backgroundColor: '#FF0033',
     color: '#000',
+    whiteSpace: 'pre-wrap',
   },
 }));
 
@@ -48,7 +52,7 @@ const Alerts = () => {
         <Snackbar
           key={`${data.type}-${data.message}`}
           open={data.open || false}
-          autoHideDuration={2000}
+          autoHideDuration={10000}
           onClose={handleClose}
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
           message={data.message}

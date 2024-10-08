@@ -9,19 +9,23 @@ export const useLoginMutation = (
   displayAlert,
 ) => useMutation(
   async (loginData) => {
-    const token = await oauthService.authenticateWithPasswordFlow(loginData);
-    oauthService.setAccessToken(token.data);
-    const user = await httpService.makeRequest(
-      'get',
-      `${window.env.API_URL}coreuser/me/`,
-    );
-    oauthService.setOauthUser(user, { loginData });
-    const coreuser = await httpService.makeRequest(
-      'get',
-      `${window.env.API_URL}coreuser/`,
-    );
-    oauthService.setCurrentCoreUser(coreuser, user);
-    return user;
+    try {
+      const token = await oauthService.authenticateWithPasswordFlow(loginData);
+      oauthService.setAccessToken(token.data);
+      const user = await httpService.makeRequest(
+        'get',
+        `${window.env.API_URL}coreuser/me/`,
+      );
+      oauthService.setOauthUser(user, { loginData });
+      const coreuser = await httpService.makeRequest(
+        'get',
+        `${window.env.API_URL}coreuser/`,
+      );
+      oauthService.setCurrentCoreUser(coreuser, user);
+      return user;
+    } catch (e) {
+      displayAlert('error', 'Make sure you have verified your email address to access the platform.\nIf yes, either your account is not approved or you provided invalid username/password');
+    }
   },
   {
     onSuccess: async (response) => {
@@ -36,7 +40,7 @@ export const useLoginMutation = (
   },
   {
     onError: () => {
-      displayAlert('error', 'Either your account is not approved or you provided invalid username/password');
+      displayAlert('error', 'Make sure you have verified your email address to access the platform.\nIf yes, either your account is not approved or you provided invalid username/password');
     },
   },
 );

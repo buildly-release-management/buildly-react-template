@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   Card, CardActions,
@@ -17,22 +17,22 @@ import StripeCard from '@components/StripeCard/StripeCard';
 import { getStripeProductQuery } from '@react-query/queries/authUser/getStripeProductQuery';
 import { useAddSubscriptionMutation } from '../../react-query/mutations/authUser/addSubscriptionMutation';
 import './RegistrationFinish.css';
-import { UserContext } from '../../context/User.context';
+import { getUser } from '../../context/User.context';
 import { useInput } from '../../hooks/useInput';
 import useAlert from '../../hooks/useAlert';
 import { hasAdminRights, hasGlobalAdminRights } from '../../utils/permissions';
 import { validators } from '../../utils/validators';
 import { routes } from '../../routes/routesConstants';
+import Loader from '../../components/Loader/Loader';
 
 const RegistrationFinish = ({ history }) => {
-  const user = useContext(UserContext);
+  const user = getUser();
   const { displayAlert } = useAlert();
   const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
   const [organization, setOrganization] = useState(null);
   const stripe = useStripe();
   const elements = useElements();
-  const cardError = () => { };
-  const setCardError = () => { };
+  const [cardError, setCardError] = useState(false);
 
   const { data: stripeProductData, isLoading: isStripeProductsLoading } = useQuery(
     ['stripeProducts'],
@@ -40,7 +40,7 @@ const RegistrationFinish = ({ history }) => {
     { refetchOnWindowFocus: false },
   );
 
-  const { mutate: addSubscriptionMutation } = useAddSubscriptionMutation(displayAlert, history, routes.PRODUCT_PORTFOLIO);
+  const { mutate: addSubscriptionMutation, isLoading: isAddSubscriptionLoading } = useAddSubscriptionMutation(displayAlert, history, routes.PRODUCT_PORTFOLIO);
 
   if (user) {
     if (!organization) {
@@ -89,11 +89,14 @@ const RegistrationFinish = ({ history }) => {
     };
     if (!validationError) {
       addSubscriptionMutation(formValue);
+    } else {
+      setCardError(validationError);
     }
   };
 
   return (
     <>
+      {(isStripeProductsLoading || isAddSubscriptionLoading) && <Loader open={isStripeProductsLoading || isAddSubscriptionLoading} />}
       <Container maxWidth="sm" className="main-container">
         {isAdmin ? (
           <>
@@ -150,6 +153,7 @@ const RegistrationFinish = ({ history }) => {
                     variant="contained"
                     color="primary"
                     className="btn-space"
+                    disabled={!product.value || cardError || isStripeProductsLoading || isAddSubscriptionLoading}
                     onClick={handleSubmit}
                   >
                     Submit

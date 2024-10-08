@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import logo from '@assets/buildly-product-labs-logo.png';
 import Copyright from '@components/Copyright/Copyright';
-import GithubLogin from '@components/SocialLogin/GithubLogin';
+// import GithubLogin from '@components/SocialLogin/GithubLogin';
 import Loader from '@components/Loader/Loader';
 import { useInput } from '@hooks/useInput';
 import useAlert from '@hooks/useAlert';
@@ -202,7 +202,7 @@ const Login = ({ history }) => {
                 </div>
               </form>
               <Grid container>
-                <Grid item xs={12} className={classes.or}>
+                {/* <Grid item xs={12} className={classes.or}>
                   <Typography variant="body1">----OR----</Typography>
                 </Grid>
                 <Grid item xs={12} className={classes.socialAuth}>
@@ -211,7 +211,7 @@ const Login = ({ history }) => {
                     history={history}
                     disabled={isLoginLoading || isPasswordCheckLoading || isSocialLoginLoading}
                   />
-                </Grid>
+                </Grid> */}
                 <Grid item xs className={classes.link}>
                   <Link
                     href={routes.FORGOT_PASSWORD}
