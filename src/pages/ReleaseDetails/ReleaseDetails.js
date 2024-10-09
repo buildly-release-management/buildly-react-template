@@ -44,7 +44,7 @@ const ReleaseDetails = ({ history }) => {
   const [assigneesValues, setAssigneesValues] = useState([]);
   const [barFeatureNames, setBarFeatureNames] = useState([]);
   const [barSummary, setBarSummary] = useState([]);
-  const [value, setValue] = useState('1');
+  const [value, setValue] = useState('2');
 
   const { data: releaseDetails, isLoading: isReleaseDetailsLoading } = useQuery(
     ['releaseSummary', releaseUuid],
