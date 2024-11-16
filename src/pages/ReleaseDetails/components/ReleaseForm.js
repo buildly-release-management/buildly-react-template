@@ -26,6 +26,7 @@ const ReleaseForm = ({ releasesDetails, displayAlert }) => {
 
   // Initialize selected features
   useEffect(() => {
+    resetForm();
     if (!_.isEmpty(features)) {
       const selected = features.filter((featureObj) => releasesDetails.features.includes(featureObj.feature_uuid));
       setSelectedFeatures(selected);
@@ -33,20 +34,6 @@ const ReleaseForm = ({ releasesDetails, displayAlert }) => {
   }, [features]);
 
   const { mutate: updateReleaseMutation, isLoading: isUpdatingReleaseLoading } = useUpdateReleaseMutation(releasesDetails?.release_uuid, displayAlert);
-
-  useEffect(() => {
-    setFormData({});
-    if (releasesDetails) {
-      setFormData({
-        ...formData,
-        release_uuid: releasesDetails.release_uuid,
-        name: releasesDetails.name,
-        description: releasesDetails.description,
-        release_date: releasesDetails.release_date,
-        features: releasesDetails.features,
-      });
-    }
-  }, []);
 
   const updateFormData = (e) => {
     setFormData({
@@ -63,14 +50,13 @@ const ReleaseForm = ({ releasesDetails, displayAlert }) => {
   const resetForm = () => {
     setFormData({
       ...formData,
-      release_uuid: releasesDetails.release_uuid,
-      name: releasesDetails.name,
-      description: releasesDetails.description,
-      release_date: releasesDetails.release_date,
-      features: releasesDetails.features,
+      release_uuid: releasesDetails?.release_uuid,
+      name: releasesDetails?.name,
+      description: releasesDetails?.description,
+      release_date: releasesDetails?.release_date,
+      features: releasesDetails?.features,
     });
   };
-
 
   return (
     <>

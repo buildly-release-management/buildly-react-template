@@ -22,7 +22,7 @@ ChartJS.register(
 // style={{ maxHeight: "600px" }}
 
 const BarChart = ({
-  id, labels, label, data, backgroundColor, borderWidth, borderColor,
+  id, label, labels, data, backgroundColor, borderWidth, borderColor,
 }) => {
   const options = {
     plugins: {

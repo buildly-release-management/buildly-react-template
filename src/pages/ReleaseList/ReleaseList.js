@@ -98,12 +98,10 @@ const ReleaseList = () => {
   const { mutate: createReleaseMutation, isLoading: isCreatingReleaseLoading } = useCreateReleaseMutation(selectedProduct, null, null, displayAlert);
   const { mutate: deleteReleaseMutation, isLoading: isDeletingReleaseLoading } = useDeleteReleaseMutation(selectedProduct, null, null, displayAlert);
 
-  let featuresReleaseNames = [];
-  let issuesReleaseNames = [];
-
   useEffect(() => {
     if (!_.isEmpty(releases)) {
-      _.orderBy(releases, 'release_date');
+      releases.sort((a, b) => b.release_date.localeCompare(a.release_date));
+
       let modifiedReleases = [];
       _.forEach(releases, (rel) => {
         modifiedReleases = [
@@ -124,16 +122,100 @@ const ReleaseList = () => {
         releaseDetails.issues,
         'issues_data',
       );
-      issuesReleaseNames = issuesSummaryObj.releaseNames;
+
+      const features = [
+        {
+          release: '1.1.0',
+          features_data: {
+            completed: 2,
+            in_progress: 0,
+            overdue: 0,
+            others: 9,
+          },
+        },
+        {
+          release: '1.2.0',
+          features_data: {
+            completed: 2,
+            in_progress: 0,
+            overdue: 0,
+            others: 4,
+          },
+        },
+        {
+          release: 'MVP',
+          features_data: {
+            completed: 18,
+            in_progress: 1,
+            overdue: 1,
+            others: 67,
+          },
+        },
+        {
+          release: 'POC',
+          features_data: {
+            completed: 2,
+            in_progress: 0,
+            overdue: 0,
+            others: 7,
+          },
+        },
+        {
+          release: 'v0.10.0',
+          features_data: {
+            completed: 0,
+            in_progress: 1,
+            overdue: 1,
+            others: 37,
+          },
+        },
+        {
+          release: 'v0.7.0',
+          features_data: {
+            completed: 1,
+            in_progress: 0,
+            overdue: 0,
+            others: 3,
+          },
+        },
+        {
+          release: 'v0.7.1',
+          features_data: {
+            completed: 2,
+            in_progress: 0,
+            overdue: 0,
+            others: 4,
+          },
+        },
+        {
+          release: 'v0.8.0',
+          features_data: {
+            completed: 1,
+            in_progress: 0,
+            overdue: 0,
+            others: 9,
+          },
+        },
+        {
+          release: 'v0.9.0',
+          features_data: {
+            completed: 3,
+            in_progress: 1,
+            overdue: 1,
+            others: 5,
+          },
+        },
+      ];
+
       const featuresSummaryObj = generateBarChartData(
-        releaseDetails.features,
+        features,
         'features_data',
       );
-      featuresReleaseNames = featuresSummaryObj.releaseNames;
+
       setReleasesSummary({
         releases: Object.values(releaseDetails.releases),
-        features: featuresSummaryObj.barChartSummaryData,
-        issues: issuesSummaryObj.barChartSummaryData,
+        features: featuresSummaryObj,
+        issues: issuesSummaryObj,
       });
     }
   }, [releaseDetails]);
@@ -160,7 +242,8 @@ const ReleaseList = () => {
         data: [],
       },
     ];
-    _.forEach(data, (entry) => {
+
+    data.forEach((entry) => {
       releaseNames.push(entry.release);
       Object.keys(entry[dataField]).forEach((key) => {
         const index = barChartSummaryData.findIndex(
@@ -507,8 +590,8 @@ const ReleaseList = () => {
                       <BarChart
                         id="features"
                         label="Features summary"
-                        labels={featuresReleaseNames}
-                        data={releasesSummary.features}
+                        labels={releasesSummary.features.releaseNames}
+                        data={releasesSummary.features.barChartSummaryData}
                         backgroundColor={backgroundColor}
                         borderWidth={borderWidth}
                         borderColor={borderColor}
@@ -523,8 +606,8 @@ const ReleaseList = () => {
                       <BarChart
                         id="issues"
                         label="Issues summary"
-                        labels={issuesReleaseNames}
-                        data={releasesSummary.issues}
+                        labels={releasesSummary.issues.releaseNames}
+                        data={releasesSummary.issues.barChartSummaryData}
                         backgroundColor={backgroundColor}
                         borderWidth={borderWidth}
                         borderColor={borderColor}
