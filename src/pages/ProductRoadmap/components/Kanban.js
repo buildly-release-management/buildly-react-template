@@ -215,7 +215,7 @@ const Kanban = ({
           ...cols,
           [sts.status_uuid]: {
             name: sts.name,
-            items: _.orderBy(items, 'create_date', 'desc'),
+            items: _.sortBy(items, (i) => (i && i.feature_detail ? i.feature_detail.kanban_column_order : i.issue_detail.kanban_column_order)),
           },
         };
         if (sts.name === 'No Status' && !items.length) {
@@ -284,6 +284,29 @@ const Kanban = ({
           items: copiedItems,
         },
       });
+
+      let updateData = {};
+      if (removed.issue_uuid) {
+        updateData = {
+          ...removed,
+          ...issueCred?.auth_detail,
+          issue_detail: {
+            ...removed.issue_detail,
+            kanban_column_order: destination.index,
+          },
+        };
+        updateIssueMutation(updateData);
+      } else {
+        updateData = {
+          ...removed,
+          ...featCred?.auth_detail,
+          feature_detail: {
+            ...removed.feature_detail,
+            kanban_column_order: destination.index,
+          },
+        };
+        updateFeatureMutation(updateData);
+      }
     }
   };
 
@@ -421,7 +444,7 @@ const Kanban = ({
                                     ? item.issue_uuid
                                     : item.feature_uuid
                                 }
-                                index={itemIndex}
+                                index={item && item.feature_detail ? item.feature_detail.kanban_column_order : item.issue_detail.kanban_column_order}
                               >
                                 {(provided, snapshot) => (
                                   <Card
