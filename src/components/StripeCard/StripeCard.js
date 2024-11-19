@@ -21,6 +21,7 @@ const StripeCard = ({ cardError, setCardError }) => {
   const classes = useStyles();
 
   const onCardChange = (elementData) => {
+    console.log(elementData);
     if (elementData.error) {
       setCardError(elementData.error.message);
     } else if (!elementData.complete) {
@@ -36,7 +37,7 @@ const StripeCard = ({ cardError, setCardError }) => {
         <CardElement onChange={onCardChange} />
       </FormControl>
       <FormHelperText className={classes.helperText}>
-        {cardError && cardError.message}
+        {cardError}
       </FormHelperText>
     </FormGroup>
   );

@@ -153,17 +153,19 @@ const Tabular = ({
     const featRows = _.map(features, (feat) => ({
       ...feat,
       _status: _.find(statuses, { status_uuid: feat.status })?.name,
+      _status_order_id: _.find(statuses, { status_uuid: feat.status })?.order_id,
       _url: feat.feature_detail?.url || '',
     }));
 
     const issRows = _.map(issues, (iss) => ({
       ...iss,
       _status: _.find(statuses, { status_uuid: iss.status })?.name,
+      _status_order_id: _.find(statuses, { status_uuid: iss.status })?.order_id,
       _url: iss.issue_detail?.url || '',
     }));
 
-    setFeatureRows(featRows);
-    setIssueRows(issRows);
+    setFeatureRows(_.orderBy(featRows, ['_status_order_id', 'feature_detail.kanban_column_order']));
+    setIssueRows(_.orderBy(issRows, ['_status_order_id', 'issue_detail.kanban_column_order']));
   }, [statuses, features, issues]);
 
   useEffect(() => {

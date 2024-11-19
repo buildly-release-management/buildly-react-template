@@ -180,8 +180,8 @@ const Kanban = ({
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
   );
 
-  const { mutate: updateFeatureMutation } = useUpdateFeatureMutation(selectedProduct, history, routes.PRODUCT_ROADMAP_KANBAN, displayAlert);
-  const { mutate: updateIssueMutation } = useUpdateIssueMutation(selectedProduct, history, routes.PRODUCT_ROADMAP_KANBAN, displayAlert);
+  const { mutate: updateFeatureMutation, isLoading: isUpdatingFeature } = useUpdateFeatureMutation(selectedProduct, history, routes.PRODUCT_ROADMAP_KANBAN, displayAlert);
+  const { mutate: updateIssueMutation, isLoading: isUpdatingIssue } = useUpdateIssueMutation(selectedProduct, history, routes.PRODUCT_ROADMAP_KANBAN, displayAlert);
 
   const handleClick = (event, number) => {
     setAnchorEl(event.currentTarget);
@@ -285,35 +285,37 @@ const Kanban = ({
         },
       });
 
-      let updateData = {};
-      if (removed.issue_uuid) {
-        updateData = {
-          ...removed,
-          ...issueCred?.auth_detail,
-          issue_detail: {
-            ...removed.issue_detail,
-            kanban_column_order: destination.index,
-          },
-        };
-        updateIssueMutation(updateData);
-      } else {
-        updateData = {
-          ...removed,
-          ...featCred?.auth_detail,
-          feature_detail: {
-            ...removed.feature_detail,
-            kanban_column_order: destination.index,
-          },
-        };
-        updateFeatureMutation(updateData);
-      }
+      _.forEach(copiedItems, (ci, idx) => {
+        let updateData = {};
+        if (ci.issue_uuid) {
+          updateData = {
+            ...ci,
+            ...issueCred?.auth_detail,
+            issue_detail: {
+              ...ci.issue_detail,
+              kanban_column_order: idx,
+            },
+          };
+          updateIssueMutation(updateData);
+        } else {
+          updateData = {
+            ...ci,
+            ...featCred?.auth_detail,
+            feature_detail: {
+              ...ci.feature_detail,
+              kanban_column_order: idx,
+            },
+          };
+          updateFeatureMutation(updateData);
+        }
+      });
     }
   };
 
   return (
     <>
-      {(isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading) && (
-        <Loader open={isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading} />
+      {(isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading || isUpdatingFeature || isUpdatingIssue) && (
+        <Loader open={isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading || isUpdatingFeature || isUpdatingIssue} />
       )}
       {(_.isEmpty(selectedProduct) || _.toNumber(selectedProduct) === 0) && (
         <Typography className={classes.noProduct} component="div" variant="body1">
