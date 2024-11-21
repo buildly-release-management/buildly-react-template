@@ -60,6 +60,7 @@ const UserManagement = () => {
       </Box>
       <Route path={routes.CURRENT_USERS} component={Users} />
       <Route path={routes.USER_GROUPS} component={UserGroups} />
+      <AddUser open={showAddUser} setOpen={setShowAddUser} />
     </Box>
   );
 };

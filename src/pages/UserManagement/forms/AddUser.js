@@ -94,7 +94,7 @@ const AddUser = ({ open, setOpen }) => {
 
     if (!_.isEmpty(userEmails)) {
       const data = {
-        email_addresses: lowercaseUserEmails,
+        emails: lowercaseUserEmails,
       };
       inviteMutation(data);
     }
