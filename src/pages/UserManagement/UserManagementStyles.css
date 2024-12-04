@@ -12,3 +12,12 @@
 .usersIconButton:hover {
   background-color: var(--color-palette-primary-light);
 }
+
+.addUserFormContainer {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.addOrganizationSubmit {
+  margin-top: 24px;
+}

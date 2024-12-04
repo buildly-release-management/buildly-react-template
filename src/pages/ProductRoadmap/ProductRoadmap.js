@@ -116,6 +116,8 @@ const ProductRoadmap = ({ history }) => {
     id: 0,
     type: 'feat',
   });
+  const [featSearch, setFeatSearch] = useState('');
+  const [issSearch, setIssSearch] = useState('');
 
   const { data: productData, isLoading: isAllProductLoading } = useQuery(
     ['allProducts', organization],
@@ -501,6 +503,10 @@ const ProductRoadmap = ({ history }) => {
                             createSuggestedFeature={createSuggestedFeature}
                             removeSuggestedFeature={removeSuggestedFeature}
                             showRelatedIssues={showRelatedIssues}
+                            featSearch={featSearch}
+                            setFeatSearch={setFeatSearch}
+                            issSearch={issSearch}
+                            setIssSearch={setIssSearch}
                           />
                         )}
                       />

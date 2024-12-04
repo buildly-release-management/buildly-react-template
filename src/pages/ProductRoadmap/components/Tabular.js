@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material';
 import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
 import Loader from '@components/Loader/Loader';
+import SearchInput from '@components/SearchInput/SearchInput';
 import useAlert from '@hooks/useAlert';
 import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
 import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
@@ -49,6 +50,10 @@ const Tabular = ({
   createSuggestedFeature,
   removeSuggestedFeature,
   showRelatedIssues,
+  featSearch,
+  setFeatSearch,
+  issSearch,
+  setIssSearch,
 }) => {
   const classes = useStyles();
   const { displayAlert } = useAlert();
@@ -148,17 +153,19 @@ const Tabular = ({
     const featRows = _.map(features, (feat) => ({
       ...feat,
       _status: _.find(statuses, { status_uuid: feat.status })?.name,
+      _status_order_id: _.find(statuses, { status_uuid: feat.status })?.order_id,
       _url: feat.feature_detail?.url || '',
     }));
 
     const issRows = _.map(issues, (iss) => ({
       ...iss,
       _status: _.find(statuses, { status_uuid: iss.status })?.name,
+      _status_order_id: _.find(statuses, { status_uuid: iss.status })?.order_id,
       _url: iss.issue_detail?.url || '',
     }));
 
-    setFeatureRows(featRows);
-    setIssueRows(issRows);
+    setFeatureRows(_.orderBy(featRows, ['_status_order_id', 'feature_detail.kanban_column_order']));
+    setIssueRows(_.orderBy(issRows, ['_status_order_id', 'issue_detail.kanban_column_order']));
   }, [statuses, features, issues]);
 
   useEffect(() => {
@@ -217,6 +224,16 @@ const Tabular = ({
     }
   }, [suggestedFeatures]);
 
+  const customSearch = (searchQuery, currentRow, columns) => {
+    let isFound = false;
+    currentRow.forEach((col) => {
+      if (col && (col.toString().indexOf(searchQuery) >= 0)) {
+        isFound = true;
+      }
+    });
+    return isFound;
+  };
+
   return (
     <>
       {(isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading) && (
@@ -264,6 +281,24 @@ const Tabular = ({
             menuActions={featMenuActions}
             menuIndex={menuIndex}
             setMenuIndex={setMenuIndex}
+            extraOptions={{
+              searchText: featSearch,
+              searchProps: {
+                onChange: (e) => {
+                  setFeatSearch(e.target.value);
+                },
+              },
+              customSearch,
+              customSearchRender: (searchText, handleSearch, hideSearch, options) => (
+                <SearchInput
+                  searchText={featSearch}
+                  setSearchText={setFeatSearch}
+                  onSearch={handleSearch}
+                  onHide={hideSearch}
+                  options={options}
+                />
+              ),
+            }}
           />
         </div>
       )}
@@ -282,6 +317,24 @@ const Tabular = ({
             menuActions={issueMenuActions}
             menuIndex={menuIndex}
             setMenuIndex={setMenuIndex}
+            extraOptions={{
+              searchText: issSearch,
+              searchProps: {
+                onChange: (e) => {
+                  setIssSearch(e.target.value);
+                },
+              },
+              customSearch,
+              customSearchRender: (searchText, handleSearch, hideSearch, options) => (
+                <SearchInput
+                  searchText={issSearch}
+                  setSearchText={setIssSearch}
+                  onSearch={handleSearch}
+                  onHide={hideSearch}
+                  options={options}
+                />
+              ),
+            }}
           />
         </div>
       )}

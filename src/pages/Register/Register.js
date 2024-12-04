@@ -128,8 +128,8 @@ const Register = ({ history }) => {
 
   useEffect(() => {
     if (inviteTokenCheckData) {
-      email.setValue(inviteTokenCheckData.email || '');
-      organization_name.setValue(inviteTokenCheckData.organization_name || '');
+      email.setNewValue(inviteTokenCheckData.email || '');
+      organization_name.setNewValue(inviteTokenCheckData.organization?.name || '');
     }
   }, [inviteTokenCheckData]);
 
