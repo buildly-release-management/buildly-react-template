@@ -101,7 +101,8 @@ const Register = ({ history }) => {
   const userType = useInput('', { required: true });
   const first_name = useInput('', { required: true });
   const last_name = useInput('');
-  const coupon_code = useInput(''); // window.env.FREE_COUPON_CODE ||
+  const couponCode = new URLSearchParams(location.search).get('coupon_code');
+  const coupon_code = useInput(couponCode);
   const referralCode = new URLSearchParams(location.search).get('referral_code');
   const [formError, setFormError] = useState({});
   const [checked, setChecked] = React.useState(false);
