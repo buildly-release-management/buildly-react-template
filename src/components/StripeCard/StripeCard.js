@@ -37,7 +37,7 @@ const StripeCard = ({ cardError, setCardError }) => {
         <CardElement onChange={onCardChange} />
       </FormControl>
       <FormHelperText className={classes.helperText}>
-        {cardError}
+        {cardError && cardError.message}
       </FormHelperText>
     </FormGroup>
   );
