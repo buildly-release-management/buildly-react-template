@@ -83,7 +83,6 @@ const AddFeatures = ({ location, history }) => {
   const [openConfirmModal, setConfirmModal] = useState(false);
 
   const [formError, setFormError] = useState({});
-  const [assigneeData, setAssigneeData] = useState([]);
 
   // form fields definition
   const name = useInput((editData && editData.name) || '', { required: true });
@@ -102,11 +101,6 @@ const AddFeatures = ({ location, history }) => {
 
   const complexityValue = useInput((editData && editData.complexity) || 1, { required: true });
   const [complexity, setComplexity] = useState(complexityValue.value);
-
-  const [assignees, setAssignees] = useState(
-    (editData && editData.feature_detail && _.map(editData.feature_detail.assigneees, 'username'))
-    || [],
-  );
 
   const [userTypes, setUserTypes] = useState(
     (editData && editData.feature_detail && _.keys(editData.feature_detail.user_stories))
@@ -181,7 +175,6 @@ const AddFeatures = ({ location, history }) => {
 
   useEffect(() => {
     const prod = _.find(products, { product_uuid });
-    const assigneeOptions = _.map(prod?.feature_tool_detail?.user_list, 'username') || [];
     const productUserTypes = _.map((prod?.product_info?.user_labels || []), 'label');
     let productUserProfiles = {};
 
@@ -192,7 +185,6 @@ const AddFeatures = ({ location, history }) => {
       };
     });
 
-    setAssigneeData(assigneeOptions);
     setTagList(prod?.feature_tool_detail?.labels || []);
     setUserProfiles(productUserProfiles);
 
@@ -245,9 +237,6 @@ const AddFeatures = ({ location, history }) => {
       ...featCred?.auth_detail,
       feature_detail: {
         ...(editData.feature_detail || {}),
-        assigneees: _.filter(assigneeData, (u) => (
-          !!u && _.includes(assignees, u.username)
-        )),
         user_stories: finalUserStories,
       },
     };
@@ -309,11 +298,8 @@ const AddFeatures = ({ location, history }) => {
       name.hasChanged()
     || priority.hasChanged()
     || statusID.hasChanged()
-    || (!editPage && (!_.isEmpty(tags) || !_.isEmpty(assignees)))
+    || (!editPage && !_.isEmpty(tags)))
     || !!(editPage && editData && !_.isEqual((editData.tags || []), tags))
-    || !!(editPage && editData && editData.feature_detail
-      && !_.isEqual(_.map(editData.feature_detail.assigneees, 'username'), assignees))
-    )
     || !!(editPage && editData && !_.isEmpty(suggestedUserStories) && !_.isEqual(editData.feature_detail.user_stories, suggestedUserStories));
 
     if (dataHasChanged) {
@@ -544,39 +530,6 @@ const AddFeatures = ({ location, history }) => {
                       {...params}
                       variant="outlined"
                       label="Tags"
-                      margin="normal"
-                    />
-                  )}
-                  disabled={viewPage}
-                />
-              </Grid>
-            )}
-
-            {/* Assignees */}
-            {!_.isEmpty(assigneeData) && (
-              <Grid item xs={12} md={8}>
-                <Autocomplete
-                  fullWidth
-                  multiple
-                  filterSelectedOptions
-                  id="assignees"
-                  options={assigneeData}
-                  value={assignees}
-                  onChange={(e, newValue) => setAssignees(newValue)}
-                  renderTags={(value, getAssigneeProps) => (
-                    _.map(value, (option, index) => (
-                      <Chip
-                        variant="default"
-                        label={option}
-                        {...getAssigneeProps({ index })}
-                      />
-                    ))
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="outlined"
-                      label="Assignees"
                       margin="normal"
                     />
                   )}
