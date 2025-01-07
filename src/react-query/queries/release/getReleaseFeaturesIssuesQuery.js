@@ -5,7 +5,7 @@ export const getReleaseFeaturesIssuesQuery = async (release_uuid, displayAlert) 
   try {
     const response = await httpService.makeRequest(
       'get',
-      `${window.env.API_URL}release/feature/?release_features__release_uuid=${release_uuid}`,
+      `${window.env.API_URL}release/feature/?release_uuid=${release_uuid}`,
     );
     const features = response.data;
     if (!_.isEmpty(features)) {

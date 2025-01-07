@@ -21,6 +21,7 @@ const StripeCard = ({ cardError, setCardError }) => {
   const classes = useStyles();
 
   const onCardChange = (elementData) => {
+    console.log(elementData);
     if (elementData.error) {
       setCardError(elementData.error.message);
     } else if (!elementData.complete) {

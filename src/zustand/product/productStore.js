@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 const useStore = create((set) => ({
   productFormData: null,
-  activeProduct: null,
+  activeProduct: localStorage.getItem('activeProduct') || null,
   updateProductFormData: (data) => {
     set({ productFormData: data });
   },
@@ -11,6 +11,7 @@ const useStore = create((set) => ({
   },
   setActiveProduct: (data) => {
     set({ activeProduct: data });
+    localStorage.setItem('activeProduct', data);
   },
 }));
 

@@ -98,12 +98,10 @@ const ReleaseList = () => {
   const { mutate: createReleaseMutation, isLoading: isCreatingReleaseLoading } = useCreateReleaseMutation(selectedProduct, null, null, displayAlert);
   const { mutate: deleteReleaseMutation, isLoading: isDeletingReleaseLoading } = useDeleteReleaseMutation(selectedProduct, null, null, displayAlert);
 
-  let featuresReleaseNames = [];
-  let issuesReleaseNames = [];
-
   useEffect(() => {
     if (!_.isEmpty(releases)) {
-      _.orderBy(releases, 'release_date');
+      releases.sort((a, b) => b.release_date.localeCompare(a.release_date));
+
       let modifiedReleases = [];
       _.forEach(releases, (rel) => {
         modifiedReleases = [
@@ -124,16 +122,16 @@ const ReleaseList = () => {
         releaseDetails.issues,
         'issues_data',
       );
-      issuesReleaseNames = issuesSummaryObj.releaseNames;
+
       const featuresSummaryObj = generateBarChartData(
-        releaseDetails.features,
+          releaseDetails.features,
         'features_data',
       );
-      featuresReleaseNames = featuresSummaryObj.releaseNames;
+
       setReleasesSummary({
         releases: Object.values(releaseDetails.releases),
-        features: featuresSummaryObj.barChartSummaryData,
-        issues: issuesSummaryObj.barChartSummaryData,
+        features: featuresSummaryObj,
+        issues: issuesSummaryObj,
       });
     }
   }, [releaseDetails]);
@@ -160,7 +158,8 @@ const ReleaseList = () => {
         data: [],
       },
     ];
-    _.forEach(data, (entry) => {
+
+    data.forEach((entry) => {
       releaseNames.push(entry.release);
       Object.keys(entry[dataField]).forEach((key) => {
         const index = barChartSummaryData.findIndex(
@@ -507,8 +506,8 @@ const ReleaseList = () => {
                       <BarChart
                         id="features"
                         label="Features summary"
-                        labels={featuresReleaseNames}
-                        data={releasesSummary.features}
+                        labels={releasesSummary.features.releaseNames}
+                        data={releasesSummary.features.barChartSummaryData}
                         backgroundColor={backgroundColor}
                         borderWidth={borderWidth}
                         borderColor={borderColor}
@@ -523,8 +522,8 @@ const ReleaseList = () => {
                       <BarChart
                         id="issues"
                         label="Issues summary"
-                        labels={issuesReleaseNames}
-                        data={releasesSummary.issues}
+                        labels={releasesSummary.issues.releaseNames}
+                        data={releasesSummary.issues.barChartSummaryData}
                         backgroundColor={backgroundColor}
                         borderWidth={borderWidth}
                         borderColor={borderColor}

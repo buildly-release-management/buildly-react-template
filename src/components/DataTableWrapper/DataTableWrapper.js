@@ -71,6 +71,7 @@ const DataTableWrapper = ({
   noOptionsIcon,
   menuIndex,
   setMenuIndex,
+  extraOptions,
 }) => {
   const classes = useStyles();
   // dropdown menu variables
@@ -229,6 +230,7 @@ const DataTableWrapper = ({
       className: classes.dataTableBody,
     }),
     customSort,
+    ...extraOptions,
   };
 
   return (

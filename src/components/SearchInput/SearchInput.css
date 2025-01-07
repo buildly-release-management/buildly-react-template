@@ -1,0 +1,12 @@
+.searchInputDiv {
+  display: flex;
+  flex: 1 0 auto;
+}
+
+.searchTextField {
+  flex: 0.8 0;
+}
+
+.searchClearIcon:hover {
+  color: var(--color-palette-error-main),
+}
