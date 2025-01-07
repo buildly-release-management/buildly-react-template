@@ -28,6 +28,7 @@ import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuer
 import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
 import { useCreateIssueMutation } from '@react-query/mutations/release/createIssueMutation';
 import { useUpdateIssueMutation } from '@react-query/mutations/release/updateIssueMutation';
+import { hasGlobalAdminRights } from '@utils/permissions';
 import { ISSUETYPES } from '../ProductRoadmapConstants';
 
 const useStyles = makeStyles((theme) => ({
@@ -63,6 +64,8 @@ const AddIssues = ({ history, location }) => {
 
   const user = useContext(UserContext);
   const organization = user.organization.organization_uuid;
+  const user_profile = _.toLower(user.user_type);
+  const isSuperAdmin = hasGlobalAdminRights(user);
   const { displayAlert } = useAlert();
 
   const [openFormModal, setFormModal] = useState(true);
@@ -144,14 +147,11 @@ const AddIssues = ({ history, location }) => {
       || type.hasChanged()
       || statusID.hasChanged()
       || repo.hasChanged()
-      || !!((editData && editData.start_date)
-        && !_.isEqual(moment(editData.start_date).format('L'), moment(startDate).format('L')))
-      || !!((editData && editData.end_date)
-        && !_.isEqual(moment(editData.end_date).format('L'), moment(endDate).format('L')))
+      || !!((editData && editData.start_date) && !_.isEqual(moment(editData.start_date).format('L'), moment(startDate).format('L')))
+      || !!((editData && editData.end_date) && !_.isEqual(moment(editData.end_date).format('L'), moment(endDate).format('L')))
       || (!editPage && (!_.isEmpty(tags) || !_.isEmpty(assignees)))
-      || !!(editPage && editData && !_.isEqual((editData.tags || []), tags))
-      || !!(editPage && editData && editData.issue_detail
-        && !_.isEqual(_.map(editData.issue_detail.assigneees, 'username'), assignees))
+      || !!(editPage && editData && !_.isEqual(editData.tags, tags))
+      || !!(editPage && editData && editData.issue_detail && !_.isEqual(editData.issue_detail.assignees, assignees))
     );
 
     if (dataHasChanged) {
@@ -459,7 +459,7 @@ const AddIssues = ({ history, location }) => {
                   />
                 </Grid>
               )}
-              {!_.isEmpty(assigneeData) && (
+              {!_.isEmpty(assigneeData) && (isSuperAdmin || _.isEqual(user_profile, 'developer')) && (
                 <Grid item xs={12}>
                   <Autocomplete
                     fullWidth
@@ -468,15 +468,15 @@ const AddIssues = ({ history, location }) => {
                     id="assignees"
                     name="assignees"
                     options={assigneeData}
+                    value={assignees}
                     getOptionLabel={(option) => option.username}
-                    getOptionSelected={(option, value) => option.username === value.username}
+                    getOptionSelected={(option, value) => option.user_id === value}
                     onChange={(e, newValue) => setAssignees(_.map(newValue, 'user_id'))}
                     renderTags={(value, getAssigneeProps) => (
                       _.map(value, (option, index) => (
                         <Chip
                           variant="default"
-                          label={option.username}
-                          value={option.user_id}
+                          label={_.find(assigneeData, { user_id: option })?.username}
                           {...getAssigneeProps({ index })}
                         />
                       ))

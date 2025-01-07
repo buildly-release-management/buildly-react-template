@@ -120,7 +120,7 @@ const IssueSuggestions = ({
       issue_detail: {},
     };
 
-    const issueSuggestionsData = _.map(showData.suggested_issues, (issue) => ({
+    const issueSuggestionsData = _.map(_.filter(showData.suggested_issues, (si) => !_.isEqual(si.ticket_type, 'Engineering')), (issue) => ({
       ...formData,
       name: issue.name,
       description: issue.description,
@@ -165,7 +165,7 @@ const IssueSuggestions = ({
               )}
 
               {showData && !_.isEmpty(showData.suggested_issues)
-              && _.map(showData.suggested_issues, (issue, index) => (
+              && _.map(_.filter(showData.suggested_issues, (si) => !_.isEqual(si.ticket_type, 'Engineering')), (issue, index) => (
                 <Accordion
                   key={`${issue.name}-${index}`}
                   className={classes.accordion}
