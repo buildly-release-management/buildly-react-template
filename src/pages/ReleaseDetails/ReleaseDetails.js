@@ -26,11 +26,14 @@ import Loader from '@components/Loader/Loader';
 import Chatbot from '@components/Chatbot/Chatbot';
 import DoughnutChart from '@components/Charts/Doughnut/DoughnutChart';
 import BarChart from '@components/Charts/BarChart/BarChart';
+import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
 import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
 import { getReleaseSummaryQuery } from '@react-query/queries/release/getReleaseSummaryQuery.js';
 import { getReleaseFeaturesIssuesQuery } from '@react-query/queries/release/getReleaseFeaturesIssuesQuery';
+import { getPunchListQuery } from '@react-query/queries/collabhub/getPunchListQuery';
 import ReleaseForm from './components/ReleaseForm';
+import { punchListColumns } from './ReleaseConstants';
 import './ReleaseDetails.css';
 
 const ReleaseDetails = ({ history }) => {
@@ -54,6 +57,11 @@ const ReleaseDetails = ({ history }) => {
   const { data: releaseFeatures, isLoading: isReleaseFeaturesLoading } = useQuery(
     ['releaseFeatures', releaseUuid],
     () => getReleaseFeaturesIssuesQuery(releaseUuid, displayAlert),
+    { refetchOnWindowFocus: false },
+  );
+  const { data: punchLists, isLoading: isPunchListLoading } = useQuery(
+    ['releasePunchLists'],
+    () => getPunchListQuery(displayAlert),
     { refetchOnWindowFocus: false },
   );
 
@@ -220,7 +228,7 @@ const ReleaseDetails = ({ history }) => {
 
   return (
     <>
-      {(isReleaseDetailsLoading || isReleaseFeaturesLoading) && <Loader open={isReleaseDetailsLoading || isReleaseFeaturesLoading} />}
+      {(isReleaseDetailsLoading || isReleaseFeaturesLoading || isPunchListLoading) && <Loader open={isReleaseDetailsLoading || isReleaseFeaturesLoading || isPunchListLoading} />}
       <Box className="toolbar" display="flex" alignItems="center">
         <IconButton
           aria-label="back"
@@ -245,6 +253,7 @@ const ReleaseDetails = ({ history }) => {
               <Tab label="Report" value="1" />
               <Tab label="Details" value="2" />
               <Tab label="Features & Issues" value="3" />
+              <Tab label="PunchList" value="4" />
             </TabList>
           </Box>
           <TabPanel value="1">
@@ -343,6 +352,15 @@ const ReleaseDetails = ({ history }) => {
                 </TableBody>
               </Table>
             </TableContainer>
+          </TabPanel>
+          <TabPanel value="4">
+            <DataTableWrapper
+              loading={isPunchListLoading}
+              rows={punchLists || []}
+              columns={punchListColumns}
+              filename="PunchList"
+              tableHeader="PunchList"
+            />
           </TabPanel>
         </TabContext>
       </Box>
