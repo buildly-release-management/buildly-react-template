@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, Route, useParams } from 'react-router-dom';
 import _ from 'lodash';
 import { useQuery } from 'react-query';
 import {
@@ -31,14 +31,19 @@ import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
 import { getReleaseSummaryQuery } from '@react-query/queries/release/getReleaseSummaryQuery.js';
 import { getReleaseFeaturesIssuesQuery } from '@react-query/queries/release/getReleaseFeaturesIssuesQuery';
-import { getPunchListQuery } from '@react-query/queries/collabhub/getPunchListQuery';
+import { getBugsPunchListQuery } from '@react-query/queries/collabhub/getBugsPunchListQuery';
+import { useStore } from '@zustand/product/productStore';
 import ReleaseForm from './components/ReleaseForm';
-import { punchListColumns } from './ReleaseConstants';
+import AddPunchlist from './components/AddPunchlist';
+import AddBug from './components/AddBug';
+import { punchListColumns, bugsColumns } from './ReleaseConstants';
 import './ReleaseDetails.css';
 
 const ReleaseDetails = ({ history }) => {
   const { releaseUuid } = useParams();
   const { displayAlert } = useAlert();
+
+  const { activeProduct } = useStore();
 
   const [releaseSummary, setReleaseSummary] = useState([]);
   const [progressSummaryLabels, setProgressSummaryLabels] = useState([]);
@@ -59,9 +64,9 @@ const ReleaseDetails = ({ history }) => {
     () => getReleaseFeaturesIssuesQuery(releaseUuid, displayAlert),
     { refetchOnWindowFocus: false },
   );
-  const { data: punchLists, isLoading: isPunchListLoading } = useQuery(
-    ['releasePunchLists'],
-    () => getPunchListQuery(displayAlert),
+  const { data: bugsPunchList, isLoading: isBugsPunchListLoading } = useQuery(
+    ['releaseBugsPunchList', releaseUuid],
+    () => getBugsPunchListQuery(activeProduct, releaseDetails?.name, displayAlert),
     { refetchOnWindowFocus: false },
   );
 
@@ -167,6 +172,14 @@ const ReleaseDetails = ({ history }) => {
     return { featureNames, barChartSummaryData };
   };
 
+  const onAddPunchListButtonClick = () => {
+    history.push(routes.ADD_PUNCHLIST, { from: location.pathname });
+  };
+
+  const onAddBugButtonClick = () => {
+    history.push(routes.ADD_BUG, { from: location.pathname });
+  };
+
   const Row = (props) => {
     const { row } = props;
     const [open, setOpen] = React.useState(false);
@@ -228,7 +241,7 @@ const ReleaseDetails = ({ history }) => {
 
   return (
     <>
-      {(isReleaseDetailsLoading || isReleaseFeaturesLoading || isPunchListLoading) && <Loader open={isReleaseDetailsLoading || isReleaseFeaturesLoading || isPunchListLoading} />}
+      {(isReleaseDetailsLoading || isReleaseFeaturesLoading || isBugsPunchListLoading) && <Loader open={isReleaseDetailsLoading || isReleaseFeaturesLoading || isBugsPunchListLoading} />}
       <Box className="toolbar" display="flex" alignItems="center">
         <IconButton
           aria-label="back"
@@ -254,6 +267,7 @@ const ReleaseDetails = ({ history }) => {
               <Tab label="Details" value="2" />
               <Tab label="Features & Issues" value="3" />
               <Tab label="PunchList" value="4" />
+              <Tab label="Bugs" value="5" />
             </TabList>
           </Box>
           <TabPanel value="1">
@@ -355,12 +369,29 @@ const ReleaseDetails = ({ history }) => {
           </TabPanel>
           <TabPanel value="4">
             <DataTableWrapper
-              loading={isPunchListLoading}
-              rows={punchLists || []}
+              loading={isBugsPunchListLoading}
+              rows={bugsPunchList?.punchLists || []}
               columns={punchListColumns}
               filename="PunchList"
+              addButtonHeading="PunchList"
+              onAddButtonClick={onAddPunchListButtonClick}
               tableHeader="PunchList"
-            />
+            >
+              <Route path={routes.ADD_PUNCHLIST} component={AddPunchlist} />
+            </DataTableWrapper>
+          </TabPanel>
+          <TabPanel value="5">
+            <DataTableWrapper
+              loading={isBugsPunchListLoading}
+              rows={bugsPunchList?.bugs || []}
+              columns={bugsColumns}
+              filename="Bugs"
+              addButtonHeading="Bug"
+              onAddBugButtonClick={onAddBugButtonClick}
+              tableHeader="Bugs"
+            >
+              <Route path={routes.ADD_BUG} component={AddBug} />
+            </DataTableWrapper>
           </TabPanel>
         </TabContext>
       </Box>

@@ -80,3 +80,55 @@ export const punchListColumns = [
     },
   },
 ];
+
+export const bugsColumns = [
+  {
+    name: 'app_name',
+    label: 'App Name',
+    options: {
+      sort: true,
+      sortThirdClickReset: true,
+      filter: true,
+    },
+  },
+  {
+    name: 'version',
+    label: 'Version',
+    options: {
+      sort: true,
+      sortThirdClickReset: true,
+      filter: true,
+    },
+  },
+  {
+    name: 'title',
+    label: 'Title',
+    options: {
+      sort: true,
+      sortThirdClickReset: true,
+      filter: true,
+      setCellProps: () => ({
+        style: { maxWidth: '600px', wordWrap: 'break-word' },
+      }),
+    },
+  },
+  {
+    name: 'severity',
+    label: 'Severity',
+    options: {
+      sort: true,
+      sortThirdClickReset: true,
+      filter: true,
+    },
+  },
+  {
+    name: 'name',
+    label: 'Submitted By',
+    options: {
+      sort: true,
+      sortThirdClickReset: true,
+      filter: true,
+      customBodyRender: (value) => value || '-',
+    },
+  },
+];

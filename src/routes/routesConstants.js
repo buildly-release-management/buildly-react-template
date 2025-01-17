@@ -36,4 +36,6 @@ export const routes = {
   TOOL_BOARD: '/app/product-roadmap/tool-board',
   COMMENTS: '/app/product-roadmap/comments',
   SHOW_RELATED_ISSUES: '/app/product-roadmap/show-related-issues',
+  ADD_PUNCHLIST: '/app/release/add-punchlist',
+  ADD_BUG: '/app/release/add-bug',
 };
