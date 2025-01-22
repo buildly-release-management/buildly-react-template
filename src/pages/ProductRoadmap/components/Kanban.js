@@ -207,15 +207,28 @@ const Kanban = ({
     let cols = {};
     if (statuses && !_.isEmpty(statuses)) {
       statuses.sort((a, b) => (a.order_id > b.order_id ? 1 : -1));
-      _.forEach(statuses, (sts) => {
-        const feats = _.filter(features, { status: sts.status_uuid });
-        const iss = _.filter(issues, { status: sts.status_uuid });
-        const items = [...feats, ...iss];
+      statuses.forEach((sts) => {
+        const items = features.filter((feature) => feature.status === sts.status_uuid).sort((a, b) => a.feature_detail.kanban_column_order - b.feature_detail.kanban_column_order);
+        const featureUuids = items.map((item) => item.feature_uuid);
+        const statusIssues = _.filter(issues, { status: sts.status_uuid });
+
+        items.forEach((item, index) => {
+          if (item.hasOwnProperty('feature_uuid')) {
+            const featureIssues = statusIssues.filter((issue) => issue.feature === item.feature_uuid).sort((a, b) => a.issue_detail.kanban_column_order - b.issue_detail.kanban_column_order);
+            if (featureIssues.length) {
+              items.splice(index + 1, 0, ...featureIssues);
+            }
+          }
+        });
+
+        const issuesNotInFeatures = statusIssues.filter((issue) => !featureUuids.includes(issue.feature));
+        items.push(...issuesNotInFeatures);
+
         cols = {
           ...cols,
           [sts.status_uuid]: {
             name: sts.name,
-            items: _.sortBy(items, (i) => (i && i.feature_detail ? i.feature_detail.kanban_column_order : i.issue_detail.kanban_column_order)),
+            items,
           },
         };
         if (sts.name === 'No Status' && !items.length) {
