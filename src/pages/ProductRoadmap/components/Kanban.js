@@ -209,14 +209,20 @@ const Kanban = ({
       statuses.sort((a, b) => (a.order_id > b.order_id ? 1 : -1));
       statuses.forEach((sts) => {
         const items = features.filter((feature) => feature.status === sts.status_uuid).sort((a, b) => a.feature_detail.kanban_column_order - b.feature_detail.kanban_column_order);
+        const featureUuids = items.map((item) => item.feature_uuid);
+        const statusIssues = _.filter(issues, { status: sts.status_uuid });
+
         items.forEach((item, index) => {
           if (item.hasOwnProperty('feature_uuid')) {
-            const featureIssues = _.filter(issues, { status: sts.status_uuid, feature: item.feature_uuid }).sort((a, b) => a.issue_detail.kanban_column_order - b.issue_detail.kanban_column_order);
+            const featureIssues = statusIssues.filter((issue) => issue.feature === item.feature_uuid).sort((a, b) => a.issue_detail.kanban_column_order - b.issue_detail.kanban_column_order);
             if (featureIssues.length) {
               items.splice(index + 1, 0, ...featureIssues);
             }
           }
         });
+
+        const issuesNotInFeatures = statusIssues.filter((issue) => !featureUuids.includes(issue.feature));
+        items.push(...issuesNotInFeatures);
 
         cols = {
           ...cols,
@@ -228,7 +234,6 @@ const Kanban = ({
         if (sts.name === 'No Status' && !items.length) {
           delete cols[sts.status_uuid];
         }
-        console.log('cols : ', cols);
       });
       setColumns(cols);
     }
