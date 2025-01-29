@@ -34,8 +34,6 @@ import { getReleaseFeaturesIssuesQuery } from '@react-query/queries/release/getR
 import { getBugsPunchListQuery } from '@react-query/queries/collabhub/getBugsPunchListQuery';
 import { useStore } from '@zustand/product/productStore';
 import ReleaseForm from './components/ReleaseForm';
-import AddPunchlist from './components/AddPunchlist';
-import AddBug from './components/AddBug';
 import { punchListColumns, bugsColumns } from './ReleaseConstants';
 import './ReleaseDetails.css';
 
@@ -173,11 +171,11 @@ const ReleaseDetails = ({ history }) => {
   };
 
   const onAddPunchListButtonClick = () => {
-    history.push(routes.ADD_PUNCHLIST, { from: location.pathname });
+    history.push(routes.ADD_PUNCHLIST, { from: location.pathname, release_uuid: releaseUuid });
   };
 
   const onAddBugButtonClick = () => {
-    history.push(routes.ADD_BUG, { from: location.pathname });
+    history.push(routes.ADD_BUG, { from: location.pathname, release_uuid: releaseUuid });
   };
 
   const Row = (props) => {
@@ -376,9 +374,7 @@ const ReleaseDetails = ({ history }) => {
               addButtonHeading="PunchList"
               onAddButtonClick={onAddPunchListButtonClick}
               tableHeader="PunchList"
-            >
-              <Route path={routes.ADD_PUNCHLIST} component={AddPunchlist} />
-            </DataTableWrapper>
+            />
           </TabPanel>
           <TabPanel value="5">
             <DataTableWrapper
@@ -387,11 +383,9 @@ const ReleaseDetails = ({ history }) => {
               columns={bugsColumns}
               filename="Bugs"
               addButtonHeading="Bug"
-              onAddBugButtonClick={onAddBugButtonClick}
+              onAddButtonClick={onAddBugButtonClick}
               tableHeader="Bugs"
-            >
-              <Route path={routes.ADD_BUG} component={AddBug} />
-            </DataTableWrapper>
+            />
           </TabPanel>
         </TabContext>
       </Box>

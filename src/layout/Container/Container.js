@@ -15,6 +15,8 @@ import ProductPortfolio from '@pages/ProductPortfolio/ProductPortfolio';
 import UserProfile from '@pages/UserProfile/UserProfile';
 import ReleaseList from '@pages/ReleaseList/ReleaseList';
 import ReleaseDetails from '@pages/ReleaseDetails/ReleaseDetails';
+import AddPunchlist from '@pages/ReleaseDetails/components/AddPunchlist';
+import AddBug from '@pages/ReleaseDetails/components/AddBug';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -48,6 +50,8 @@ const ContainerDashboard = ({ location, history }) => {
               path={routes.APP}
               render={() => <Redirect to={routes.PRODUCT_PORTFOLIO} />}
             />
+            <Route path={routes.ADD_PUNCHLIST} component={AddPunchlist} />
+            <Route path={routes.ADD_BUG} component={AddBug} />
             <Route exact path={`${routes.RELEASE}/:releaseUuid`} component={ReleaseDetails} />
             <Route path={routes.PRODUCT_ROADMAP} component={ProductRoadmap} />
             <Route path={routes.USER_PROFILE} component={UserProfile} />

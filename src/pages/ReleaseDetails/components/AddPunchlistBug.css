@@ -1,0 +1,34 @@
+.apbFormTitle {
+  font-weight: bold;
+  margin-top: 1em;
+  text-align: center;
+}
+
+.apbForm {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.apbSubmit {
+  margin: 24px 0 16px;
+  border-radius: 18px;
+}
+
+.apbButtonContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apbUserStoryButton {
+  margin: 24px 0 16px;
+  border-radius: 18px;
+  float: right;
+}
+
+@media screen and (min-width: 600px) {
+  .apbForm {
+    width: 70%;
+    margin: auto;
+  }
+}
