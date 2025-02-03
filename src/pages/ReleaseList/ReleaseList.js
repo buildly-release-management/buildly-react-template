@@ -124,7 +124,7 @@ const ReleaseList = () => {
       );
 
       const featuresSummaryObj = generateBarChartData(
-          releaseDetails.features,
+        releaseDetails.features,
         'features_data',
       );
 

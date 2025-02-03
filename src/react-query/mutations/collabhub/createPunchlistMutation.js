@@ -19,7 +19,7 @@ export const useCreatePunchlistMutation = (release_uuid, history, redirectTo, di
         displayAlert('success', 'Punchlist created successfully');
         await queryClient.invalidateQueries({ queryKey: ['releaseBugsPunchList', release_uuid] });
         if (history) {
-          history.push(redirectTo);
+          history.push(redirectTo, { tab: '4' });
         }
       },
     },

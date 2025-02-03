@@ -87,6 +87,7 @@ const AddPunchlist = ({ location, history }) => {
       repo: `${org_name}/${repo.value}`,
       repo_access_token: issueCred?.auth_detail?.access_token,
       labs_release_id: release_uuid,
+      labs_product_id: activeProduct,
     };
 
     createPunchlistMutation(formData);
@@ -147,7 +148,7 @@ const AddPunchlist = ({ location, history }) => {
       setConfirmModal(true);
     } else {
       setFormModal(false);
-      history.push(redirectTo);
+      history.push(redirectTo, { tab: '4' });
     }
   };
 
@@ -163,7 +164,7 @@ const AddPunchlist = ({ location, history }) => {
           wantConfirm
           openConfirmModal={openConfirmModal}
           setConfirmModal={setConfirmModal}
-          handleConfirmModal={(e) => history.push(redirectTo)}
+          handleConfirmModal={(e) => history.push(redirectTo, { tab: '4' })}
         >
           {(isCreatingPunchlistLoading || isAllProductLoading || isAllCredentialLoading) && <Loader open={isCreatingPunchlistLoading || isAllProductLoading || isAllCredentialLoading} />}
           <form className="apbForm" noValidate onSubmit={handleSubmit}>

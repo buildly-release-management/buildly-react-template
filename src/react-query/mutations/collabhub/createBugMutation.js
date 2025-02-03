@@ -19,7 +19,7 @@ export const useCreateBugMutation = (release_uuid, history, redirectTo, displayA
         displayAlert('success', 'Bug created successfully');
         await queryClient.invalidateQueries({ queryKey: ['releaseBugsPunchList', release_uuid] });
         if (history) {
-          history.push(redirectTo);
+          history.push(redirectTo, { tab: '5' });
         }
       },
     },

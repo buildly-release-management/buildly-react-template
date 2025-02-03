@@ -37,7 +37,7 @@ import ReleaseForm from './components/ReleaseForm';
 import { punchListColumns, bugsColumns } from './ReleaseConstants';
 import './ReleaseDetails.css';
 
-const ReleaseDetails = ({ history }) => {
+const ReleaseDetails = ({ history, location }) => {
   const { releaseUuid } = useParams();
   const { displayAlert } = useAlert();
 
@@ -50,7 +50,7 @@ const ReleaseDetails = ({ history }) => {
   const [assigneesValues, setAssigneesValues] = useState([]);
   const [barFeatureNames, setBarFeatureNames] = useState([]);
   const [barSummary, setBarSummary] = useState([]);
-  const [value, setValue] = useState('2');
+  const [value, setValue] = useState((location.state && location.state.tab) || '2');
 
   const { data: releaseDetails, isLoading: isReleaseDetailsLoading } = useQuery(
     ['releaseSummary', releaseUuid],
