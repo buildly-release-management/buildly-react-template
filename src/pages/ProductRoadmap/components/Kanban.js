@@ -23,7 +23,7 @@ import {
   FormHelperText,
   ListItemIcon,
   Badge,
-  Divider, Box,
+  Divider,
 } from '@mui/material';
 import {
   AddRounded as AddRoundedIcon,
@@ -38,7 +38,6 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Task as TaskIcon,
-  Sync as SyncIcon,
 } from '@mui/icons-material';
 import Loader from '@components/Loader/Loader';
 import useAlert from '@hooks/useAlert';
@@ -47,9 +46,7 @@ import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuer
 import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
 import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
 import { getAllCommentQuery } from '@react-query/queries/release/getAllCommentQuery';
-import { useUpdateFeatureMutation } from '@react-query/mutations/release/updateFeatureMutation';
-import { useUpdateIssueMutation } from '@react-query/mutations/release/updateIssueMutation';
-import { routes } from '@routes/routesConstants';
+import { useUpdateFeatureIssueMutation } from '@react-query/mutations/release/updateFeatureIssueMutation';
 
 const useStyles = makeStyles((theme) => ({
   noProduct: {
@@ -185,10 +182,7 @@ const Kanban = ({
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
   );
 
-  const { mutate: updateFeatureMutation, isLoading: isUpdatingFeature } = useUpdateFeatureMutation(selectedProduct, history, routes.PRODUCT_ROADMAP_KANBAN, displayAlert);
-  const { mutate: updateIssueMutation, isLoading: isUpdatingIssue } = useUpdateIssueMutation(selectedProduct, history, routes.PRODUCT_ROADMAP_KANBAN, displayAlert);
-
-  const closeOrphanIssuesModal = () => setShow(false);
+  const { mutate: updateFeatureIssueMutation, isLoading: isUpdatingFeatureIssue } = useUpdateFeatureIssueMutation(selectedProduct, displayAlert);
 
   const handleClick = (event, number) => {
     setAnchorEl(event.currentTarget);
@@ -255,7 +249,7 @@ const Kanban = ({
 
   const onDragEnd = (result, columns) => {
     const featCred = _.find(credentials, { auth_detail: { tool_type: 'Feature' } });
-    const issueCred = _.find(credentials, { auth_detail: { tool_type: 'Issue' } });
+    let finalUpdatedData = [];
 
     if (!result.destination) return;
     const { source, destination } = result;
@@ -281,7 +275,6 @@ const Kanban = ({
                 kanban_column_order: index,
               },
             };
-            updateFeatureMutation(updateFeatureData);
             return updateFeatureData;
           }
           return item;
@@ -293,43 +286,68 @@ const Kanban = ({
       const currentStatData = _.find(statuses, { status_uuid: destination.droppableId });
       removed.column_id = currentStatData.status_tracking_id;
 
-      let updateData = {};
-      if (removed.issue_uuid) {
-        removed.assignees = removed.assignees || [];
-        updateData = {
-          ...removed,
-          ...issueCred?.auth_detail,
-        };
-        updateIssueMutation(updateData);
-      } else {
-        // Update kanban_column_order for features in the destination column
-        const updatedDestinationItems = destItems.map((item, index) => {
-          if (item?.feature_uuid === removed?.feature_uuid) {
-            const draggedFeature = {
-              ...removed,
-              feature_detail: {
-                ...removed.feature_detail,
-                kanban_column_order: index,
-              },
-            };
-            updateFeatureMutation(draggedFeature);
+      // Update kanban_column_order for features in the destination column
+      const updatedDestinationItems = _.map(destItems, (item, index) => {
+        if (item?.feature_uuid === removed?.feature_uuid) {
+          const draggedFeature = {
+            ...removed,
+            feature_detail: {
+              ...removed.feature_detail,
+              kanban_column_order: index,
+            },
+          };
 
-            const featureIssues = [];
-            if (removed?.issues?.length) {
-              for (const issue of removed.issues) {
-                issue.status = destination.droppableId;
-                updateIssueMutation(issue);
-                featureIssues.push(issue);
-
-                updateIssueMutation(issue);
-              }
-            }
-
-            draggedFeature.issues = featureIssues;
-            return draggedFeature;
+          const featureIssues = [];
+          if (removed?.issues?.length) {
+            _.forEach(removed.issues, (issue) => {
+              featureIssues.push({ ...issue, status: destination.droppableId });
+            });
           }
+
+          draggedFeature.issues = featureIssues;
+          return draggedFeature;
+        }
+
+        if (item?.feature_detail?.kanban_column_order !== index) {
+          const updatedFeatureData = {
+            ...item,
+            ...featCred?.auth_detail,
+            feature_detail: {
+              ...item.feature_detail,
+              kanban_column_order: index,
+            },
+          };
+          return updatedFeatureData;
+        }
+        return item;
+      });
+
+      // Add to list of features to be updated
+      finalUpdatedData = [...finalUpdatedData, ...updatedSourceItems, ...updatedDestinationItems];
+
+      setColumns({
+        ...columns,
+        [source.droppableId]: {
+          ...sourceColumn,
+          items: [...updatedSourceItems],
+        },
+        [destination.droppableId]: {
+          ...destColumn,
+          items: [...updatedDestinationItems],
+        },
+      });
+    } else {
+      const column = columns[source.droppableId];
+      const copiedItems = [...column.items];
+      const [removed] = copiedItems.splice(source.index, 1);
+      copiedItems.splice(destination.index, 0, removed);
+
+      // Update kanban_column_order for features in the source column
+      let updatedColumnItems = [];
+      if (copiedItems?.length) {
+        updatedColumnItems = copiedItems.map((item, index) => {
           if (item?.feature_detail?.kanban_column_order !== index) {
-            const updatedFeatureData = {
+            const updateFeatureData = {
               ...item,
               ...featCred?.auth_detail,
               feature_detail: {
@@ -337,79 +355,34 @@ const Kanban = ({
                 kanban_column_order: index,
               },
             };
-            updateFeatureMutation(updatedFeatureData);
-            return updatedFeatureData;
+            return updateFeatureData;
           }
           return item;
         });
-
-        setColumns({
-          ...columns,
-          [source.droppableId]: {
-            ...sourceColumn,
-            items: [...updatedSourceItems],
-          },
-          [destination.droppableId]: {
-            ...destColumn,
-            items: [...updatedDestinationItems],
-          },
-        });
       }
-    } else {
-      const column = columns[source.droppableId];
-      const copiedItems = [...column.items];
-      const [removed] = copiedItems.splice(source.index, 1);
-      copiedItems.splice(destination.index, 0, removed);
 
-      _.forEach(copiedItems, (ci, idx) => {
-        let updateData = {};
-        if (ci.issue_uuid) {
-          updateData = {
-            ...ci,
-            ...issueCred?.auth_detail,
-            issue_detail: {
-              ...ci.issue_detail,
-              kanban_column_order: idx,
-            },
-          };
-          updateIssueMutation(updateData);
-        } else {
-          // Update kanban_column_order for features in the source column
-          let updatedColumnItems = [];
-          if (copiedItems?.length) {
-            updatedColumnItems = copiedItems.map((item, index) => {
-              if (item?.feature_detail?.kanban_column_order !== index) {
-                const updateFeatureData = {
-                  ...item,
-                  ...featCred?.auth_detail,
-                  feature_detail: {
-                    ...item.feature_detail,
-                    kanban_column_order: index,
-                  },
-                };
-                updateFeatureMutation(updateFeatureData);
-                return updateFeatureData;
-              }
-              return item;
-            });
-          }
+      // Add to the list of features to be updated
+      finalUpdatedData = [...finalUpdatedData, ...updatedColumnItems];
 
-          setColumns({
-            ...columns,
-            [source.droppableId]: {
-              ...column,
-              items: [...updatedColumnItems],
-            },
-          });
-        }
+      setColumns({
+        ...columns,
+        [source.droppableId]: {
+          ...column,
+          items: [...updatedColumnItems],
+        },
       });
+    }
+
+    // Query to update the features with new kanban_column_order
+    if (finalUpdatedData.length) {
+      updateFeatureIssueMutation(finalUpdatedData);
     }
   };
 
   return (
     <>
-      {(isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading || isUpdatingFeature || isUpdatingIssue) && (
-        <Loader open={isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading || isUpdatingFeature || isUpdatingIssue} />
+      {(isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading || isUpdatingFeatureIssue) && (
+        <Loader open={isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllIssueLoading || isAllCommentLoading || isUpdatingFeatureIssue} />
       )}
       {(_.isEmpty(selectedProduct) || _.toNumber(selectedProduct) === 0) && (
         <Typography className={classes.noProduct} component="div" variant="body1">
@@ -491,7 +464,6 @@ const Kanban = ({
                     <Typography className={classes.title} component="div" variant="body1">
                       {column.name}
                     </Typography>
-
                     <IconButton onClick={(e) => handleAddClick(e, columnId)} size="medium" variant="outlined">
                       <AddRoundedIcon fontSize="small" className={classes.addIcon} />
                     </IconButton>
@@ -511,11 +483,11 @@ const Kanban = ({
                     }}
                     onClick={handleAddClose}
                   >
-                    <MenuItem onClick={(e) => addItem('feat')}>
+                    <MenuItem onClick={() => addItem('feat')}>
                       Add Feature
                     </MenuItem>
                     <Divider />
-                    <MenuItem onClick={(e) => addItem('issue')}>
+                    <MenuItem onClick={() => addItem('issue')}>
                       Add Issue
                     </MenuItem>
                   </Menu>
