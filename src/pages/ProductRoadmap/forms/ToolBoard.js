@@ -1,48 +1,29 @@
-/* eslint-disable no-nested-ternary */
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import _ from 'lodash';
-import makeStyles from '@mui/styles/makeStyles';
 import {
-  useTheme,
-  useMediaQuery,
-  Grid,
-  TextField,
-  Button,
-  MenuItem,
   Autocomplete,
+  Button,
   Chip,
+  Grid,
+  MenuItem,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
+import FormModal from '@components/Modal/FormModal';
 import { getUser } from '@context/User.context';
 import useAlert from '@hooks/useAlert';
 import { getBoardQuery } from '@react-query/queries/product/getBoardQuery';
 import { useCreateBoardMutation } from '@react-query/mutations/product/createBoardMutation.js';
+import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
 import { STATUSTYPES } from '../ProductRoadmapConstants';
-
-const useStyles = makeStyles((theme) => ({
-  form: {
-    width: '100%',
-    marginTop: theme.spacing(1),
-    [theme.breakpoints.up('sm')]: {
-      width: '70%',
-      margin: 'auto',
-    },
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
-    borderRadius: '18px',
-  },
-  formTitle: {
-    fontWeight: 'bold',
-    marginTop: '1em',
-    textAlign: 'center',
-  },
-}));
+import './RoadmapForms.css';
 
 const ToolBoard = ({ history, location }) => {
-  const classes = useStyles();
   const user = getUser();
   const organization = user.organization.organization_uuid;
   const { displayAlert } = useAlert();
@@ -63,6 +44,7 @@ const ToolBoard = ({ history, location }) => {
   const [featBoardID, setFeatBoardID] = useState('');
   const [featStatusList, setFeatStatusList] = useState([]);
   const [status, setStatus] = useState([]);
+  const [orderedLanes, setOrderedLanes] = useState([]);
   const [defaultStatus, setDefaultStatus] = useState('');
 
   const [formError, setFormError] = useState({});
@@ -72,6 +54,12 @@ const ToolBoard = ({ history, location }) => {
     () => getBoardQuery(product_uuid, displayAlert),
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
   );
+  const { data: statuses, isLoading: isAllStatusLoading } = useQuery(
+    ['allStatuses', product_uuid],
+    () => getAllStatusQuery(product_uuid, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
+  );
+
   const { mutate: createBoardMutation, isLoading: isCreatingBoardLoading } = useCreateBoardMutation(organization, product_uuid, history, redirectTo, displayAlert);
 
   useEffect(() => {
@@ -80,6 +68,18 @@ const ToolBoard = ({ history, location }) => {
       setFeatOrgList(boards.feature_tool_detail);
     }
   }, [boards]);
+
+  useEffect(() => {
+    const filteredStatus = _.filter(statuses, { product_uuid });
+    const statusDefault = _.find(filteredStatus, (s) => s.is_default_status);
+    const initialStatuses = _.map(filteredStatus, 'name');
+    setStatus(initialStatuses);
+
+    // Initialize the ordered lanes/statuses
+    const lanesCopy = JSON.parse(JSON.stringify(filteredStatus));
+    setOrderedLanes(lanesCopy.sort((a, b) => (a.order_id > b.order_id ? 1 : -1)));
+    setDefaultStatus((!!statusDefault && statusDefault.name) || '');
+  }, [statuses]);
 
   const closeFormModal = () => {
     const dataHasChanged = featOrgID || featBoardID || issueOrgID
@@ -107,10 +107,12 @@ const ToolBoard = ({ history, location }) => {
   const onStatusChange = (value) => {
     switch (true) {
       case (value.length > status.length):
+        setOrderedLanes([...orderedLanes, { name: _.last(value) }]);
         setStatus([...status, _.last(value)]);
         break;
 
       case (value.length < status.length):
+        setOrderedLanes(orderedLanes.filter((lane) => value.includes(lane.name)));
         setStatus(value);
         break;
 
@@ -148,7 +150,8 @@ const ToolBoard = ({ history, location }) => {
       is_default_status: !!(sts.column_name === defaultStatus),
     }));
 
-    createBoardMutation({ formData, newStatusData });
+    console.log(formData, newStatusData);
+    // createBoardMutation({ formData, newStatusData });
   };
 
   const submitDisabled = () => {
@@ -170,6 +173,31 @@ const ToolBoard = ({ history, location }) => {
     return errorExists;
   };
 
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const items = Array.from(orderedLanes);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setOrderedLanes(items);
+  };
+
+  const getItemStyle = (draggableStyle, isDragging) => ({
+    // some basic styles to make the items look a bit nicer
+    userSelect: 'none',
+    padding: 16,
+    marginBottom: '0 8px 0 0',
+
+    // styles we need to apply on draggables
+    ...draggableStyle,
+  });
+  const getListStyle = (isDraggingOver) => ({
+    display: 'flex',
+    padding: 8,
+    width: '100%',
+  });
+
   return (
     <>
       {openFormModal && (
@@ -177,7 +205,7 @@ const ToolBoard = ({ history, location }) => {
           open={openFormModal}
           handleClose={closeFormModal}
           title="Configure Project Board"
-          titleClass={classes.formTitle}
+          titleClass="tooloBoardFormTitle"
           maxWidth="md"
           wantConfirm
           openConfirmModal={openConfirmModal}
@@ -185,7 +213,7 @@ const ToolBoard = ({ history, location }) => {
           handleConfirmModal={discardFormData}
         >
           {(isBoardLoading || isCreatingBoardLoading) && <Loader open={isBoardLoading || isCreatingBoardLoading} />}
-          <form className={classes.form} noValidate onSubmit={handleSubmit}>
+          <form className="tooloBoardForm" noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
               {!(isBoardLoading || isCreatingBoardLoading) && !_.isEmpty(featOrgList) && (
                 <Grid item xs={12}>
@@ -278,33 +306,73 @@ const ToolBoard = ({ history, location }) => {
               )}
 
               {(!_.isEmpty(status) || !_.isEmpty(featStatusList)) && (
-                <Grid item xs={12}>
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    select
-                    id="defaultStatus"
-                    label="Default Status to be used while creating cards/tasks"
-                    name="defaultStatus"
-                    value={defaultStatus}
-                    autoComplete="defaultStatus"
-                    onChange={(e) => setDefaultStatus(e.target.value)}
-                  >
-                    <MenuItem value="">--------------------</MenuItem>
-                    {!_.isEmpty(status) && _.map(status, (sts, idx) => (
-                      <MenuItem key={`sts-${idx}`} value={sts}>
-                        {sts}
-                      </MenuItem>
-                    ))}
-                    {!_.isEmpty(featStatusList) && _.map(featStatusList, (sts) => (
-                      <MenuItem key={sts.column_id} value={sts.column_name}>
-                        {sts.column_name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
+                <>
+                  {/* Status order */}
+                  <Grid item xs={12}>
+                    <Typography variant="caption" gutterBottom sx={{ display: 'block', marginBottom: 0 }}>Drag to re-order columns</Typography>
+                    <DragDropContext onDragEnd={onDragEnd}>
+                      <Droppable droppableId="orderLanes" direction="horizontal">
+                        {(provided, snapshot) => (
+                          <div ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)} {...provided.droppableProps} className="toolBoardOrderLanesContainer">
+                            {orderedLanes.map((lane, index) => (
+                              <Draggable
+                                key={lane.name}
+                                draggableId={lane.name.toString()}
+                                index={index}
+                              >
+                                {/* eslint-disable-next-line no-shadow */}
+                                {(provided, snapshot) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    style={getItemStyle(
+                                      provided.draggableProps.style,
+                                      snapshot.isDragging,
+                                    )}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className="tooloBoardLaneChip"
+                                  >
+                                    <Chip label={lane.name} variant="outlined" />
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                  </Grid>
+
+                  {/* Default Status */}
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      select
+                      id="defaultStatus"
+                      label="Default Status to be used while creating cards/tasks"
+                      name="defaultStatus"
+                      value={defaultStatus}
+                      autoComplete="defaultStatus"
+                      onChange={(e) => setDefaultStatus(e.target.value)}
+                    >
+                      <MenuItem value="">--------------------</MenuItem>
+                      {!_.isEmpty(status) && _.map(status, (sts, idx) => (
+                        <MenuItem key={`sts-${idx}`} value={sts}>
+                          {sts}
+                        </MenuItem>
+                      ))}
+                      {!_.isEmpty(featStatusList) && _.map(featStatusList, (sts) => (
+                        <MenuItem key={sts.column_id} value={sts.column_name}>
+                          {sts.column_name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                </>
               )}
 
               {!(isBoardLoading || isCreatingBoardLoading) && !_.isEmpty(issueOrgList) && (
@@ -343,7 +411,7 @@ const ToolBoard = ({ history, location }) => {
                   fullWidth
                   variant="contained"
                   color="primary"
-                  className={classes.submit}
+                  className="tooloBoardSubmit"
                   disabled={submitDisabled()}
                 >
                   Configure Board
@@ -357,7 +425,7 @@ const ToolBoard = ({ history, location }) => {
                   variant="contained"
                   color="primary"
                   onClick={discardFormData}
-                  className={classes.submit}
+                  className="tooloBoardSubmit"
                 >
                   Cancel
                 </Button>
