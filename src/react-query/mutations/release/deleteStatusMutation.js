@@ -22,7 +22,7 @@ export const useDeleteStatusMutation = (history, redirectTo, product_uuid, disca
     {
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ['allStatuses', product_uuid] });
-        displayAlert('success', 'Status deleted successfully');
+        displayAlert('success', 'Status(es) deleted successfully');
         discardFormData();
         if (history) {
           history.push(redirectTo);

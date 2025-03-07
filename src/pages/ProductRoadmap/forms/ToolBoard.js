@@ -19,6 +19,9 @@ import { getUser } from '@context/User.context';
 import useAlert from '@hooks/useAlert';
 import { getBoardQuery } from '@react-query/queries/product/getBoardQuery';
 import { useCreateBoardMutation } from '@react-query/mutations/product/createBoardMutation.js';
+import { useCreateStatusMutation } from '@react-query/mutations/release/createStatusMutation';
+import { useDeleteStatusMutation } from '@react-query/mutations/release/deleteStatusMutation';
+import { useUpdateStatusMutation } from '@react-query/mutations/release/updateStatusMutation';
 import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
 import { STATUSTYPES } from '../ProductRoadmapConstants';
 import './RoadmapForms.css';
@@ -30,6 +33,8 @@ const ToolBoard = ({ history, location }) => {
 
   const redirectTo = location.state && location.state.from;
   const product_uuid = location.state && location.state.product_uuid;
+  const editStatus = location.state && location.state.editStatus;
+  const productData = location.state && location.state.productData;
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
@@ -54,7 +59,7 @@ const ToolBoard = ({ history, location }) => {
     () => getBoardQuery(product_uuid, displayAlert),
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
   );
-  const { data: statuses, isLoading: isAllStatusLoading } = useQuery(
+  const { data: statuses, isLoading: isAllStatusLoading, isFetching: isAllStatusFetching } = useQuery(
     ['allStatuses', product_uuid],
     () => getAllStatusQuery(product_uuid, displayAlert),
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
@@ -66,6 +71,16 @@ const ToolBoard = ({ history, location }) => {
     if (!_.isEmpty(boards)) {
       setIssueOrgList(boards.issue_tool_detail);
       setFeatOrgList(boards.feature_tool_detail);
+
+      if (editStatus) {
+        const featOrg = _.find(boards.feature_tool_detail, { org_id: productData?.feature_tool_detail?.org_id });
+        const issueOrg = _.find(boards.issue_tool_detail, { org_id: productData?.issue_tool_detail?.org_id });
+
+        setFeatOrgID(featOrg);
+        setIssueOrgID(issueOrg);
+        setFeatBoardList(featOrg.board_list);
+        setFeatBoardID(_.find(featOrg.board_list, { board_id: productData?.feature_tool_detail?.board_detail?.board_id }));
+      }
     }
   }, [boards]);
 
@@ -77,13 +92,39 @@ const ToolBoard = ({ history, location }) => {
 
     // Initialize the ordered lanes/statuses
     const lanesCopy = JSON.parse(JSON.stringify(filteredStatus));
-    setOrderedLanes(lanesCopy.sort((a, b) => (a.order_id > b.order_id ? 1 : -1)));
+    setOrderedLanes(_.sortBy(lanesCopy, ['order_id']));
     setDefaultStatus((!!statusDefault && statusDefault.name) || '');
   }, [statuses]);
 
+  useEffect(() => {
+    // Initialize the ordered lanes/statuses
+    setOrderedLanes(_.map(featStatusList, (fsl) => ({ name: fsl.column_name })));
+  }, [featStatusList]);
+
+  const discardFormData = () => {
+    setConfirmModal(false);
+    setFormModal(false);
+    if (location && location.state) {
+      history.push(redirectTo);
+    }
+  };
+
+  const { mutate: createStatusMutation, isLoading: isCreatingStatusLoading } = useCreateStatusMutation(history, redirectTo, product_uuid, discardFormData, displayAlert);
+  const { mutate: updateStatusMutation, isLoading: isUpdatingStatusLoading } = useUpdateStatusMutation(history, redirectTo, product_uuid, discardFormData, displayAlert);
+  const { mutate: deleteStatusMutation, isLoading: isDeletingStatusLoading } = useDeleteStatusMutation(history, redirectTo, product_uuid, discardFormData, displayAlert);
+
   const closeFormModal = () => {
-    const dataHasChanged = featOrgID || featBoardID || issueOrgID
-      || !_.isEmpty(status) || !_.isEmpty(featStatusList) || defaultStatus;
+    let dataHasChanged = false;
+    if (!editStatus) {
+      dataHasChanged = featOrgID || featBoardID || issueOrgID || !_.isEmpty(status) || !_.isEmpty(featStatusList) || defaultStatus;
+    } else {
+      dataHasChanged = (
+        !_.isEqual(featOrgID.org_id, productData?.feature_tool_detail?.org_id)
+        || !_.isEqual(featBoardID.board_id, productData?.feature_tool_detail?.board_detail?.board_id)
+        || !_.isEqual(issueOrgID.org_id, productData?.issue_tool_detail?.org_id)
+        || !_.isEqual(_.find(_.filter(statuses, { product_uuid }, (s) => s.is_default_status))?.name, defaultStatus)
+      );
+    }
 
     if (dataHasChanged) {
       setConfirmModal(true);
@@ -92,14 +133,6 @@ const ToolBoard = ({ history, location }) => {
       if (location && location.state) {
         history.push(redirectTo);
       }
-    }
-  };
-
-  const discardFormData = () => {
-    setConfirmModal(false);
-    setFormModal(false);
-    if (location && location.state) {
-      history.push(redirectTo);
     }
   };
 
@@ -112,7 +145,7 @@ const ToolBoard = ({ history, location }) => {
         break;
 
       case (value.length < status.length):
-        setOrderedLanes(orderedLanes.filter((lane) => value.includes(lane.name)));
+        setOrderedLanes(_.filter(orderedLanes, (lane) => value.includes(lane.name)));
         setStatus(value);
         break;
 
@@ -139,19 +172,89 @@ const ToolBoard = ({ history, location }) => {
         board_detail: {},
       },
     };
-    const statusCols = !_.isEmpty(status)
-      ? _.map(status, (sts) => ({ column_name: sts }))
-      : featStatusList;
-    const newStatusData = _.map(statusCols, (sts) => ({
-      product_uuid,
-      name: sts.column_name,
-      description: sts.column_name,
-      status_tracking_id: sts.column_id || null,
-      is_default_status: !!(sts.column_name === defaultStatus),
-    }));
 
-    console.log(formData, newStatusData);
-    // createBoardMutation({ formData, newStatusData });
+    if (!editStatus) {
+      const statusData = _.map(status, (col) => {
+        const index = _.findIndex(orderedLanes, (lane) => lane.name === col);
+        return {
+          product_uuid,
+          name: col,
+          description: col,
+          status_tracking_id: null,
+          is_default_status: _.isEqual(col, defaultStatus),
+          order_id: index,
+        };
+      });
+
+      createBoardMutation(formData);
+
+      if (!_.isEmpty(statusData)) {
+        createStatusMutation(statusData);
+      }
+    } else {
+      let createStatusData = [];
+      let editStatusData = [];
+      let deleteStatusData = [];
+
+      // Existing status
+      const filteredStatus = _.filter(statuses, { product_uuid });
+      const nameList = _.map(filteredStatus, 'name');
+
+      _.forEach(nameList, (name) => {
+        if (!_.includes(status, name)) {
+          const st = _.find(filteredStatus, { name });
+          if (!_.isEmpty(st)) {
+            deleteStatusData = [...deleteStatusData, st];
+          }
+        }
+      });
+
+      _.forEach(status, (st) => {
+        const index = _.findIndex(orderedLanes, (lane) => lane.name === st);
+        if (_.includes(nameList, st)) {
+          const existingStatus = _.find(filteredStatus, { name: st });
+          if (!_.isEmpty(existingStatus)) {
+            if (
+              !_.isEqual(existingStatus.order_id, index)
+              || (existingStatus.is_default_status && !_.isEqual(st, defaultStatus))
+              || (!existingStatus.is_default_status && _.isEqual(st, defaultStatus))
+            ) {
+              editStatusData = [...editStatusData, { ...existingStatus, is_default_status: _.isEqual(st, defaultStatus), order_id: index }];
+            }
+          }
+        } else {
+          createStatusData = [
+            ...createStatusData,
+            {
+              product_uuid,
+              name: st,
+              description: st,
+              status_tracking_id: null,
+              is_default_status: _.isEqual(st, defaultStatus),
+              order_id: index,
+            },
+          ];
+        }
+      });
+
+      if (
+        !_.isEqual(featOrgID.org_id, productData?.feature_tool_detail?.org_id)
+        || !_.isEqual(featBoardID.board_id, productData?.feature_tool_detail?.board_detail?.board_id)
+        || !_.isEqual(issueOrgID.org_id, productData?.issue_tool_detail?.org_id)
+      ) {
+        createBoardMutation(formData);
+      }
+
+      if (!_.isEmpty(deleteStatusData)) {
+        deleteStatusMutation(deleteStatusData);
+      }
+      if (!_.isEmpty(editStatusData)) {
+        updateStatusMutation(editStatusData);
+      }
+      if (!_.isEmpty(createStatusData)) {
+        createStatusMutation(createStatusData);
+      }
+    }
   };
 
   const submitDisabled = () => {
@@ -212,8 +315,21 @@ const ToolBoard = ({ history, location }) => {
           setConfirmModal={setConfirmModal}
           handleConfirmModal={discardFormData}
         >
-          {(isBoardLoading || isCreatingBoardLoading) && <Loader open={isBoardLoading || isCreatingBoardLoading} />}
-          <form className="tooloBoardForm" noValidate onSubmit={handleSubmit}>
+          {(isBoardLoading || isCreatingBoardLoading || isAllStatusLoading || isAllStatusFetching
+            || isCreatingStatusLoading || isDeletingStatusLoading || isUpdatingStatusLoading) && (
+            <Loader
+              open={
+                isBoardLoading
+                || isCreatingBoardLoading
+                || isAllStatusLoading
+                || isAllStatusFetching
+                || isCreatingStatusLoading
+                || isDeletingStatusLoading
+                || isUpdatingStatusLoading
+              }
+            />
+          )}
+          <form className="toolBoardForm" noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
               {!(isBoardLoading || isCreatingBoardLoading) && !_.isEmpty(featOrgList) && (
                 <Grid item xs={12}>
@@ -233,6 +349,7 @@ const ToolBoard = ({ history, location }) => {
                       setFeatOrgID(org);
                       setFeatBoardList(org.board_list);
                     }}
+                    disabled={editStatus && featOrgID}
                   >
                     <MenuItem value="">---------------------------</MenuItem>
                     {_.map(featOrgList, (org) => (
@@ -262,6 +379,7 @@ const ToolBoard = ({ history, location }) => {
                       setFeatBoardID(board);
                       setFeatStatusList(board.column_list);
                     }}
+                    disabled={editStatus && featBoardID}
                   >
                     <MenuItem value="">---------------------------</MenuItem>
                     {_.map(featBoardList, (board) => (
@@ -314,7 +432,7 @@ const ToolBoard = ({ history, location }) => {
                       <Droppable droppableId="orderLanes" direction="horizontal">
                         {(provided, snapshot) => (
                           <div ref={provided.innerRef} style={getListStyle(snapshot.isDraggingOver)} {...provided.droppableProps} className="toolBoardOrderLanesContainer">
-                            {orderedLanes.map((lane, index) => (
+                            {_.map(orderedLanes, (lane, index) => (
                               <Draggable
                                 key={lane.name}
                                 draggableId={lane.name.toString()}
@@ -330,7 +448,7 @@ const ToolBoard = ({ history, location }) => {
                                     )}
                                     {...provided.draggableProps}
                                     {...provided.dragHandleProps}
-                                    className="tooloBoardLaneChip"
+                                    className="toolBoardLaneChip"
                                   >
                                     <Chip label={lane.name} variant="outlined" />
                                   </div>
@@ -392,6 +510,7 @@ const ToolBoard = ({ history, location }) => {
                       const org = e.target.value;
                       setIssueOrgID(org);
                     }}
+                    disabled={editStatus && issueOrgID}
                   >
                     <MenuItem value="">---------------------------</MenuItem>
                     {_.map(issueOrgList, (org) => (
@@ -411,10 +530,10 @@ const ToolBoard = ({ history, location }) => {
                   fullWidth
                   variant="contained"
                   color="primary"
-                  className="tooloBoardSubmit"
+                  className="toolBoardSubmit"
                   disabled={submitDisabled()}
                 >
-                  Configure Board
+                  {editStatus ? 'Update Board' : 'Configure Board'}
                 </Button>
               </Grid>
 
@@ -425,7 +544,7 @@ const ToolBoard = ({ history, location }) => {
                   variant="contained"
                   color="primary"
                   onClick={discardFormData}
-                  className="tooloBoardSubmit"
+                  className="toolBoardSubmit"
                 >
                   Cancel
                 </Button>

@@ -308,6 +308,15 @@ const ProductRoadmap = ({ history }) => {
     });
   };
 
+  const editBoard = () => {
+    history.push(routes.TOOL_BOARD, {
+      from: location.pathname,
+      product_uuid: selectedProduct,
+      editStatus: true,
+      productData: _.find(productData, { product_uuid: selectedProduct }),
+    });
+  };
+
   const syncDataFromTools = (e) => {
     e.preventDefault();
     const featCred = _.find(credentialData, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'feature'));
@@ -503,7 +512,7 @@ const ProductRoadmap = ({ history }) => {
                             createSuggestedFeature={createSuggestedFeature}
                             removeSuggestedFeature={removeSuggestedFeature}
                             showRelatedIssues={showRelatedIssues}
-                            editBoard={configureBoard}
+                            editBoard={editBoard}
                           />
                         )}
                       />
