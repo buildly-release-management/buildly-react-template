@@ -76,10 +76,14 @@ const ToolBoard = ({ history, location }) => {
         const featOrg = _.find(boards.feature_tool_detail, { org_id: productData?.feature_tool_detail?.org_id });
         const issueOrg = _.find(boards.issue_tool_detail, { org_id: productData?.issue_tool_detail?.org_id });
 
-        setFeatOrgID(featOrg);
-        setIssueOrgID(issueOrg);
-        setFeatBoardList(featOrg.board_list);
-        setFeatBoardID(_.find(featOrg.board_list, { board_id: productData?.feature_tool_detail?.board_detail?.board_id }));
+        if (featOrg) {
+          setFeatOrgID(featOrg);
+          setFeatBoardList(featOrg.board_list);
+          setFeatBoardID(_.find(featOrg.board_list, { board_id: productData?.feature_tool_detail?.board_detail?.board_id }));
+        }
+        if (issueOrg) {
+          setIssueOrgID(issueOrg);
+        }
       }
     }
   }, [boards]);
@@ -174,17 +178,32 @@ const ToolBoard = ({ history, location }) => {
     };
 
     if (!editStatus) {
-      const statusData = _.map(status, (col) => {
-        const index = _.findIndex(orderedLanes, (lane) => lane.name === col);
-        return {
-          product_uuid,
-          name: col,
-          description: col,
-          status_tracking_id: null,
-          is_default_status: _.isEqual(col, defaultStatus),
-          order_id: index,
-        };
-      });
+      let statusData = [];
+      if (_.isEmpty(featOrgID)) {
+        statusData = _.map(status, (col) => {
+          const index = _.findIndex(orderedLanes, (lane) => lane.name === col);
+          return {
+            product_uuid,
+            name: col,
+            description: col,
+            status_tracking_id: null,
+            is_default_status: _.isEqual(col, defaultStatus),
+            order_id: index,
+          };
+        });
+      } else {
+        statusData = _.map(featStatusList, (fsl) => {
+          const index = _.findIndex(orderedLanes, (lane) => lane.name === fsl.column_name);
+          return {
+            product_uuid,
+            name: fsl.column_name,
+            description: fsl.column_name,
+            status_tracking_id: null,
+            is_default_status: _.isEqual(fsl.column_name, defaultStatus),
+            order_id: index,
+          };
+        });
+      }
 
       createBoardMutation(formData);
 

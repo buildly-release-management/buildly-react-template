@@ -43,6 +43,7 @@ const useStyles = makeStyles((theme) => ({
   },
   roadmapRoot: {
     marginTop: theme.spacing(2),
+    height: '75%',
   },
   menuRight: {
     width: '100%',
