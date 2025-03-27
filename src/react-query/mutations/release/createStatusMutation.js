@@ -31,7 +31,7 @@ export const useCreateStatusMutation = (history, redirectTo, product_uuid, disca
     },
     {
       onSuccess: async () => {
-        displayAlert('success', 'Status created successfully');
+        displayAlert('success', 'Status(es) created successfully');
         discardFormData();
         if (history) {
           history.push(redirectTo);

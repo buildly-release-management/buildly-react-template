@@ -60,6 +60,7 @@ const useStyles = makeStyles((theme) => ({
     paddingBottom: theme.spacing(4),
     columnGap: '16px',
     alignItems: 'stretch',
+    height: '100%',
   },
   swimlane: {
     borderRadius: '6px',

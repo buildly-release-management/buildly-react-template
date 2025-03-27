@@ -30,7 +30,6 @@ import AddFeatures from './forms/AddFeatures';
 import AddIssues from './forms/AddIssues';
 import Comments from './forms/Comments';
 import IssueSuggestions from './forms/IssueSuggestions';
-import StatusBoard from './forms/StatusBoard';
 import ToolBoard from './forms/ToolBoard';
 import ShowRelatedIssues from './forms/ShowRelatedIssues';
 
@@ -44,6 +43,7 @@ const useStyles = makeStyles((theme) => ({
   },
   roadmapRoot: {
     marginTop: theme.spacing(2),
+    height: '75%',
   },
   menuRight: {
     width: '100%',
@@ -309,11 +309,12 @@ const ProductRoadmap = ({ history }) => {
     });
   };
 
-  const configureStatus = () => {
-    history.push(routes.STATUS_BOARD, {
+  const editBoard = () => {
+    history.push(routes.TOOL_BOARD, {
       from: location.pathname,
       product_uuid: selectedProduct,
-      editStatus: selectedProduct && _.toNumber(selectedProduct) !== 0 && _.includes(_.uniq(_.map(statusData, 'product_uuid')), selectedProduct),
+      editStatus: true,
+      productData: _.find(productData, { product_uuid: selectedProduct }),
     });
   };
 
@@ -452,29 +453,13 @@ const ProductRoadmap = ({ history }) => {
                         <Button
                           variant="contained"
                           color="primary"
-                          onClick={() => {
-                            if (product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
-                            && (
-                              (_.isEqual(_.size(product.third_party_tool), 2) && _.isEmpty(product.feature_tool_detail) && _.isEmpty(product.issue_tool_detail))
-                              || (_.isEqual(_.size(product.third_party_tool), 1) && (_.isEmpty(product.feature_tool_detail) || _.isEmpty(product.issue_tool_detail)))
-                            )) {
-                              configureBoard();
-                            } else {
-                              configureStatus();
-                            }
-                          }}
+                          onClick={configureBoard}
                           className={classes.configBoardButton}
                         >
                           Add Configuration
                         </Button>
                       </Grid>
-                      {product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
-                        && (
-                          (_.isEqual(_.size(product.third_party_tool), 2) && _.isEmpty(product.feature_tool_detail) && _.isEmpty(product.issue_tool_detail))
-                          || (_.isEqual(_.size(product.third_party_tool), 1) && (_.isEmpty(product.feature_tool_detail) || _.isEmpty(product.issue_tool_detail)))
-                        )
-                        ? <Route path={routes.TOOL_BOARD} component={ToolBoard} />
-                        : <Route path={routes.STATUS_BOARD} component={StatusBoard} />}
+                      <Route path={routes.TOOL_BOARD} component={ToolBoard} />
                     </>
                   ) : (
                     <>
@@ -528,15 +513,7 @@ const ProductRoadmap = ({ history }) => {
                             createSuggestedFeature={createSuggestedFeature}
                             removeSuggestedFeature={removeSuggestedFeature}
                             showRelatedIssues={showRelatedIssues}
-                            editBoard={
-                              product && !_.isEmpty(product) && !_.isEmpty(product.third_party_tool)
-                              && (
-                                (_.isEqual(_.size(product.third_party_tool), 2) && _.isEmpty(product.feature_tool_detail) && _.isEmpty(product.issue_tool_detail))
-                                || (_.isEqual(_.size(product.third_party_tool), 1) && (_.isEmpty(product.feature_tool_detail) || _.isEmpty(product.issue_tool_detail)))
-                              )
-                                ? configureBoard
-                                : configureStatus
-                            }
+                            editBoard={editBoard}
                           />
                         )}
                       />
@@ -560,7 +537,6 @@ const ProductRoadmap = ({ history }) => {
                         )}
                       />
                       <Route path={routes.TOOL_BOARD} component={ToolBoard} />
-                      <Route path={routes.STATUS_BOARD} component={StatusBoard} />
                     </>
                   )}
               </div>
