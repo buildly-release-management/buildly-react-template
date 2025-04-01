@@ -32,7 +32,7 @@ export const useUpdateStatusMutation = (history, redirectTo, product_uuid, disca
     {
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ['allStatuses', product_uuid] });
-        displayAlert('success', 'Status updated successfully');
+        displayAlert('success', 'Status(es) updated successfully');
         discardFormData();
         if (history) {
           history.push(redirectTo);

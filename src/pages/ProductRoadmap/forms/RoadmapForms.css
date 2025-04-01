@@ -1,0 +1,32 @@
+.toolBoardForm {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.toolBoardSubmit {
+  margin: 24px 0 16px;
+  border-radius: 18px;
+}
+
+.toolBoardFormTitle {
+  font-weight: bold;
+  margin-top: 1em;
+  text-align: center;
+}
+
+.toolBoardOrderLanesContainer {
+  flex-wrap: wrap;
+  border: 1.5px solid lightgray;
+  padding: 16px 8px;
+}
+
+.toolBoardLaneChip {
+  margin: 8px;
+}
+
+@media screen and (min-width: 600px) {
+  .toolBoardForm {
+    width: 70%;
+    margin: auto;
+  }
+}
