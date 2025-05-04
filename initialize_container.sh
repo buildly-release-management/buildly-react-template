@@ -5,7 +5,7 @@ export GIT_FETCH_HEAD=`cat .git/FETCH_HEAD`
 
 #Read all env variables as output by printenv and put them into an object stored in window.env
 RESULT='window.env = {'
-RESULT+='API_URL: "'$API_URL
+RESULT+='", API_URL: "'$API_URL
 RESULT+='", OAUTH_CLIENT_ID: "'$OAUTH_CLIENT_ID
 RESULT+='", OAUTH_TOKEN_URL: "'$OAUTH_TOKEN_URL
 RESULT+='", GITHUB_CLIENT_ID: "'$GITHUB_CLIENT_ID

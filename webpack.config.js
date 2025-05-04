@@ -3,17 +3,29 @@
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
+const dotenv = require('dotenv');
+const fs = require('fs');
 
-module.exports = (env, argv) => {
-  const fileCopy = env.build === 'local'
-    ? new CopyPlugin([
-      { from: '.env.development.local', to: 'environment.js' },
-    ])
-    : new CopyPlugin([
-      { from: 'window.environment.js', to: 'environment.js' },
-    ]);
-  const webpackConfig = {
+module.exports = (env = {}, argv) => {
+  // Determine the environment file to load
+  const envFile = `.env${env.build ? `.${env.build}` : ''}`;
+  const envPath = path.resolve(__dirname, envFile);
+
+  // Load environment variables from the appropriate .env file
+  const envVars = fs.existsSync(envPath) ? dotenv.config({ path: envPath }).parsed : {};
+
+  // Generate environment.js dynamically
+  const envContent = `window.env = ${JSON.stringify(envVars, null, 2)};`;
+  fs.writeFileSync(path.resolve(__dirname, 'environment.js'), envContent);
+  console.log('Generated environment.js with the following content:', envContent);
+
+  // Convert environment variables to Webpack's DefinePlugin format
+  const defineEnvVars = Object.keys(envVars || {}).reduce((acc, key) => {
+    acc[`process.env.${key}`] = JSON.stringify(envVars[key]);
+    return acc;
+  }, {});
+
+  return {
     entry: ['babel-polyfill', './src/index.js'],
     module: {
       rules: [
@@ -21,63 +33,39 @@ module.exports = (env, argv) => {
           test: /\.(jsx|js)$/,
           include: path.resolve(__dirname, 'src'),
           exclude: /node_modules/,
-          use: [{
+          use: {
             loader: 'babel-loader',
             options: {
               presets: [
-                ['@babel/preset-env', {
-                  targets: 'defaults',
-                }],
+                ['@babel/preset-env', { targets: 'defaults' }],
                 '@babel/preset-react',
               ],
-              plugins: [
-                '@babel/plugin-proposal-class-properties',
-              ],
+              plugins: ['@babel/plugin-proposal-class-properties'],
             },
-          }],
-        },
-        {
-          test: /\.(js|jsx)$/,
-          use: 'react-hot-loader/webpack',
-          include: /node_modules/,
+          },
         },
         {
           test: /\.(css|scss)$/,
-          use: [
-            'style-loader',
-            'css-loader',
-          ],
+          use: ['style-loader', 'css-loader'],
         },
         {
           test: /\.(jpe?g|png|gif|svg)$/i,
-          use: [
-            'file-loader',
-            {
-              loader: 'image-webpack-loader',
-              options: {
-                bypassOnDebug: true,
-                disable: true,
-              },
-            },
-          ],
+          type: 'asset/resource',
+          generator: {
+            filename: 'images/[name][ext]',
+          },
         },
         {
-          test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
-          use: [
-            {
-              loader: 'file-loader',
-              options: {
-                name: '[name].[ext]',
-                outputPath: 'fonts/',
-              },
-            },
-          ],
+          test: /\.(woff(2)?|ttf|eot|otf)$/,
+          type: 'asset/resource',
+          generator: {
+            filename: 'fonts/[name][ext]',
+          },
         },
       ],
     },
     resolve: {
-      extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
-      modules: [path.resolve(__dirname, './src'), 'node_modules'],
+      extensions: ['.js', '.jsx', '.ts', '.tsx'],
       alias: {
         '@assets': path.resolve(__dirname, './src/assets'),
         '@components': path.resolve(__dirname, './src/components'),
@@ -95,14 +83,30 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(__dirname, 'dist/'),
       publicPath: '/',
-      filename: 'bundle.js',
+      filename: '[name].[contenthash].js',
+      chunkFilename: '[name].[contenthash].js',
+      clean: true,
     },
     devServer: {
-      contentBase: path.join(__dirname, 'public/'),
+      static: {
+        directory: path.join(__dirname, 'public/'),
+      },
       port: 3000,
-      publicPath: 'http://localhost:3000/',
       historyApiFallback: true,
-      hotOnly: true,
+      hot: true,
+      setupMiddlewares: (middlewares, devServer) => {
+        devServer.app.get('/environment.js', (req, res) => {
+          const envFilePath = path.resolve(__dirname, 'environment.js');
+          if (fs.existsSync(envFilePath)) {
+            res.setHeader('Content-Type', 'application/javascript');
+            res.sendFile(envFilePath);
+          } else {
+            res.status(404).send('environment.js not found');
+          }
+        });
+
+        return middlewares;
+      },
     },
     plugins: [
       new webpack.HotModuleReplacementPlugin(),
@@ -112,48 +116,12 @@ module.exports = (env, argv) => {
         favicon: './src/assets/favicon.ico',
         hash: true,
       }),
-      fileCopy,
+      new webpack.DefinePlugin(defineEnvVars), // Inject environment variables
     ],
-  };
-
-  if (env && env.build === 'prod') {
-    webpackConfig.mode = 'production';
-    webpackConfig.devtool = false;
-    webpackConfig.performance = {
-      hints: false,
-      maxEntrypointSize: 512000,
-      maxAssetSize: 512000,
-    };
-    webpackConfig.optimization = {
-      namedModules: false,
-      namedChunks: false,
-      nodeEnv: 'production',
-      flagIncludedChunks: true,
-      occurrenceOrder: true,
-      sideEffects: true,
-      usedExports: true,
-      concatenateModules: true,
+    optimization: {
       splitChunks: {
-        cacheGroups: {
-          commons: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendor',
-            chunks: 'all',
-          },
-        },
-        minSize: 30000,
-        maxAsyncRequests: 3,
+        chunks: 'all',
       },
-      noEmitOnErrors: true,
-      minimize: true,
-      removeAvailableModules: true,
-      removeEmptyChunks: true,
-      mergeDuplicateChunks: true,
-    };
-  } else {
-    webpackConfig.mode = 'development';
-    webpackConfig.devtool = 'inline-source-map';
-  }
-
-  return webpackConfig;
+    },
+  };
 };

@@ -15,4 +15,9 @@
   "exclude": [
     "node_modules"
   ],
+  "paths": {
+    "@assets/*": ["./src/assets/*"],
+    "@components/*": ["./src/components/*"],
+    "@redux/*": ["./src/redux/*"]
+  }
 }
