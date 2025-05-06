@@ -8,11 +8,17 @@ const fs = require('fs');
 
 module.exports = (env = {}, argv) => {
   // Determine the environment file to load
-  const envFile = `.env${env.build ? `.${env.build}` : ''}`;
+  const envFile = `.env${env.build === 'local' ? '.development.local' : env.build ? `.${env.build}` : '.development.local'}`;
   const envPath = path.resolve(__dirname, envFile);
 
   // Load environment variables from the appropriate .env file
   const envVars = fs.existsSync(envPath) ? dotenv.config({ path: envPath }).parsed : {};
+
+  // Debugging logs
+  console.log('env.build:', env.build);
+  console.log('Resolved environment file:', envFile);
+  console.log('Environment file path:', envPath);
+  console.log('Environment file exists:', fs.existsSync(envPath));
 
   // Generate environment.js dynamically
   const envContent = `window.env = ${JSON.stringify(envVars, null, 2)};`;
