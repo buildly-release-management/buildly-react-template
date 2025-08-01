@@ -1,39 +1,35 @@
-import { http } from 'midgard-core';
-import _ from 'lodash';
 import { oauthService } from '@modules/oauth/oauth.service';
-
-export const httpService = {
-  makeRequest,
-  sendDirectServiceRequest,
-};
+import request from './main';
 
 /**
  * function to send a Http request to the API
  * @param {string} method - Http verb of the request (GET,POST,PUT,...)
  * @param {string} url - url endpoint to send request to e.g ‘contacts’
- * @param {any} body - data of the request
- * @param {boolean} useJwt - boolean to check if we want to use JWT or not
- * @param {string} contentType - type of content to be requested
- * @param {string} responseType - the expected response type from the server
- * @returns {Observable} - response of the request or error
+ * @param {any=} body - data of the request
+ * @param {boolean=} useJwt - boolean to check if we want to use JWT or not
+ * @param {string=} contentType - type of content to be requested
+ * @param {string=} responseType - the expected response type from the server
+ * @returns response of the request or error
  */
-function makeRequest(method, url, body, useJwt, contentType, responseType) {
+function makeRequest(method, url, body, useJwt, contentType, responseType, skipAuth = false) {
   let token;
   let tokenType;
-  if (useJwt) {
-    tokenType = 'JWT';
-    token = oauthService.getJwtToken();
-  } else {
+
+  if (!skipAuth) {
+    // if (useJwt) {
+    //   tokenType = 'JWT';
+    //   token = oauthService.getJwtToken();
+    // } else {
     tokenType = 'Bearer';
     token = oauthService.getAccessToken();
+    // }
   }
+
   const headers = {
     Authorization: `${tokenType} ${token}`,
-    // 'Content-Type': contentType || 'application/json', // Commenting to make it work for GCP
+    'Content-Type': contentType || 'application/json',
   };
-  if (_.includes(['post', 'put', 'delete'], _.toLower(method))) {
-    headers['Content-Type'] = contentType || 'application/json';
-  }
+
   const options = {
     method,
     data: body,
@@ -41,38 +37,10 @@ function makeRequest(method, url, body, useJwt, contentType, responseType) {
     returnPromise: true,
     responseType: responseType || null,
   };
-  return http.request(url, options);
+
+  return request(url, options);
 }
 
-function sendDirectServiceRequest(url, method, body, service, jsonRequest = true) {
-  let authHeader = 'Bearer ';
-  let apiUrl = '';
-  if (service.toLowerCase() === 'product') {
-    authHeader += `${window.env.PRODUCT_SERVICE_TOKEN}`;
-    apiUrl = `${window.env.PRODUCT_SERVICE_URL}${url}`;
-  } else if (service.toLowerCase() === 'release') {
-    authHeader += `${window.env.RELEASE_SERVICE_TOKEN}`;
-    apiUrl = `${window.env.RELEASE_SERVICE_URL}${url}`;
-  } else {
-    return new Promise(null);
-  }
-  const headers = {
-    Authorization: `${authHeader}`,
-  };
-  if (jsonRequest) {
-    headers['Content-Type'] = 'application/json';
-  } else {
-    headers['Content-Type'] = 'application/pdf';
-  }
-  const options = {
-    method,
-    data: body,
-    headers,
-    returnPromise: true,
-    responseType: null,
-  };
-  if (!jsonRequest) {
-    options.responseType = 'arraybuffer';
-  }
-  return http.request(apiUrl, options);
-}
+export const httpService = {
+  makeRequest,
+};

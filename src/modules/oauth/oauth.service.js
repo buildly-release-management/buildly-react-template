@@ -1,21 +1,42 @@
-import { oauth } from 'midgard-core';
+import authenticateWithCredentials from './main';
 
-export const oauthService = {
-  authenticateWithPasswordFlow,
-  getOauthUser,
-  setOauthUser,
-  hasValidAccessToken,
-  getAccessToken,
-  setAccessToken,
-  getJwtToken,
-  logout,
-  setCurrentCoreUser,
-};
+/**
+ * Returns the current access token.
+ */
+function getAccessToken() {
+  const tokenObj = JSON.parse(localStorage.getItem('token'));
+  if (tokenObj) {
+    return tokenObj.access;
+  }
+  return null;
+}
+
+/**
+ * Returns the current JWT token.
+ */
+function getJwtToken() {
+  const tokenObj = JSON.parse(localStorage.getItem('token'));
+  if (tokenObj) {
+    return tokenObj.access_token_jwt;
+  }
+  return null;
+}
+
+/**
+ * gets the oauthuser from localstorage
+ * @returns {object} oauthUser
+ */
+function getOauthUser() {
+  const oauthUser = JSON.parse(localStorage.getItem('oauthUser'));
+  if (oauthUser) {
+    return oauthUser;
+  }
+  return null;
+}
 
 /**
  * authenticates user using oauth password flow
- * @param {{ username: string; password: string }} credentials
- * @returns {Observable<any>}
+ * @param {{username: string; password: string}} credentials
  */
 function authenticateWithPasswordFlow(credentials) {
   const oauthOptions = {
@@ -23,18 +44,7 @@ function authenticateWithPasswordFlow(credentials) {
     tokenUrl: window.env.OAUTH_TOKEN_URL,
     returnPromise: true,
   };
-  return oauth.authenticateWithCredentials(credentials, oauthOptions);
-}
-
-/**
- * gets the oauthuser from localstorage
- * @returns {} oauthUser
- */
-function getOauthUser() {
-  const oauthUser = JSON.parse(localStorage.getItem('oauthUser'));
-  if (oauthUser) {
-    return oauthUser;
-  }
+  return authenticateWithCredentials(credentials, oauthOptions);
 }
 
 /**
@@ -71,19 +81,21 @@ function hasValidAccessToken() {
 }
 
 /**
- * sets access token in the local storage and adds expires_at key that indicates the token expiration unix timestamp
+ * sets access token in the local storage and adds expires_at key
+ * that indicates the token expiration unix timestamp
  * @param token - the token response
  */
 function setAccessToken(token) {
   if (token) {
     localStorage.setItem('token', JSON.stringify(token));
-    if (token.expires_in) {
-      const expiresInMilliSeconds = token.expires_in * 1000;
-      const now = new Date();
-      const expiresAt = now.getTime() + expiresInMilliSeconds;
-      localStorage.setItem('expires_at', expiresAt.toString());
-      localStorage.setItem('token_stored_at', now.toString());
-    }
+    const expires_in = 3600;
+    // if (token.expires_in) {
+    const expiresInMilliSeconds = expires_in * 1000;
+    const now = new Date();
+    const expiresAt = now.getTime() + expiresInMilliSeconds;
+    localStorage.setItem('expires_at', expiresAt.toString());
+    localStorage.setItem('token_stored_at', now.toString());
+    // }
   }
 }
 
@@ -97,26 +109,17 @@ function logout() {
     localStorage.removeItem('token_stored_at');
     localStorage.removeItem('oauthUser');
     localStorage.removeItem('currentUser');
-    localStorage.removeItem('activeProduct');
   }
 }
 
-/**
- * Returns the current access_token.
- */
-function getAccessToken() {
-  const tokenObj = JSON.parse(localStorage.getItem('token'));
-  if (tokenObj) {
-    return tokenObj.access_token;
-  }
-}
-
-/**
- * Returns the current JWT token.
- */
-function getJwtToken() {
-  const tokenObj = JSON.parse(localStorage.getItem('token'));
-  if (tokenObj) {
-    return tokenObj.access_token_jwt;
-  }
-}
+export const oauthService = {
+  authenticateWithPasswordFlow,
+  getOauthUser,
+  setOauthUser,
+  hasValidAccessToken,
+  getAccessToken,
+  setAccessToken,
+  getJwtToken,
+  logout,
+  setCurrentCoreUser,
+};
