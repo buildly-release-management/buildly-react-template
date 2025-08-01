@@ -22,7 +22,8 @@ export const getProductReportQuery = async (product_uuid, displayAlert) => {
     console.log('getProductReportQuery: Full URL will be:', `${window.env.API_URL}${url}`);
     
     // Log authentication details (without exposing sensitive data)
-    const hasToken = !!window.localStorage.getItem('access_token') || !!window.localStorage.getItem('authToken');
+    const tokenObj = JSON.parse(localStorage.getItem('token') || '{}');
+    const hasToken = !!(tokenObj.access || window.localStorage.getItem('access_token') || window.localStorage.getItem('authToken'));
     console.log('getProductReportQuery: Has authentication token:', hasToken);
     
     // Test: Try to fetch the product details first to verify the product exists
