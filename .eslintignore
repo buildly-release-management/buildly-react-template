@@ -1,1 +1,6 @@
+# Standard ignores
 jsconfig.json
+node_modules/
+build/
+dist/
+*.min.js

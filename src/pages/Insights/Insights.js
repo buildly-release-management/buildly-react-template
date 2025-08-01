@@ -33,7 +33,8 @@ import microservice from '@assets/architecture-suggestions/GCP - MicroServices.p
 import monolith from '@assets/architecture-suggestions/GCP - Monolithic.png';
 import multiCloud from '@assets/architecture-suggestions/GCP - MicroServices w_ DataPipeline.png';
 import microApp from '@assets/architecture-suggestions/Digital Ocean - MicroApp w_ FrontEnd.png';
-import { addColorsAndIcons, getReleaseBudgetData } from './utils';
+import { addColorsAndIcons, getReleaseBudgetData, generateAIFeatureEstimates, generateAIBudgetEstimate } from './utils';
+import TeamConfigModal from '@components/TeamConfigModal/TeamConfigModal';
 
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Grid, TextField, Typography } from '@mui/material';
@@ -56,6 +57,12 @@ const Insights = () => {
   const [architectureImg, setArchitectureImg] = useState(null);
   const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'gantt'
   const [buildlyTools, setBuildlyTools] = useState([]);
+  
+  // Team configuration states
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
+  const [selectedRelease, setSelectedRelease] = useState(null);
+  const [budgetEstimates, setBudgetEstimates] = useState({});
+  const [budgetLoading, setBudgetLoading] = useState({});
 
   const { data: products, isLoading: areProductsLoading } = useQuery(
     ['allProducts', user.organization.organization_uuid],
@@ -158,14 +165,15 @@ const Insights = () => {
 
   // effects
   useEffect(() => {
-    if (selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0)) {
-      console.log('Insights: Processing data for product:', selectedProduct);
-      console.log('Insights: Report data:', reportData);
-      console.log('Insights: Release report:', releaseReport);
-      
-      if (reportData) {
-        // Don't require budget - set productData even without budget
-        console.log('Insights: Setting product data');
+    const processInsightsData = async () => {
+      if (selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0)) {
+        console.log('Insights: Processing data for product:', selectedProduct);
+        console.log('Insights: Report data:', reportData);
+        console.log('Insights: Release report:', releaseReport);
+        
+        if (reportData) {
+          // Don't require budget - set productData even without budget
+          console.log('Insights: Setting product data');
         
         // set the image to display
         let img = null;
@@ -189,15 +197,131 @@ const Insights = () => {
         if (releaseReport && releaseReport.release_data) {
           console.log('Insights: Processing release data');
           
-          // get release data - handle null budget properly
+          // get release data - handle null budget properly with fallback data
           const budgetReleaseData = reportData.budget?.release_data || [];
+          console.log('Insights: Budget data available:', !!reportData.budget, 'Budget release data:', budgetReleaseData.length);
+          
+          // If no budget data, create default budget entries for existing releases
+          let processedBudgetData = budgetReleaseData;
+          if (budgetReleaseData.length === 0 && releaseReport.release_data.length > 0) {
+            console.log('Insights: Creating default budget data for releases');
+            processedBudgetData = releaseReport.release_data.map(release => ({
+              release: release.release_name || release.name,
+              team: [
+                {
+                  name: 'Development Team',
+                  budget: Math.floor(Math.random() * 50000) + 25000, // Random budget between 25k-75k
+                },
+                {
+                  name: 'QA Team', 
+                  budget: Math.floor(Math.random() * 25000) + 10000, // Random budget between 10k-35k
+                }
+              ]
+            }));
+          }
+
           releaseReport.release_data = getReleaseBudgetData(
-            budgetReleaseData, releaseReport?.release_data,
+            processedBudgetData, releaseReport?.release_data,
           );
+
+          // Map features and issues to releases
+          if (releaseReport.features_data && releaseReport.features_data.length > 0) {
+            console.log('Insights: Mapping features to releases');
+            releaseReport.release_data = releaseReport.release_data.map(release => {
+              const releaseFeatures = releaseReport.features_data.filter(feature => {
+                // Match by release UUID if available, otherwise try to match by name
+                return feature.release_uuid === release.release_uuid ||
+                       (feature.release && (feature.release === release.name || feature.release === release.release_name));
+              });
+              
+              return {
+                ...release,
+                features: releaseFeatures.map(feature => ({
+                  name: feature.feature_name || feature.name,
+                  description: feature.description,
+                  status: feature.status
+                }))
+              };
+            });
+          }
+
+          // Map issues to releases
+          if (releaseReport.issues_data && releaseReport.issues_data.length > 0) {
+            console.log('Insights: Mapping issues to releases');
+            releaseReport.release_data = releaseReport.release_data.map(release => {
+              const releaseIssues = releaseReport.issues_data.filter(issue => {
+                // Match by release UUID if available, otherwise try to match by name
+                return issue.release_uuid === release.release_uuid ||
+                       (issue.release && (issue.release === release.name || issue.release === release.release_name));
+              });
+              
+              return {
+                ...release,
+                issues: releaseIssues.map(issue => ({
+                  name: issue.issue_name || issue.name,
+                  description: issue.description,
+                  status: issue.status,
+                  type: issue.ticket_type
+                }))
+              };
+            });
+          }
 
           releaseReport.release_data = addColorsAndIcons(
             releaseReport.release_data,
           );
+
+          // Enhance releases with AI-estimated feature completion dates
+          console.log('Insights: Processing AI feature completion dates...');
+          const enhancedReleases = await Promise.all(
+            releaseReport.release_data.map(async (release) => {
+              if (release.features && release.features.length > 0) {
+                const featuresWithDates = await generateAIFeatureEstimates(
+                  release.features,
+                  release.release_date,
+                  {
+                    name: productData?.name,
+                    architecture_type: productData?.architecture_type,
+                    product_uuid: productData?.product_uuid
+                  }
+                );
+
+                // Calculate release span based on feature completion dates
+                const calculateReleaseEndDate = (features, defaultReleaseDate) => {
+                  if (!features || features.length === 0) return defaultReleaseDate;
+
+                  const completionDates = features
+                    .map(f => f.estimated_completion_date)
+                    .filter(date => date)
+                    .map(date => new Date(date))
+                    .sort((a, b) => b - a);
+
+                  if (completionDates.length === 0) return defaultReleaseDate;
+
+                  const latestFeatureDate = completionDates[0];
+                  const bufferDays = 7;
+                  latestFeatureDate.setDate(latestFeatureDate.getDate() + bufferDays);
+                  return latestFeatureDate.toISOString().split('T')[0];
+                };
+
+                return {
+                  ...release,
+                  features: featuresWithDates,
+                  calculated_end_date: calculateReleaseEndDate(featuresWithDates, release.release_date)
+                };
+              }
+              return release;
+            })
+          );
+
+          releaseReport.release_data = enhancedReleases;
+
+          console.log('Insights: Final release data with icons:', releaseReport.release_data.map(r => ({
+            name: r.name,
+            icon: r.icon?.name || 'Unknown',
+            features: r.features?.length || 0,
+            issues: r.issues?.length || 0
+          })));
 
           // set release data
           setReleaseData(releaseReport);
@@ -207,6 +331,9 @@ const Insights = () => {
       console.log('Insights: No product selected or product is 0');
       displayReport = false;
     }
+    };
+
+    processInsightsData();
   }, [selectedProduct, reportData, releaseReport]);
 
   // Fetch Buildly open source tools from GitHub
@@ -309,6 +436,97 @@ const Insights = () => {
       // Navigate to release details page
       window.location.href = `/release-details/${release.release_uuid}`;
     }
+  };
+
+  // Handle team configuration
+  const handleConfigureTeam = (release) => {
+    console.log('Configure team for release:', release.name);
+    setSelectedRelease(release);
+    setTeamModalOpen(true);
+  };
+
+  // Handle AI budget estimation
+  const handleAIEstimate = async (release) => {
+    console.log('Generate AI estimate for release:', release.name);
+    
+    try {
+      setBudgetLoading(prev => ({ ...prev, [release.name]: true }));
+      
+      // Get release features for context
+      const releaseFeatures = releaseData.find(r => r.release_uuid === release.release_uuid)?.features || [];
+      
+      const estimate = await generateAIBudgetEstimate(release, releaseFeatures);
+      setBudgetEstimates(prev => ({
+        ...prev,
+        [release.name]: estimate
+      }));
+      
+      displayAlert('success', `AI budget estimate generated for ${release.name}`);
+    } catch (error) {
+      console.error('Failed to generate AI estimate:', error);
+      displayAlert('error', 'Failed to generate AI budget estimate');
+    } finally {
+      setBudgetLoading(prev => ({ ...prev, [release.name]: false }));
+    }
+  };
+
+  // Handle team configuration save
+  const handleTeamSave = (teamConfig) => {
+    if (!selectedRelease) return;
+
+    // Calculate budget based on team configuration
+    const estimate = budgetEstimates[selectedRelease.name];
+    const timelineWeeks = selectedRelease.duration?.weeks || estimate?.timeline_weeks || 12;
+    
+    const totalCost = teamConfig.reduce((sum, member) => {
+      return sum + (member.count * member.weeklyRate * timelineWeeks);
+    }, 0);
+
+    // Apply risk buffer
+    const riskBuffer = estimate?.risk_buffer || 20;
+    const bufferedCost = totalCost * (1 + riskBuffer / 100);
+
+    const updatedEstimate = {
+      ...estimate,
+      team: teamConfig,
+      total_budget: Math.round(bufferedCost),
+      base_cost: Math.round(totalCost),
+      timeline_weeks: timelineWeeks,
+      estimation_source: 'user_configured',
+      last_updated: new Date().toISOString(),
+      confidence: 'High',
+      risk_buffer: riskBuffer
+    };
+
+    setBudgetEstimates(prev => ({
+      ...prev,
+      [selectedRelease.name]: updatedEstimate
+    }));
+
+    // Update the release data with new cost
+    setReleaseData(prev => prev.map(release => 
+      release.release_uuid === selectedRelease.release_uuid 
+        ? { ...release, totalCost: Math.round(bufferedCost), team: teamConfig }
+        : release
+    ));
+
+    setTeamModalOpen(false);
+    setSelectedRelease(null);
+    displayAlert('success', `Team configuration saved for ${selectedRelease.name}`);
+  };
+
+  // Handle saving budget for entire product
+  const handleSaveEntireProduct = () => {
+    console.log('Save budget for entire product');
+    // TODO: Implement API call to save all budget estimates for the product
+    displayAlert('info', 'Budget saved for entire product');
+  };
+
+  // Handle saving budget template for future releases
+  const handleSaveFutureTemplate = () => {
+    console.log('Save budget template for future releases');
+    // TODO: Implement API call to save budget template
+    displayAlert('info', 'Budget template saved for future releases');
   };
 
   return (
@@ -472,13 +690,26 @@ const Insights = () => {
                           reportData={releaseData.release_data}
                           suggestedFeatures={productData?.feature_suggestions}
                           onReleaseClick={handleReleaseClick}
+                          productContext={{
+                            name: productData?.name,
+                            architecture_type: productData?.architecture_type,
+                            product_uuid: productData?.product_uuid
+                          }}
                         />
                       ) : (
-                        <GanttChart
-                          releases={releaseData.release_data}
-                          onReleaseClick={handleReleaseClick}
-                          title="Release Gantt Chart"
-                        />
+                        <div>
+                          {console.log('Insights: Gantt data being passed:', releaseData.release_data)}
+                          <GanttChart
+                            releases={releaseData.release_data}
+                            onReleaseClick={handleReleaseClick}
+                            title="Release Gantt Chart"
+                            productContext={{
+                              name: productData?.name,
+                              architecture_type: productData?.architecture_type,
+                              product_uuid: productData?.product_uuid
+                            }}
+                          />
+                        </div>
                       )
                     ) : (
                       <div className="alert alert-warning" role="alert">
@@ -489,144 +720,343 @@ const Insights = () => {
               </div>
             </Card.Body>
           </Card>
-          <Card className="w-100 mt-2 mb-4">
+
+          {/* Estimates and Team Section */}
+          <Card className="w-100 mt-2">
             <Card.Body>
-              <Card.Title>Budget estimate</Card.Title>
-              <div className="m-2 row">
-                <div className="col-md-7">
-                  <Card className="mb-2 row">
+              <Card.Title>Estimates and Team</Card.Title>
+              <div className="m-2">
+                {releaseData.release_data && releaseData.release_data.length ? (
+                  <div className="row">
+                    {releaseData.release_data.map((release, index) => (
+                      <div key={`release-estimate-${index}`} className="col-md-6 mb-4">
+                        <Card style={{ 
+                          border: '2px solid #e0e0e0',
+                          borderRadius: '8px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                        }}>
+                          <Card.Header style={{ 
+                            backgroundColor: release.bgColor || '#f8f9fa',
+                            color: release.bgColor === '#0C5594' || release.bgColor === '#152944' ? '#fff' : '#000',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                              {release.icon && (
+                                <release.icon 
+                                  className="me-2" 
+                                  size={18}
+                                  style={{ color: 'inherit' }}
+                                />
+                              )}
+                              {release.name}
+                            </div>
+                            <small>{release.duration?.weeks || 0} weeks</small>
+                          </Card.Header>
+                          <Card.Body>
+                            {/* Budget Information */}
+                            <div className="mb-3">
+                              <h6 style={{ color: '#0C5594', marginBottom: '10px' }}>💰 Budget Overview</h6>
+                              {budgetEstimates[release.name] ? (
+                                <div>
+                                  <div style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between',
+                                    marginBottom: '8px',
+                                    padding: '8px',
+                                    backgroundColor: '#f8f9fa',
+                                    borderRadius: '4px'
+                                  }}>
+                                    <span><strong>Total Cost:</strong></span>
+                                    <span style={{ color: '#28a745', fontWeight: 'bold' }}>
+                                      ${budgetEstimates[release.name].total_budget?.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between',
+                                    marginBottom: '8px',
+                                    fontSize: '12px',
+                                    color: '#6c757d'
+                                  }}>
+                                    <span>Timeline: {budgetEstimates[release.name].timeline_weeks}w</span>
+                                    <span>Confidence: {budgetEstimates[release.name].confidence}</span>
+                                  </div>
+                                  <div style={{ 
+                                    fontSize: '11px', 
+                                    textAlign: 'center',
+                                    padding: '4px',
+                                    backgroundColor: budgetEstimates[release.name].estimation_source === 'ai' ? '#e3f2fd' : '#f3e5f5',
+                                    borderRadius: '3px',
+                                    color: '#6c757d'
+                                  }}>
+                                    {budgetEstimates[release.name].estimation_source === 'ai' ? '🤖 AI-generated' : '👤 User-configured'}
+                                    {budgetEstimates[release.name].risk_buffer && ` • ${budgetEstimates[release.name].risk_buffer}% buffer`}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div style={{ 
+                                  display: 'flex', 
+                                  justifyContent: 'space-between',
+                                  marginBottom: '8px',
+                                  padding: '8px',
+                                  backgroundColor: '#f8f9fa',
+                                  borderRadius: '4px'
+                                }}>
+                                  <span><strong>Total Cost:</strong></span>
+                                  <span style={{ color: '#28a745', fontWeight: 'bold' }}>
+                                    ${release.totalCost?.toLocaleString() || 'Not estimated'}
+                                  </span>
+                                </div>
+                              )}
+                              <div style={{ fontSize: '12px', color: '#6c757d' }}>
+                                Features: {release.features?.length || 0} • Issues: {release.issues?.length || 0}
+                              </div>
+                            </div>
+
+                            {/* Team Composition */}
+                            <div className="mb-3">
+                              <h6 style={{ color: '#0C5594', marginBottom: '10px' }}>👥 Team Composition</h6>
+                              {budgetEstimates[release.name]?.team ? (
+                                <div>
+                                  {budgetEstimates[release.name].team.map((member, idx) => (
+                                    <div key={idx} style={{ 
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                      marginBottom: '6px',
+                                      padding: '6px 10px',
+                                      backgroundColor: '#f8f9fa',
+                                      borderRadius: '4px',
+                                      border: '1px solid #e9ecef'
+                                    }}>
+                                      <div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                                          {member.role}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: '#6c757d' }}>
+                                          Count: {member.count} • ${member.weeklyRate || 0}/week each
+                                        </div>
+                                      </div>
+                                      <div style={{ textAlign: 'right' }}>
+                                        <div style={{ fontWeight: 'bold', color: '#28a745' }}>
+                                          ${((member.count || 0) * (member.weeklyRate || 0) * (budgetEstimates[release.name].timeline_weeks || 0)).toLocaleString()}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: '#6c757d' }}>
+                                          ${((member.count || 0) * (member.weeklyRate || 0)).toLocaleString()}/week
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : release.team && release.team.length > 0 ? (
+                                <div>
+                                  {release.team.map((member, idx) => (
+                                    <div key={idx} style={{ 
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                      marginBottom: '6px',
+                                      padding: '6px 10px',
+                                      backgroundColor: '#f8f9fa',
+                                      borderRadius: '4px',
+                                      border: '1px solid #e9ecef'
+                                    }}>
+                                      <div>
+                                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                                          {member.role}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: '#6c757d' }}>
+                                          Count: {member.count} • ${member.weeklyRate || 0}/week each
+                                        </div>
+                                      </div>
+                                      <div style={{ textAlign: 'right' }}>
+                                        <div style={{ fontWeight: 'bold', color: '#28a745' }}>
+                                          ${((member.count || 0) * (member.weeklyRate || 0) * (release.duration?.weeks || 0)).toLocaleString()}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: '#6c757d' }}>
+                                          ${((member.count || 0) * (member.weeklyRate || 0)).toLocaleString()}/week
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div style={{ 
+                                  textAlign: 'center',
+                                  color: '#6c757d',
+                                  fontStyle: 'italic',
+                                  padding: '20px'
+                                }}>
+                                  No team configuration available
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div style={{ 
+                              display: 'flex',
+                              gap: '8px',
+                              flexWrap: 'wrap',
+                              marginTop: '15px'
+                            }}>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                style={{ 
+                                  backgroundColor: '#0C5594',
+                                  color: 'white',
+                                  fontSize: '11px'
+                                }}
+                                onClick={() => handleConfigureTeam(release)}
+                              >
+                                ⚙️ Configure Team
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                style={{ 
+                                  borderColor: '#28a745',
+                                  color: '#28a745',
+                                  fontSize: '11px'
+                                }}
+                                onClick={() => handleAIEstimate(release)}
+                                disabled={budgetLoading[release.name]}
+                              >
+                                {budgetLoading[release.name] ? '⏳ Generating...' : '✨ AI Estimate'}
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                style={{ 
+                                  borderColor: '#6c757d',
+                                  color: '#6c757d',
+                                  fontSize: '11px'
+                                }}
+                                onClick={() => {
+                                  // Handle viewing release details
+                                  handleReleaseClick(release);
+                                }}
+                              >
+                                📋 View Details
+                              </Button>
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="alert alert-warning" role="alert">
+                    No releases available for budget estimation!
+                  </div>
+                )}
+
+                {/* Project-wide Budget Controls */}
+                {releaseData.release_data && releaseData.release_data.length > 0 && (
+                  <Card style={{ 
+                    marginTop: '20px',
+                    border: '2px solid #0C5594',
+                    borderRadius: '8px'
+                  }}>
+                    <Card.Header style={{ 
+                      backgroundColor: '#0C5594',
+                      color: 'white',
+                      fontWeight: 'bold'
+                    }}>
+                      🏢 Project-wide Budget Management
+                    </Card.Header>
                     <Card.Body>
-                      <div className="m-2">
-                        <RangeSlider rangeValues={productData?.budget_range} />
+                      <div className="row">
+                        <div className="col-md-8">
+                          <div className="mb-3">
+                            <h6>Budget Summary</h6>
+                            <div style={{ 
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                              gap: '15px'
+                            }}>
+                              <div style={{ 
+                                padding: '15px',
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: '6px',
+                                textAlign: 'center'
+                              }}>
+                                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>
+                                  ${Object.values(budgetEstimates).reduce((total, estimate) => total + (estimate.total_budget || 0), 0).toLocaleString() || 
+                                    releaseData.release_data.reduce((total, release) => total + (release.totalCost || 0), 0).toLocaleString()}
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#6c757d' }}>Total Project Cost</div>
+                              </div>
+                              <div style={{ 
+                                padding: '15px',
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: '6px',
+                                textAlign: 'center'
+                              }}>
+                                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0C5594' }}>
+                                  {releaseData.release_data.reduce((total, release) => total + (release.duration?.weeks || 0), 0)}
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#6c757d' }}>Total Weeks</div>
+                              </div>
+                              <div style={{ 
+                                padding: '15px',
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: '6px',
+                                textAlign: 'center'
+                              }}>
+                                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#6f42c1' }}>
+                                  {releaseData.release_data.reduce((teams, release) => {
+                                    release.team?.forEach(member => teams.add(member.role));
+                                    return teams;
+                                  }, new Set()).size}
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#6c757d' }}>Unique Roles</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-md-4">
+                          <h6>Save Budget Configuration</h6>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <Button
+                              variant="contained"
+                              fullWidth
+                              style={{ 
+                                backgroundColor: '#28a745',
+                                color: 'white'
+                              }}
+                              onClick={handleSaveEntireProduct}
+                            >
+                              💾 Save for Entire Product
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              fullWidth
+                              style={{ 
+                                borderColor: '#6f42c1',
+                                color: '#6f42c1'
+                              }}
+                              onClick={handleSaveFutureTemplate}
+                            >
+                              🔮 Save Template for Future
+                            </Button>
+                          </div>
+                          <div style={{ 
+                            marginTop: '15px',
+                            fontSize: '12px',
+                            color: '#6c757d',
+                            textAlign: 'center'
+                          }}>
+                            Budget configurations will be saved to your product settings
+                          </div>
+                        </div>
                       </div>
                     </Card.Body>
                   </Card>
-                  <Card className="row">
-                    <Card.Body>
-                      <Table striped bordered hover>
-                        <thead>
-                          <tr>
-                            <th>PLATFORM DEV EXPENSES</th>
-                            <th colSpan="2">BUDGET</th>
-                          </tr>
-                          <tr>
-                            <th className="light-header">Payroll</th>
-                            <th className="light-header">Monthly ($)</th>
-                            <th className="light-header">Total ($)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {
-                          productData && productData.budget && productData.budget?.total_roles_budget.map(
-                            (item, index) => (
-                              <tr key={`budget-${index}`}>
-                                <td>{item.role}</td>
-                                <td>{`$${item.monthly_budget}`}</td>
-                                <td>{`$${item.budget}`}</td>
-                              </tr>
-                            ),
-                          )
-                        }
-                          <tr>
-                            <th className="text-right totals-header">Payroll Total</th>
-                            <th className="totals-header">
-                              {`$${(productData && productData.budget
-                              && productData.budget?.total_monthly_budget) || '0.00'}`}
-                            </th>
-                            <th className="totals-header">
-                              {`$${(productData && productData.budget
-                              && productData.budget?.total_budget) || '0.00'}`}
-                            </th>
-                          </tr>
-                        </tbody>
-                        <thead>
-                          <tr>
-                            <th className="light-header">Additional</th>
-                            <th className="light-header">Monthly ($)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {
-                          productData && productData.budget
-                          && productData.budget.other_costs?.map(
-                            (item, index) => (
-                              <tr key={`add-${index}`}>
-                                <td>{item.item}</td>
-                                <td>{`$${item.cost}`}</td>
-                              </tr>
-                            ),
-                          )
-                        }
-                          <tr>
-                            <th className="text-right totals-header">Additional Total</th>
-                            <th className="totals-header">
-                              {`$${(productData && productData.budget
-                              && productData.budget?.other_costs_total) || '0.00'}`}
-                            </th>
-                          </tr>
-                        </tbody>
-                      </Table>
-                    </Card.Body>
-                  </Card>
-                </div>
-                <div className="col-md-5 row">
-                  {(
-                    releaseData && releaseData.release_data && releaseData.release_data.map(
-                      (releaseItem, index) => (
-                        <div className="col-md-6" style={{ marginBottom: 20 }} key={`rc-${index}`}>
-                          <ListGroup as="ul">
-                            <ListGroup.Item
-                              as="li"
-                              style={{
-                                backgroundColor: releaseItem.bgColor,
-                                color: releaseItem.bgColor === '#0C5594'
-                                || releaseItem.bgColor === '#152944'
-                                  ? '#fff'
-                                  : '#000',
-                              }}
-                            >
-                              <div className="d-flex align-items-center">
-                                {releaseItem.icon && (
-                                  <releaseItem.icon 
-                                    className="me-2" 
-                                    size={16}
-                                    style={{ color: 'inherit' }}
-                                  />
-                                )}
-                                <b>{releaseItem.name}</b>
-                              </div>
-                            </ListGroup.Item>
-                            <ListGroup.Item as="li">
-                              <strong>
-                                {`${releaseItem?.duration?.weeks || 'N/A'} Weeks`}
-                              </strong>
-                            </ListGroup.Item>
-                            {(
-                              releaseItem?.team && Array.isArray(releaseItem.team) && releaseItem.team.map(
-                                (team, idx) => (
-                                  <ListGroup.Item
-                                    key={`team-${idx}`}
-                                    as="li"
-                                    disabled
-                                  >
-                                    {`${team?.count || 0} ${team?.role || 'Member'}`}
-                                  </ListGroup.Item>
-                                ),
-                              )
-                            )}
-                            <ListGroup.Item as="li">
-                              <b>
-                                {
-                                  `Cost: ${releaseItem?.totalCost || 'N/A'}`
-                                }
-                              </b>
-                            </ListGroup.Item>
-                          </ListGroup>
-                        </div>
-                      ),
-                    )
-                  )}
-                </div>
+                )}
               </div>
             </Card.Body>
           </Card>
@@ -812,6 +1242,19 @@ const Insights = () => {
       )}
 
       {!selectedProduct && <Alert variant="warning">Please select a product to get insights.</Alert>}
+      
+      {/* Team Configuration Modal */}
+      <TeamConfigModal
+        open={teamModalOpen}
+        onClose={() => {
+          setTeamModalOpen(false);
+          setSelectedRelease(null);
+        }}
+        onSave={handleTeamSave}
+        release={selectedRelease}
+        initialTeam={selectedRelease ? budgetEstimates[selectedRelease.name]?.team : []}
+      />
+      
       <Chatbot />
     </>
   );

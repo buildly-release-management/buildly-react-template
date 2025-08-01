@@ -146,6 +146,7 @@ const Kanban = ({
   removeSuggestedFeature,
   showRelatedIssues,
   editBoard,
+  generateAIFeatureSuggestion,
 }) => {
   const classes = useStyles();
   const { displayAlert } = useAlert();
@@ -249,19 +250,31 @@ const Kanban = ({
   }, [statuses, features, issues]);
 
   const onDragEnd = (result, columns) => {
+    console.log('Kanban: onDragEnd called with result:', result);
+    
     const featCred = _.find(credentials, { auth_detail: { tool_type: 'Feature' } });
     let finalUpdatedData = [];
 
-    if (!result.destination) return;
+    if (!result.destination) {
+      console.log('Kanban: No destination, canceling drag');
+      return;
+    }
+    
     const { source, destination } = result;
+    console.log('Kanban: Moving from', source, 'to', destination);
 
     if (source.droppableId !== destination.droppableId) {
+      console.log('Kanban: Cross-column drag detected');
       const sourceColumn = columns[source.droppableId];
       const destColumn = columns[destination.droppableId];
       const sourceItems = [...sourceColumn.items];
       const destItems = [...destColumn.items];
       const [removed] = sourceItems.splice(source.index, 1);
       destItems.splice(destination.index, 0, removed);
+      
+      console.log('Kanban: Removed item structure:', removed);
+      console.log('Kanban: Item keys:', Object.keys(removed || {}));
+      console.log('Kanban: Moved item:', removed?.feature_name || removed?.issue_name || removed?.name || 'Unknown item', 'from column', source.droppableId, 'to', destination.droppableId);
 
       // Update kanban_column_order for features in the source column
       let updatedSourceItems = [];
@@ -338,10 +351,15 @@ const Kanban = ({
         },
       });
     } else {
+      console.log('Kanban: Same-column reorder detected');
       const column = columns[source.droppableId];
       const copiedItems = [...column.items];
       const [removed] = copiedItems.splice(source.index, 1);
       copiedItems.splice(destination.index, 0, removed);
+      
+      console.log('Kanban: Removed item structure (same column):', removed);
+      console.log('Kanban: Item keys (same column):', Object.keys(removed || {}));
+      console.log('Kanban: Reordered item:', removed?.feature_name || removed?.issue_name || removed?.name || 'Unknown item', 'in column', source.droppableId);
 
       // Update kanban_column_order for features in the source column
       let updatedColumnItems = [];
@@ -413,7 +431,7 @@ const Kanban = ({
             Edit board
           </Button>
           <Grid container rowGap={2} columnGap={4} className={classes.container}>
-            {!!selectedProduct && suggestedFeatures && !_.isEmpty(suggestedFeatures) && (
+            {!!selectedProduct && (
               <Grid item xs={2.6} sm={2.75} lg={2.85} className={classes.swimlane}>
                 <div>
                   <Typography className={classes.title} component="div" variant="body1">
@@ -422,38 +440,58 @@ const Kanban = ({
                 </div>
 
                 <div className={classes.columnBody}>
-                  {_.map(suggestedFeatures, (sug, idx) => (
-                    <Card key={`suggestion-${sug.suggestion_uuid}`} className={classes.card} variant="outlined">
-                      <CardHeader
-                        subheader={sug.suggested_feature}
-                        action={(
-                          <div>
-                            <IconButton
-                              aria-label="product-suggestion-add"
-                              aria-haspopup="false"
-                              color="secondary"
-                              onClick={(e) => createSuggestedFeature(sug)}
-                              size="large"
-                              className={classes.iconButton}
-                            >
-                              <AddTaskIcon fontSize="small" />
-                            </IconButton>
+                  {suggestedFeatures && !_.isEmpty(suggestedFeatures) ? (
+                    _.map(suggestedFeatures, (sug, idx) => (
+                      <Card key={`suggestion-${sug.suggestion_uuid}`} className={classes.card} variant="outlined">
+                        <CardHeader
+                          subheader={sug.suggested_feature}
+                          action={(
+                            <div>
+                              <IconButton
+                                aria-label="product-suggestion-add"
+                                aria-haspopup="false"
+                                color="secondary"
+                                onClick={(e) => createSuggestedFeature(sug)}
+                                size="large"
+                                className={classes.iconButton}
+                              >
+                                <AddTaskIcon fontSize="small" />
+                              </IconButton>
 
-                            <IconButton
-                              aria-label="product-suggestion-remove"
-                              aria-haspopup="false"
-                              color="secondary"
-                              onClick={(e) => removeSuggestedFeature(sug)}
-                              size="large"
-                              className={classes.iconButton}
-                            >
-                              <CloseIcon fontSize="small" />
-                            </IconButton>
-                          </div>
-                        )}
-                      />
+                              <IconButton
+                                aria-label="product-suggestion-remove"
+                                aria-haspopup="false"
+                                color="secondary"
+                                onClick={(e) => removeSuggestedFeature(sug)}
+                                size="large"
+                                className={classes.iconButton}
+                              >
+                                <CloseIcon fontSize="small" />
+                              </IconButton>
+                            </div>
+                          )}
+                        />
+                      </Card>
+                    ))
+                  ) : (
+                    <Card className={classes.card} variant="outlined">
+                      <CardContent style={{ textAlign: 'center', padding: '16px' }}>
+                        <Typography variant="body2" color="textSecondary" gutterBottom>
+                          No feature suggestions available
+                        </Typography>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          onClick={generateAIFeatureSuggestion}
+                          startIcon={<TaskIcon />}
+                          style={{ marginTop: '8px' }}
+                        >
+                          Generate AI Suggestion
+                        </Button>
+                      </CardContent>
                     </Card>
-                  ))}
+                  )}
                 </div>
               </Grid>
             )}
@@ -505,7 +543,7 @@ const Kanban = ({
                               <Draggable
                                 key={item?.feature_uuid}
                                 draggableId={item?.feature_uuid}
-                                index={item && item.feature_detail ? item.feature_detail.kanban_column_order : item.issue_detail.kanban_column_order}
+                                index={itemIndex}
                               >
                                 {(provided, snapshot) => (
                                   <>
@@ -518,7 +556,7 @@ const Kanban = ({
                                       <Card
                                         className={classes.card}
                                         variant="outlined"
-                                        raised="true"
+                                        elevation={2}
                                         style={{
                                           // ...provided.draggableProps.style,
                                           userSelect: 'none',

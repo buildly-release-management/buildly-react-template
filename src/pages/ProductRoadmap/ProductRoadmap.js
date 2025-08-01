@@ -302,6 +302,130 @@ const ProductRoadmap = ({ history }) => {
     updateProductMutation(formData);
   };
 
+  const generateAIFeatureSuggestion = async () => {
+    try {
+      // Gather comprehensive context about the product and existing features
+      const existingFeatures = featureData || [];
+      const productDetails = product || {};
+      
+      const context = {
+        product: {
+          name: productDetails.name,
+          description: productDetails.description,
+          architecture_type: productDetails.product_info?.architecture_type,
+          language: productDetails.product_info?.language,
+          database: productDetails.product_info?.database,
+          hosting: productDetails.product_info?.hosting,
+          storage: productDetails.product_info?.storage,
+          start_date: productDetails.start_date,
+          end_date: productDetails.end_date,
+        },
+        existing_features: existingFeatures.map(feature => ({
+          name: feature.feature_name,
+          description: feature.description,
+          status: feature.status,
+          issues_count: feature.issues?.length || 0,
+        })),
+        current_suggestions: product?.product_info?.suggestions || [],
+      };
+
+      const prompt = `
+You are an AI product manager helping to suggest new features for a software product. 
+
+Product Details:
+- Name: ${context.product.name}
+- Description: ${context.product.description}
+- Architecture: ${context.product.architecture_type}
+- Technology Stack: ${context.product.language}, ${context.product.database}, ${context.product.hosting}
+- Project Timeline: ${context.product.start_date} to ${context.product.end_date}
+
+Existing Features:
+${context.existing_features.map(f => `- ${f.name}: ${f.description} (Status: ${f.status})`).join('\n')}
+
+Current Suggestions:
+${context.current_suggestions.map(s => `- ${s.suggested_feature}`).join('\n')}
+
+Based on this context, please suggest ONE new feature that would be valuable for this product. The feature should:
+1. Complement existing features without duplicating them
+2. Be technically feasible given the architecture and technology stack
+3. Provide clear user value
+4. Be appropriately scoped for the project timeline
+
+Please respond with a JSON object in this exact format:
+{
+  "suggested_feature": "Feature Name",
+  "description": "Detailed description of the feature and its benefits",
+  "rationale": "Why this feature would be valuable for this specific product"
+}
+`;
+
+      console.log('generateAIFeatureSuggestion: Sending request to AI with context:', context);
+
+      // Use the same approach as the Chatbot component for consistency
+      const isProduction = window.location.hostname !== 'localhost';
+      const baseUrl = isProduction ? 'https://babble.buildly.dev' : '/api/babble';
+      
+      const response = await fetch(`${baseUrl}/chatbot`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: prompt,
+          context: 'feature_suggestion',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`AI service responded with status: ${response.status}`);
+      }
+
+      const aiResponse = await response.json();
+      console.log('generateAIFeatureSuggestion: AI response:', aiResponse);
+
+      // Parse the AI response
+      let suggestion;
+      try {
+        suggestion = JSON.parse(aiResponse.response || aiResponse.message || '{}');
+      } catch (parseError) {
+        // If response is not JSON, create a basic suggestion from the text
+        const responseText = aiResponse.response || aiResponse.message || 'AI Feature Suggestion';
+        suggestion = {
+          suggested_feature: responseText.substring(0, 100),
+          description: responseText,
+          rationale: 'AI-generated suggestion based on product analysis',
+        };
+      }
+
+      // Create a new suggestion and add it to the product
+      const newSuggestion = {
+        suggestion_uuid: `ai-${Date.now()}`,
+        suggested_feature: suggestion.suggested_feature || 'AI Generated Feature',
+        description: suggestion.description || suggestion.suggested_feature,
+        rationale: suggestion.rationale || 'AI-generated based on product context',
+        source: 'AI',
+        created_at: new Date().toISOString(),
+      };
+
+      // Update the product with the new suggestion
+      const currentSuggestions = product?.product_info?.suggestions || [];
+      const formData = {
+        ...product,
+        product_info: {
+          ...product.product_info,
+          suggestions: [...currentSuggestions, newSuggestion],
+        },
+      };
+
+      updateProductMutation(formData);
+      displayAlert('success', 'AI feature suggestion generated successfully!');
+
+    } catch (error) {
+      console.error('generateAIFeatureSuggestion: Error:', error);
+      displayAlert('error', 'Failed to generate AI feature suggestion. Please try again.');
+    }
+  };
+
   const configureBoard = () => {
     history.push(routes.TOOL_BOARD, {
       from: location.pathname,
@@ -487,6 +611,7 @@ const ProductRoadmap = ({ history }) => {
                             }
                             createSuggestedFeature={createSuggestedFeature}
                             removeSuggestedFeature={removeSuggestedFeature}
+                            generateAIFeatureSuggestion={generateAIFeatureSuggestion}
                             showRelatedIssues={showRelatedIssues}
                             featSearch={featSearch}
                             setFeatSearch={setFeatSearch}
@@ -512,6 +637,7 @@ const ProductRoadmap = ({ history }) => {
                           }
                             createSuggestedFeature={createSuggestedFeature}
                             removeSuggestedFeature={removeSuggestedFeature}
+                            generateAIFeatureSuggestion={generateAIFeatureSuggestion}
                             showRelatedIssues={showRelatedIssues}
                             editBoard={editBoard}
                           />

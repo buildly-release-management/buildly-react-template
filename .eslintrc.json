@@ -4,22 +4,31 @@
     "commonjs": true,
     "es2021": true,
     "mocha": true,
-    "jest": true
+    "jest": true,
+    "node": true
   },
-  "extends": ["airbnb", "airbnb/hooks"],
+  "extends": [
+    "react-app",
+    "react-app/jest"
+  ],
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
     },
-    "ecmaVersion": 12,
-    "sourceType": "module"
+    "ecmaVersion": 2021,
+    "sourceType": "module",
+    "requireConfigFile": false,
+    "babelOptions": {
+      "presets": ["@babel/preset-react"]
+    }
   },
   "plugins": ["react", "import"],
   "rules": {
     "camelcase": "off",
     "curly": "error",
     "no-restricted-globals": "off",
-    "no-unused-vars": "off",
+    "no-unused-vars": "warn",
     "no-undef": "error",
     "no-use-before-define": "off",
     "import/prefer-default-export": "off",
@@ -45,6 +54,13 @@
     "max-len": "off"
   },
   "settings": {
-    "import/resolver": "webpack"
+    "import/resolver": {
+      "webpack": {
+        "config": "./webpack.config.js"
+      },
+      "node": {
+        "paths": ["src"]
+      }
+    }
   }
 }

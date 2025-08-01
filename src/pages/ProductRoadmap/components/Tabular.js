@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  Divider, IconButton, ListItemIcon, MenuItem, Typography,
+  Button, Divider, IconButton, ListItemIcon, MenuItem, Typography,
 } from '@mui/material';
 import {
   AddTask as AddTaskIcon,
@@ -54,6 +54,7 @@ const Tabular = ({
   setFeatSearch,
   issSearch,
   setIssSearch,
+  generateAIFeatureSuggestion,
 }) => {
   const classes = useStyles();
   const { displayAlert } = useAlert();
@@ -249,15 +250,34 @@ const Tabular = ({
           Upgrade to be able to create more features
         </Typography>
       )}
-      {!_.isEmpty(selectedProduct) && !_.isEmpty(suggestedFeatures) && !_.isEqual(_.toNumber(selectedProduct), 0) && (
+      {!_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) && (
         <div className={classes.tabular}>
-          <DataTableWrapper
-            rows={suggestedFeatures}
-            columns={finalSugCols}
-            filename="SuggestedFeaturesList"
-            hideAddButton
-            tableHeader="Suggested Features"
-          />
+          {suggestedFeatures && !_.isEmpty(suggestedFeatures) ? (
+            <DataTableWrapper
+              rows={suggestedFeatures}
+              columns={finalSugCols}
+              filename="SuggestedFeaturesList"
+              hideAddButton
+              tableHeader="Suggested Features"
+            />
+          ) : (
+            <div style={{ padding: '20px', textAlign: 'center', border: '1px solid #e0e0e0', borderRadius: '4px', marginBottom: '20px' }}>
+              <Typography variant="h6" gutterBottom>
+                Suggested Features
+              </Typography>
+              <Typography variant="body2" color="textSecondary" gutterBottom>
+                No feature suggestions available
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={generateAIFeatureSuggestion}
+                style={{ marginTop: '8px' }}
+              >
+                Generate AI Suggestion
+              </Button>
+            </div>
+          )}
         </div>
       )}
       {!!selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0) && (
