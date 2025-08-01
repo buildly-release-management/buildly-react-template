@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import App from './App';
 import './i18n';
 import './index.css';
+import './styles/modern.css';
+import './components/Button/Button.css';
 import registerServiceWorker from './serviceWorkerRegistration';
 
 if (window.env.PRODUCTION) {

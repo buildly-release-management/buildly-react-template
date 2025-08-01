@@ -28,7 +28,7 @@ const App = () => (
           <Route
             exact
             path="/"
-            render={() => (oauthService.hasValidAccessToken() ? <Redirect to={routes.PRODUCT_PORTFOLIO} /> : <Home />)}
+            render={() => (oauthService.hasValidAccessToken() ? <Redirect to={routes.DASHBOARD} /> : <Home />)}
           />
           <Route exact path={`${routes.VERIFY_EMAIL}/:token`} component={VerifyEmail} />
           <Route path={routes.LOGIN} component={Login} />

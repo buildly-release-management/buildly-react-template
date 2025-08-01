@@ -17,6 +17,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGithub, faTrello } from '@fortawesome/free-brands-svg-icons';
 import Loader from '@components/Loader/Loader';
 import DatePickerComponent from '@components/DatePicker/DatePicker';
+import AIFormHelper from '@components/AIFormHelper/AIFormHelper';
 import { useInput } from '@hooks/useInput';
 import { getOrganization } from '@context/User.context';
 import useAlert from '@hooks/useAlert';
@@ -384,34 +385,50 @@ const ProductSetup = ({
           <Box mb={2} mt={3}>
             <Grid container spacing={2}>
               <Grid className={classes.inputWithTooltip} item xs={12} sm={12}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  fullWidth
-                  required
-                  id="name"
-                  label="Product name"
-                  name="name"
-                  autoComplete="name"
-                  error={formError.name && formError.name.error}
-                  {...name.bind}
-                />
+                <Box display="flex" alignItems="center">
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    fullWidth
+                    required
+                    id="name"
+                    label="Product name"
+                    name="name"
+                    autoComplete="name"
+                    error={formError.name && formError.name.error}
+                    {...name.bind}
+                  />
+                  <AIFormHelper
+                    fieldType="product-name"
+                    onSuggestion={(suggestion) => name.setValue(suggestion)}
+                    size="small"
+                  />
+                </Box>
               </Grid>
               <Grid item xs={12}>
                 <Grid container spacing={2}>
                   <Grid className={classes.inputWithTooltip} item xs={12}>
-                    <TextField
-                      variant="outlined"
-                      margin="normal"
-                      fullWidth
-                      multiline
-                      rows={6}
-                      id="description"
-                      label="Product description"
-                      name="description"
-                      autoComplete="description"
-                      {...description.bind}
-                    />
+                    <Box display="flex" alignItems="flex-start">
+                      <TextField
+                        variant="outlined"
+                        margin="normal"
+                        fullWidth
+                        multiline
+                        rows={6}
+                        id="description"
+                        label="Product description"
+                        name="description"
+                        autoComplete="description"
+                        {...description.bind}
+                      />
+                      <Box mt={2}>
+                        <AIFormHelper
+                          fieldType="product-description"
+                          onSuggestion={(suggestion) => description.setValue(suggestion)}
+                          size="small"
+                        />
+                      </Box>
+                    </Box>
                   </Grid>
                 </Grid>
               </Grid>

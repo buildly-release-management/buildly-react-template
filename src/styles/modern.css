@@ -1,0 +1,290 @@
+/* Modern CSS Enhancements for Buildly React Template */
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid #F9943B;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Modern animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Apply animations to components */
+.animate-fade-in {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideInRight 0.4s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Enhanced card hover effects */
+.modern-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.modern-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Modern button styles */
+.modern-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.modern-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.modern-button:hover::before {
+  left: 100%;
+}
+
+/* Improved loading states */
+.skeleton-loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Modern glass morphism effects */
+.glass-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Enhanced scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F7FAFC;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E0;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #A0AEC0;
+}
+
+/* Modern table styles */
+.modern-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.modern-table th {
+  background: #E3F2FD !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  font-size: 0.75rem !important;
+  color: #0C5595 !important;
+}
+
+.modern-table td {
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.modern-table tr:hover td {
+  background-color: #F9FAFB;
+}
+
+/* Specific MUI DataTable overrides */
+.MuiTableCell-head,
+.MUIDataTableHeadCell-root,
+.MUIDataTableHeadCell-data,
+.MuiTableCell-root.MuiTableCell-head {
+  background-color: #E3F2FD !important;
+  color: #0C5595 !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* MUI DataTable sort icons */
+.MUIDataTableHeadCell-sortAction,
+.MUIDataTableHeadCell-sortAction .MuiButtonBase-root {
+  color: #0C5595 !important;
+}
+
+/* DataTable toolbar styling */
+.MUIDataTableToolbar-root {
+  background-color: #F8F9FA !important;
+  border-bottom: 1px solid #E5E7EB !important;
+}
+
+/* Any table header cell override */
+table thead th,
+table thead td,
+.MuiTable-root thead th,
+.MuiTable-root thead td {
+  background-color: #E3F2FD !important;
+  color: #0C5595 !important;
+  font-weight: 600 !important;
+}
+
+/* Enhanced form styles */
+.modern-form-field {
+  transition: all 0.2s ease;
+}
+
+.modern-form-field:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0px 4px 12px rgba(249, 148, 59, 0.15);
+}
+
+/* Modern notification styles */
+.modern-notification {
+  border-radius: 12px;
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+/* Enhanced typography */
+.modern-heading {
+  background: linear-gradient(135deg, #F9943B 0%, #0C5595 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+/* Modern badge styles */
+.modern-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.modern-badge-success {
+  background-color: #D1FAE5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
+}
+
+.modern-badge-warning {
+  background-color: #FEF3C7;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+}
+
+.modern-badge-error {
+  background-color: #FEE2E2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.modern-badge-info {
+  background-color: #DBEAFE;
+  color: #1D4ED8;
+  border: 1px solid #93C5FD;
+}
+
+/* Responsive design improvements */
+@media (max-width: 768px) {
+  .modern-card:hover {
+    transform: none;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .animate-fade-in,
+  .animate-slide-in {
+    animation: none;
+  }
+}
+
+/* Dark mode support (future enhancement) */
+@media (prefers-color-scheme: dark) {
+  .glass-card {
+    background: rgba(26, 26, 26, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

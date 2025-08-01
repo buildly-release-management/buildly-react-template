@@ -18,8 +18,10 @@ import {
   MenuItem,
   FormGroup,
   Checkbox,
+  Box,
 } from '@mui/material';
 import Loader from '@components/Loader/Loader';
+import AIFormHelper from '@components/AIFormHelper/AIFormHelper';
 import { routes } from '@routes/routesConstants';
 import { UserContext } from '@context/User.context';
 import { useInput } from '@hooks/useInput';
@@ -258,25 +260,32 @@ const DeveloperForm = ({ loading, history }) => {
                   </RadioGroup>
                 </FormControl>
                 {question1 === 'no' && (
-                  <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="question2"
-                    label="If not what do you use?"
-                    name="question2"
-                    autoComplete="question2"
-                    error={formError.question2 && formError.question2.error}
-                    helperText={
-                      formError && formError.question2
-                        ? formError.question2.message
-                        : ''
-                    }
-                    className={classes.textField}
-                    onBlur={(e) => handleBlur(e, 'required', question2)}
-                    {...question2.bind}
-                  />
+                  <Box display="flex" alignItems="center">
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="question2"
+                      label="If not what do you use?"
+                      name="question2"
+                      autoComplete="question2"
+                      error={formError.question2 && formError.question2.error}
+                      helperText={
+                        formError && formError.question2
+                          ? formError.question2.message
+                          : ''
+                      }
+                      className={classes.textField}
+                      onBlur={(e) => handleBlur(e, 'required', question2)}
+                      {...question2.bind}
+                    />
+                    <AIFormHelper
+                      fieldType="general"
+                      onSuggestion={(suggestion) => question2.setValue(suggestion)}
+                      size="small"
+                    />
+                  </Box>
                 )}
                 <FormControl
                   className={classes.choice}

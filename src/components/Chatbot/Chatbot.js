@@ -1,102 +1,487 @@
-import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useEffect, useState, useContext } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
 import _ from 'lodash';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import {
   MainContainer, ChatContainer, MessageList, Message, MessageInput, TypingIndicator,
 } from '@chatscope/chat-ui-kit-react';
 import {
-  Box, Button, Fab, Popover, useTheme,
+  Box, 
+  Button, 
+  Fab, 
+  Popover, 
+  useTheme, 
+  Typography,
+  Paper,
+  Chip,
+  Link,
+  Avatar,
+  IconButton,
+  Collapse,
+  Card,
+  CardContent,
+  Divider,
+  Badge,
+  CircularProgress,
 } from '@mui/material';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
+import {
+  SmartToy as SmartToyIcon,
+  Close as CloseIcon,
+  Help as HelpIcon,
+  Launch as LaunchIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  Lightbulb as LightbulbIcon,
+  MenuBook as MenuBookIcon,
+} from '@mui/icons-material';
+import { UserContext } from '@context/User.context';
 import './Chatbot.css';
 
 // Set sender here
-const sender = 'Buildly Product Labs';
-// Initial message state
-const initialMessages = [{
-  message: 'Hello there! How can I help you today?',
+const sender = 'Buildly Assistant';
+
+// Documentation links based on current page
+const getContextualHelp = (pathname) => {
+  const helpMap = {
+    '/app/dashboard': {
+      title: 'Dashboard Help',
+      links: [
+        { label: 'Getting Started', url: 'https://docs.buildly.io/getting-started' },
+        { label: 'Dashboard Overview', url: 'https://docs.buildly.io/dashboard' },
+        { label: 'Product Management', url: 'https://docs.buildly.io/products' },
+        { label: 'Creating Your First Product', url: 'https://docs.buildly.io/products/create' },
+        { label: 'Release Planning', url: 'https://docs.buildly.io/releases' },
+      ],
+    },
+    '/app/product-portfolio': {
+      title: 'Product Portfolio Help',
+      links: [
+        { label: 'Product Management', url: 'https://docs.buildly.io/products' },
+        { label: 'Creating Products', url: 'https://docs.buildly.io/products/create' },
+        { label: 'Product Roadmaps', url: 'https://docs.buildly.io/roadmaps' },
+      ],
+    },
+    '/app/releases': {
+      title: 'Release Management Help',
+      links: [
+        { label: 'Release Planning', url: 'https://docs.buildly.io/releases' },
+        { label: 'Version Control', url: 'https://docs.buildly.io/releases/versions' },
+        { label: 'Deployment Guide', url: 'https://docs.buildly.io/deployment' },
+      ],
+    },
+    default: {
+      title: 'Buildly Help',
+      links: [
+        { label: 'Documentation Home', url: 'https://docs.buildly.io' },
+        { label: 'Getting Started', url: 'https://docs.buildly.io/getting-started' },
+        { label: 'API Reference', url: 'https://docs.buildly.io/api' },
+        { label: 'Support', url: 'https://docs.buildly.io/support' },
+      ],
+    }
+  };
+  
+  return helpMap[pathname] || helpMap.default;
+};
+
+// Generate contextual suggestions using BabbleBeaver AI
+const generateContextualSuggestions = async (pathname) => {
+  const pageContextMap = {
+    '/app/dashboard': 'Generate 3 helpful questions a user might ask about using a product management dashboard, creating their first product, starting a release, or getting started with project management. Include questions about navigation and next steps. Return only the questions, one per line.',
+    '/app/product-portfolio': 'Generate 3 helpful questions a user might ask about managing products, setting complexity scores, or organizing product features. Return only the questions, one per line.',
+    '/app/releases': 'Generate 3 helpful questions a user might ask about creating releases, tracking release progress, or deployment processes. Return only the questions, one per line.',
+    'default': 'Generate 3 helpful questions a user might ask about getting started with Buildly, finding documentation, or contacting support. Return only the questions, one per line.'
+  };
+
+  const prompt = pageContextMap[pathname] || pageContextMap['default'];
+
+  try {
+    // Use the proxy route for development, direct URL for production
+    const chatbotUrl = window.env.PRODUCTION 
+      ? window.env.BABBLE_CHATBOT_URL 
+      : '/api/babble/chatbot';
+    
+    console.log('Chatbot: Using URL:', chatbotUrl, 'Production:', window.env.PRODUCTION);
+    
+    const response = await fetch(chatbotUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    });
+    
+    const data = await response.json();
+    
+    // Split response by lines and clean up
+    const suggestions = data.response
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0 && !line.match(/^\d+\.?\s*/))
+      .slice(0, 3);
+
+    return suggestions.length > 0 ? suggestions : [
+      'How do I get started?',
+      'Where can I find help?',
+      'How do I create a new project?'
+    ];
+  } catch (error) {
+    console.error('Error generating contextual suggestions:', error);
+    return [
+      'How do I get started?',
+      'Where can I find help?',
+      'How do I create a new project?'
+    ];
+  }
+};
+
+// Enhanced initial message with contextual help
+const getInitialMessage = (pathname, userName) => ({
+  message: `Hi ${userName}! 👋 I'm your Buildly Assistant. I can help you navigate the platform, answer questions, and provide relevant documentation. What would you like to know?`,
   sender,
-}];
+  timestamp: new Date(),
+});
 
 const Chatbot = () => {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [showHelp, setShowHelp] = useState(true);
+  const [hasNewMessage, setHasNewMessage] = useState(false);
+  const [hasContextualInfo, setHasContextualInfo] = useState(false);
+  const [contextualSuggestions, setContextualSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const history = useHistory();
+  const location = useLocation();
   const theme = useTheme();
+  const user = useContext(UserContext);
   const open = Boolean(anchorEl);
   const id = open ? 'chatbot-popover' : undefined;
+  
+  const contextualHelp = getContextualHelp(location.pathname);
 
   useEffect(() => {
-    if (history.action === 'PUSH') {
-      setMessages(initialMessages);
+    // Initialize with contextual message
+    const initialMessage = getInitialMessage(location.pathname, user?.first_name || 'there');
+    setMessages([initialMessage]);
+    // Generate dynamic suggestions using BabbleBeaver AI
+    const loadSuggestions = async () => {
+      setLoadingSuggestions(true);
+      const suggestions = await generateContextualSuggestions(location.pathname);
+      setContextualSuggestions(suggestions);
+      setLoadingSuggestions(false);
+    };
+    loadSuggestions();
+    setHasContextualInfo(contextualHelp.links.length > 0);
+  }, [location.pathname, user]);
+
+  useEffect(() => {
+    if (history.action === 'PUSH' && !open) {
+      setHasNewMessage(true);
+      setHasContextualInfo(true);
+      // Stop the contextual bounce after 10 seconds
+      setTimeout(() => setHasContextualInfo(false), 10000);
     }
-  }, []);
+  }, [location.pathname]);
+
+  const handleOpen = (e) => {
+    setAnchorEl(e.currentTarget);
+    setHasNewMessage(false);
+    setHasContextualInfo(false);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    setShowHelp(true);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    handleSend(suggestion);
+    setShowHelp(false);
+  };
 
   const handleSend = async (message) => {
-    const newMessages = [...messages, { message, direction: 'outgoing', sender: 'user' }];
+    const newMessages = [...messages, { 
+      message, 
+      direction: 'outgoing', 
+      sender: 'user',
+      timestamp: new Date()
+    }];
     setMessages(newMessages);
+    setShowHelp(false);
 
-    // Initial system message to determine ChatGPT functionality
-    // How it responds, how it talks, etc.
     setIsTyping(true);
     await processMessageToBabble(newMessages);
   };
 
   async function processMessageToBabble(chatMessages) {
-    await fetch(window.env.BABBLE_CHATBOT_URL,
-      {
+    const lastMessage = _.last(chatMessages).message;
+    
+    // Enhanced prompt with context
+    const contextualPrompt = `
+      User is currently on: ${location.pathname}
+      User question: ${lastMessage}
+      
+      Please provide helpful, specific answers about Buildly Product Labs. 
+      If the question is about navigation or features, provide specific guidance.
+      Keep responses concise but informative.
+      Include relevant documentation links when appropriate.
+    `;
+
+    try {
+      const response = await fetch(window.env.BABBLE_CHATBOT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: _.last(chatMessages).message }),
-      })
-      .then((data) => data.json())
-      .then((data) => {
-        setMessages([...chatMessages, {
-          message: data.response,
-          sender,
-        }]);
-        setIsTyping(false);
-      })
-      .catch((error) => {
-        setIsTyping(false);
+        body: JSON.stringify({ prompt: contextualPrompt }),
       });
+      
+      const data = await response.json();
+      
+      setMessages([...chatMessages, {
+        message: data.response,
+        sender,
+        timestamp: new Date(),
+      }]);
+    } catch (error) {
+      setMessages([...chatMessages, {
+        message: "I'm sorry, I'm having trouble connecting right now. Please check the documentation links above or try again later.",
+        sender,
+        timestamp: new Date(),
+      }]);
+    } finally {
+      setIsTyping(false);
+    }
   }
 
   return (
-    <div style={{ position: 'fixed', right: theme.spacing(4), bottom: theme.spacing(3) }}>
-      <Button variant="text" onClick={(e) => setAnchorEl(e.currentTarget)} pt={theme.spacing(2)}>
-        <Fab color="primary" aria-label="Ask for help here">
-          <SmartToyIcon />
+    <div style={{ 
+      position: 'fixed', 
+      right: theme.spacing(3), 
+      bottom: theme.spacing(3),
+      zIndex: 1300 
+    }}>
+      <Badge 
+        color="primary" 
+        variant="dot" 
+        invisible={!hasNewMessage}
+        sx={{
+          '& .MuiBadge-badge': {
+            backgroundColor: '#F9943B',
+            animation: hasNewMessage ? 'pulse 2s infinite' : 'none',
+          }
+        }}
+      >
+        <Fab 
+          aria-label="AI Assistant"
+          onClick={handleOpen}
+          sx={{
+            background: '#0C5595 !important',
+            border: '3px solid #FFFFFF',
+            boxShadow: '0px 4px 20px rgba(12, 85, 149, 0.4)',
+            animation: (hasNewMessage || hasContextualInfo) ? 'bounce 2s infinite' : 'none',
+            '&:hover': {
+              transform: 'scale(1.1)',
+              boxShadow: '0px 6px 25px rgba(12, 85, 149, 0.6)',
+              background: '#0A4A85 !important',
+            },
+            transition: 'all 0.3s ease',
+          }}
+        >
+          <SmartToyIcon 
+            sx={{ 
+              color: '#FFFFFF',
+              fontSize: '1.5rem',
+              filter: 'drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3))',
+            }} 
+          />
         </Fab>
-      </Button>
+      </Badge>
+      
       <Popover
         id={id}
         open={open}
         anchorEl={anchorEl}
-        onClose={(e) => setAnchorEl(null)}
+        onClose={handleClose}
         anchorOrigin={{
           vertical: 'top',
           horizontal: 'left',
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: '16px',
+              boxShadow: '0px 20px 40px rgba(0, 0, 0, 0.15)',
+              border: '1px solid #E5E7EB',
+              overflow: 'hidden',
+              margin: '8px',
+            }
+          }
+        }}
+        sx={{
+          '& .MuiPopover-paper': {
+            maxHeight: '90vh !important',
+            maxWidth: '95vw !important',
+          }
         }}
       >
-        <Box width={theme.spacing(48)} height={theme.spacing(75)}>
-          <MainContainer>
-            <ChatContainer>
-              <MessageList
-                scrollBehavior="smooth"
-                typingIndicator={isTyping ? <TypingIndicator content={`${sender} is typing`} /> : null}
-              >
-                {_.map(messages, (message, i) => <Message key={i} model={message} />)}
-              </MessageList>
-              <MessageInput placeholder="Type message here" onSend={handleSend} />
-            </ChatContainer>
-          </MainContainer>
+        <Box 
+          width={{ xs: 350, sm: 480, md: 520 }} 
+          height={{ xs: 600, sm: 700, md: 750 }} 
+          display="flex" 
+          flexDirection="column"
+          sx={{
+            maxHeight: '90vh',
+            maxWidth: '95vw',
+          }}
+        >
+          {/* Header */}
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              p: 2, 
+              background: 'linear-gradient(135deg, #F9943B 0%, #0C5595 100%)',
+              color: 'white',
+              borderRadius: 0,
+            }}
+          >
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box display="flex" alignItems="center" gap={1}>
+                <Avatar 
+                  sx={{ 
+                    width: 32, 
+                    height: 32, 
+                    bgcolor: 'rgba(255,255,255,0.2)' 
+                  }}
+                >
+                  <SmartToyIcon fontSize="small" />
+                </Avatar>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Buildly Assistant
+                  </Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                    {contextualHelp.title}
+                  </Typography>
+                </Box>
+              </Box>
+              <IconButton onClick={handleClose} sx={{ color: 'white' }}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </Paper>
+
+          {/* Contextual Help Section */}
+          <Collapse in={showHelp}>
+            <Card elevation={0} sx={{ m: 2, border: '1px solid #E5E7EB' }}>
+              <CardContent sx={{ p: 2 }}>
+                <Box display="flex" alignItems="center" gap={1} mb={1}>
+                  <LightbulbIcon color="primary" fontSize="small" />
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Quick Help
+                  </Typography>
+                  <IconButton 
+                    size="small" 
+                    onClick={() => setShowHelp(!showHelp)}
+                  >
+                    {showHelp ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  </IconButton>
+                </Box>
+                
+                {/* Documentation Links */}
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                  Documentation:
+                </Typography>
+                <Box display="flex" flexWrap="wrap" gap={0.5} mb={2}>
+                  {contextualHelp.links.map((link, index) => (
+                    <Chip
+                      key={index}
+                      label={link.label}
+                      size="small"
+                      clickable
+                      icon={<MenuBookIcon />}
+                      onClick={() => window.open(link.url, '_blank')}
+                      sx={{ 
+                        fontSize: '0.7rem',
+                        '&:hover': { backgroundColor: '#E3F2FD' }
+                      }}
+                    />
+                  ))}
+                </Box>
+
+                {/* Quick Suggestions */}
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                  Common questions:
+                </Typography>
+                {loadingSuggestions ? (
+                  <Box display="flex" alignItems="center" gap={1} py={1}>
+                    <CircularProgress size={16} sx={{ color: '#0C5595' }} />
+                    <Typography variant="caption" color="text.secondary">
+                      BabbleBeaver AI is generating suggestions...
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box display="flex" flexDirection="column" gap={0.5}>
+                    {contextualSuggestions.map((suggestion, index) => (
+                      <Button
+                        key={index}
+                        size="small"
+                        variant="outlined"
+                        startIcon={<HelpIcon />}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        sx={{ 
+                          justifyContent: 'flex-start',
+                          textAlign: 'left',
+                          fontSize: '0.75rem',
+                          py: 0.5,
+                        }}
+                      >
+                        {suggestion}
+                      </Button>
+                    ))}
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Collapse>
+
+          {/* Chat Container */}
+          <Box 
+            flex={1} 
+            sx={{ 
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+            }}
+          >
+            <MainContainer style={{ height: '100%', flex: 1 }}>
+              <ChatContainer>
+                <MessageList
+                  scrollBehavior="smooth"
+                  typingIndicator={isTyping ? <TypingIndicator content={`${sender} is typing...`} /> : null}
+                  style={{ 
+                    padding: '0 16px',
+                    flex: 1,
+                    minHeight: '300px',
+                  }}
+                >
+                  {_.map(messages, (message, i) => (
+                    <Message key={i} model={message} />
+                  ))}
+                </MessageList>
+                <MessageInput 
+                  placeholder="Ask me anything about Buildly..." 
+                  onSend={handleSend}
+                  style={{ 
+                    padding: '0 16px 16px 16px',
+                    borderTop: '1px solid #E5E7EB',
+                    marginTop: '8px',
+                  }}
+                />
+              </ChatContainer>
+            </MainContainer>
+          </Box>
         </Box>
       </Popover>
     </div>

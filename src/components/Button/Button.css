@@ -7,18 +7,20 @@
   --white: #ffffff;
 }
 
+/* Bootstrap secondary buttons should be orange */
 .btn-secondary {
-  background-color: var(--orange);
-  /*--bs-btn-bg: var(--orange);*/
-  --bs-btn-border-color: var(--orange);
-  --bs-btn-hover-bg: var(--orange-darker);
-  --bs-btn-hover-border-color: var(--orange-darker);
-  --bs-btn-focus-shadow-rgb: var(--orange-darker);
-  --bs-btn-active-bg: var(--orange-darker);
-  --bs-btn-active-border-color: var(--orange-darker);
-  --bs-btn-active-shadow: none;
-  --bs-btn-disabled-bg: var(--orange);
-  --bs-btn-disabled-border-color: var(--orange);
+  background-color: var(--orange) !important;
+  --bs-btn-bg: var(--orange) !important;
+  --bs-btn-border-color: var(--orange) !important;
+  --bs-btn-hover-bg: var(--orange-darker) !important;
+  --bs-btn-hover-border-color: var(--orange-darker) !important;
+  --bs-btn-focus-shadow-rgb: var(--orange-darker) !important;
+  --bs-btn-active-bg: var(--orange-darker) !important;
+  --bs-btn-active-border-color: var(--orange-darker) !important;
+  --bs-btn-active-shadow: none !important;
+  --bs-btn-disabled-bg: var(--orange) !important;
+  --bs-btn-disabled-border-color: var(--orange) !important;
+  color: var(--white) !important;
 }
 
 .btn-outline-secondary {
@@ -31,4 +33,49 @@
   --bs-btn-active-border-color: var(--orange) !important;
   --bs-btn-disabled-color: var(--orange) !important;
   --bs-btn-disabled-border-color: var(--orange) !important;
+}
+
+/* Ensure Material-UI buttons also get proper orange theming */
+.MuiButton-containedPrimary {
+  background-color: var(--orange) !important;
+  color: var(--white) !important;
+}
+
+.MuiButton-containedPrimary:hover {
+  background-color: var(--orange-darker) !important;
+}
+
+/* Bootstrap primary buttons should also be orange (override Bootstrap defaults) */
+.btn-primary {
+  background-color: var(--orange) !important;
+  border-color: var(--orange) !important;
+  color: var(--white) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active {
+  background-color: var(--orange-darker) !important;
+  border-color: var(--orange-darker) !important;
+  color: var(--white) !important;
+  box-shadow: 0 0 0 0.2rem rgba(249, 148, 59, 0.5) !important;
+}
+
+/* Override any white backgrounds on buttons */
+.btn:not(.btn-outline-primary):not(.btn-light):not(.btn-outline-light) {
+  background-color: var(--orange) !important;
+}
+
+/* Specific fixes for button states */
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:not(:disabled):not(.disabled).active {
+  background-color: var(--orange-darker) !important;
+  border-color: var(--orange-darker) !important;
+}
+
+/* Button focus states */
+.btn-primary:focus,
+.btn-primary.focus {
+  box-shadow: 0 0 0 0.2rem rgba(249, 148, 59, 0.5) !important;
 }

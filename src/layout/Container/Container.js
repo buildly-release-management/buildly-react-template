@@ -15,6 +15,7 @@ import ProductPortfolio from '@pages/ProductPortfolio/ProductPortfolio';
 import UserProfile from '@pages/UserProfile/UserProfile';
 import ReleaseList from '@pages/ReleaseList/ReleaseList';
 import ReleaseDetails from '@pages/ReleaseDetails/ReleaseDetails';
+import Dashboard from '@pages/Dashboard/Dashboard';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -46,8 +47,9 @@ const ContainerDashboard = ({ location, history }) => {
             <Route
               exact
               path={routes.APP}
-              render={() => <Redirect to={routes.PRODUCT_PORTFOLIO} />}
+              render={() => <Redirect to={routes.DASHBOARD} />}
             />
+            <Route exact path={routes.DASHBOARD} component={Dashboard} />
             <Route exact path={`${routes.RELEASE}/:releaseUuid`} component={ReleaseDetails} />
             <Route path={routes.PRODUCT_ROADMAP} component={ProductRoadmap} />
             <Route path={routes.USER_PROFILE} component={UserProfile} />

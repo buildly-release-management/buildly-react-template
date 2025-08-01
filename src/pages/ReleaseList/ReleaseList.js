@@ -33,6 +33,7 @@ import {
 import { Modal, Form, Table } from 'react-bootstrap';
 import Chatbot from '@components/Chatbot/Chatbot';
 import Loader from '@components/Loader/Loader';
+import AIFormHelper from '@components/AIFormHelper/AIFormHelper';
 import { UserContext } from '@context/User.context';
 import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
@@ -609,23 +610,46 @@ const ReleaseList = () => {
               <Form noValidate>
                 <Form.Group className="mb-3" controlId="name">
                   <Form.Label>Name*</Form.Label>
-                  <Form.Control
-                    size="sm"
-                    type="text"
-                    placeholder="Name"
-                    name="name"
-                    required
-                    onChange={(event) => updateFormData(event)}
-                  />
+                  <Box display="flex" alignItems="center">
+                    <Form.Control
+                      size="sm"
+                      type="text"
+                      placeholder="Name"
+                      name="name"
+                      required
+                      onChange={(event) => updateFormData(event)}
+                      style={{ flex: 1 }}
+                    />
+                    <AIFormHelper
+                      fieldType="release-title"
+                      onSuggestion={(suggestion) => {
+                        const event = { target: { name: 'name', value: suggestion } };
+                        updateFormData(event);
+                      }}
+                      size="small"
+                    />
+                  </Box>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="description">
                   <Form.Label>Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={2}
-                    name="description"
-                    onChange={(event) => updateFormData(event)}
-                  />
+                  <Box display="flex" alignItems="flex-start">
+                    <Form.Control
+                      as="textarea"
+                      rows={2}
+                      name="description"
+                      onChange={(event) => updateFormData(event)}
+                      style={{ flex: 1 }}
+                    />
+                    <AIFormHelper
+                      fieldType="release-description"
+                      onSuggestion={(suggestion) => {
+                        const event = { target: { name: 'description', value: suggestion } };
+                        updateFormData(event);
+                      }}
+                      size="small"
+                      context={{ releaseName: formData.name }}
+                    />
+                  </Box>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="date">
                   <Form.Label>Release date*</Form.Label>

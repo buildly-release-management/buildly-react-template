@@ -46,7 +46,10 @@ import { useAddSubscriptionMutation } from '@react-query/mutations/authUser/addS
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
-    backgroundColor: theme.palette.secondary.main,
+    backgroundColor: theme.palette.secondary.main, // Back to blue
+    color: '#FFFFFF',
+    boxShadow: '0px 2px 8px rgba(12, 85, 149, 0.2)',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
     zIndex: theme.zIndex.drawer + 1,
     width: '100%',
   },
@@ -152,6 +155,11 @@ const TopBar = ({ history, location }) => {
   maxDate.setDate(maxDate.getDate() + 1);
 
   const pages = [{
+    label: 'Dashboard',
+    value: routes.DASHBOARD,
+    pathName: [routes.DASHBOARD],
+  },
+  {
     label: 'Product Portfolio',
     value: routes.PRODUCT_PORTFOLIO,
     pathName: [routes.PRODUCT_PORTFOLIO],
@@ -315,7 +323,7 @@ const TopBar = ({ history, location }) => {
       {(isOrgNamesLoading || isStripeProductsLoading || isUpdateUserLoading || isAddSubscriptionLoading) && <Loader open={isOrgNamesLoading || isStripeProductsLoading || isUpdateUserLoading || isAddSubscriptionLoading} />}
       <AppBar position="fixed" className={classes.appBar}>
         <Toolbar>
-          <Link to={routes.PRODUCT_ROADMAP}>
+          <Link to={routes.DASHBOARD}>
             <img src={logo} alt="Logo" className={classes.logo} />
           </Link>
           <Box className={classes.navItems}>

@@ -7,6 +7,7 @@ export const routes = {
   RESET_PASSWORD: '/reset-password-confirm',
   VERIFY_EMAIL: '/verify-email',
   APP: '/app',
+  DASHBOARD: '/app/dashboard',
   PRODUCT_ROADMAP: '/app/product-roadmap',
   PRODUCT_ROADMAP_TABULAR: '/app/product-roadmap/tabular',
   PRODUCT_ROADMAP_KANBAN: '/app/product-roadmap/kanban',

@@ -13,10 +13,12 @@ import {
   MenuItem,
   Autocomplete,
   Chip,
+  Box,
 } from '@mui/material';
 import DatePickerComponent from '@components/DatePicker/DatePicker';
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
+import AIFormHelper from '@components/AIFormHelper/AIFormHelper';
 import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
 import { validators } from '@utils/validators';
@@ -262,35 +264,50 @@ const AddIssues = ({ history, location }) => {
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <Grid container spacing={isDesktop ? 2 : 0}>
               <Grid item xs={12}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="name"
-                  label="Title"
-                  name="name"
-                  autoComplete="name"
-                  error={
-                    formError.name
-                    && formError.name.error
-                  }
-                  helperText={
-                    formError.name
-                      ? formError.name.message
-                      : ''
-                  }
-                  onBlur={(e) => handleBlur(e, 'required', name)}
-                  {...name.bind}
-                />
+                <Box display="flex" alignItems="center">
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="name"
+                    label="Title"
+                    name="name"
+                    autoComplete="name"
+                    error={
+                      formError.name
+                      && formError.name.error
+                    }
+                    helperText={
+                      formError.name
+                        ? formError.name.message
+                        : ''
+                    }
+                    onBlur={(e) => handleBlur(e, 'required', name)}
+                    {...name.bind}
+                  />
+                  <AIFormHelper
+                    fieldType="issue-title"
+                    onSuggestion={(suggestion) => name.setValue(suggestion)}
+                    size="small"
+                  />
+                </Box>
               </Grid>
               <Grid item xs={12}>
-                <SmartInput
-                  onEditorValueChange={setDescription}
-                  value={description}
-                  inputLabel="Description"
-                  required
-                />
+                <Box display="flex" alignItems="flex-start">
+                  <SmartInput
+                    onEditorValueChange={setDescription}
+                    value={description}
+                    inputLabel="Description"
+                    required
+                  />
+                  <AIFormHelper
+                    fieldType="issue-description"
+                    onSuggestion={(suggestion) => setDescription(suggestion)}
+                    size="small"
+                    context={{ issueTitle: name.value }}
+                  />
+                </Box>
               </Grid>
               <Grid item xs={12}>
                 <TextField

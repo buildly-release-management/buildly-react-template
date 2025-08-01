@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import './TimelineComponent.css';
 import { Timeline, TimelineEvent } from '@mailtop/horizontal-timeline';
 
-const TimelineComponent = ({ reportData, suggestedFeatures }) => {
+const TimelineComponent = ({ reportData, suggestedFeatures, onReleaseClick }) => {
   const [releaseData, setReleaseData] = useState([]);
   const [features, setFeatures] = useState([]);
 
@@ -23,7 +23,14 @@ const TimelineComponent = ({ reportData, suggestedFeatures }) => {
             key={idx}
             color={releaseItem.bgColor}
             icon={releaseItem.icon}
-            title={releaseItem.name}
+            title={
+              <span 
+                style={{ cursor: onReleaseClick ? 'pointer' : 'default', color: '#0C5595' }}
+                onClick={() => onReleaseClick && onReleaseClick(releaseItem)}
+              >
+                {releaseItem.name}
+              </span>
+            }
             subtitle={releaseItem.release_date}
             action={(
               <div
