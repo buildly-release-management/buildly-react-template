@@ -1,0 +1,21 @@
+// Template environment configuration
+// This file will be generated automatically by start-dev.sh
+// DO NOT commit actual tokens/secrets to Git
+window.env = {
+API_URL: "https://labs-api.buildly.dev/",
+OAUTH_CLIENT_ID: "your-oauth-client-id",
+OAUTH_TOKEN_URL: "https://labs-api.buildly.dev/token/",
+GITHUB_CLIENT_ID: "your-github-client-id",
+TRELLO_API_KEY: "your-trello-api-key",
+FEEDBACK_SHEET: "https://sheet.best/api/sheets/your-sheet-id",
+PRODUCT_SERVICE_URL: "https://labs-product.buildly.dev/",
+PRODUCT_SERVICE_TOKEN: "your-product-service-token",
+RELEASE_SERVICE_URL: "https://labs-release.buildly.dev/",
+RELEASE_SERVICE_TOKEN: "your-release-service-token",
+FREE_COUPON_CODE: "your-coupon-code",
+STRIPE_KEY: "your-stripe-key",
+BOT_API_KEY: "your-bot-api-key",
+HOSTNAME: "labs.buildly.dev",
+BABBLE_CHATBOT_URL: "https://labs-babble.buildly.dev/chatbot",
+PRODUCTION: false
+};
