@@ -1,10 +1,4 @@
-import React, { useEffect, useState, useContext } fr  // states
-  const [selectedProduct, setSelectedProduct] = useState(activeProduct || 0);
-  const [productData, setProductData] = useState([]);
-  const [releaseData, setReleaseData] = useState([]);
-  const [architectureImg, setArchitectureImg] = useState(null);
-  const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'gantt'
-  const [buildlyTools, setBuildlyTools] = useState([]);act';
+import React, { useEffect, useState, useContext } from 'react';
 import _ from 'lodash';
 import { useQuery } from 'react-query';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -61,6 +55,7 @@ const Insights = () => {
   const [releaseData, setReleaseData] = useState([]);
   const [architectureImg, setArchitectureImg] = useState(null);
   const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'gantt'
+  const [buildlyTools, setBuildlyTools] = useState([]);
 
   const { data: products, isLoading: areProductsLoading } = useQuery(
     ['allProducts', user.organization.organization_uuid],
