@@ -5,7 +5,7 @@ export const getAllReleaseQuery = async (product_uuid, displayAlert) => {
   try {
     const response = await httpService.makeRequest(
       'get',
-      `${window.env.API_URL}release/release/?product_uuid=${product_uuid}`,
+      `${window.env.RELEASE_SERVICE_URL}release/?product_uuid=${product_uuid}`,
     );
     return response.data;
   } catch (error) {

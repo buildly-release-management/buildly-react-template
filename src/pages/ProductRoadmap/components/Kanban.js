@@ -441,38 +441,54 @@ const Kanban = ({
 
                 <div className={classes.columnBody}>
                   {suggestedFeatures && !_.isEmpty(suggestedFeatures) ? (
-                    _.map(suggestedFeatures, (sug, idx) => (
-                      <Card key={`suggestion-${sug.suggestion_uuid}`} className={classes.card} variant="outlined">
-                        <CardHeader
-                          subheader={sug.suggested_feature}
-                          action={(
-                            <div>
-                              <IconButton
-                                aria-label="product-suggestion-add"
-                                aria-haspopup="false"
-                                color="secondary"
-                                onClick={(e) => createSuggestedFeature(sug)}
-                                size="large"
-                                className={classes.iconButton}
-                              >
-                                <AddTaskIcon fontSize="small" />
-                              </IconButton>
+                    <>
+                      {_.map(suggestedFeatures, (sug, idx) => (
+                        <Card key={`suggestion-${sug.suggestion_uuid}`} className={classes.card} variant="outlined">
+                          <CardHeader
+                            subheader={sug.suggested_feature}
+                            action={(
+                              <div>
+                                <IconButton
+                                  aria-label="product-suggestion-add"
+                                  aria-haspopup="false"
+                                  color="secondary"
+                                  onClick={(e) => createSuggestedFeature(sug)}
+                                  size="large"
+                                  className={classes.iconButton}
+                                >
+                                  <AddTaskIcon fontSize="small" />
+                                </IconButton>
 
-                              <IconButton
-                                aria-label="product-suggestion-remove"
-                                aria-haspopup="false"
-                                color="secondary"
-                                onClick={(e) => removeSuggestedFeature(sug)}
-                                size="large"
-                                className={classes.iconButton}
-                              >
-                                <CloseIcon fontSize="small" />
-                              </IconButton>
-                            </div>
-                          )}
-                        />
+                                <IconButton
+                                  aria-label="product-suggestion-remove"
+                                  aria-haspopup="false"
+                                  color="secondary"
+                                  onClick={(e) => removeSuggestedFeature(sug)}
+                                  size="large"
+                                  className={classes.iconButton}
+                                >
+                                  <CloseIcon fontSize="small" />
+                                </IconButton>
+                              </div>
+                            )}
+                          />
+                        </Card>
+                      ))}
+                      {/* Add button for generating more suggestions */}
+                      <Card className={classes.card} variant="outlined" style={{ marginTop: '8px' }}>
+                        <CardContent style={{ textAlign: 'center', padding: '12px' }}>
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                            onClick={generateAIFeatureSuggestion}
+                            startIcon={<TaskIcon />}
+                          >
+                            Generate Another
+                          </Button>
+                        </CardContent>
                       </Card>
-                    ))
+                    </>
                   ) : (
                     <Card className={classes.card} variant="outlined">
                       <CardContent style={{ textAlign: 'center', padding: '16px' }}>

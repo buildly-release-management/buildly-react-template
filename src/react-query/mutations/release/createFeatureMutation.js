@@ -9,7 +9,7 @@ export const useCreateFeatureMutation = (product_uuid, history, redirectTo, disp
     async (createFeatureData) => {
       const response = await httpService.makeRequest(
         'post',
-        `${window.env.API_URL}release/feature/`,
+        `${window.env.RELEASE_SERVICE_URL}feature/`,
         createFeatureData,
       );
       return response.data;

@@ -253,13 +253,26 @@ const Tabular = ({
       {!_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) && (
         <div className={classes.tabular}>
           {suggestedFeatures && !_.isEmpty(suggestedFeatures) ? (
-            <DataTableWrapper
-              rows={suggestedFeatures}
-              columns={finalSugCols}
-              filename="SuggestedFeaturesList"
-              hideAddButton
-              tableHeader="Suggested Features"
-            />
+            <>
+              <DataTableWrapper
+                rows={suggestedFeatures}
+                columns={finalSugCols}
+                filename="SuggestedFeaturesList"
+                hideAddButton
+                tableHeader="Suggested Features"
+              />
+              {/* Add button for generating more suggestions */}
+              <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={generateAIFeatureSuggestion}
+                  style={{ marginTop: '8px' }}
+                >
+                  Generate Another AI Suggestion
+                </Button>
+              </div>
+            </>
           ) : (
             <div style={{ padding: '20px', textAlign: 'center', border: '1px solid #e0e0e0', borderRadius: '4px', marginBottom: '20px' }}>
               <Typography variant="h6" gutterBottom>

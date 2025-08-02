@@ -158,6 +158,166 @@ const Insights = () => {
     disableButton(disable);
   };
 
+  // Team help request modal
+  const [showTeamHelpModal, setShowTeamHelpModal] = useState(false);
+  const [teamHelpForm, setTeamHelpForm] = useState({
+    helpType: '',
+    projectDescription: '',
+    timeline: '',
+    budget: '',
+    specificNeeds: '',
+    companySize: '',
+    currentChallenges: ''
+  });
+
+  const closeTeamHelpModal = () => {
+    setShowTeamHelpModal(false);
+    setTeamHelpForm({
+      helpType: '',
+      projectDescription: '',
+      timeline: '',
+      budget: '',
+      specificNeeds: '',
+      companySize: '',
+      currentChallenges: ''
+    });
+  };
+
+  const openTeamHelpModal = () => {
+    closeDownloadMenu();
+    setShowTeamHelpModal(true);
+  };
+
+  const updateTeamHelpForm = (event) => {
+    setTeamHelpForm({
+      ...teamHelpForm,
+      [event.target.name]: event.target.value
+    });
+  };
+
+  const isTeamHelpFormValid = () => {
+    return teamHelpForm.helpType && 
+           teamHelpForm.projectDescription && 
+           teamHelpForm.timeline && 
+           teamHelpForm.specificNeeds;
+  };
+
+  // Check if product needs team assistance
+  const needsTeamAssistance = () => {
+    if (!releaseData || !Array.isArray(releaseData) || releaseData.length === 0) {
+      return true; // No releases means likely needs help
+    }
+    
+    // Check if any release has a team configured
+    const hasConfiguredTeam = releaseData.some(release => 
+      release.team && Array.isArray(release.team) && release.team.length > 0
+    );
+    
+    return !hasConfiguredTeam;
+  };
+
+  const sendTeamHelpRequest = async () => {
+    try {
+      // Prepare comprehensive data for the team help request
+      const requestData = {
+        // User and organization info
+        user_name: `${user.first_name} ${user.last_name}`,
+        user_email: user.email,
+        user_title: user.title || 'Not specified',
+        organization_name: user.organization.name,
+        organization_uuid: user.organization.organization_uuid,
+        
+        // Product context
+        product_name: activeProduct?.name || 'Not specified',
+        product_uuid: selectedProduct,
+        product_description: activeProduct?.description || 'Not specified',
+        architecture_type: productData?.architecture_type || 'Not specified',
+        
+        // Release information
+        total_releases: releaseData?.length || 0,
+        release_names: releaseData?.map(r => r.name).join(', ') || 'None',
+        
+        // Help request details
+        help_type: teamHelpForm.helpType,
+        project_description: teamHelpForm.projectDescription,
+        timeline: teamHelpForm.timeline,
+        budget_range: teamHelpForm.budget,
+        specific_needs: teamHelpForm.specificNeeds,
+        company_size: teamHelpForm.companySize,
+        current_challenges: teamHelpForm.currentChallenges,
+        
+        // Technical context
+        complexity_score: activeProduct?.complexity_score || 'Not specified',
+        start_date: activeProduct?.start_date || 'Not specified',
+        end_date: activeProduct?.end_date || 'Not specified',
+        
+        // Timestamp
+        request_date: new Date().toISOString(),
+        
+        // Additional context
+        has_existing_team: releaseData?.some(r => r.team?.length > 0) || false,
+        total_estimated_budget: Object.values(budgetEstimates).reduce((sum, est) => sum + (est.total_budget || 0), 0)
+      };
+
+      // Send email to developers@buildly.io using the existing email infrastructure
+      const emailData = {
+        senders_name: `${user.first_name} ${user.last_name}`,
+        senders_title: user.title || 'Product Owner',
+        company_name: user.organization.name,
+        contact_information: user.email,
+        recipients: [{
+          name: 'Buildly Development Team',
+          email: 'developers@buildly.io'
+        }],
+        subject: `Team Assistance Request - ${teamHelpForm.helpType} for ${activeProduct?.name || 'Product'}`,
+        message: `Development Team Assistance Request
+
+CONTACT INFORMATION:
+- Name: ${user.first_name} ${user.last_name}
+- Email: ${user.email}
+- Title: ${user.title || 'Not specified'}
+- Organization: ${user.organization.name}
+- Company Size: ${teamHelpForm.companySize || 'Not specified'}
+
+PRODUCT INFORMATION:
+- Product: ${activeProduct?.name || 'Not specified'}
+- Description: ${activeProduct?.description || 'Not specified'}
+- Architecture: ${productData?.architecture_type || 'Not specified'}
+- Complexity Score: ${activeProduct?.complexity_score || 'Not specified'}
+- Timeline: ${activeProduct?.start_date || 'Not specified'} to ${activeProduct?.end_date || 'Not specified'}
+
+PROJECT DETAILS:
+- Type of Help Needed: ${teamHelpForm.helpType}
+- Project Description: ${teamHelpForm.projectDescription}
+- Timeline: ${teamHelpForm.timeline}
+- Budget Range: ${teamHelpForm.budget || 'Not specified'}
+- Current Challenges: ${teamHelpForm.currentChallenges || 'Not specified'}
+
+SPECIFIC REQUIREMENTS:
+${teamHelpForm.specificNeeds}
+
+RELEASES INFORMATION:
+- Total Releases: ${releaseData?.length || 0}
+- Release Names: ${releaseData?.map(r => r.name).join(', ') || 'None'}
+- Has Existing Team: ${releaseData?.some(r => r.team?.length > 0) ? 'Yes' : 'No'}
+- Estimated Budget: $${Object.values(budgetEstimates).reduce((sum, est) => sum + (est.total_budget || 0), 0).toLocaleString()}
+
+Please reach out to discuss how Buildly can help with this project.
+
+Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
+      };
+
+      // Use the existing email mutation
+      emailReportMutation(emailData);
+      closeTeamHelpModal();
+      displayAlert('success', 'Team assistance request sent successfully! Our team will contact you soon.');
+      
+    } catch (error) {
+      console.error('Error sending team help request:', error);
+      displayAlert('error', 'Failed to send team assistance request. Please try again.');
+    }
+  };
+
   const emailReport = (event) => {
     event.preventDefault();
     try {
@@ -634,6 +794,11 @@ const Insights = () => {
         a.click();
         window.URL.revokeObjectURL(url);
         a.remove();
+        displayAlert('success', 'PDF report downloaded successfully!');
+      })
+      .catch((error) => {
+        console.error('Error downloading PDF:', error);
+        displayAlert('error', 'Failed to download PDF report. Please try again.');
       });
 
     closeDownloadMenu();
@@ -982,6 +1147,11 @@ const Insights = () => {
               >
                 <MenuItem onClick={getPdf}>Download Report</MenuItem>
                 <MenuItem onClick={openEmailModal}>Email report</MenuItem>
+                {needsTeamAssistance() && (
+                  <MenuItem onClick={openTeamHelpModal} style={{ color: '#1976d2' }}>
+                    🚀 Request Team Help
+                  </MenuItem>
+                )}
               </Menu>
             </section>
           </div>
@@ -1773,6 +1943,173 @@ const Insights = () => {
                 onClick={(event) => emailReport(event)}
               >
                 Email report
+              </Button>
+            </Modal.Footer>
+          </Modal>
+
+          {/* Team Help Request Modal */}
+          <Modal
+            show={showTeamHelpModal}
+            onHide={closeTeamHelpModal}
+            backdrop="static"
+            keyboard={false}
+            centered
+            size="lg"
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>🚀 Request Development Team Assistance</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <div className="mb-3">
+                <p className="text-muted">
+                  Let our team help you find the right developers, tech leads, or CTO for your project. 
+                  Fill out the details below and we'll get back to you with recommendations.
+                </p>
+              </div>
+              
+              <Form noValidate>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Type of Help Needed *</Form.Label>
+                      <Form.Select
+                        name="helpType"
+                        value={teamHelpForm.helpType}
+                        onChange={updateTeamHelpForm}
+                        required
+                      >
+                        <option value="">Select help type...</option>
+                        <option value="Full Development Team">Full Development Team</option>
+                        <option value="Lead Developer">Lead Developer / Tech Lead</option>
+                        <option value="CTO / Technical Advisor">CTO / Technical Advisor</option>
+                        <option value="Specific Skills">Specific Technical Skills</option>
+                        <option value="Code Review">Code Review & Architecture Review</option>
+                        <option value="Project Rescue">Project Rescue / Recovery</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Company Size</Form.Label>
+                      <Form.Select
+                        name="companySize"
+                        value={teamHelpForm.companySize}
+                        onChange={updateTeamHelpForm}
+                      >
+                        <option value="">Select company size...</option>
+                        <option value="Startup (1-10 employees)">Startup (1-10 employees)</option>
+                        <option value="Small (11-50 employees)">Small (11-50 employees)</option>
+                        <option value="Medium (51-200 employees)">Medium (51-200 employees)</option>
+                        <option value="Large (200+ employees)">Large (200+ employees)</option>
+                        <option value="Enterprise (1000+ employees)">Enterprise (1000+ employees)</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Project Description *</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="projectDescription"
+                    value={teamHelpForm.projectDescription}
+                    onChange={updateTeamHelpForm}
+                    placeholder="Describe your project, its goals, and current status..."
+                    required
+                  />
+                </Form.Group>
+
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Timeline *</Form.Label>
+                      <Form.Select
+                        name="timeline"
+                        value={teamHelpForm.timeline}
+                        onChange={updateTeamHelpForm}
+                        required
+                      >
+                        <option value="">Select timeline...</option>
+                        <option value="ASAP (Within 1 month)">ASAP (Within 1 month)</option>
+                        <option value="1-3 months">1-3 months</option>
+                        <option value="3-6 months">3-6 months</option>
+                        <option value="6-12 months">6-12 months</option>
+                        <option value="12+ months">12+ months</option>
+                        <option value="Flexible">Flexible</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Budget Range</Form.Label>
+                      <Form.Select
+                        name="budget"
+                        value={teamHelpForm.budget}
+                        onChange={updateTeamHelpForm}
+                      >
+                        <option value="">Select budget range...</option>
+                        <option value="Under $50k">Under $50k</option>
+                        <option value="$50k - $100k">$50k - $100k</option>
+                        <option value="$100k - $250k">$100k - $250k</option>
+                        <option value="$250k - $500k">$250k - $500k</option>
+                        <option value="$500k+">$500k+</option>
+                        <option value="Prefer to discuss">Prefer to discuss</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Specific Technical Needs *</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    name="specificNeeds"
+                    value={teamHelpForm.specificNeeds}
+                    onChange={updateTeamHelpForm}
+                    placeholder="What specific skills, technologies, or expertise do you need? (e.g., React, Node.js, AWS, mobile development, etc.)"
+                    required
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Current Challenges</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={2}
+                    name="currentChallenges"
+                    value={teamHelpForm.currentChallenges}
+                    onChange={updateTeamHelpForm}
+                    placeholder="What challenges are you facing? (e.g., technical debt, scaling issues, team management, etc.)"
+                  />
+                </Form.Group>
+
+                <div className="alert alert-info">
+                  <strong>What happens next?</strong><br/>
+                  Our team will review your request and reach out within 24-48 hours with:
+                  <ul className="mb-0 mt-2">
+                    <li>Potential team members or partners in our network</li>
+                    <li>Recommendations based on your specific needs</li>
+                    <li>Next steps for moving forward</li>
+                  </ul>
+                </div>
+              </Form>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="outlined"
+                onClick={closeTeamHelpModal}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={sendTeamHelpRequest}
+                disabled={!isTeamHelpFormValid()}
+              >
+                Send Request
               </Button>
             </Modal.Footer>
           </Modal>

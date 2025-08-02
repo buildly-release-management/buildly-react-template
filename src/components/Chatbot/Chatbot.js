@@ -98,6 +98,11 @@ const generateContextualSuggestions = async (pathname) => {
     // Use the configured chatbot URL (automatically set based on environment)
     const chatbotUrl = window.env.BABBLE_CHATBOT_URL;
     
+    if (!chatbotUrl) {
+      console.warn('Chatbot: BABBLE_CHATBOT_URL not configured');
+      return [];
+    }
+    
     console.log('Chatbot: Using URL:', chatbotUrl, 'Production:', window.env.PRODUCTION);
     
     const response = await fetch(chatbotUrl, {
@@ -227,22 +232,55 @@ const Chatbot = () => {
       // Use the configured chatbot URL (automatically set based on environment)
       const chatbotUrl = window.env.BABBLE_CHATBOT_URL;
         
+      if (!chatbotUrl) {
+        console.warn('Chatbot: BABBLE_CHATBOT_URL not configured');
+        setMessages([...chatMessages, {
+          message: "Chatbot service is not configured. Please check with your administrator.",
+          sender,
+          timestamp: new Date(),
+        }]);
+        return;
+      }
+
       const response = await fetch(chatbotUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: contextualPrompt }),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
       
       setMessages([...chatMessages, {
-        message: data.response,
+        message: data.response || 'No response received',
         sender,
         timestamp: new Date(),
       }]);
     } catch (error) {
+      console.error('Chatbot error:', error);
+      
+      let errorMessage = "I'm sorry, I'm having trouble connecting right now.";
+      
+      // Check for specific error types
+      if (error.response && error.response.status === 500) {
+        errorMessage = "The chatbot service is experiencing technical difficulties. Our team has been notified.";
+        console.log('Chatbot 500 error - service issue, not CORS');
+      } else if (error.message.includes('CORS')) {
+        errorMessage = "The chatbot service is currently unavailable due to a configuration issue. Please try again later.";
+        console.log('CORS error detected');
+      } else if (error.message.includes('fetch')) {
+        errorMessage = "Unable to connect to the chatbot service. Please check your internet connection.";
+        console.log('Network/fetch error');
+      } else if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        errorMessage = "There was an issue with your request. Please try rephrasing your question.";
+        console.log(`Chatbot client error: ${error.response.status}`);
+      }
+      
       setMessages([...chatMessages, {
-        message: "I'm sorry, I'm having trouble connecting right now. Please check the documentation links above or try again later.",
+        message: `${errorMessage} You can still use the documentation links above or contact support.`,
         sender,
         timestamp: new Date(),
       }]);

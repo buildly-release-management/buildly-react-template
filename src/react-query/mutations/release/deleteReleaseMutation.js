@@ -8,7 +8,7 @@ export const useDeleteReleaseMutation = (product_uuid, history, redirectTo, disp
     async (deleteReleaseData) => {
       const response = await httpService.makeRequest(
         'delete',
-        `${window.env.API_URL}release/release/${deleteReleaseData.release_uuid}/`,
+        `${window.env.RELEASE_SERVICE_URL}release/${deleteReleaseData.release_uuid}/`,
         deleteReleaseData,
       );
       return response.data;

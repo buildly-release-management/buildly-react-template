@@ -9,7 +9,7 @@ export const useCreateReleaseMutation = (product_uuid, history, redirectTo, disp
     async (createReleaseData) => {
       const response = await httpService.makeRequest(
         'post',
-        `${window.env.API_URL}release/release/`,
+        `${window.env.RELEASE_SERVICE_URL}release/`,
         createReleaseData,
       );
       return response.data;

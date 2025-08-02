@@ -330,7 +330,22 @@ const ProductRoadmap = ({ history }) => {
       };
 
       const prompt = `
-You are an AI product manager helping to suggest new features for a software product. 
+You are an AI product manager helping to suggest new features for a software product built on the Buildly platform.
+
+IMPORTANT: Buildly is a product management and development platform. Please only suggest features that make sense for:
+- Product roadmap management
+- Release planning and tracking
+- Development team collaboration  
+- Project estimation and budgeting
+- Issue tracking and feature development
+- Team productivity and workflow optimization
+
+DO NOT suggest features like:
+- E-commerce or shopping cart functionality
+- Social media features
+- Gaming features
+- Blockchain or cryptocurrency features
+- Features unrelated to product management/development
 
 Product Details:
 - Name: ${context.product.name}
@@ -345,17 +360,18 @@ ${context.existing_features.map(f => `- ${f.name}: ${f.description} (Status: ${f
 Current Suggestions:
 ${context.current_suggestions.map(s => `- ${s.suggested_feature}`).join('\n')}
 
-Based on this context, please suggest ONE new feature that would be valuable for this product. The feature should:
-1. Complement existing features without duplicating them
-2. Be technically feasible given the architecture and technology stack
-3. Provide clear user value
-4. Be appropriately scoped for the project timeline
+Based on this context, please suggest ONE new feature that would enhance the product management or development workflow. The feature should:
+1. Be relevant to product management, development tracking, or team collaboration
+2. Complement existing features without duplicating them  
+3. Be technically feasible given the architecture and technology stack
+4. Provide clear value for product managers, developers, or stakeholders
+5. Be appropriately scoped for the project timeline
 
-Please respond with a JSON object in this exact format:
+Please respond with ONLY a JSON object in this exact format (no markdown, no code blocks):
 {
   "suggested_feature": "Feature Name",
-  "description": "Detailed description of the feature and its benefits",
-  "rationale": "Why this feature would be valuable for this specific product"
+  "description": "Detailed description of the feature and its benefits for product management",
+  "rationale": "Why this feature would be valuable for this specific product and team workflow"
 }
 `;
 
@@ -395,16 +411,42 @@ Please respond with a JSON object in this exact format:
       const aiResponse = await response.json();
       console.log('generateAIFeatureSuggestion: AI response:', aiResponse);
 
-      // Parse the AI response
+      // Parse the AI response and clean up any markdown formatting
       let suggestion;
       try {
-        suggestion = JSON.parse(aiResponse.response || aiResponse.message || '{}');
+        let responseText = aiResponse.response || aiResponse.message || '{}';
+        
+        // Remove markdown code blocks if present
+        responseText = responseText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+        
+        // Try to extract JSON if it's wrapped in other text
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          responseText = jsonMatch[0];
+        }
+        
+        console.log('generateAIFeatureSuggestion: Cleaned response text:', responseText);
+        
+        suggestion = JSON.parse(responseText);
+        
+        // Validate that we have the required fields
+        if (!suggestion.suggested_feature || !suggestion.description) {
+          throw new Error('Invalid suggestion format');
+        }
+        
       } catch (parseError) {
+        console.log('generateAIFeatureSuggestion: JSON parse failed, creating from text:', parseError);
         // If response is not JSON, create a basic suggestion from the text
         const responseText = aiResponse.response || aiResponse.message || 'AI Feature Suggestion';
+        
+        // Try to extract a feature name from the first line or sentence
+        const lines = responseText.split('\n').filter(line => line.trim());
+        const firstLine = lines[0] || responseText;
+        const featureName = firstLine.length > 100 ? firstLine.substring(0, 100) + '...' : firstLine;
+        
         suggestion = {
-          suggested_feature: responseText.substring(0, 100),
-          description: responseText,
+          suggested_feature: featureName.replace(/[{}":]/g, '').trim(),
+          description: responseText.substring(0, 500),
           rationale: 'AI-generated suggestion based on product analysis',
         };
       }
