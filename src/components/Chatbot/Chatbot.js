@@ -226,7 +226,12 @@ const Chatbot = () => {
     `;
 
     try {
-      const response = await fetch(window.env.BABBLE_CHATBOT_URL, {
+      // Use the same URL logic as the contextual suggestions
+      const chatbotUrl = window.env.PRODUCTION 
+        ? window.env.BABBLE_CHATBOT_URL 
+        : '/api/babble/chatbot';
+        
+      const response = await fetch(chatbotUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: contextualPrompt }),

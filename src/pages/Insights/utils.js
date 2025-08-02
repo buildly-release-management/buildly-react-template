@@ -57,9 +57,9 @@ export const generateAIFeatureEstimates = async (features, releaseDate, productC
   }
 
   // Check if BabbleBeaver is available
-  const apiUrl = window.env?.NODE_ENV === 'development' 
-    ? 'http://localhost:3001/api/chat'
-    : `${window.env.API_URL}ai/chat/`;
+  const chatbotUrl = window.env.PRODUCTION 
+    ? window.env.BABBLE_CHATBOT_URL 
+    : '/api/babble/chatbot';
 
   try {
     const featuresWithoutDates = features.filter(f => !f.estimated_completion_date);
@@ -89,14 +89,13 @@ Please provide completion date estimates in YYYY-MM-DD format, considering:
 Respond with a JSON array of objects with "index" (0-based) and "estimated_completion_date" fields.
 `;
 
-    const response = await fetch(apiUrl, {
+    const response = await fetch(chatbotUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: prompt,
-        context: 'project_management'
+        prompt: prompt,
       })
     });
 
@@ -138,9 +137,9 @@ Respond with a JSON array of objects with "index" (0-based) and "estimated_compl
  * @returns {Promise<Object>} - Budget and team recommendations
  */
 export const generateAIBudgetEstimate = async (release, productContext, teamPreferences = {}) => {
-  const apiUrl = window.env?.NODE_ENV === 'development' 
-    ? 'http://localhost:3001/api/chat'
-    : `${window.env.API_URL}ai/chat/`;
+  const chatbotUrl = window.env.PRODUCTION 
+    ? window.env.BABBLE_CHATBOT_URL 
+    : '/api/babble/chatbot';
 
   try {
     const prompt = `
@@ -185,14 +184,13 @@ Respond with JSON format:
 }
 `;
 
-    const response = await fetch(apiUrl, {
+    const response = await fetch(chatbotUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: prompt,
-        context: 'budget_estimation'
+        prompt: prompt,
       })
     });
 
