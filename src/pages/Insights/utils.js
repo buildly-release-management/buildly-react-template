@@ -57,9 +57,7 @@ export const generateAIFeatureEstimates = async (features, releaseDate, productC
   }
 
   // Check if BabbleBeaver is available
-  const chatbotUrl = window.env.PRODUCTION 
-    ? window.env.BABBLE_CHATBOT_URL 
-    : '/api/babble/chatbot';
+  const chatbotUrl = window.env.BABBLE_CHATBOT_URL;
 
   try {
     const featuresWithoutDates = features.filter(f => !f.estimated_completion_date);
@@ -137,9 +135,7 @@ Respond with a JSON array of objects with "index" (0-based) and "estimated_compl
  * @returns {Promise<Object>} - Budget and team recommendations
  */
 export const generateAIBudgetEstimate = async (release, productContext, teamPreferences = {}) => {
-  const chatbotUrl = window.env.PRODUCTION 
-    ? window.env.BABBLE_CHATBOT_URL 
-    : '/api/babble/chatbot';
+  const chatbotUrl = window.env.BABBLE_CHATBOT_URL;
 
   try {
     const prompt = `

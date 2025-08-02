@@ -361,10 +361,8 @@ Please respond with a JSON object in this exact format:
 
       console.log('generateAIFeatureSuggestion: Sending request to AI with context:', context);
 
-      // Use the same approach as the Chatbot component for consistency
-      const chatbotUrl = window.env.PRODUCTION 
-        ? window.env.BABBLE_CHATBOT_URL 
-        : '/api/babble/chatbot';
+      // Use the configured chatbot URL (automatically set based on environment)
+      const chatbotUrl = window.env.BABBLE_CHATBOT_URL;
       
       console.log('ProductRoadmap: Using chatbot URL:', chatbotUrl, 'Production:', window.env.PRODUCTION);
       console.log('ProductRoadmap: Full environment config:', {

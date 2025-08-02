@@ -95,10 +95,8 @@ const generateContextualSuggestions = async (pathname) => {
   const prompt = pageContextMap[pathname] || pageContextMap['default'];
 
   try {
-    // Use the proxy route for development, direct URL for production
-    const chatbotUrl = window.env.PRODUCTION 
-      ? window.env.BABBLE_CHATBOT_URL 
-      : '/api/babble/chatbot';
+    // Use the configured chatbot URL (automatically set based on environment)
+    const chatbotUrl = window.env.BABBLE_CHATBOT_URL;
     
     console.log('Chatbot: Using URL:', chatbotUrl, 'Production:', window.env.PRODUCTION);
     
@@ -226,10 +224,8 @@ const Chatbot = () => {
     `;
 
     try {
-      // Use the same URL logic as the contextual suggestions
-      const chatbotUrl = window.env.PRODUCTION 
-        ? window.env.BABBLE_CHATBOT_URL 
-        : '/api/babble/chatbot';
+      // Use the configured chatbot URL (automatically set based on environment)
+      const chatbotUrl = window.env.BABBLE_CHATBOT_URL;
         
       const response = await fetch(chatbotUrl, {
         method: 'POST',

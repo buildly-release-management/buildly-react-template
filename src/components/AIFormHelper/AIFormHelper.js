@@ -47,17 +47,15 @@ const AIFormHelper = ({
 
     const prompt = promptMap[type] || promptMap['general'];
 
-    // Use the same URL logic as other components
-    const chatbotUrl = window.env.PRODUCTION 
-      ? window.env.BABBLE_CHATBOT_URL 
-      : '/api/babble/chatbot';
+    // Use the configured chatbot URL (automatically set based on environment)
+    const chatbotUrl = window.env.BABBLE_CHATBOT_URL;
       
     console.log('AIFormHelper: Making request to:', chatbotUrl);
     console.log('AIFormHelper: With prompt:', prompt);
     console.log('AIFormHelper: window.env object:', window.env);
 
-    // Check if URL is available for production
-    if (window.env.PRODUCTION && !window.env?.BABBLE_CHATBOT_URL) {
+    // Check if URL is available
+    if (!chatbotUrl) {
       console.error('AIFormHelper: BABBLE_CHATBOT_URL not found in window.env');
       return ['AI service not configured', 'Please check environment settings', 'Contact administrator'];
     }
