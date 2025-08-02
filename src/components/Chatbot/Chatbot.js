@@ -47,26 +47,45 @@ const getContextualHelp = (pathname) => {
       title: 'Dashboard Help',
       links: [
         { label: 'Getting Started', url: 'https://docs.buildly.io/getting-started' },
-        { label: 'Dashboard Overview', url: 'https://docs.buildly.io/dashboard' },
-        { label: 'Product Management', url: 'https://docs.buildly.io/products' },
-        { label: 'Creating Your First Product', url: 'https://docs.buildly.io/products/create' },
-        { label: 'Release Planning', url: 'https://docs.buildly.io/releases' },
+        { label: 'Dashboard Overview', url: 'https://docs.buildly.io/features/dashboard' },
+        { label: 'Product Management', url: 'https://docs.buildly.io/features/product-portfolio' },
+        { label: 'Creating Your First Product', url: 'https://docs.buildly.io/guides/first-project' },
+        { label: 'Release Planning', url: 'https://docs.buildly.io/features/releases' },
       ],
     },
     '/app/product-portfolio': {
       title: 'Product Portfolio Help',
       links: [
-        { label: 'Product Management', url: 'https://docs.buildly.io/products' },
-        { label: 'Creating Products', url: 'https://docs.buildly.io/products/create' },
-        { label: 'Product Roadmaps', url: 'https://docs.buildly.io/roadmaps' },
+        { label: 'Product Management', url: 'https://docs.buildly.io/features/product-portfolio' },
+        { label: 'Creating Products', url: 'https://docs.buildly.io/guides/first-project' },
+        { label: 'Product Roadmaps', url: 'https://docs.buildly.io/features/product-roadmap' },
+      ],
+    },
+    '/app/product-roadmap': {
+      title: 'Product Roadmap Help',
+      links: [
+        { label: 'Roadmap Overview', url: 'https://docs.buildly.io/features/product-roadmap' },
+        { label: 'AI Feature Suggestions', url: 'https://docs.buildly.io/features/ai-feature-suggestions' },
+        { label: 'Kanban Board Guide', url: 'https://docs.buildly.io/guides/kanban-workflow' },
+        { label: 'Feature Management', url: 'https://docs.buildly.io/guides/feature-management' },
       ],
     },
     '/app/releases': {
       title: 'Release Management Help',
       links: [
-        { label: 'Release Planning', url: 'https://docs.buildly.io/releases' },
-        { label: 'Version Control', url: 'https://docs.buildly.io/releases/versions' },
-        { label: 'Deployment Guide', url: 'https://docs.buildly.io/deployment' },
+        { label: 'Release Planning', url: 'https://docs.buildly.io/features/releases' },
+        { label: 'AI Release Generation', url: 'https://docs.buildly.io/features/ai-release-generation' },
+        { label: 'Punchlist Management', url: 'https://docs.buildly.io/guides/punchlist-workflow' },
+        { label: 'Deployment Guide', url: 'https://docs.buildly.io/guides/deployment' },
+      ],
+    },
+    '/app/insights': {
+      title: 'Insights & Analytics Help',
+      links: [
+        { label: 'Analytics Overview', url: 'https://docs.buildly.io/features/insights' },
+        { label: 'AI Budget Estimation', url: 'https://docs.buildly.io/features/ai-budget-estimation' },
+        { label: 'Team Assistance', url: 'https://docs.buildly.io/features/team-assistance' },
+        { label: 'Performance Metrics', url: 'https://docs.buildly.io/guides/analytics' },
       ],
     },
     default: {
@@ -74,6 +93,8 @@ const getContextualHelp = (pathname) => {
       links: [
         { label: 'Documentation Home', url: 'https://docs.buildly.io' },
         { label: 'Getting Started', url: 'https://docs.buildly.io/getting-started' },
+        { label: 'All Features', url: 'https://docs.buildly.io/features' },
+        { label: 'AI Assistant Guide', url: 'https://docs.buildly.io/features/ai-assistant' },
         { label: 'API Reference', url: 'https://docs.buildly.io/api' },
         { label: 'Support', url: 'https://docs.buildly.io/support' },
       ],
@@ -88,8 +109,10 @@ const generateContextualSuggestions = async (pathname) => {
   const pageContextMap = {
     '/app/dashboard': 'Generate 3 helpful questions a user might ask about using a product management dashboard, creating their first product, starting a release, or getting started with project management. Include questions about navigation and next steps. Return only the questions, one per line.',
     '/app/product-portfolio': 'Generate 3 helpful questions a user might ask about managing products, setting complexity scores, or organizing product features. Return only the questions, one per line.',
-    '/app/releases': 'Generate 3 helpful questions a user might ask about creating releases, tracking release progress, or deployment processes. Return only the questions, one per line.',
-    'default': 'Generate 3 helpful questions a user might ask about getting started with Buildly, finding documentation, or contacting support. Return only the questions, one per line.'
+    '/app/product-roadmap': 'Generate 3 helpful questions a user might ask about product roadmaps, AI feature suggestions, Kanban boards, or feature management. Include questions about AI assistance and workflow optimization. Return only the questions, one per line.',
+    '/app/releases': 'Generate 3 helpful questions a user might ask about creating releases, AI release generation, punchlist management, or deployment processes. Include questions about release planning and tracking. Return only the questions, one per line.',
+    '/app/insights': 'Generate 3 helpful questions a user might ask about analytics, AI budget estimation, team assistance requests, or performance metrics. Include questions about insights and team management. Return only the questions, one per line.',
+    'default': 'Generate 3 helpful questions a user might ask about getting started with Buildly, finding documentation, using AI features, or contacting support. Return only the questions, one per line.'
   };
 
   const prompt = pageContextMap[pathname] || pageContextMap['default'];
