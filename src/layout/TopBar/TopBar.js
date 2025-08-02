@@ -108,13 +108,27 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     placeContent: 'flex-end center',
     alignItems: 'flex-end',
-    color: theme.palette.contrast.text,
+    color: '#FFFFFF', // Changed from theme.palette.contrast.text to white
     '& p': {
       fontSize: 12,
+      color: '#FFFFFF', // Ensure all text is white
+    },
+    '& .MuiTypography-root': {
+      color: '#FFFFFF', // Ensure Typography components are white
     },
   },
   accountMenuIItem: {
     margin: 8,
+    color: '#000000', // Use dark text for proper contrast on white background
+    '& .MuiTypography-root': {
+      color: '#000000', // Ensure Typography in menu items is dark
+    },
+    '& .MuiListItemIcon-root': {
+      color: '#000000', // Ensure icons are dark
+    },
+    '& .MuiSvgIcon-root': {
+      color: '#000000', // Ensure SVG icons are dark
+    },
   },
   accountMenuIcon: {
     backgroundColor: theme.palette.contrast.text,
@@ -411,11 +425,22 @@ const TopBar = ({ history, location }) => {
                   overflow: 'visible',
                   filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
                   mt: 1.5,
+                  backgroundColor: '#FFFFFF', // Ensure white background
+                  color: '#000000', // Ensure dark text
                   '& .MuiAvatar-root': {
                     width: 32,
                     height: 32,
                     ml: -0.5,
                     mr: 1,
+                  },
+                  '& .MuiMenuItem-root': {
+                    color: '#000000', // Override any theme color for menu items
+                    '& .MuiSvgIcon-root': {
+                      color: '#000000', // Override icon colors
+                    },
+                    '& .MuiListItemIcon-root': {
+                      color: '#000000', // Override list item icon colors
+                    },
                   },
                   '&:before': {
                     content: '""',

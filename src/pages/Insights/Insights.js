@@ -41,6 +41,8 @@ import { Grid, TextField, Typography } from '@mui/material';
 import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery.js';
 import { useEmailReportMutation } from '@react-query/mutations/product/emailReportMutation';
 import { getProductReportQuery } from '@react-query/queries/product/getProductReportQuery';
+import { getProductBudgetQuery } from '@react-query/queries/budget/getProductBudgetQuery';
+import { useSaveProductBudgetMutation } from '@react-query/mutations/budget/saveProductBudgetMutation';
 import { getReleaseProductReportQuery } from '@react-query/queries/release/getReleaseProductReportQuery';
 import { useStore } from '@zustand/product/productStore';
 
@@ -57,12 +59,15 @@ const Insights = () => {
   const [architectureImg, setArchitectureImg] = useState(null);
   const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'gantt'
   const [buildlyTools, setBuildlyTools] = useState([]);
+  const [marketplaceTools, setMarketplaceTools] = useState([]);
   
   // Team configuration states
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [selectedRelease, setSelectedRelease] = useState(null);
   const [budgetEstimates, setBudgetEstimates] = useState({});
   const [budgetLoading, setBudgetLoading] = useState({});
+  const [releasePunchlists, setReleasePunchlists] = useState({});
+  const [punchlistInputs, setPunchlistInputs] = useState({});
 
   const { data: products, isLoading: areProductsLoading } = useQuery(
     ['allProducts', user.organization.organization_uuid],
@@ -108,7 +113,14 @@ const Insights = () => {
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
   );
 
+  const { data: budgetData, isLoading: isGettingProductBudget } = useQuery(
+    ['productBudget', selectedProduct],
+    () => getProductBudgetQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+  );
+
   const { mutate: emailReportMutation, isLoading: isEmailingReport } = useEmailReportMutation(selectedProduct, displayAlert);
+  const { mutate: saveBudgetMutation, isLoading: isSavingBudget } = useSaveProductBudgetMutation(selectedProduct, displayAlert);
 
   // Email report modal
   const [showEmailModal, setShow] = useState(false);
@@ -336,6 +348,23 @@ const Insights = () => {
     processInsightsData();
   }, [selectedProduct, reportData, releaseReport]);
 
+  // Initialize budget estimates from API data
+  useEffect(() => {
+    if (budgetData && budgetData.release_budgets) {
+      console.log('Insights: Initializing budget estimates from API data');
+      const budgetEstimatesFromAPI = {};
+      
+      budgetData.release_budgets.forEach(releaseBudget => {
+        if (releaseBudget.release_name && releaseBudget.budget_estimate) {
+          budgetEstimatesFromAPI[releaseBudget.release_name] = releaseBudget.budget_estimate;
+        }
+      });
+      
+      setBudgetEstimates(budgetEstimatesFromAPI);
+      console.log('Insights: Budget estimates loaded:', Object.keys(budgetEstimatesFromAPI));
+    }
+  }, [budgetData]);
+
   // Fetch Buildly open source tools from GitHub
   useEffect(() => {
     const fetchBuildlyTools = async () => {
@@ -466,31 +495,50 @@ const Insights = () => {
         ];
 
         // If we have few marketplace tools, combine with fallback data
-        let allTools = [...marketplaceTools];
+        let openSourceTools = [];
+        let premiumTools = [...marketplaceTools];
         
-        if (allTools.length < 4) {
-          console.log('Using fallback tools due to API limitations...');
+        // Separate open source tools from fallback data
+        const openSourceFallback = fallbackTools.filter(tool => !tool.isPremium);
+        const premiumFallback = fallbackTools.filter(tool => tool.isPremium);
+        
+        openSourceTools = openSourceFallback;
+        
+        if (premiumTools.length < 2) {
+          console.log('Using fallback premium tools due to API limitations...');
           
-          // Add fallback tools, avoiding duplicates
-          const existingNames = new Set(allTools.map(tool => tool.name));
-          const additionalTools = fallbackTools.filter(tool => !existingNames.has(tool.name));
-          allTools = [...allTools, ...additionalTools];
+          // Add fallback premium tools, avoiding duplicates
+          const existingNames = new Set(premiumTools.map(tool => tool.name));
+          const additionalPremiumTools = premiumFallback.filter(tool => !existingNames.has(tool.name));
+          premiumTools = [...premiumTools, ...additionalPremiumTools];
         }
 
         // Calculate relevance scores for tools that don't have them
-        allTools = allTools.map(tool => ({
+        openSourceTools = openSourceTools.map(tool => ({
+          ...tool,
+          relevance_score: tool.relevance_score || calculateRelevanceScore(tool, productData)
+        }));
+        
+        premiumTools = premiumTools.map(tool => ({
           ...tool,
           relevance_score: tool.relevance_score || calculateRelevanceScore(tool, productData)
         }));
 
-        // Sort by relevance and limit to 6 tools
-        const validTools = allTools
+        // Sort by relevance and limit tools
+        const validOpenSourceTools = openSourceTools
           .filter(tool => tool !== null)
           .sort((a, b) => (b.relevance_score || 0) - (a.relevance_score || 0))
           .slice(0, 6);
+          
+        const validPremiumTools = premiumTools
+          .filter(tool => tool !== null)
+          .sort((a, b) => (b.relevance_score || 0) - (a.relevance_score || 0))
+          .slice(0, 4);
         
-        console.log('Insights: Fetched buildly tools:', validTools.length);
-        setBuildlyTools(validTools);
+        console.log('Insights: Fetched open source tools:', validOpenSourceTools.length);
+        console.log('Insights: Fetched premium tools:', validPremiumTools.length);
+        setBuildlyTools(validOpenSourceTools);
+        setMarketplaceTools(validPremiumTools);
       } catch (error) {
         console.error('Insights: Error fetching buildly tools:', error);
         
@@ -641,6 +689,53 @@ const Insights = () => {
     }
   };
 
+  // Handle adding punchlist item
+  const handleAddPunchlistItem = (releaseId, description) => {
+    if (!description.trim()) return;
+
+    const newItem = {
+      id: Date.now(),
+      description: description.trim(),
+      status: 'Open',
+      priority: 'Medium',
+      created_date: new Date().toISOString().split('T')[0],
+      assignee: null
+    };
+
+    setReleasePunchlists(prev => ({
+      ...prev,
+      [releaseId]: [...(prev[releaseId] || []), newItem]
+    }));
+
+    // Clear the input
+    setPunchlistInputs(prev => ({
+      ...prev,
+      [releaseId]: ''
+    }));
+
+    displayAlert('success', 'Punchlist item added successfully');
+  };
+
+  // Handle updating punchlist item status
+  const handleUpdatePunchlistStatus = (releaseId, itemId, newStatus) => {
+    setReleasePunchlists(prev => ({
+      ...prev,
+      [releaseId]: (prev[releaseId] || []).map(item =>
+        item.id === itemId ? { ...item, status: newStatus } : item
+      )
+    }));
+  };
+
+  // Handle removing punchlist item
+  const handleRemovePunchlistItem = (releaseId, itemId) => {
+    setReleasePunchlists(prev => ({
+      ...prev,
+      [releaseId]: (prev[releaseId] || []).filter(item => item.id !== itemId)
+    }));
+    
+    displayAlert('success', 'Punchlist item removed');
+  };
+
   // Handle team configuration save
   const handleTeamSave = (teamConfig) => {
     if (!selectedRelease) return;
@@ -696,8 +791,9 @@ const Insights = () => {
     setBudgetLoading(prev => ({ ...prev, saveAll: true }));
     
     try {
-      // Prepare budget data for backend
+      // Prepare budget data for the new budget API
       const budgetData = {
+        product_uuid: selectedProduct,
         total_budget: Object.values(budgetEstimates).reduce((total, estimate) => total + (estimate.total_budget || 0), 0),
         release_budgets: releaseData.map(release => ({
           release_uuid: release.release_uuid,
@@ -709,56 +805,36 @@ const Insights = () => {
         last_updated: new Date().toISOString()
       };
 
-      console.log('Attempting to save budget data:', budgetData);
+      console.log('Attempting to save budget data via new API:', budgetData);
 
-      // Use the existing product PATCH endpoint to save budget in product_info
-      const currentProductInfo = productData?.product_info || {};
+      // Use the new budget API mutation
+      await saveBudgetMutation.mutateAsync(budgetData);
       
-      // Parse product_info if it's a string, otherwise use as object
-      let productInfo;
-      try {
-        productInfo = typeof currentProductInfo === 'string' 
-          ? JSON.parse(currentProductInfo) 
-          : currentProductInfo;
-      } catch (e) {
-        console.warn('Failed to parse product_info, using empty object:', e);
-        productInfo = {};
-      }
-
-      const updatedProductData = {
-        product_info: JSON.stringify({
-          ...productInfo,
-          budget_data: budgetData,
-          budget_last_updated: new Date().toISOString()
-        })
-      };
-
-      const response = await httpService.makeRequest(
-        'patch',
-        `${window.env.API_URL}product/product/${selectedProduct}/`,
-        updatedProductData
-      );
-
-      console.log('Budget saved successfully in product_info:', response.data);
+      console.log('Budget saved successfully via budget API');
       displayAlert('success', 'Budget saved for entire product successfully!');
       
-      // Update local state to reflect saved budget
-      if (productData) {
-        setProductData(prev => ({
-          ...prev,
-          product_info: updatedProductData.product_info
-        }));
-      }
-      
     } catch (error) {
-      console.error('Error saving budget:', error);
+      console.error('Error saving budget via API:', error);
       
       // Fallback to localStorage if API fails
       try {
+        // Recreate budgetData for localStorage since it's scoped to the try block
+        const fallbackBudgetData = {
+          total_budget: Object.values(budgetEstimates).reduce((total, estimate) => total + (estimate.total_budget || 0), 0),
+          release_budgets: releaseData.map(release => ({
+            release_uuid: release.release_uuid,
+            release_name: release.name,
+            budget_estimate: budgetEstimates[release.name] || null,
+            team_configuration: release.team || [],
+            total_cost: release.totalCost || 0
+          })),
+          last_updated: new Date().toISOString()
+        };
+        
         const localBudgetKey = `budget_${selectedProduct}`;
         localStorage.setItem(localBudgetKey, JSON.stringify({
           product_uuid: selectedProduct,
-          ...budgetData,
+          ...fallbackBudgetData,
           saved_locally: true,
           saved_at: new Date().toISOString()
         }));
@@ -973,6 +1049,59 @@ const Insights = () => {
                     ) : (
                       <div className="text-center text-muted p-4">
                         <p>Loading Buildly open source tools...</p>
+                      </div>
+                    )}
+                  </div>
+                </Card.Body>
+              </Card>
+              
+              {/* Marketplace Tools Section */}
+              <Card className="w-100 mt-2">
+                <Card.Body>
+                  <Card.Title>Premium Marketplace Components</Card.Title>
+                  <div className="w-100 m-2">
+                    {marketplaceTools && marketplaceTools.length > 0 ? (
+                      <div>
+                        {marketplaceTools.map((tool, index) => (
+                          <Card key={`marketplace-tool-${index}`} className="mb-2" style={{ border: '1px solid #ffc107', backgroundColor: '#fffbf0' }}>
+                            <Card.Body style={{ padding: '10px' }}>
+                              <div className="d-flex justify-content-between align-items-center">
+                                <div style={{ flex: 1 }}>
+                                  <div className="d-flex justify-content-between align-items-start">
+                                    <h6 className="mb-1" style={{ color: '#d68910' }}>
+                                      <a 
+                                        href={tool.html_url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        style={{ textDecoration: 'none', color: '#d68910' }}
+                                      >
+                                        {tool.name} ⭐
+                                      </a>
+                                    </h6>
+                                    <div className="d-flex align-items-center">
+                                      <small className="badge bg-warning text-dark me-2">Premium</small>
+                                      <small className="badge bg-primary" style={{ fontSize: '10px' }}>
+                                        {Math.round(tool.relevance_score || 50)}% match
+                                      </small>
+                                    </div>
+                                  </div>
+                                  <small className="text-muted">{tool.description || 'No description available'}</small>
+                                  <div className="mt-1">
+                                    <small className="badge bg-light text-dark me-1">{tool.language || 'React'}</small>
+                                    <small className="badge bg-light text-dark me-1">⭐ {tool.stargazers_count || 0}</small>
+                                    {tool.topics && tool.topics.slice(0, 2).map((topic, idx) => (
+                                      <small key={idx} className="badge bg-warning text-dark me-1">{topic}</small>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </Card.Body>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center text-muted p-4">
+                        <p>Loading premium marketplace components...</p>
                       </div>
                     )}
                   </div>
@@ -1264,6 +1393,151 @@ const Insights = () => {
                               >
                                 📋 View Details
                               </Button>
+                            </div>
+
+                            {/* Punchlist Section */}
+                            <div style={{ 
+                              marginTop: '20px',
+                              padding: '15px',
+                              backgroundColor: '#f8f9fa',
+                              borderRadius: '6px',
+                              border: '1px solid #dee2e6'
+                            }}>
+                              <h6 style={{ 
+                                color: '#495057',
+                                marginBottom: '12px',
+                                fontWeight: 'bold'
+                              }}>
+                                🔧 Punchlist ({(releasePunchlists[release.release_uuid] || []).length} items)
+                              </h6>
+                              
+                              {/* Add new punchlist item */}
+                              <div style={{ 
+                                display: 'flex',
+                                gap: '8px',
+                                marginBottom: '12px'
+                              }}>
+                                <input
+                                  type="text"
+                                  placeholder="Add bug or issue..."
+                                  value={punchlistInputs[release.release_uuid] || ''}
+                                  onChange={(e) => setPunchlistInputs(prev => ({
+                                    ...prev,
+                                    [release.release_uuid]: e.target.value
+                                  }))}
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                      handleAddPunchlistItem(release.release_uuid, e.target.value);
+                                    }
+                                  }}
+                                  style={{
+                                    flex: 1,
+                                    padding: '6px 10px',
+                                    border: '1px solid #ced4da',
+                                    borderRadius: '4px',
+                                    fontSize: '12px'
+                                  }}
+                                />
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  style={{ 
+                                    backgroundColor: '#28a745',
+                                    color: 'white',
+                                    fontSize: '11px',
+                                    minWidth: 'auto',
+                                    padding: '6px 12px'
+                                  }}
+                                  onClick={() => handleAddPunchlistItem(
+                                    release.release_uuid, 
+                                    punchlistInputs[release.release_uuid] || ''
+                                  )}
+                                >
+                                  ➕
+                                </Button>
+                              </div>
+
+                              {/* Punchlist items */}
+                              <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                {(releasePunchlists[release.release_uuid] || []).length > 0 ? (
+                                  releasePunchlists[release.release_uuid].map(item => (
+                                    <div key={item.id} style={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                      padding: '8px 10px',
+                                      marginBottom: '4px',
+                                      backgroundColor: item.status === 'Resolved' ? '#d4edda' : '#fff',
+                                      border: '1px solid #e9ecef',
+                                      borderRadius: '4px',
+                                      fontSize: '12px'
+                                    }}>
+                                      <div style={{ flex: 1 }}>
+                                        <span style={{ 
+                                          textDecoration: item.status === 'Resolved' ? 'line-through' : 'none',
+                                          color: item.status === 'Resolved' ? '#6c757d' : '#495057'
+                                        }}>
+                                          {item.description}
+                                        </span>
+                                        <div style={{ 
+                                          color: '#6c757d', 
+                                          fontSize: '10px',
+                                          marginTop: '2px'
+                                        }}>
+                                          {item.created_date} • {item.status}
+                                        </div>
+                                      </div>
+                                      <div style={{ display: 'flex', gap: '4px' }}>
+                                        <button
+                                          onClick={() => handleUpdatePunchlistStatus(
+                                            release.release_uuid, 
+                                            item.id, 
+                                            item.status === 'Open' ? 'Resolved' : 'Open'
+                                          )}
+                                          style={{
+                                            border: 'none',
+                                            background: 'transparent',
+                                            cursor: 'pointer',
+                                            fontSize: '12px',
+                                            padding: '2px 6px',
+                                            borderRadius: '3px',
+                                            backgroundColor: item.status === 'Open' ? '#28a745' : '#ffc107'
+                                          }}
+                                          title={item.status === 'Open' ? 'Mark as Resolved' : 'Reopen'}
+                                        >
+                                          {item.status === 'Open' ? '✓' : '↻'}
+                                        </button>
+                                        <button
+                                          onClick={() => handleRemovePunchlistItem(release.release_uuid, item.id)}
+                                          style={{
+                                            border: 'none',
+                                            background: 'transparent',
+                                            cursor: 'pointer',
+                                            fontSize: '12px',
+                                            padding: '2px 6px',
+                                            borderRadius: '3px',
+                                            backgroundColor: '#dc3545',
+                                            color: 'white'
+                                          }}
+                                          title="Remove item"
+                                        >
+                                          ✕
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div style={{ 
+                                    textAlign: 'center',
+                                    color: '#6c757d',
+                                    fontStyle: 'italic',
+                                    padding: '10px',
+                                    fontSize: '12px'
+                                  }}>
+                                    No issues tracked yet
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </Card.Body>
                         </Card>

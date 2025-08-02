@@ -185,6 +185,89 @@ const ReleaseList = () => {
 
   const handleClose = () => setShow(false);
 
+  const handleAIGenerateRelease = async () => {
+    console.log('Generate AI release from unfinished features');
+    
+    if (!selectedProduct) {
+      displayAlert('warning', 'Please select a product first');
+      return;
+    }
+    
+    try {
+      // Analyze unfinished features
+      const unfinishedFeatures = features?.filter(feature => 
+        feature.status !== 'Completed' && feature.status !== 'Released'
+      ) || [];
+      
+      console.log('Unfinished features found:', unfinishedFeatures.length);
+      
+      if (unfinishedFeatures.length === 0) {
+        displayAlert('info', 'No unfinished features found to create a release');
+        return;
+      }
+
+      // Debug: Check feature structure
+      console.log('Sample feature structure:', unfinishedFeatures[0]);
+      console.log('Feature UUID field exists?', 'feature_uuid' in unfinishedFeatures[0]);
+      console.log('Available feature keys:', Object.keys(unfinishedFeatures[0] || {}));
+
+      // Find current product info for repository details
+      const currentProduct = productData?.find(p => p.product_uuid === selectedProduct);
+      console.log('Current product data:', currentProduct);
+      
+      // Get product info which might contain repository details
+      let productInfo = {};
+      try {
+        productInfo = typeof currentProduct?.product_info === 'string' 
+          ? JSON.parse(currentProduct.product_info) 
+          : (currentProduct?.product_info || {});
+      } catch (e) {
+        console.warn('Failed to parse product_info:', e);
+      }
+      
+      console.log('Product info:', productInfo);
+
+      // Select high-priority unfinished features for the release
+      const priorityFeatures = unfinishedFeatures
+        .sort((a, b) => {
+          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+          return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+        })
+        .slice(0, Math.min(8, unfinishedFeatures.length)); // Limit to 8 features max
+
+      // Create AI-suggested release
+      const nextReleaseNumber = (releases?.length || 0) + 1;
+      const releaseDate = new Date();
+      releaseDate.setMonth(releaseDate.getMonth() + 3); // 3 months from now
+
+      const releaseData = {
+        name: `AI Release v${nextReleaseNumber}.0`,
+        description: `AI-generated release based on ${priorityFeatures.length} high-priority unfinished features`,
+        release_date: releaseDate.toISOString().split('T')[0],
+        product_uuid: selectedProduct,
+        features: priorityFeatures.map(f => f.feature_uuid || f.id), // Fallback to id if feature_uuid doesn't exist
+        // Add repository information if available to prevent 500 error
+        repository: productInfo.repository || currentProduct?.repository || 'default-repo',
+        owner_name: productInfo.owner_name || currentProduct?.owner_name || currentProduct?.name || 'default-owner'
+      };
+
+      // Validate the release data
+      if (!releaseData.name || !releaseData.release_date || !releaseData.product_uuid) {
+        console.error('Missing required fields:', releaseData);
+        displayAlert('error', 'Missing required fields for release creation');
+        return;
+      }
+
+      console.log('Creating release with data:', releaseData);
+      console.log('Features being sent:', releaseData.features);
+      console.log('Repository info:', { repository: releaseData.repository, owner_name: releaseData.owner_name });
+      createReleaseMutation(releaseData);
+    } catch (error) {
+      console.error('Failed to generate AI release:', error);
+      displayAlert('error', 'Failed to generate AI release');
+    }
+  };
+
   const updateFormData = (e) => {
     setFormData({
       ...formData,
@@ -469,15 +552,30 @@ const ReleaseList = () => {
             <>
               <div className="d-flex justify-content-between">
                 <Typography variant="h6">Releases summary</Typography>
-                <Button
-                  type="button"
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  onClick={handleShow}
-                >
-                  New release
-                </Button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Button
+                    type="button"
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    onClick={handleShow}
+                  >
+                    New release
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="contained"
+                    size="small"
+                    style={{ 
+                      backgroundColor: '#9c27b0',
+                      color: 'white'
+                    }}
+                    onClick={handleAIGenerateRelease}
+                    disabled={isCreatingReleaseLoading}
+                  >
+                    🤖 AI Generate Release
+                  </Button>
+                </div>
               </div>
               {!_.isEmpty(releasesSummary) && (
                 <div className="container-fluid charts-parent-container">

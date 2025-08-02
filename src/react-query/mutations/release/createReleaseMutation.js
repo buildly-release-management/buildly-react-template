@@ -25,10 +25,11 @@ export const useCreateReleaseMutation = (product_uuid, history, redirectTo, disp
         await queryClient.invalidateQueries({ queryKey: ['allIssues', product_uuid] });
         await queryClient.invalidateQueries({ queryKey: ['releaseSummary', product_uuid] });
       },
-    },
-    {
-      onError: () => {
-        displayAlert('error', 'Unable to create release!');
+      onError: (error) => {
+        console.error('Release creation error:', error);
+        console.error('Error response:', error.response?.data);
+        console.error('Error status:', error.response?.status);
+        displayAlert('error', `Unable to create release! ${error.response?.data?.message || error.message || ''}`);
       },
     },
   );
