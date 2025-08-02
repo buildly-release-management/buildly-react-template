@@ -362,19 +362,33 @@ Please respond with a JSON object in this exact format:
       console.log('generateAIFeatureSuggestion: Sending request to AI with context:', context);
 
       // Use the same approach as the Chatbot component for consistency
-      const isProduction = window.location.hostname !== 'localhost';
-      const baseUrl = isProduction ? 'https://babble.buildly.dev' : '/api/babble';
+      const chatbotUrl = window.env.PRODUCTION 
+        ? window.env.BABBLE_CHATBOT_URL 
+        : '/api/babble/chatbot';
       
-      const response = await fetch(`${baseUrl}/chatbot`, {
+      console.log('ProductRoadmap: Using chatbot URL:', chatbotUrl, 'Production:', window.env.PRODUCTION);
+      console.log('ProductRoadmap: Full environment config:', {
+        PRODUCTION: window.env.PRODUCTION,
+        BABBLE_CHATBOT_URL: window.env.BABBLE_CHATBOT_URL,
+        hostname: window.location.hostname
+      });
+      
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      const response = await fetch(chatbotUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: prompt,
-          context: 'feature_suggestion',
+          prompt: prompt,
         }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`AI service responded with status: ${response.status}`);
@@ -422,7 +436,18 @@ Please respond with a JSON object in this exact format:
 
     } catch (error) {
       console.error('generateAIFeatureSuggestion: Error:', error);
-      displayAlert('error', 'Failed to generate AI feature suggestion. Please try again.');
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to generate AI feature suggestion. Please try again.';
+      if (error.name === 'AbortError') {
+        errorMessage = 'AI service request timed out. Please try again.';
+      } else if (error.message && error.message.includes('Failed to fetch')) {
+        errorMessage = 'Unable to connect to AI service. Please check your internet connection and try again.';
+      } else if (error.message && error.message.includes('status:')) {
+        errorMessage = `AI service error: ${error.message}. Please try again later.`;
+      }
+      
+      displayAlert('error', errorMessage);
     }
   };
 

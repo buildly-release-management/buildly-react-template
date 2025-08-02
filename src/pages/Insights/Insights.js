@@ -1207,66 +1207,6 @@ const Insights = () => {
                             <small>{release.duration?.weeks || 0} weeks</small>
                           </Card.Header>
                           <Card.Body>
-                            {/* Budget Information */}
-                            <div className="mb-3">
-                              <h6 style={{ color: '#0C5594', marginBottom: '10px' }}>💰 Budget Overview</h6>
-                              {budgetEstimates[release.name] ? (
-                                <div>
-                                  <div style={{ 
-                                    display: 'flex', 
-                                    justifyContent: 'space-between',
-                                    marginBottom: '8px',
-                                    padding: '8px',
-                                    backgroundColor: '#f8f9fa',
-                                    borderRadius: '4px'
-                                  }}>
-                                    <span><strong>Total Cost:</strong></span>
-                                    <span style={{ color: '#28a745', fontWeight: 'bold' }}>
-                                      ${budgetEstimates[release.name].total_budget?.toLocaleString()}
-                                    </span>
-                                  </div>
-                                  <div style={{ 
-                                    display: 'flex', 
-                                    justifyContent: 'space-between',
-                                    marginBottom: '8px',
-                                    fontSize: '12px',
-                                    color: '#6c757d'
-                                  }}>
-                                    <span>Timeline: {budgetEstimates[release.name].timeline_weeks}w</span>
-                                    <span>Confidence: {budgetEstimates[release.name].confidence}</span>
-                                  </div>
-                                  <div style={{ 
-                                    fontSize: '11px', 
-                                    textAlign: 'center',
-                                    padding: '4px',
-                                    backgroundColor: budgetEstimates[release.name].estimation_source === 'ai' ? '#e3f2fd' : '#f3e5f5',
-                                    borderRadius: '3px',
-                                    color: '#6c757d'
-                                  }}>
-                                    {budgetEstimates[release.name].estimation_source === 'ai' ? '🤖 AI-generated' : '👤 User-configured'}
-                                    {budgetEstimates[release.name].risk_buffer && ` • ${budgetEstimates[release.name].risk_buffer}% buffer`}
-                                  </div>
-                                </div>
-                              ) : (
-                                <div style={{ 
-                                  display: 'flex', 
-                                  justifyContent: 'space-between',
-                                  marginBottom: '8px',
-                                  padding: '8px',
-                                  backgroundColor: '#f8f9fa',
-                                  borderRadius: '4px'
-                                }}>
-                                  <span><strong>Total Cost:</strong></span>
-                                  <span style={{ color: '#28a745', fontWeight: 'bold' }}>
-                                    ${release.totalCost?.toLocaleString() || 'Not estimated'}
-                                  </span>
-                                </div>
-                              )}
-                              <div style={{ fontSize: '12px', color: '#6c757d' }}>
-                                Features: {release.features?.length || 0} • Issues: {release.issues?.length || 0}
-                              </div>
-                            </div>
-
                             {/* Team Composition */}
                             <div className="mb-3">
                               <h6 style={{ color: '#0C5594', marginBottom: '10px' }}>👥 Team Composition</h6>
