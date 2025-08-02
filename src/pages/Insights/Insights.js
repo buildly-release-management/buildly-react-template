@@ -120,7 +120,7 @@ const Insights = () => {
   );
 
   const { mutate: emailReportMutation, isLoading: isEmailingReport } = useEmailReportMutation(selectedProduct, displayAlert);
-  const { mutate: saveBudgetMutation, isLoading: isSavingBudget } = useSaveProductBudgetMutation(selectedProduct, displayAlert);
+  const saveBudgetMutation = useSaveProductBudgetMutation(selectedProduct, displayAlert);
 
   // Email report modal
   const [showEmailModal, setShow] = useState(false);
