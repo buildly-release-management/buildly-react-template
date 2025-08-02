@@ -1,0 +1,36 @@
+{
+  "name": "buildly-docs-updater",
+  "version": "1.0.0",
+  "description": "Automated documentation management for Buildly Product Labs",
+  "main": "update-docs.js",
+  "scripts": {
+    "docs:update": "node update-docs.js",
+    "docs:watch": "nodemon --watch ../src --ext js,jsx,ts,tsx --exec \"npm run docs:update\"",
+    "docs:build": "node update-docs.js && node build-static-site.js",
+    "docs:deploy": "npm run docs:build && node deploy-docs.js",
+    "docs:serve": "cd docs-output && python3 -m http.server 8080",
+    "docs:dev": "concurrently \"npm run docs:watch\" \"npm run docs:serve\"",
+    "docs:init": "node init-docs-repo.js",
+    "pre-commit": "npm run docs:update"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20",
+    "concurrently": "^7.6.0",
+    "marked": "^4.2.5",
+    "front-matter": "^4.0.2",
+    "mustache": "^4.2.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run pre-commit"
+    }
+  },
+  "keywords": [
+    "documentation",
+    "buildly",
+    "automation",
+    "github-pages"
+  ],
+  "author": "Buildly Team",
+  "license": "MIT"
+}

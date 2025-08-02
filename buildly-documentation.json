@@ -1,0 +1,934 @@
+{
+  "platform": {
+    "name": "Buildly Product Labs",
+    "description": "A comprehensive product management platform combining AI-powered assistance with traditional project management tools",
+    "version": "2024.1",
+    "documentation_url": "https://docs.buildly.io"
+  },
+  "navigation": {
+    "primary_sections": [
+      {
+        "id": "dashboard",
+        "name": "Dashboard",
+        "url": "/app/dashboard",
+        "description": "Central command center with personalized overview",
+        "icon": "dashboard",
+        "features": [
+          "personalized_greeting",
+          "product_overview",
+          "task_management",
+          "release_timeline"
+        ]
+      },
+      {
+        "id": "product_portfolio",
+        "name": "Product Portfolio",
+        "url": "/app/product-portfolio",
+        "description": "Manage all products in centralized location",
+        "icon": "business_center",
+        "features": [
+          "product_creation",
+          "product_cards",
+          "access_controls"
+        ]
+      },
+      {
+        "id": "product_roadmap",
+        "name": "Product Roadmap",
+        "url": "/app/product-roadmap",
+        "description": "Plan features and track development progress",
+        "icon": "timeline",
+        "features": [
+          "kanban_view",
+          "tabular_view",
+          "feature_management",
+          "ai_suggestions"
+        ]
+      },
+      {
+        "id": "releases",
+        "name": "Release Management",
+        "url": "/app/releases",
+        "description": "Plan, create, and track software releases",
+        "icon": "rocket_launch",
+        "features": [
+          "release_planning",
+          "ai_generate_release",
+          "punchlist_management"
+        ]
+      },
+      {
+        "id": "insights",
+        "name": "Insights & Analytics",
+        "url": "/app/insights",
+        "description": "Deep insights with analytics and AI recommendations",
+        "icon": "analytics",
+        "features": [
+          "product_analytics",
+          "ai_insights",
+          "team_assistance",
+          "budget_estimation"
+        ]
+      }
+    ]
+  },
+  "features": {
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Your central command center providing personalized overview of products, tasks, and deadlines",
+      "key_features": [
+        {
+          "name": "Personalized Welcome",
+          "description": "Time-based greeting with user profile information and role-based content",
+          "how_to_use": "Automatically displayed after login",
+          "tips": [
+            "Check dashboard daily for important updates",
+            "Use role-based views for focused content"
+          ]
+        },
+        {
+          "name": "Product Overview Cards",
+          "description": "Visual cards showing accessible products with release progress",
+          "how_to_use": "Click on product cards to navigate to product details",
+          "tips": [
+            "Monitor release progress indicators",
+            "Use cards for quick product switching"
+          ]
+        },
+        {
+          "name": "Task Management",
+          "description": "Separate columns for assigned Issues and Features with priority indicators",
+          "how_to_use": "View assigned tasks and click to open details",
+          "tips": [
+            "Focus on high-priority items first",
+            "Update task status regularly"
+          ]
+        },
+        {
+          "name": "Release Timeline",
+          "description": "Upcoming releases with due date warnings",
+          "how_to_use": "Review upcoming deadlines and click for release details",
+          "tips": [
+            "Watch for 'Due soon!' warnings",
+            "Plan work around release dates"
+          ]
+        }
+      ],
+      "documentation_links": [
+        {
+          "title": "Getting Started",
+          "url": "https://docs.buildly.io/getting-started"
+        },
+        {
+          "title": "Dashboard Overview",
+          "url": "https://docs.buildly.io/dashboard"
+        }
+      ]
+    },
+    "product_portfolio": {
+      "title": "Product Portfolio",
+      "description": "Centralized management of all products with comprehensive tracking tools",
+      "key_features": [
+        {
+          "name": "Product Creation",
+          "description": "Create new products with technical details and team setup",
+          "how_to_use": "Click 'Add Product' and fill in basic information, technical details, and team setup",
+          "tips": [
+            "Include detailed descriptions",
+            "Set up proper team permissions from the start"
+          ]
+        },
+        {
+          "name": "Product Cards Display",
+          "description": "Visual grid layout with progress indicators and quick stats",
+          "how_to_use": "Browse products in grid view, click cards for details",
+          "tips": [
+            "Use search and filters for large portfolios",
+            "Monitor progress indicators regularly"
+          ]
+        }
+      ],
+      "documentation_links": [
+        {
+          "title": "Product Management",
+          "url": "https://docs.buildly.io/products"
+        },
+        {
+          "title": "Creating Products",
+          "url": "https://docs.buildly.io/products/create"
+        }
+      ]
+    },
+    "product_roadmap": {
+      "title": "Product Roadmap",
+      "description": "Plan features, track issues, and collaborate using Kanban or tabular views",
+      "key_features": [
+        {
+          "name": "Kanban Board View",
+          "description": "Column-based organization with drag-and-drop functionality",
+          "how_to_use": "Drag features between columns (To Do, In Progress, Testing, Done)",
+          "tips": [
+            "Use visual workflow for quick status updates",
+            "Organize columns by your team's process"
+          ]
+        },
+        {
+          "name": "Tabular View",
+          "description": "Detailed list with sorting, filtering, and export functionality",
+          "how_to_use": "Use table headers to sort, apply filters, select items for bulk operations",
+          "tips": [
+            "Export data for external analysis",
+            "Use filters to focus on specific priorities"
+          ]
+        },
+        {
+          "name": "Feature Management",
+          "description": "Complete feature lifecycle from creation to completion",
+          "how_to_use": "Click 'Add Feature', fill form with title, description, priority, and assign to release",
+          "tips": [
+            "Write clear descriptions",
+            "Use complexity scores for estimation",
+            "Link related features"
+          ]
+        },
+        {
+          "name": "AI Feature Suggestions",
+          "description": "AI-powered feature recommendations based on product context",
+          "how_to_use": "Click 'Generate AI Suggestion', review suggestion, accept or generate another",
+          "tips": [
+            "Try multiple suggestions for inspiration",
+            "Customize AI suggestions to fit your needs"
+          ]
+        },
+        {
+          "name": "User Story Generation",
+          "description": "AI creates user stories for features based on user types",
+          "how_to_use": "In feature form, click 'Generate User Stories' after defining user types",
+          "tips": [
+            "Review and edit generated stories",
+            "Ensure stories match your user personas"
+          ]
+        }
+      ],
+      "ai_features": {
+        "feature_suggestions": {
+          "description": "AI analyzes product context to suggest relevant features for product management workflows",
+          "triggers": [
+            "Generate AI Suggestion button",
+            "Generate Another AI Suggestion"
+          ],
+          "context_considered": [
+            "existing features",
+            "product type",
+            "architecture",
+            "team needs"
+          ],
+          "output_format": "JSON with suggested_feature, description, and rationale",
+          "best_practices": [
+            "Generate multiple suggestions",
+            "Customize to fit your product",
+            "Use as inspiration for planning"
+          ]
+        },
+        "user_stories": {
+          "description": "Automatically generate user stories following 'As a [user], I want [goal] so that [benefit]' format",
+          "triggers": [
+            "Generate User Stories button in feature forms"
+          ],
+          "requirements": [
+            "Defined user types",
+            "Feature context"
+          ],
+          "customization": "Edit generated stories to match your personas"
+        }
+      },
+      "documentation_links": [
+        {
+          "title": "Product Roadmaps",
+          "url": "https://docs.buildly.io/roadmaps"
+        },
+        {
+          "title": "Feature Management",
+          "url": "https://docs.buildly.io/features"
+        }
+      ]
+    },
+    "releases": {
+      "title": "Release Management",
+      "description": "Comprehensive release planning, creation, and tracking with AI assistance",
+      "key_features": [
+        {
+          "name": "Release Planning",
+          "description": "Create releases with feature selection and timeline planning",
+          "how_to_use": "Click 'Add Release', configure name, description, target date, and select features",
+          "tips": [
+            "Use realistic timelines",
+            "Include buffer time",
+            "Regular progress reviews"
+          ]
+        },
+        {
+          "name": "AI Generate Release",
+          "description": "AI analyzes unfinished features and creates optimized releases automatically",
+          "how_to_use": "Click 'AI Generate Release', review suggested features and timeline, confirm or modify",
+          "tips": [
+            "Review AI selections carefully",
+            "Adjust timeline based on team capacity",
+            "Consider dependencies"
+          ]
+        },
+        {
+          "name": "Release Tracking",
+          "description": "Monitor progress with charts, feature status, and team assignments",
+          "how_to_use": "Navigate to Release Details page for progress visualization and team tracking",
+          "tips": [
+            "Check progress weekly",
+            "Update feature status regularly",
+            "Communicate blockers early"
+          ]
+        },
+        {
+          "name": "Punchlist Management",
+          "description": "Track final items needed before release completion",
+          "how_to_use": "In Release Details, go to Punchlist tab, add items with severity and priority",
+          "workflow": [
+            "New",
+            "In Progress",
+            "Fixed",
+            "Verified",
+            "Closed"
+          ],
+          "tips": [
+            "Address critical items first",
+            "Include detailed reproduction steps",
+            "Verify fixes thoroughly"
+          ]
+        }
+      ],
+      "ai_features": {
+        "release_generation": {
+          "description": "AI creates releases by analyzing unfinished features and optimizing for delivery",
+          "algorithm": "Prioritizes high-impact, ready features with realistic timelines",
+          "considerations": [
+            "feature complexity",
+            "team capacity",
+            "dependencies",
+            "priority levels"
+          ],
+          "output": "Complete release with selected features, timeline, and recommendations"
+        }
+      },
+      "documentation_links": [
+        {
+          "title": "Release Planning",
+          "url": "https://docs.buildly.io/releases"
+        },
+        {
+          "title": "Version Control",
+          "url": "https://docs.buildly.io/releases/versions"
+        }
+      ]
+    },
+    "insights": {
+      "title": "Insights & Analytics",
+      "description": "Deep analytics with AI-powered recommendations and team assistance",
+      "key_features": [
+        {
+          "name": "Product Analytics",
+          "description": "Comprehensive metrics on release performance, feature completion, and team productivity",
+          "metrics": [
+            "velocity",
+            "cycle_time",
+            "completion_rates",
+            "quality_indicators"
+          ],
+          "how_to_use": "Review charts and metrics regularly to identify trends and improvement opportunities",
+          "tips": [
+            "Track velocity over time",
+            "Monitor quality metrics",
+            "Use data for sprint planning"
+          ]
+        },
+        {
+          "name": "AI Feature Completion Predictions",
+          "description": "AI predicts completion dates and identifies at-risk features",
+          "how_to_use": "Review AI-generated estimates in release planning and feature details",
+          "accuracy_factors": [
+            "historical data",
+            "team capacity",
+            "feature complexity"
+          ],
+          "tips": [
+            "Use as planning guidance",
+            "Adjust for team-specific factors",
+            "Monitor prediction accuracy"
+          ]
+        },
+        {
+          "name": "AI Budget Estimation",
+          "description": "Automatically estimate project costs with team size recommendations",
+          "how_to_use": "Click 'AI Estimate' on releases for budget analysis",
+          "includes": [
+            "team_composition",
+            "timeline_estimates",
+            "cost_breakdown",
+            "risk_buffers"
+          ],
+          "tips": [
+            "Use for project proposals",
+            "Include contingency planning",
+            "Regular budget reviews"
+          ]
+        },
+        {
+          "name": "Team Assistance System",
+          "description": "Intelligent detection of when products need additional team support",
+          "triggers": [
+            "no_configured_team",
+            "missed_deadlines",
+            "high_complexity_vs_capacity"
+          ],
+          "request_types": [
+            "development",
+            "qa",
+            "devops",
+            "design",
+            "project_management"
+          ],
+          "how_to_use": "Click 'Request Team Help' when button appears, fill out assistance form",
+          "response_time": "Buildly team reviews and responds within 24-48 hours"
+        }
+      ],
+      "ai_features": {
+        "completion_predictions": {
+          "description": "Machine learning models predict feature completion dates based on historical patterns",
+          "data_sources": [
+            "past_completions",
+            "team_velocity",
+            "feature_complexity",
+            "current_workload"
+          ],
+          "accuracy_improving": "Models learn from your team's specific patterns over time"
+        },
+        "budget_estimation": {
+          "description": "AI analyzes project scope and provides cost estimates with team recommendations",
+          "factors": [
+            "feature_count",
+            "complexity_scores",
+            "technology_stack",
+            "timeline_constraints"
+          ],
+          "output_format": "Detailed breakdown with role recommendations and cost ranges"
+        }
+      },
+      "documentation_links": [
+        {
+          "title": "Analytics Guide",
+          "url": "https://docs.buildly.io/analytics"
+        },
+        {
+          "title": "Team Management",
+          "url": "https://docs.buildly.io/teams"
+        }
+      ]
+    },
+    "ai_assistant": {
+      "title": "AI Assistant (Chatbot)",
+      "description": "Personal AI assistant for navigation, questions, and contextual guidance",
+      "key_features": [
+        {
+          "name": "Contextual Help",
+          "description": "Page-specific guidance with dynamic suggestions and documentation links",
+          "how_to_use": "Click floating AI button, choose from suggestions or ask questions",
+          "context_awareness": [
+            "current_page",
+            "user_role",
+            "product_context",
+            "recent_actions"
+          ]
+        },
+        {
+          "name": "Smart Conversations",
+          "description": "Natural language processing with project context understanding",
+          "capabilities": [
+            "answer_questions",
+            "provide_guidance",
+            "suggest_workflows",
+            "troubleshoot_issues"
+          ],
+          "limitations": [
+            "cannot_perform_actions",
+            "knowledge_cutoff_date",
+            "requires_clear_questions"
+          ]
+        },
+        {
+          "name": "Quick Access",
+          "description": "Always available floating button with mobile-friendly interface",
+          "access_methods": [
+            "floating_button",
+            "keyboard_shortcuts",
+            "mobile_tap"
+          ],
+          "availability": "24/7 instant responses"
+        }
+      ],
+      "common_questions": [
+        "How do I create a new product?",
+        "What's the difference between features and issues?",
+        "How do I invite team members?",
+        "Can you explain the release process?",
+        "How do I generate an AI feature suggestion?",
+        "How do I request team assistance?",
+        "What is a punchlist and how do I use it?"
+      ],
+      "documentation_links": [
+        {
+          "title": "AI Assistant Guide",
+          "url": "https://docs.buildly.io/ai-assistant"
+        },
+        {
+          "title": "Getting Help",
+          "url": "https://docs.buildly.io/support"
+        }
+      ]
+    },
+    "form_ai_helper": {
+      "title": "Form AI Helper",
+      "description": "Smart assistance for form completion throughout the platform",
+      "supported_fields": [
+        {
+          "type": "feature-title",
+          "description": "Suggests relevant feature titles",
+          "icon": "✨",
+          "suggestions_count": 3
+        },
+        {
+          "type": "feature-description",
+          "description": "Helps write clear feature descriptions",
+          "icon": "✨",
+          "context_aware": true
+        },
+        {
+          "type": "release-title",
+          "description": "Creative and professional release naming",
+          "icon": "✨",
+          "includes_version_numbers": true
+        },
+        {
+          "type": "release-description",
+          "description": "Comprehensive release descriptions highlighting key features",
+          "icon": "✨",
+          "format": "1-2 sentences with benefits"
+        }
+      ],
+      "how_to_use": [
+        "Look for ✨ AI Helper icon next to form fields",
+        "Click the icon to get 3 AI-generated suggestions",
+        "Choose a suggestion or use as inspiration",
+        "Customize the content to fit your needs"
+      ]
+    }
+  },
+  "workflows": {
+    "getting_started": {
+      "title": "Getting Started Workflow",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Login with organization credentials",
+          "result": "Access to personalized dashboard"
+        },
+        {
+          "step": 2,
+          "action": "Review dashboard overview",
+          "result": "Understanding of current products and tasks"
+        },
+        {
+          "step": 3,
+          "action": "Create or select a product",
+          "result": "Access to product management tools"
+        },
+        {
+          "step": 4,
+          "action": "Explore main navigation sections",
+          "result": "Familiarity with platform capabilities"
+        },
+        {
+          "step": 5,
+          "action": "Try AI features (suggestions, chatbot)",
+          "result": "Understanding of AI assistance capabilities"
+        }
+      ]
+    },
+    "feature_development": {
+      "title": "Feature Development Workflow",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Navigate to Product Roadmap",
+          "tools": [
+            "kanban_view",
+            "tabular_view"
+          ]
+        },
+        {
+          "step": 2,
+          "action": "Create new feature",
+          "required_fields": [
+            "title",
+            "description",
+            "priority",
+            "release"
+          ]
+        },
+        {
+          "step": 3,
+          "action": "Use AI assistance",
+          "options": [
+            "feature_suggestions",
+            "user_stories",
+            "form_helpers"
+          ]
+        },
+        {
+          "step": 4,
+          "action": "Assign and track progress",
+          "activities": [
+            "status_updates",
+            "comments",
+            "time_tracking"
+          ]
+        },
+        {
+          "step": 5,
+          "action": "Complete and verify",
+          "final_steps": [
+            "testing",
+            "review",
+            "deployment"
+          ]
+        }
+      ]
+    },
+    "release_planning": {
+      "title": "Release Planning Workflow",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Analyze available features",
+          "consider": [
+            "completion_status",
+            "priority",
+            "dependencies"
+          ]
+        },
+        {
+          "step": 2,
+          "action": "Create release",
+          "options": [
+            "manual_creation",
+            "ai_generation"
+          ]
+        },
+        {
+          "step": 3,
+          "action": "Select features for release",
+          "criteria": [
+            "readiness",
+            "impact",
+            "timeline"
+          ]
+        },
+        {
+          "step": 4,
+          "action": "Track progress",
+          "monitoring": [
+            "feature_status",
+            "blockers",
+            "timeline"
+          ]
+        },
+        {
+          "step": 5,
+          "action": "Manage punchlist",
+          "activities": [
+            "identify_issues",
+            "assign_fixes",
+            "verify_completion"
+          ]
+        }
+      ]
+    }
+  },
+  "integrations": {
+    "development_tools": [
+      {
+        "name": "GitHub",
+        "description": "Link repositories and sync issues",
+        "features": [
+          "repository_linking",
+          "issue_sync",
+          "commit_tracking"
+        ]
+      },
+      {
+        "name": "GitLab",
+        "description": "Integrate with GitLab repositories",
+        "features": [
+          "merge_request_tracking",
+          "pipeline_status"
+        ]
+      },
+      {
+        "name": "Jira",
+        "description": "Import tickets and sync status",
+        "features": [
+          "ticket_import",
+          "status_sync",
+          "workflow_mapping"
+        ]
+      },
+      {
+        "name": "Slack",
+        "description": "Team notifications and updates",
+        "features": [
+          "notifications",
+          "status_updates",
+          "team_communication"
+        ]
+      }
+    ],
+    "ci_cd_tools": [
+      {
+        "name": "Jenkins",
+        "description": "Link build status to releases",
+        "features": [
+          "build_status",
+          "deployment_tracking"
+        ]
+      }
+    ]
+  },
+  "user_roles": {
+    "product_owner": {
+      "description": "Full access to product management features",
+      "permissions": [
+        "create_products",
+        "manage_releases",
+        "configure_teams",
+        "view_analytics"
+      ],
+      "primary_workflows": [
+        "product_planning",
+        "release_management",
+        "team_coordination"
+      ]
+    },
+    "developer": {
+      "description": "Focus on feature and issue tracking",
+      "permissions": [
+        "manage_features",
+        "track_issues",
+        "update_status",
+        "comment"
+      ],
+      "primary_workflows": [
+        "feature_development",
+        "bug_fixing",
+        "progress_tracking"
+      ]
+    },
+    "qa_tester": {
+      "description": "Testing and bug reporting tools",
+      "permissions": [
+        "create_issues",
+        "manage_punchlist",
+        "test_features",
+        "update_status"
+      ],
+      "primary_workflows": [
+        "testing",
+        "bug_reporting",
+        "quality_assurance"
+      ]
+    },
+    "stakeholder": {
+      "description": "Read-only access with reporting focus",
+      "permissions": [
+        "view_products",
+        "view_releases",
+        "view_analytics",
+        "comment"
+      ],
+      "primary_workflows": [
+        "progress_monitoring",
+        "reporting",
+        "feedback_provision"
+      ]
+    }
+  },
+  "best_practices": {
+    "product_setup": [
+      "Start with clear goals and requirements",
+      "Set up team members and roles early",
+      "Create initial release for planning purposes",
+      "Use AI suggestions to jumpstart planning"
+    ],
+    "feature_management": [
+      "Write clear, detailed descriptions",
+      "Use appropriate priority levels",
+      "Break large features into smaller pieces",
+      "Update status regularly"
+    ],
+    "release_planning": [
+      "Use realistic timelines with buffers",
+      "Consider dependencies and blockers",
+      "Regular progress reviews and updates",
+      "Maintain clear team communication"
+    ],
+    "team_collaboration": [
+      "Use comments for contextual discussions",
+      "Tag team members with @mentions",
+      "Schedule regular check-ins",
+      "Document important decisions"
+    ]
+  },
+  "troubleshooting": {
+    "common_issues": [
+      {
+        "issue": "Can't see my product",
+        "solutions": [
+          "Check user permissions",
+          "Verify organization",
+          "Contact product owner"
+        ]
+      },
+      {
+        "issue": "Features not updating",
+        "solutions": [
+          "Check internet connection",
+          "Refresh page",
+          "Clear browser cache"
+        ]
+      },
+      {
+        "issue": "AI features not working",
+        "solutions": [
+          "Verify AI services enabled",
+          "Check permissions",
+          "Try refreshing page"
+        ]
+      },
+      {
+        "issue": "Team members can't access",
+        "solutions": [
+          "Verify accounts exist",
+          "Check role assignments",
+          "Set proper permissions"
+        ]
+      }
+    ]
+  },
+  "support_resources": {
+    "documentation": [
+      {
+        "title": "Main Documentation",
+        "url": "https://docs.buildly.io",
+        "description": "Comprehensive guides and tutorials"
+      },
+      {
+        "title": "API Reference",
+        "url": "https://docs.buildly.io/api",
+        "description": "Technical API documentation"
+      },
+      {
+        "title": "Video Tutorials",
+        "url": "https://docs.buildly.io/tutorials",
+        "description": "Step-by-step video guides"
+      }
+    ],
+    "support_channels": [
+      {
+        "name": "AI Chatbot",
+        "availability": "24/7",
+        "description": "Instant help within the platform"
+      },
+      {
+        "name": "Team Assistance",
+        "response_time": "24-48 hours",
+        "description": "Expert help for complex projects"
+      },
+      {
+        "name": "Support Tickets",
+        "use_case": "Technical issues and bugs",
+        "description": "Formal support process"
+      },
+      {
+        "name": "Community Forum",
+        "url": "https://community.buildly.io",
+        "description": "Peer support and knowledge sharing"
+      }
+    ]
+  },
+  "keyboard_shortcuts": {
+    "global": [
+      {
+        "key": "?",
+        "action": "Show help",
+        "description": "Display keyboard shortcuts"
+      },
+      {
+        "key": "Ctrl/Cmd + K",
+        "action": "Quick search",
+        "description": "Search across the platform"
+      }
+    ],
+    "navigation": [
+      {
+        "key": "g d",
+        "action": "Go to Dashboard",
+        "description": "Quick navigation to dashboard"
+      },
+      {
+        "key": "g p",
+        "action": "Go to Products",
+        "description": "Quick navigation to product portfolio"
+      },
+      {
+        "key": "g r",
+        "action": "Go to Roadmap",
+        "description": "Quick navigation to product roadmap"
+      }
+    ]
+  },
+  "mobile_features": {
+    "responsive_design": "Full mobile optimization for all features",
+    "touch_interactions": "Optimized for touch navigation and gestures",
+    "offline_capabilities": "Limited offline viewing of cached data",
+    "push_notifications": "Mobile notifications for important updates"
+  },
+  "accessibility": {
+    "wcag_compliance": "WCAG 2.1 AA compliant",
+    "keyboard_navigation": "Full keyboard navigation support",
+    "screen_reader": "Screen reader compatibility",
+    "high_contrast": "High contrast mode available",
+    "font_scaling": "Supports browser font scaling"
+  },
+  "change_log": [
+    {
+      "timestamp": "2025-08-02T22:43:03.088Z",
+      "commit": "359aaf2",
+      "features_detected": 0,
+      "changes": []
+    },
+    {
+      "timestamp": "2025-08-02T22:42:44.129Z",
+      "commit": "359aaf2",
+      "features_detected": 0,
+      "changes": []
+    }
+  ],
+  "last_updated": "2025-08-02T22:43:03.107Z",
+  "version": "2025.8.2"
+}
