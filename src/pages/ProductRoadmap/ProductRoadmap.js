@@ -18,12 +18,14 @@ import { getAllProductQuery } from '@react-query/queries/product/getAllProductQu
 import { getAllCredentialQuery } from '@react-query/queries/product/getAllCredentialQuery';
 import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
 import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
+import { getAllReleaseQuery } from '@react-query/queries/release/getAllReleaseQuery';
 import { useThirdPartyToolSyncMutation } from '@react-query/mutations/release/thirdPartyToolSyncMutation';
 import { useCreateFeatureMutation } from '@react-query/mutations/release/createFeatureMutation';
 import { useUpdateProductMutation } from '@react-query/mutations/product/updateProductMutation';
 import { useDeleteFeatureMutation } from '@react-query/mutations/release/deleteFeatureMutation';
 import { useDeleteIssueMutation } from '@react-query/mutations/release/deleteIssueMutation';
 import { useStore } from '@zustand/product/productStore';
+import { PRIORITIES } from './ProductRoadmapConstants';
 import Kanban from './components/Kanban';
 import Tabular from './components/Tabular';
 import AddFeatures from './forms/AddFeatures';
@@ -140,6 +142,12 @@ const ProductRoadmap = ({ history }) => {
   const { data: featureData, isLoading: isAllFeatureLoading } = useQuery(
     ['allFeatures', selectedProduct],
     () => getAllFeatureQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
+  );
+
+  const { data: releases, isLoading: isAllReleaseLoading } = useQuery(
+    ['allReleases', selectedProduct],
+    () => getAllReleaseQuery(selectedProduct, displayAlert),
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && _.toNumber(selectedProduct) !== 0 },
   );
 
@@ -271,11 +279,24 @@ const ProductRoadmap = ({ history }) => {
   const createSuggestedFeature = (suggestion) => {
     const datetime = new Date();
     const featCred = _.find(credentialData, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'feature'));
+    
+    // Get default values for required fields
+    const defaultRelease = releases && releases.length > 0 ? releases[0].release_uuid : '';
+    const defaultStatus = statusData && statusData.length > 0 ? statusData[0].status_uuid : '';
+    const defaultPriority = 'Medium'; // Default to medium priority
+    const defaultComplexity = 3; // Default to medium complexity (1-5 scale)
+    const defaultTags = []; // Empty tags array
+    
     const formData = {
       create_date: datetime,
       edit_date: datetime,
       name: suggestion.suggested_feature,
-      description: suggestion.suggested_feature,
+      description: suggestion.description || suggestion.suggested_feature,
+      release_uuid: defaultRelease,
+      status: defaultStatus,
+      priority: defaultPriority,
+      complexity: defaultComplexity,
+      tags: defaultTags,
       product_uuid: selectedProduct,
       ...featCred?.auth_detail,
       feature_detail: {},
@@ -551,11 +572,11 @@ Please respond with ONLY a JSON object in this exact format (no markdown, no cod
 
   return (
     <>
-      {(isAllProductLoading || isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isThirdPartyToolSyncLoading
+      {(isAllProductLoading || isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllReleaseLoading || isThirdPartyToolSyncLoading
       || isCreatingFeatureLoading || isUpdatingProductLoading || isDeletingFeatureLoading || isDeletingIssueLoading)
         ? (
           <Loader
-            open={isAllProductLoading || isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isThirdPartyToolSyncLoading
+            open={isAllProductLoading || isAllCredentialLoading || isAllStatusLoading || isAllFeatureLoading || isAllReleaseLoading || isThirdPartyToolSyncLoading
               || isCreatingFeatureLoading || isUpdatingProductLoading || isDeletingFeatureLoading || isDeletingIssueLoading}
           />
         ) : (
