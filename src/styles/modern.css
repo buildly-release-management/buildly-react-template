@@ -215,7 +215,7 @@ table thead td,
 
 /* Enhanced typography */
 .modern-heading {
-  background: linear-gradient(135deg, #FBB65B 0%, #4A90C5 100%);
+  background: linear-gradient(135deg, #4A90C5 0%, #FBB65B 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

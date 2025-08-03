@@ -118,7 +118,7 @@
 
 /* Avatar styling for consistent branding */
 .cs-avatar {
-  background: linear-gradient(135deg, #FBB65B 0%, #4A90C5 100%);
+  background: linear-gradient(135deg, #4A90C5 0%, #FBB65B 100%);
 }
 
 /* Enhanced message timestamps */

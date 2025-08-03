@@ -117,11 +117,11 @@ const useStyles = makeStyles((theme) => ({
   },
   welcomeCard: {
     marginBottom: theme.spacing(4),
-    background: 'linear-gradient(135deg, #FBB65B 0%, #F9943B 25%, #4A90C5 75%, #0C5595 100%)',
+    background: 'linear-gradient(135deg, #4A90C5 0%, #6BA4D5 25%, #FBB65B 75%, #FCC88A 100%)',
     color: 'white',
     border: 'none',
     borderRadius: '16px',
-    boxShadow: '0px 8px 24px rgba(251, 182, 91, 0.2)',
+    boxShadow: '0px 8px 24px rgba(74, 144, 197, 0.2)',
     '& .MuiCardContent-root': {
       padding: theme.spacing(4),
     },

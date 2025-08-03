@@ -46,9 +46,9 @@ import { useAddSubscriptionMutation } from '@react-query/mutations/authUser/addS
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
-    backgroundColor: theme.palette.secondary.main, // Now lighter blue
+    backgroundColor: theme.palette.secondary.dark, // Original brand blue #0C5595
     color: '#FFFFFF',
-    boxShadow: '0px 2px 8px rgba(74, 144, 197, 0.15)',
+    boxShadow: '0px 2px 8px rgba(12, 85, 149, 0.2)',
     borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
     zIndex: theme.zIndex.drawer + 1,
     width: '100%',

@@ -402,7 +402,7 @@ const Chatbot = () => {
             elevation={0} 
             sx={{ 
               p: 2, 
-              background: 'linear-gradient(135deg, #F9943B 0%, #0C5595 100%)',
+              background: 'linear-gradient(135deg, #4A90C5 0%, #FBB65B 100%)',
               color: 'white',
               borderRadius: 0,
             }}
