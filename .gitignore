@@ -29,9 +29,4 @@ npm-debug.log*
 
 # Documentation System
 # All documentation has been moved to separate buildly-docs repository
-# Exclude any local documentation builds or repositories
-scripts/docs-repo/
-scripts/docs-output/
-# Exclude documentation script dependencies
-scripts/node_modules/
-scripts/package-lock.json
+# (No local documentation files remain in this repository)
