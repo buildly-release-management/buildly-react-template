@@ -477,6 +477,156 @@ const AddIssues = ({ history, location }) => {
                 </Grid>
               )}
               {!_.isEmpty(assigneeData) && (isSuperAdmin || _.isEqual(user_profile, 'developer')) && (
+                <>
+                  <Grid item xs={12}>
+                    <Typography variant="h6" gutterBottom sx={{ mt: 2, mb: 1, fontWeight: 600 }}>
+                      Task Assignment
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Assign this task to both development and product team members for complete coverage
+                    </Typography>
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
+                    <Autocomplete
+                      fullWidth
+                      multiple
+                      filterSelectedOptions
+                      id="developer-assignees"
+                      name="developer-assignees"
+                      options={assigneeData.filter(user => 
+                        user.user_type === 'Developer' || 
+                        user.role?.toLowerCase().includes('developer') ||
+                        user.role?.toLowerCase().includes('engineer') ||
+                        user.username?.toLowerCase().includes('dev')
+                      )}
+                      value={assignees.filter(assigneeId => {
+                        const user = assigneeData.find(u => u.user_id === assigneeId);
+                        return user && (
+                          user.user_type === 'Developer' || 
+                          user.role?.toLowerCase().includes('developer') ||
+                          user.role?.toLowerCase().includes('engineer') ||
+                          user.username?.toLowerCase().includes('dev')
+                        );
+                      }).map(assigneeId => assigneeData.find(u => u.user_id === assigneeId))}
+                      getOptionLabel={(option) => `👨‍💻 ${option.username} ${option.role ? `(${option.role})` : ''}`}
+                      onChange={(e, newValue) => {
+                        const developerIds = newValue.map(user => user.user_id);
+                        const productIds = assignees.filter(assigneeId => {
+                          const user = assigneeData.find(u => u.user_id === assigneeId);
+                          return user && user.user_type === 'Product Team';
+                        });
+                        setAssignees([...developerIds, ...productIds]);
+                      }}
+                      renderTags={(value, getAssigneeProps) => (
+                        _.map(value, (option, index) => (
+                          <Chip
+                            variant="default"
+                            size="small"
+                            icon={<span>👨‍💻</span>}
+                            label={`${option.username}${option.role ? ` (${option.role})` : ''}`}
+                            sx={{ 
+                              backgroundColor: '#E3F2FD',
+                              color: '#1976D2',
+                              '& .MuiChip-icon': { fontSize: '14px' }
+                            }}
+                            {...getAssigneeProps({ index })}
+                          />
+                        ))
+                      )}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          fullWidth
+                          label="👨‍💻 Developer Assignees"
+                          placeholder="Select developers to work on this task"
+                          helperText="Assign developers who will implement this feature/fix"
+                        />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <Autocomplete
+                      fullWidth
+                      multiple
+                      filterSelectedOptions
+                      id="product-assignees"
+                      name="product-assignees"
+                      options={assigneeData.filter(user => 
+                        user.user_type === 'Product Team' || 
+                        user.role?.toLowerCase().includes('product') ||
+                        user.role?.toLowerCase().includes('manager') ||
+                        user.role?.toLowerCase().includes('owner')
+                      )}
+                      value={assignees.filter(assigneeId => {
+                        const user = assigneeData.find(u => u.user_id === assigneeId);
+                        return user && (
+                          user.user_type === 'Product Team' || 
+                          user.role?.toLowerCase().includes('product') ||
+                          user.role?.toLowerCase().includes('manager') ||
+                          user.role?.toLowerCase().includes('owner')
+                        );
+                      }).map(assigneeId => assigneeData.find(u => u.user_id === assigneeId))}
+                      getOptionLabel={(option) => `📋 ${option.username} ${option.role ? `(${option.role})` : ''}`}
+                      onChange={(e, newValue) => {
+                        const productIds = newValue.map(user => user.user_id);
+                        const developerIds = assignees.filter(assigneeId => {
+                          const user = assigneeData.find(u => u.user_id === assigneeId);
+                          return user && (
+                            user.user_type === 'Developer' || 
+                            user.role?.toLowerCase().includes('developer') ||
+                            user.role?.toLowerCase().includes('engineer')
+                          );
+                        });
+                        setAssignees([...developerIds, ...productIds]);
+                      }}
+                      renderTags={(value, getAssigneeProps) => (
+                        _.map(value, (option, index) => (
+                          <Chip
+                            variant="default"
+                            size="small"
+                            icon={<span>📋</span>}
+                            label={`${option.username}${option.role ? ` (${option.role})` : ''}`}
+                            sx={{ 
+                              backgroundColor: '#FFF3E0',
+                              color: '#F57C00',
+                              '& .MuiChip-icon': { fontSize: '14px' }
+                            }}
+                            {...getAssigneeProps({ index })}
+                          />
+                        ))
+                      )}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          fullWidth
+                          label="📋 Product Team Assignees"
+                          placeholder="Select product team members to oversee"
+                          helperText="Assign product managers who will review and approve"
+                        />
+                      )}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Typography variant="body2" color="text.secondary" sx={{ 
+                      mt: 1, 
+                      p: 2, 
+                      backgroundColor: '#F8F9FA', 
+                      borderRadius: 1,
+                      border: '1px solid #E0E0E0'
+                    }}>
+                      💡 <strong>Assignment Tips:</strong> Assign developers for implementation and product team members for oversight. 
+                      This ensures both technical execution and product alignment are managed effectively.
+                    </Typography>
+                  </Grid>
+                </>
+              )}
+              
+              {/* Fallback for existing single assignment field */}
+              {!_.isEmpty(assigneeData) && (isSuperAdmin || _.isEqual(user_profile, 'developer')) && 
+               assigneeData.every(user => !user.user_type && !user.role) && (
                 <Grid item xs={12}>
                   <Autocomplete
                     fullWidth
@@ -485,15 +635,14 @@ const AddIssues = ({ history, location }) => {
                     id="assignees"
                     name="assignees"
                     options={assigneeData}
-                    value={assignees}
+                    value={assignees.map(assigneeId => assigneeData.find(u => u.user_id === assigneeId)).filter(Boolean)}
                     getOptionLabel={(option) => option.username}
-                    getOptionSelected={(option, value) => option.user_id === value}
                     onChange={(e, newValue) => setAssignees(_.map(newValue, 'user_id'))}
                     renderTags={(value, getAssigneeProps) => (
                       _.map(value, (option, index) => (
                         <Chip
                           variant="default"
-                          label={_.find(assigneeData, { user_id: option })?.username}
+                          label={option.username}
                           {...getAssigneeProps({ index })}
                         />
                       ))

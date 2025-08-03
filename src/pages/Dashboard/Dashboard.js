@@ -470,13 +470,54 @@ const Dashboard = () => {
       {/* Welcome Section */}
       <Card className={`${classes.welcomeCard} modern-card`}>
         <CardContent>
-          <Typography variant="h4" gutterBottom className="modern-heading">
-            {getGreeting()}, {user.first_name}!
+          <Typography 
+            variant="h3" 
+            gutterBottom 
+            sx={{
+              color: '#ffffff',
+              fontWeight: 800,
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+              textShadow: '2px 2px 8px rgba(0, 0, 0, 0.3), 0px 0px 20px rgba(255, 255, 255, 0.1)',
+              lineHeight: 1.2,
+              letterSpacing: '-0.02em',
+              textAlign: 'center',
+              background: 'linear-gradient(45deg, #ffffff 30%, #f0f8ff 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: '#ffffff',
+              filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2))',
+            }}
+          >
+            {getGreeting()}, {user.first_name}! 👋
           </Typography>
-          <Typography variant="h6">
+          <Typography 
+            variant="h5" 
+            gutterBottom
+            sx={{
+              color: '#ffffff',
+              fontWeight: 600,
+              fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
+              textShadow: '1px 1px 4px rgba(0, 0, 0, 0.4)',
+              textAlign: 'center',
+              opacity: 0.95,
+              letterSpacing: '0.02em',
+            }}
+          >
             {isDeveloper ? 'Developer Dashboard' : 'Product Dashboard'}
           </Typography>
-          <Typography variant="body1" sx={{ mt: 1 }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              mt: 2,
+              color: '#ffffff',
+              fontWeight: 500,
+              fontSize: { xs: '1rem', sm: '1.1rem' },
+              textShadow: '1px 1px 3px rgba(0, 0, 0, 0.5)',
+              textAlign: 'center',
+              opacity: 0.9,
+              lineHeight: 1.6,
+            }}
+          >
             {userProducts.length === 0 
               ? "Welcome to Buildly! No products are available or accessible to you yet."
               : `You have access to ${userProducts.length} product${userProducts.length > 1 ? 's' : ''} with ${userIssues.length} issue${userIssues.length !== 1 ? 's' : ''} and ${userFeatures.length} feature${userFeatures.length !== 1 ? 's' : ''} you're involved with.`

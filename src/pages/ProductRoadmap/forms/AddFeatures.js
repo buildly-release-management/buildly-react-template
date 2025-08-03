@@ -559,6 +559,68 @@ const AddFeatures = ({ location, history }) => {
               </Grid>
             )}
 
+            {/* Feature Assignment Section */}
+            {!_.isEmpty(credentials) && (
+              <>
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom sx={{ mt: 3, mb: 1, fontWeight: 600 }}>
+                    Feature Assignment
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Assign this feature to team members for development and product oversight
+                  </Typography>
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    fullWidth
+                    id="developer-lead"
+                    label="👨‍💻 Lead Developer"
+                    name="developer-lead"
+                    placeholder="Assign primary developer"
+                    helperText="Primary developer responsible for implementation"
+                    disabled={viewPage}
+                    InputProps={{
+                      startAdornment: <span style={{ marginRight: '8px' }}>👨‍💻</span>
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    fullWidth
+                    id="product-owner"
+                    label="📋 Product Owner"
+                    name="product-owner"
+                    placeholder="Assign product owner"
+                    helperText="Product team member overseeing requirements"
+                    disabled={viewPage}
+                    InputProps={{
+                      startAdornment: <span style={{ marginRight: '8px' }}>📋</span>
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="text.secondary" sx={{ 
+                    mt: 1, 
+                    p: 2, 
+                    backgroundColor: '#F8F9FA', 
+                    borderRadius: 1,
+                    border: '1px solid #E0E0E0'
+                  }}>
+                    💡 <strong>Assignment Guidelines:</strong> Assign a lead developer for technical implementation 
+                    and a product owner for requirements validation. This ensures clear ownership and accountability 
+                    throughout the feature development lifecycle.
+                  </Typography>
+                </Grid>
+              </>
+            )}
+
             {/* User Stories */}
             {!_.isEmpty(userTypes) && (
               <Button
