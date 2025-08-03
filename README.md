@@ -1,5 +1,5 @@
 # Buildly React Template
-[![Build Status](https://travis-ci.org/buildlyio/buildly-react-template.svg?branch=master)](https://travis-ci.org/buildlyio/buildly-react-template) [![Documentation](https://img.shields.io/badge/docs-buildly.io-blue)](https://docs.buildly.io) [![Gitter](https://badges.gitter.im/Buildlyio/community.svg)](https://gitter.im/Buildlyio/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Build Status](https://travis-ci.org/buildlyio/buildly-react-template.svg?branch=master)](https://travis-ci.org/buildlyio/buildly-react-template) [![Documentation](https://img.shields.io/badge/docs-buildly.io-blue)](https://docs.buildly.io/docs) [![Gitter](https://badges.gitter.im/Buildlyio/community.svg)](https://gitter.im/Buildlyio/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Buildly React Template is a [React](https://reactjs.org/) web application that implements the core features of the UI core, pre-configure to connect to [Buildly Core](https://github.com/buildlyio/buildly-core).
 
