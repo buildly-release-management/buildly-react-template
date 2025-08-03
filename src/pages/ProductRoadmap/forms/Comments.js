@@ -12,6 +12,7 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  MenuItem,
 } from '@mui/material';
 import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
@@ -70,6 +71,7 @@ const Comments = ({ location, history }) => {
 
   const theme = useTheme();
   const user = useContext(UserContext);
+  const organization = user?.organization;
   const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
 
   const [filteredComments, setFilteredComments] = useState([]);
@@ -77,6 +79,10 @@ const Comments = ({ location, history }) => {
   const [openConfirmModal, setConfirmModal] = useState(false);
   const commentText = useInput('');
   const [formError, setFormError] = useState({});
+
+  // Assignment state variables
+  const [assignedUser, setAssignedUser] = useState(null);
+  const [ownerUser, setOwnerUser] = useState(user?.core_user_uuid || null);
 
   const { data: comments, isLoading: isAllCommentsLoading } = useQuery(
     ['allComments', product_uuid],
@@ -129,6 +135,8 @@ const Comments = ({ location, history }) => {
       card_number: feature?.feature_tracker_id || issue?.issue_number,
       repository: issue?.repository,
       user_signoff_uuid: user?.core_user_uuid,
+      assigned_user_uuid: assignedUser,
+      owner_user_uuid: ownerUser,
       user_info: user,
     };
     createCommentMutation(commentData);
@@ -210,6 +218,59 @@ const Comments = ({ location, history }) => {
                   onBlur={(e) => handleBlur(e, 'required', commentText)}
                   {...commentText.bind}
                 />
+              </Grid>
+
+              {/* Assignment Section */}
+              <Grid item xs={12}>
+                <Typography variant="h6" gutterBottom sx={{ mt: 1, mb: 1 }}>
+                  Assignment
+                </Typography>
+              </Grid>
+
+              {/* Assigned User */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  select
+                  id="assignedUser"
+                  label="Assign to User"
+                  value={assignedUser || ''}
+                  onChange={(e) => setAssignedUser(e.target.value)}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {organization?.org_members?.map((member) => (
+                    <MenuItem key={member.user_uuid} value={member.user_uuid}>
+                      {member.user_name || member.username || member.email}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              {/* Owner User */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  select
+                  id="ownerUser"
+                  label="Comment Owner"
+                  value={ownerUser || ''}
+                  onChange={(e) => setOwnerUser(e.target.value)}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {organization?.org_members?.map((member) => (
+                    <MenuItem key={member.user_uuid} value={member.user_uuid}>
+                      {member.user_name || member.username || member.email}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
             </Grid>
             <Grid container spacing={isDesktop ? 3 : 0} justifyContent="right">

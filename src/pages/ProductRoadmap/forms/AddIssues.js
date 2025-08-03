@@ -14,6 +14,9 @@ import {
   Autocomplete,
   Chip,
   Box,
+  Typography,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import DatePickerComponent from '@components/DatePicker/DatePicker';
 import FormModal from '@components/Modal/FormModal';
@@ -94,6 +97,18 @@ const AddIssues = ({ history, location }) => {
   const [assignees, setAssignees] = useState(
     (editData && editData.issue_detail && _.map(editData.issue_detail.assignees))
     || [],
+  );
+  const [assignedDeveloper, setAssignedDeveloper] = useState(
+    (editData && editData.assigned_developer_uuid) || null
+  );
+  const [productTeamMember, setProductTeamMember] = useState(
+    (editData && editData.product_team_uuid) || null
+  );
+  const [developerGithubUsername, setDeveloperGithubUsername] = useState(
+    (editData && editData.developer_github_username) || ''
+  );
+  const [hasGithubProfile, setHasGithubProfile] = useState(
+    (editData && editData.has_github_profile) || false
   );
   const [assigneeData, setAssigneeData] = useState([]);
   const [repoList, setRepoList] = useState([]);
@@ -187,9 +202,14 @@ const AddIssues = ({ history, location }) => {
       complexity: Number(complexity.value),
       repository: repo.value,
       column_id: colID,
+      // New UUID-based assignment fields
+      assigned_developer_uuid: assignedDeveloper,
+      product_team_uuid: productTeamMember,
+      developer_github_username: developerGithubUsername,
+      has_github_profile: hasGithubProfile,
       issue_detail: {
         ...(editData.issue_detail || {}),
-        assignees,
+        assignees, // Keep legacy assignees for backward compatibility
       },
       ...issueCred?.auth_detail,
     };
@@ -483,64 +503,41 @@ const AddIssues = ({ history, location }) => {
                       Task Assignment
                     </Typography>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Assign this task to both development and product team members for complete coverage
+                      Assign this task to specific team members using the new UUID-based assignment system
                     </Typography>
                   </Grid>
                   
                   <Grid item xs={12} md={6}>
                     <Autocomplete
                       fullWidth
-                      multiple
-                      filterSelectedOptions
-                      id="developer-assignees"
-                      name="developer-assignees"
+                      id="assigned-developer"
+                      name="assigned-developer"
                       options={assigneeData.filter(user => 
                         user.user_type === 'Developer' || 
                         user.role?.toLowerCase().includes('developer') ||
                         user.role?.toLowerCase().includes('engineer') ||
                         user.username?.toLowerCase().includes('dev')
                       )}
-                      value={assignees.filter(assigneeId => {
-                        const user = assigneeData.find(u => u.user_id === assigneeId);
-                        return user && (
-                          user.user_type === 'Developer' || 
-                          user.role?.toLowerCase().includes('developer') ||
-                          user.role?.toLowerCase().includes('engineer') ||
-                          user.username?.toLowerCase().includes('dev')
-                        );
-                      }).map(assigneeId => assigneeData.find(u => u.user_id === assigneeId))}
+                      value={assigneeData.find(user => user.user_id === assignedDeveloper) || null}
                       getOptionLabel={(option) => `👨‍💻 ${option.username} ${option.role ? `(${option.role})` : ''}`}
                       onChange={(e, newValue) => {
-                        const developerIds = newValue.map(user => user.user_id);
-                        const productIds = assignees.filter(assigneeId => {
-                          const user = assigneeData.find(u => u.user_id === assigneeId);
-                          return user && user.user_type === 'Product Team';
-                        });
-                        setAssignees([...developerIds, ...productIds]);
+                        setAssignedDeveloper(newValue ? newValue.user_id : null);
+                        // Auto-detect GitHub profile
+                        if (newValue && newValue.username) {
+                          setDeveloperGithubUsername(newValue.username);
+                          setHasGithubProfile(true);
+                        } else {
+                          setDeveloperGithubUsername('');
+                          setHasGithubProfile(false);
+                        }
                       }}
-                      renderTags={(value, getAssigneeProps) => (
-                        _.map(value, (option, index) => (
-                          <Chip
-                            variant="default"
-                            size="small"
-                            icon={<span>👨‍💻</span>}
-                            label={`${option.username}${option.role ? ` (${option.role})` : ''}`}
-                            sx={{ 
-                              backgroundColor: '#E3F2FD',
-                              color: '#1976D2',
-                              '& .MuiChip-icon': { fontSize: '14px' }
-                            }}
-                            {...getAssigneeProps({ index })}
-                          />
-                        ))
-                      )}
                       renderInput={(params) => (
                         <TextField
                           {...params}
                           fullWidth
-                          label="👨‍💻 Developer Assignees"
-                          placeholder="Select developers to work on this task"
-                          helperText="Assign developers who will implement this feature/fix"
+                          label="👨‍💻 Assigned Developer"
+                          placeholder="Select primary developer"
+                          helperText="Primary developer responsible for implementation"
                         />
                       )}
                     />
@@ -549,63 +546,64 @@ const AddIssues = ({ history, location }) => {
                   <Grid item xs={12} md={6}>
                     <Autocomplete
                       fullWidth
-                      multiple
-                      filterSelectedOptions
-                      id="product-assignees"
-                      name="product-assignees"
+                      id="product-team-member"
+                      name="product-team-member"
                       options={assigneeData.filter(user => 
                         user.user_type === 'Product Team' || 
                         user.role?.toLowerCase().includes('product') ||
                         user.role?.toLowerCase().includes('manager') ||
                         user.role?.toLowerCase().includes('owner')
                       )}
-                      value={assignees.filter(assigneeId => {
-                        const user = assigneeData.find(u => u.user_id === assigneeId);
-                        return user && (
-                          user.user_type === 'Product Team' || 
-                          user.role?.toLowerCase().includes('product') ||
-                          user.role?.toLowerCase().includes('manager') ||
-                          user.role?.toLowerCase().includes('owner')
-                        );
-                      }).map(assigneeId => assigneeData.find(u => u.user_id === assigneeId))}
+                      value={assigneeData.find(user => user.user_id === productTeamMember) || null}
                       getOptionLabel={(option) => `📋 ${option.username} ${option.role ? `(${option.role})` : ''}`}
                       onChange={(e, newValue) => {
-                        const productIds = newValue.map(user => user.user_id);
-                        const developerIds = assignees.filter(assigneeId => {
-                          const user = assigneeData.find(u => u.user_id === assigneeId);
-                          return user && (
-                            user.user_type === 'Developer' || 
-                            user.role?.toLowerCase().includes('developer') ||
-                            user.role?.toLowerCase().includes('engineer')
-                          );
-                        });
-                        setAssignees([...developerIds, ...productIds]);
+                        setProductTeamMember(newValue ? newValue.user_id : null);
                       }}
-                      renderTags={(value, getAssigneeProps) => (
-                        _.map(value, (option, index) => (
-                          <Chip
-                            variant="default"
-                            size="small"
-                            icon={<span>📋</span>}
-                            label={`${option.username}${option.role ? ` (${option.role})` : ''}`}
-                            sx={{ 
-                              backgroundColor: '#FFF3E0',
-                              color: '#F57C00',
-                              '& .MuiChip-icon': { fontSize: '14px' }
-                            }}
-                            {...getAssigneeProps({ index })}
-                          />
-                        ))
-                      )}
                       renderInput={(params) => (
                         <TextField
                           {...params}
                           fullWidth
-                          label="📋 Product Team Assignees"
-                          placeholder="Select product team members to oversee"
-                          helperText="Assign product managers who will review and approve"
+                          label="📋 Product Team Member"
+                          placeholder="Select product team member"
+                          helperText="Product team member for oversight and approval"
                         />
                       )}
+                    />
+                  </Grid>
+
+                  {/* GitHub Integration Fields */}
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      variant="outlined"
+                      margin="normal"
+                      fullWidth
+                      id="developer-github-username"
+                      label="GitHub Username"
+                      name="developer-github-username"
+                      value={developerGithubUsername}
+                      onChange={(e) => {
+                        setDeveloperGithubUsername(e.target.value);
+                        setHasGithubProfile(!!e.target.value);
+                      }}
+                      placeholder="developer-github-username"
+                      helperText="GitHub username for repository access and tracking"
+                      InputProps={{
+                        startAdornment: <span style={{ marginRight: '8px' }}>🐱</span>
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={hasGithubProfile}
+                          onChange={(e) => setHasGithubProfile(e.target.checked)}
+                          color="primary"
+                        />
+                      }
+                      label="Developer has GitHub profile"
+                      sx={{ mt: 2 }}
                     />
                   </Grid>
 
@@ -617,8 +615,8 @@ const AddIssues = ({ history, location }) => {
                       borderRadius: 1,
                       border: '1px solid #E0E0E0'
                     }}>
-                      💡 <strong>Assignment Tips:</strong> Assign developers for implementation and product team members for oversight. 
-                      This ensures both technical execution and product alignment are managed effectively.
+                      💡 <strong>New Assignment System:</strong> Use specific developer and product team assignments for better tracking. 
+                      GitHub integration enables automatic repository access and commit tracking for assigned developers.
                     </Typography>
                   </Grid>
                 </>

@@ -14,6 +14,8 @@ import {
   Slider,
   Typography,
   Box,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import { UserContext } from '@context/User.context';
 import FormModal from '@components/Modal/FormModal';
@@ -114,6 +116,12 @@ const AddFeatures = ({ location, history }) => {
     || [],
   );
   const [userStoriesData, setUserStoriesData] = useState([]);
+
+  // Assignment state variables
+  const [assignedDeveloper, setAssignedDeveloper] = useState((editData && editData.assigned_developer_uuid) || null);
+  const [productTeamMember, setProductTeamMember] = useState((editData && editData.product_team_uuid) || null);
+  const [developerGithubUsername, setDeveloperGithubUsername] = useState((editData && editData.developer_github_username) || '');
+  const [hasGithubProfile, setHasGithubProfile] = useState((editData && editData.has_github_profile) || false);
 
   const complexityMarkers = [
     {
@@ -236,6 +244,10 @@ const AddFeatures = ({ location, history }) => {
       priority: priority.value,
       tags,
       product_uuid,
+      assigned_developer_uuid: assignedDeveloper,
+      product_team_uuid: productTeamMember,
+      developer_github_username: developerGithubUsername,
+      has_github_profile: hasGithubProfile,
       ...featCred?.auth_detail,
       feature_detail: {
         ...(editData.feature_detail || {}),
@@ -523,6 +535,98 @@ const AddFeatures = ({ location, history }) => {
                     </MenuItem>
                   ))}
                 </TextField>
+              </Grid>
+            </Grid>
+
+            {/* Assignment Section */}
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Typography variant="h6" gutterBottom sx={{ mt: 2, mb: 1 }}>
+                  Assignments
+                </Typography>
+              </Grid>
+
+              {/* Assigned Developer */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  select
+                  id="assignedDeveloper"
+                  label="Assigned Developer"
+                  value={assignedDeveloper || ''}
+                  disabled={viewPage}
+                  onChange={(e) => setAssignedDeveloper(e.target.value)}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {organization?.org_members?.filter(member => 
+                    member.is_developer || member.role === 'developer'
+                  )?.map((developer) => (
+                    <MenuItem key={developer.user_uuid} value={developer.user_uuid}>
+                      {developer.user_name || developer.username || developer.email}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              {/* Product Team Member */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  select
+                  id="productTeamMember"
+                  label="Product Team Member"
+                  value={productTeamMember || ''}
+                  disabled={viewPage}
+                  onChange={(e) => setProductTeamMember(e.target.value)}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {organization?.org_members?.filter(member => 
+                    member.is_product_manager || member.role === 'product_manager' || 
+                    member.role === 'product_owner' || member.is_owner
+                  )?.map((productMember) => (
+                    <MenuItem key={productMember.user_uuid} value={productMember.user_uuid}>
+                      {productMember.user_name || productMember.username || productMember.email}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              {/* Developer GitHub Username */}
+              <Grid item xs={12} md={8}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  id="developerGithubUsername"
+                  label="Developer GitHub Username"
+                  value={developerGithubUsername}
+                  disabled={viewPage}
+                  onChange={(e) => setDeveloperGithubUsername(e.target.value)}
+                  placeholder="Enter GitHub username"
+                />
+              </Grid>
+
+              {/* Has GitHub Profile */}
+              <Grid item xs={12} md={4}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={hasGithubProfile}
+                      onChange={(e) => setHasGithubProfile(e.target.checked)}
+                      disabled={viewPage}
+                    />
+                  }
+                  label="Has GitHub Profile"
+                  sx={{ mt: 2 }}
+                />
               </Grid>
             </Grid>
 
