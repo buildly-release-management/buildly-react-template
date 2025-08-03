@@ -40,9 +40,9 @@
 }
 
 .cs-message--outgoing {
-  background: linear-gradient(135deg, #F9943B 0%, #E8822B 100%);
+  background: linear-gradient(135deg, #FBB65B 0%, #F9943B 100%);
   border-radius: 12px 12px 4px 12px;
-  box-shadow: 0px 1px 3px rgba(249, 148, 59, 0.3);
+  box-shadow: 0px 1px 3px rgba(251, 182, 91, 0.3);
 }
 
 .cs-message--outgoing .cs-message__content {
@@ -57,8 +57,8 @@
 }
 
 .cs-message-input:focus-within {
-  border-color: #F9943B;
-  box-shadow: 0px 0px 0px 3px rgba(249, 148, 59, 0.1);
+  border-color: #FBB65B;
+  box-shadow: 0px 0px 0px 3px rgba(251, 182, 91, 0.1);
 }
 
 /* Improved scrollbar styling for message list */
@@ -118,7 +118,7 @@
 
 /* Avatar styling for consistent branding */
 .cs-avatar {
-  background: linear-gradient(135deg, #F9943B 0%, #0C5595 100%);
+  background: linear-gradient(135deg, #FBB65B 0%, #4A90C5 100%);
 }
 
 /* Enhanced message timestamps */

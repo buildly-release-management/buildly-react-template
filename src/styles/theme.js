@@ -8,15 +8,15 @@ const theme = createTheme({
       text: '#fff',
     },
     primary: {
-      main: '#F9943B', // orange - your brand color
-      light: '#FBA96B',
-      dark: '#E8822B',
+      main: '#FBB65B', // lighter orange - your brand color
+      light: '#FCC88A',
+      dark: '#F9943B', // original orange as dark variant
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#0C5595', // blue - your brand color
-      light: '#3572B5',
-      dark: '#162944', // dark blue
+      main: '#4A90C5', // lighter blue - your brand color  
+      light: '#6BA4D5',
+      dark: '#0C5595', // original blue as dark variant
       contrastText: '#ffffff',
     },
     neutral: {
@@ -222,10 +222,10 @@ const theme = createTheme({
           },
         },
         containedPrimary: {
-          backgroundColor: '#F9943B',
+          backgroundColor: '#FBB65B',
           color: '#ffffff',
           '&:hover': {
-            backgroundColor: '#E8822B',
+            backgroundColor: '#F9943B',
           },
           '&:disabled': {
             backgroundColor: '#E5E7EB',
@@ -233,10 +233,10 @@ const theme = createTheme({
           },
         },
         containedSecondary: {
-          backgroundColor: '#0C5595',
+          backgroundColor: '#4A90C5',
           color: '#ffffff',
           '&:hover': {
-            backgroundColor: '#162944',
+            backgroundColor: '#0C5595',
           },
         },
         outlined: {
@@ -260,7 +260,7 @@ const theme = createTheme({
               borderColor: '#CBD5E0',
             },
             '&.Mui-focused fieldset': {
-              borderColor: '#F9943B',
+              borderColor: '#FBB65B',
               borderWidth: '2px',
             },
           },
@@ -329,7 +329,7 @@ const theme = createTheme({
           },
           '&.Mui-selected': {
             backgroundColor: '#FEF3E2',
-            color: '#F9943B',
+            color: '#FBB65B',
             '&:hover': {
               backgroundColor: '#FED7AA',
             },
@@ -347,7 +347,7 @@ const theme = createTheme({
           backgroundColor: '#E3F2FD !important', // Light blue with !important
           fontWeight: '600 !important',
           fontSize: '0.75rem !important',
-          color: '#0C5595 !important', // Brand blue text with !important
+          color: '#4A90C5 !important', // Lighter brand blue text with !important
           textTransform: 'uppercase !important',
           letterSpacing: '0.05em !important',
         },
@@ -368,17 +368,17 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundColor: '#E3F2FD !important',
-          color: '#0C5595 !important',
+          color: '#4A90C5 !important',
           fontWeight: '600 !important',
           fontSize: '0.75rem !important',
           textTransform: 'uppercase !important',
           letterSpacing: '0.05em !important',
         },
         sortAction: {
-          color: '#0C5595 !important',
+          color: '#4A90C5 !important',
         },
         data: {
-          color: '#0C5595 !important',
+          color: '#4A90C5 !important',
           fontWeight: '600 !important',
         },
       },

@@ -4,7 +4,7 @@ table {
   color: #333333;
 }
 table th {
-  background-color: #162944 !important;
+  background-color: #4A90C5 !important;
   color: #fff;
   padding: 8px;
 }
@@ -18,12 +18,12 @@ table td {
 }
 
 .light-header {
-  background-color: #0c5595 !important;
+  background-color: #4A90C5 !important;
 }
 
 .totals-header {
   background-color: #fff !important;
-  color: #162944 !important;
+  color: #4A90C5 !important;
 }
 
 .insightsSelectedProductRoot {

@@ -167,7 +167,7 @@ html {
 .MUIDataTableHeadCell-data,
 .MuiTableCell-root.MuiTableCell-head {
   background-color: #E3F2FD !important;
-  color: #0C5595 !important;
+  color: #4A90C5 !important;
   font-weight: 600 !important;
   font-size: 0.75rem !important;
   text-transform: uppercase !important;
@@ -177,7 +177,7 @@ html {
 /* MUI DataTable sort icons */
 .MUIDataTableHeadCell-sortAction,
 .MUIDataTableHeadCell-sortAction .MuiButtonBase-root {
-  color: #0C5595 !important;
+  color: #4A90C5 !important;
 }
 
 /* DataTable toolbar styling */
@@ -192,7 +192,7 @@ table thead td,
 .MuiTable-root thead th,
 .MuiTable-root thead td {
   background-color: #E3F2FD !important;
-  color: #0C5595 !important;
+  color: #4A90C5 !important;
   font-weight: 600 !important;
 }
 
@@ -203,7 +203,7 @@ table thead td,
 
 .modern-form-field:focus-within {
   transform: translateY(-2px);
-  box-shadow: 0px 4px 12px rgba(249, 148, 59, 0.15);
+  box-shadow: 0px 4px 12px rgba(251, 182, 91, 0.15);
 }
 
 /* Modern notification styles */
@@ -215,7 +215,7 @@ table thead td,
 
 /* Enhanced typography */
 .modern-heading {
-  background: linear-gradient(135deg, #F9943B 0%, #0C5595 100%);
+  background: linear-gradient(135deg, #FBB65B 0%, #4A90C5 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
