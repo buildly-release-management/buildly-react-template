@@ -28,6 +28,7 @@ import { useStore } from '@zustand/product/productStore';
 import { PRIORITIES } from './ProductRoadmapConstants';
 import Kanban from './components/Kanban';
 import Tabular from './components/Tabular';
+import BusinessTasksList from '@components/BusinessTasksList/BusinessTasksList';
 import AddFeatures from './forms/AddFeatures';
 import AddIssues from './forms/AddIssues';
 import Comments from './forms/Comments';
@@ -103,6 +104,10 @@ const ProductRoadmap = ({ history }) => {
     {
       label: 'Kanban',
       value: 'kanban',
+    },
+    {
+      label: 'Business Tasks',
+      value: 'business-tasks',
     },
   ];
   const viewPath = (
@@ -726,6 +731,36 @@ Please respond with ONLY a JSON object in this exact format (no markdown, no cod
                             generateAIFeatureSuggestion={generateAIFeatureSuggestion}
                             showRelatedIssues={showRelatedIssues}
                             editBoard={editBoard}
+                          />
+                        )}
+                      />
+                      <Route
+                        path={routes.PRODUCT_ROADMAP_BUSINESS_TASKS}
+                        render={() => (
+                          <BusinessTasksList
+                            productUuid={selectedProduct}
+                            title="Business Tasks"
+                            showAddButton={true}
+                            onAddTask={() => {
+                              history.push({
+                                pathname: routes.ADD_BUSINESS_TASK,
+                                state: {
+                                  from: routes.PRODUCT_ROADMAP_BUSINESS_TASKS,
+                                  product_uuid: selectedProduct,
+                                }
+                              });
+                            }}
+                            onEditTask={(task) => {
+                              history.push({
+                                pathname: routes.ADD_BUSINESS_TASK,
+                                state: {
+                                  from: routes.PRODUCT_ROADMAP_BUSINESS_TASKS,
+                                  type: 'edit',
+                                  data: task,
+                                  product_uuid: selectedProduct,
+                                }
+                              });
+                            }}
                           />
                         )}
                       />

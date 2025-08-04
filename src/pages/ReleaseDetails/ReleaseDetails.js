@@ -30,6 +30,7 @@ import {
 } from '@mui/icons-material';
 import Loader from '@components/Loader/Loader';
 import Chatbot from '@components/Chatbot/Chatbot';
+import BusinessTasksList from '@components/BusinessTasksList/BusinessTasksList';
 import DoughnutChart from '@components/Charts/Doughnut/DoughnutChart';
 import BarChart from '@components/Charts/BarChart/BarChart';
 import useAlert from '@hooks/useAlert';
@@ -358,6 +359,7 @@ const ReleaseDetails = ({ history }) => {
               <Tab label="Details" value="2" />
               <Tab label="Features & Issues" value="3" />
               <Tab label="Punchlist" value="4" />
+              <Tab label="Business Tasks" value="5" />
             </TabList>
           </Box>
           <TabPanel value="1">
@@ -756,6 +758,37 @@ const ReleaseDetails = ({ history }) => {
                 )}
               </div>
             </div>
+          </TabPanel>
+          
+          <TabPanel value="5">
+            <BusinessTasksList
+              productUuid={productUuid}
+              releaseUuid={releaseUuid}
+              title={`Business Tasks for ${releaseDetails?.name || 'Release'}`}
+              showAddButton={true}
+              onAddTask={() => {
+                history.push({
+                  pathname: '/app/roadmap/add_business_task',
+                  state: {
+                    from: `/app/release/${releaseUuid}`,
+                    product_uuid: productUuid,
+                    release_uuid: releaseUuid,
+                  }
+                });
+              }}
+              onEditTask={(task) => {
+                history.push({
+                  pathname: '/app/roadmap/add_business_task',
+                  state: {
+                    from: `/app/release/${releaseUuid}`,
+                    type: 'edit',
+                    data: task,
+                    product_uuid: productUuid,
+                    release_uuid: releaseUuid,
+                  }
+                });
+              }}
+            />
           </TabPanel>
         </TabContext>
       </Box>

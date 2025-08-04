@@ -11,6 +11,7 @@ export const routes = {
   PRODUCT_ROADMAP: '/app/product-roadmap',
   PRODUCT_ROADMAP_TABULAR: '/app/product-roadmap/tabular',
   PRODUCT_ROADMAP_KANBAN: '/app/product-roadmap/kanban',
+  PRODUCT_ROADMAP_BUSINESS_TASKS: '/app/product-roadmap/business-tasks',
   PRODUCT_ROADMAP_REPORT: '/app/product-roadmap/report',
   USER_PROFILE: '/app/profile/user',
   EDIT_USER_PROFILE: '/app/profile/user/edit-profile',
@@ -37,4 +38,6 @@ export const routes = {
   TOOL_BOARD: '/app/product-roadmap/tool-board',
   COMMENTS: '/app/product-roadmap/comments',
   SHOW_RELATED_ISSUES: '/app/product-roadmap/show-related-issues',
+  ADD_BUSINESS_TASK: '/app/roadmap/add_business_task',
+  EDIT_BUSINESS_TASK: '/app/roadmap/edit_business_task',
 };

@@ -108,6 +108,7 @@ import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQu
 import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
 import { getAllReleaseQuery } from '@react-query/queries/release/getAllReleaseQuery';
 import { getAllCommentQuery } from '@react-query/queries/release/getAllCommentQuery';
+import { getBusinessTasksByUserQuery } from '@react-query/queries/businessTasks/getAllBusinessTasksQuery';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -225,6 +226,7 @@ const Dashboard = () => {
   const [userFeatures, setUserFeatures] = useState([]);
   const [pendingComments, setPendingComments] = useState([]);
   const [upcomingReleases, setUpcomingReleases] = useState([]);
+  const [userBusinessTasks, setUserBusinessTasks] = useState([]);
 
   // Fetch all products
   const { data: allProducts, isLoading: isLoadingProducts } = useQuery(
@@ -270,11 +272,27 @@ const Dashboard = () => {
     }
   );
 
+  // Fetch business tasks assigned to current user
+  const { data: businessTasks = [], isLoading: isLoadingBusinessTasks } = useQuery(
+    ['userBusinessTasks', user?.core_user_uuid],
+    () => getBusinessTasksByUserQuery(user?.core_user_uuid, { status: 'not_started,in_progress,blocked,review' }, displayAlert),
+    { 
+      refetchOnWindowFocus: false,
+      enabled: !!user?.core_user_uuid 
+    }
+  );
+
   useEffect(() => {
     if (productQueries.data && user) {
       processUserData(productQueries.data);
     }
   }, [productQueries.data, user]);
+
+  useEffect(() => {
+    if (businessTasks) {
+      setUserBusinessTasks(businessTasks);
+    }
+  }, [businessTasks]);
 
   const processUserData = (productData) => {
     if (!productData || !user) {
@@ -853,6 +871,101 @@ const Dashboard = () => {
                     </Card>
                   </Grid>
                 ))}
+              </Grid>
+            </>
+          )}
+
+          {/* Business Tasks Section */}
+          {userBusinessTasks.length > 0 && (
+            <>
+              <Typography variant="h5" className={classes.sectionHeader}>
+                <AssignmentIcon />
+                My Business Tasks ({userBusinessTasks.length})
+              </Typography>
+              
+              <Grid container spacing={2}>
+                {userBusinessTasks.slice(0, 6).map((task) => {
+                  const isOverdue = task.is_overdue || (task.due_date && moment(task.due_date).isBefore(moment()));
+                  const daysUntilDue = task.due_date ? moment(task.due_date).diff(moment(), 'days') : null;
+                  
+                  return (
+                    <Grid item xs={12} md={6} key={task.task_uuid}>
+                      <Paper className={classes.commentItem} sx={{ p: 2 }}>
+                        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            {task.title}
+                          </Typography>
+                          <Chip
+                            size="small"
+                            label={task.priority}
+                            color={task.priority === 'critical' || task.priority === 'high' ? 'error' : 
+                                   task.priority === 'medium' ? 'warning' : 'default'}
+                            variant="outlined"
+                          />
+                        </Box>
+                        
+                        <Typography variant="body2" color="text.secondary" paragraph>
+                          {task.description?.substring(0, 100)}
+                          {task.description?.length > 100 && '...'}
+                        </Typography>
+                        
+                        <Box display="flex" justifyContent="between" alignItems="center" mb={1}>
+                          <Chip
+                            size="small"
+                            label={task.status?.replace('_', ' ')}
+                            color={task.status === 'completed' ? 'success' : 
+                                   task.status === 'blocked' ? 'error' : 
+                                   task.status === 'in_progress' ? 'primary' : 'default'}
+                            variant="filled"
+                          />
+                          {task.progress_percentage > 0 && (
+                            <Typography variant="caption" color="text.secondary">
+                              {task.progress_percentage}% complete
+                            </Typography>
+                          )}
+                        </Box>
+
+                        {task.due_date && (
+                          <Typography 
+                            variant="caption" 
+                            color={isOverdue ? "error" : "text.secondary"}
+                            className={isOverdue ? classes.overdue : ''}
+                          >
+                            {isOverdue ? 'Overdue' : 
+                             daysUntilDue === 0 ? 'Due today' : 
+                             daysUntilDue === 1 ? 'Due tomorrow' : 
+                             daysUntilDue > 0 ? `Due in ${daysUntilDue} days` : 
+                             `${Math.abs(daysUntilDue)} days overdue`}
+                          </Typography>
+                        )}
+
+                        {task.product_name && (
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Product: {task.product_name}
+                          </Typography>
+                        )}
+
+                        {task.release_version && (
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Release: {task.release_version}
+                          </Typography>
+                        )}
+
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
+                          <Typography variant="caption" color="text.secondary">
+                            {task.custom_category_name || task.category?.replace('_', ' ')}
+                          </Typography>
+                          <Button 
+                            size="small" 
+                            onClick={() => navigateToProduct(task.product_uuid)}
+                          >
+                            View Product
+                          </Button>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  );
+                })}
               </Grid>
             </>
           )}

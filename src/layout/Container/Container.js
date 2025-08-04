@@ -16,6 +16,7 @@ import UserProfile from '@pages/UserProfile/UserProfile';
 import ReleaseList from '@pages/ReleaseList/ReleaseList';
 import ReleaseDetails from '@pages/ReleaseDetails/ReleaseDetails';
 import Dashboard from '@pages/Dashboard/Dashboard';
+import AddBusinessTask from '@pages/ProductRoadmap/forms/AddBusinessTask';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -51,6 +52,8 @@ const ContainerDashboard = ({ location, history }) => {
             />
             <Route exact path={routes.DASHBOARD} component={Dashboard} />
             <Route exact path={`${routes.RELEASE}/:releaseUuid`} component={ReleaseDetails} />
+            <Route exact path={routes.ADD_BUSINESS_TASK} component={AddBusinessTask} />
+            <Route exact path={routes.EDIT_BUSINESS_TASK} component={AddBusinessTask} />
             <Route path={routes.PRODUCT_ROADMAP} component={ProductRoadmap} />
             <Route path={routes.USER_PROFILE} component={UserProfile} />
             <Route path={routes.USER_MANAGEMENT} component={UserManagement} />
