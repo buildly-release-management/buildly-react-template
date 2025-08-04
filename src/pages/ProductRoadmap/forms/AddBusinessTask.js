@@ -24,6 +24,7 @@ import Loader from '@components/Loader/Loader';
 import AIFormHelper from '@components/AIFormHelper/AIFormHelper';
 import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
+import useOrganizationMembers from '@hooks/useOrganizationMembers';
 import { validators } from '@utils/validators';
 import { UserContext } from '@context/User.context';
 import SmartInput from '@components/SmartInput/SmartInput';
@@ -139,6 +140,9 @@ const AddBusinessTask = ({ history, location }) => {
     () => getAllReleaseQuery(product_uuid, displayAlert),
     { refetchOnWindowFocus: false, enabled: !!product_uuid }
   );
+
+  // Fetch organization members for user assignment
+  const { data: organizationMembers = [], isLoading: isMembersLoading } = useOrganizationMembers();
 
   // Mutations
   const { mutate: createBusinessTaskMutation, isLoading: isCreatingTask } = useCreateBusinessTaskMutation(product_uuid, displayAlert);
@@ -260,8 +264,8 @@ const AddBusinessTask = ({ history, location }) => {
           setConfirmModal={setConfirmModal}
           handleConfirmModal={() => history.push(redirectTo)}
         >
-          {(isCreatingTask || isUpdatingTask || isCategoriesLoading || isReleasesLoading) && (
-            <Loader open={isCreatingTask || isUpdatingTask || isCategoriesLoading || isReleasesLoading} />
+          {(isCreatingTask || isUpdatingTask || isCategoriesLoading || isReleasesLoading || isMembersLoading) && (
+            <Loader open={isCreatingTask || isUpdatingTask || isCategoriesLoading || isReleasesLoading || isMembersLoading} />
           )}
           
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
@@ -437,13 +441,23 @@ const AddBusinessTask = ({ history, location }) => {
                   label="Assign To"
                   value={assignedToUser || ''}
                   onChange={(e) => setAssignedToUser(e.target.value)}
+                  error={!assignedToUser}
+                  helperText={!assignedToUser ? 'Please select a user to assign this task' : ''}
                 >
                   <MenuItem value="">
                     <em>Select User</em>
                   </MenuItem>
-                  {organization?.org_members?.map((member) => (
-                    <MenuItem key={member.user_uuid} value={member.user_uuid}>
-                      👤 {member.user_name || member.username || member.email}
+                  {organizationMembers.map((member) => (
+                    <MenuItem key={member.core_user_uuid || member.id} value={member.core_user_uuid || member.id}>
+                      👤 {member.first_name && member.last_name 
+                        ? `${member.first_name} ${member.last_name}` 
+                        : member.username || member.email
+                      }
+                      {member.email && member.first_name && (
+                        <span style={{ color: '#666', fontSize: '0.9em', marginLeft: '8px' }}>
+                          ({member.email})
+                        </span>
+                      )}
                     </MenuItem>
                   ))}
                 </TextField>

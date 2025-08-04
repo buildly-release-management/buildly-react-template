@@ -18,6 +18,7 @@ import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
 import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
+import useOrganizationMembers from '@hooks/useOrganizationMembers';
 import { validators } from '@utils/validators';
 import { UserContext } from '@context/User.context';
 import { getAllCredentialQuery } from '@react-query/queries/product/getAllCredentialQuery';
@@ -94,6 +95,9 @@ const Comments = ({ location, history }) => {
     () => getAllCredentialQuery(product_uuid, displayAlert),
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(product_uuid) && !_.isEqual(_.toNumber(product_uuid), 0) },
   );
+
+  // Use custom hook for organization members
+  const { data: organizationMembers = [], isLoading: isMembersLoading } = useOrganizationMembers();
 
   useEffect(() => {
     if (!_.isEmpty(feature)) {
@@ -189,7 +193,7 @@ const Comments = ({ location, history }) => {
           setConfirmModal={setConfirmModal}
           handleConfirmModal={discardFormData}
         >
-          {(isCreatingCommentLoading || isAllCommentsLoading || isAllCredentialLoading) && <Loader open={isCreatingCommentLoading || isAllCommentsLoading || isAllCredentialLoading} />}
+          {(isCreatingCommentLoading || isAllCommentsLoading || isAllCredentialLoading || isMembersLoading) && <Loader open={isCreatingCommentLoading || isAllCommentsLoading || isAllCredentialLoading || isMembersLoading} />}
           {!_.isEmpty(filteredComments) && _.map(filteredComments, (comment, index) => (
             <Card key={comment.comment_uuid} className={classes.commentCard}>
               <CardContent>
@@ -242,9 +246,12 @@ const Comments = ({ location, history }) => {
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {organization?.org_members?.map((member) => (
-                    <MenuItem key={member.user_uuid} value={member.user_uuid}>
-                      {member.user_name || member.username || member.email}
+                  {organizationMembers.map((member) => (
+                    <MenuItem key={member.core_user_uuid || member.id} value={member.core_user_uuid || member.id}>
+                      {member.first_name && member.last_name 
+                        ? `${member.first_name} ${member.last_name}` 
+                        : member.username || member.email
+                      }
                     </MenuItem>
                   ))}
                 </TextField>
@@ -265,9 +272,12 @@ const Comments = ({ location, history }) => {
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {organization?.org_members?.map((member) => (
-                    <MenuItem key={member.user_uuid} value={member.user_uuid}>
-                      {member.user_name || member.username || member.email}
+                  {organizationMembers.map((member) => (
+                    <MenuItem key={member.core_user_uuid || member.id} value={member.core_user_uuid || member.id}>
+                      {member.first_name && member.last_name 
+                        ? `${member.first_name} ${member.last_name}` 
+                        : member.username || member.email
+                      }
                     </MenuItem>
                   ))}
                 </TextField>

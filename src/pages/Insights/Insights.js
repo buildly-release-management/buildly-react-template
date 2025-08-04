@@ -155,17 +155,23 @@ const Insights = () => {
   const [btnDisabled, disableButton] = useState(true);
   const [recipients, setRecipients] = useState([]);
   const updateRecipients = (event, index) => {
-    recipients[index][event.target.name] = event.target.value;
-    setRecipients(recipients);
-    validateForm();
+    const updatedRecipients = [...recipients];
+    updatedRecipients[index][event.target.name] = event.target.value;
+    setRecipients(updatedRecipients);
+    
+    // Validate form after update
+    const disable = updatedRecipients.some((recipient) => !recipient.name.toString()
+      .trim().length || !recipient.email.toString()
+      .trim().length);
+    disableButton(disable);
   };
 
   const addNewRecipient = () => {
-    recipients.push({
+    const newRecipients = [...recipients, {
       name: '',
       email: '',
-    });
-    setRecipients([...recipients]);
+    }];
+    setRecipients(newRecipients);
     disableButton(true);
   };
 
@@ -207,10 +213,11 @@ const Insights = () => {
   };
 
   const updateTeamHelpForm = (event) => {
-    setTeamHelpForm({
-      ...teamHelpForm,
-      [event.target.name]: event.target.value
-    });
+    const { name, value } = event.target;
+    setTeamHelpForm(prevForm => ({
+      ...prevForm,
+      [name]: value
+    }));
   };
 
   const isTeamHelpFormValid = () => {

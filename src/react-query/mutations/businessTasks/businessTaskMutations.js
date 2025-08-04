@@ -141,3 +141,84 @@ export const useDeleteBusinessTaskMutation = (displayAlert) => {
     }
   );
 };
+
+export const useBulkImportBusinessTasksMutation = (displayAlert) => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async ({ productUuid, csvData }) => {
+      const formData = new FormData();
+      formData.append('csv_file', csvData);
+      formData.append('product_uuid', productUuid);
+
+      const response = await httpService.makeRequest(
+        'post',
+        `${window.env.API_URL}product/business-tasks/bulk-import/`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: async (data) => {
+        const { created_count, error_count } = data;
+        displayAlert('success', `Successfully imported ${created_count} business tasks${error_count > 0 ? ` (${error_count} errors)` : ''}`);
+        // Invalidate relevant queries
+        await queryClient.invalidateQueries(['businessTasks']);
+        await queryClient.invalidateQueries(['businessTasksByUser']);
+        await queryClient.invalidateQueries(['businessTasksByRelease']);
+      },
+      onError: (error) => {
+        const errorMessage = error?.response?.data?.detail || 'Failed to import business tasks';
+        displayAlert('error', errorMessage);
+      },
+    }
+  );
+};
+
+export const useBulkExportBusinessTasksMutation = (displayAlert) => {
+  return useMutation(
+    async ({ productUuid, filters }) => {
+      const queryParams = new URLSearchParams();
+      
+      Object.entries(filters || {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          queryParams.append(key, value);
+        }
+      });
+
+      const queryString = queryParams.toString();
+      const url = `${window.env.API_URL}product/business-tasks/export/${productUuid}/${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await httpService.makeRequest('get', url, null, {
+        responseType: 'blob',
+      });
+      
+      // Create a download link
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url2 = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url2;
+      link.setAttribute('download', `business-tasks-${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url2);
+      
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        displayAlert('success', 'Business tasks exported successfully');
+      },
+      onError: (error) => {
+        const errorMessage = error?.response?.data?.detail || 'Failed to export business tasks';
+        displayAlert('error', errorMessage);
+      },
+    }
+  );
+};

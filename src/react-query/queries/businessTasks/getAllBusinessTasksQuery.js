@@ -26,6 +26,12 @@ export const getBusinessTasksByUserQuery = async (userUuid, filters, displayAler
   try {
     const queryParams = new URLSearchParams();
     
+    // Add the user UUID filter
+    if (userUuid) {
+      queryParams.append('assigned_to_user_uuid', userUuid);
+    }
+    
+    // Add other filters
     Object.entries(filters || {}).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         queryParams.append(key, value);

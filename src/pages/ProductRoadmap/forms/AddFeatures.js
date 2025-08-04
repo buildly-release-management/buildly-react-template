@@ -24,6 +24,7 @@ import SmartInput from '@components/SmartInput/SmartInput';
 import AIFormHelper from '@components/AIFormHelper/AIFormHelper';
 import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
+import useOrganizationMembers from '@hooks/useOrganizationMembers';
 import { validators } from '@utils/validators';
 import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery';
 import { getAllCredentialQuery } from '@react-query/queries/product/getAllCredentialQuery';
@@ -179,6 +180,9 @@ const AddFeatures = ({ location, history }) => {
     () => generateUserStoriesQuery(userStoriesData, displayAlert),
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(userStoriesData) },
   );
+
+  // Use custom hook for organization members
+  const { data: organizationMembers = [], isLoading: isMembersLoading } = useOrganizationMembers();
 
   const { mutate: createFeatureMutation, isLoading: isCreatingFeatureLoading } = useCreateFeatureMutation(product_uuid, history, redirectTo, displayAlert);
   const { mutate: updateFeatureMutation, isLoading: isUpdatingFeatureLoading } = useUpdateFeatureMutation(product_uuid, history, redirectTo, displayAlert);
@@ -344,7 +348,7 @@ const AddFeatures = ({ location, history }) => {
           handleConfirmModal={(e) => history.push(redirectTo)}
         >
           {(isCreatingFeatureLoading || isUpdatingFeatureLoading || isSuggestingUserStories || isAllStatusLoading
-            || isAllProductLoading || isAllFeatureLoading || isAllCredentialLoading || isAllReleaseLoading)
+            || isAllProductLoading || isAllFeatureLoading || isAllCredentialLoading || isAllReleaseLoading || isMembersLoading)
           && (
           <Loader
             open={
@@ -356,6 +360,7 @@ const AddFeatures = ({ location, history }) => {
               || isAllFeatureLoading
               || isAllCredentialLoading
               || isAllReleaseLoading
+              || isMembersLoading
             }
           />
           )}
@@ -562,11 +567,14 @@ const AddFeatures = ({ location, history }) => {
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {organization?.org_members?.filter(member => 
-                    member.is_developer || member.role === 'developer'
+                  {organizationMembers.filter(member => 
+                    member.user_type === 'Developer' || member.is_developer || member.role === 'developer'
                   )?.map((developer) => (
-                    <MenuItem key={developer.user_uuid} value={developer.user_uuid}>
-                      {developer.user_name || developer.username || developer.email}
+                    <MenuItem key={developer.core_user_uuid || developer.id} value={developer.core_user_uuid || developer.id}>
+                      {developer.first_name && developer.last_name 
+                        ? `${developer.first_name} ${developer.last_name}` 
+                        : developer.username || developer.email
+                      }
                     </MenuItem>
                   ))}
                 </TextField>
@@ -588,12 +596,15 @@ const AddFeatures = ({ location, history }) => {
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {organization?.org_members?.filter(member => 
-                    member.is_product_manager || member.role === 'product_manager' || 
+                  {organizationMembers.filter(member => 
+                    member.user_type === 'Product Team' || member.is_product_manager || member.role === 'product_manager' || 
                     member.role === 'product_owner' || member.is_owner
                   )?.map((productMember) => (
-                    <MenuItem key={productMember.user_uuid} value={productMember.user_uuid}>
-                      {productMember.user_name || productMember.username || productMember.email}
+                    <MenuItem key={productMember.core_user_uuid || productMember.id} value={productMember.core_user_uuid || productMember.id}>
+                      {productMember.first_name && productMember.last_name 
+                        ? `${productMember.first_name} ${productMember.last_name}` 
+                        : productMember.username || productMember.email
+                      }
                     </MenuItem>
                   ))}
                 </TextField>

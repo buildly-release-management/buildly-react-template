@@ -28,11 +28,13 @@ import {
   Assignment as AssignmentIcon,
   Schedule as ScheduleIcon,
   Warning as WarningIcon,
+  Upload as UploadIcon,
 } from '@mui/icons-material';
 import { UserContext } from '@context/User.context';
 import useAlert from '@hooks/useAlert';
 import { getAllBusinessTasksQuery } from '@react-query/queries/businessTasks/getAllBusinessTasksQuery';
 import { useDeleteBusinessTaskMutation } from '@react-query/mutations/businessTasks/businessTaskMutations';
+import BusinessTasksImport from '@components/BusinessTasksImport/BusinessTasksImport';
 import { 
   getStatusColor, 
   getPriorityColor, 
@@ -102,6 +104,7 @@ const BusinessTasksList = ({
   userUuid, 
   title = 'Business Tasks',
   showAddButton = true,
+  showImportButton = true,
   onAddTask,
   onEditTask,
   filters = {}
@@ -113,6 +116,7 @@ const BusinessTasksList = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskFilters, setTaskFilters] = useState({ product_uuid: productUuid, ...filters });
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Update filters when props change
   useEffect(() => {
@@ -192,9 +196,24 @@ const BusinessTasksList = ({
 
   return (
     <Box className={classes.container}>
-      <Typography variant="h6" gutterBottom>
-        {title} ({tasks.length})
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h6">
+          {title} ({tasks.length})
+        </Typography>
+        <Box>
+          {showImportButton && (
+            <Tooltip title="Import Tasks from CSV">
+              <IconButton
+                color="primary"
+                onClick={() => setImportDialogOpen(true)}
+                sx={{ mr: 1 }}
+              >
+                <UploadIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Box>
+      </Box>
 
       {tasks.length === 0 ? (
         <Box className={classes.emptyState}>
@@ -356,6 +375,13 @@ const BusinessTasksList = ({
           <AddIcon />
         </Fab>
       )}
+      
+      {/* Import Dialog */}
+      <BusinessTasksImport
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        productUuid={productUuid}
+      />
     </Box>
   );
 };

@@ -1,0 +1,6 @@
+title,description,category,priority,status,assigned_to_email,due_date,estimated_hours,business_value,acceptance_criteria
+"Setup development environment","Configure local development environment with all necessary tools","development","high","not_started","developer@company.com","2024-12-31","8","High - enables team productivity","Environment runs all tests successfully"
+"Design user authentication flow","Create wireframes and mockups for login/registration process","design_ui_ux","medium","in_progress","designer@company.com","2024-11-30","16","Medium - improves user experience","Designs approved by stakeholders"
+"Implement user authentication API","Develop backend API endpoints for user registration and login","development","high","not_started","backend@company.com","2024-12-15","24","High - core security feature","All authentication tests pass"
+"Write API documentation","Document all API endpoints with examples and usage guidelines","documentation","low","not_started","tech.writer@company.com","2025-01-15","12","Low - improves developer experience","Documentation is complete and clear"
+"Conduct user testing","Perform usability testing with target users","user_research","medium","not_started","ux.researcher@company.com","2024-12-20","20","Medium - validates design decisions","Test results documented with recommendations"

@@ -23,6 +23,7 @@ import {
   ListItemSecondaryAction,
   IconButton,
   Tooltip,
+  Fab,
 } from '@mui/material';
 import {
   Timeline as TimelineIcon,
@@ -35,12 +36,15 @@ import {
   Schedule as ScheduleIcon,
   TrendingUp as TrendingUpIcon,
   Assessment as AssessmentIcon,
+  Add as AddIcon,
+  Upload as UploadIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { UserContext } from '@context/User.context';
 import Loader from '@components/Loader/Loader';
 import Chatbot from '@components/Chatbot/Chatbot';
+import BusinessTasksImport from '@components/BusinessTasksImport/BusinessTasksImport';
 import useAlert from '@hooks/useAlert';
 import { routes } from '@routes/routesConstants';
 import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery';
@@ -227,6 +231,7 @@ const Dashboard = () => {
   const [pendingComments, setPendingComments] = useState([]);
   const [upcomingReleases, setUpcomingReleases] = useState([]);
   const [userBusinessTasks, setUserBusinessTasks] = useState([]);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Fetch all products
   const { data: allProducts, isLoading: isLoadingProducts } = useQuery(
@@ -543,6 +548,80 @@ const Dashboard = () => {
           </Typography>
         </CardContent>
       </Card>
+
+      {/* Quick Actions Section */}
+      <Typography variant="h5" className={classes.sectionHeader}>
+        <TrendingUpIcon />
+        Quick Actions
+      </Typography>
+      
+      <Grid container spacing={2} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Button
+            variant="outlined"
+            fullWidth
+            sx={{ p: 2, height: '100px', flexDirection: 'column' }}
+            onClick={() => {
+              if (userProducts.length > 0) {
+                history.push({
+                  pathname: routes.ADD_BUSINESS_TASK,
+                  state: {
+                    from: routes.DASHBOARD,
+                    product_uuid: userProducts[0].product_uuid,
+                  }
+                });
+              } else {
+                displayAlert('info', 'Please create or get access to a product first');
+              }
+            }}
+          >
+            <AddIcon sx={{ fontSize: 32, mb: 1 }} />
+            <Typography variant="caption">New Business Task</Typography>
+          </Button>
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={3}>
+          <Button
+            variant="outlined"
+            fullWidth
+            sx={{ p: 2, height: '100px', flexDirection: 'column' }}
+            onClick={() => {
+              if (userProducts.length > 0) {
+                setImportDialogOpen(true);
+              } else {
+                displayAlert('info', 'Please create or get access to a product first');
+              }
+            }}
+          >
+            <UploadIcon sx={{ fontSize: 32, mb: 1 }} />
+            <Typography variant="caption">Import Tasks</Typography>
+          </Button>
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={3}>
+          <Button
+            variant="outlined"
+            fullWidth
+            sx={{ p: 2, height: '100px', flexDirection: 'column' }}
+            onClick={() => history.push(routes.PRODUCT_ROADMAP)}
+          >
+            <FeatureIcon sx={{ fontSize: 32, mb: 1 }} />
+            <Typography variant="caption">Product Roadmap</Typography>
+          </Button>
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={3}>
+          <Button
+            variant="outlined"
+            fullWidth
+            sx={{ p: 2, height: '100px', flexDirection: 'column' }}
+            onClick={() => history.push(routes.NEW_PRODUCT)}
+          >
+            <AssignmentIcon sx={{ fontSize: 32, mb: 1 }} />
+            <Typography variant="caption">New Product</Typography>
+          </Button>
+        </Grid>
+      </Grid>
 
       {userProducts.length === 0 ? (
         <Paper sx={{ p: 4, textAlign: 'center' }}>
@@ -876,13 +955,45 @@ const Dashboard = () => {
           )}
 
           {/* Business Tasks Section */}
-          {userBusinessTasks.length > 0 && (
-            <>
-              <Typography variant="h5" className={classes.sectionHeader}>
-                <AssignmentIcon />
-                My Business Tasks ({userBusinessTasks.length})
+          <Typography variant="h5" className={classes.sectionHeader}>
+            <AssignmentIcon />
+            My Business Tasks ({userBusinessTasks.length})
+          </Typography>
+          
+          {userBusinessTasks.length === 0 ? (
+            <Paper sx={{ p: 4, textAlign: 'center', mb: 3 }}>
+              <AssignmentIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" gutterBottom>
+                No Business Tasks Found
               </Typography>
-              
+              <Typography variant="body1" color="text.secondary" paragraph>
+                You don't have any business tasks assigned yet. Create your first task to get started with project management.
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={() => {
+                  // Navigate to add business task - we'll need a product first
+                  if (userProducts.length > 0) {
+                    history.push({
+                      pathname: routes.ADD_BUSINESS_TASK,
+                      state: {
+                        from: routes.DASHBOARD,
+                        product_uuid: userProducts[0].product_uuid,
+                      }
+                    });
+                  } else {
+                    displayAlert('info', 'Please create or get access to a product first to add business tasks');
+                  }
+                }}
+                className="modern-button"
+              >
+                Create New Business Task
+              </Button>
+            </Paper>
+          ) : (
+            <>
               <Grid container spacing={2}>
                 {userBusinessTasks.slice(0, 6).map((task) => {
                   const isOverdue = task.is_overdue || (task.due_date && moment(task.due_date).isBefore(moment()));
@@ -955,18 +1066,77 @@ const Dashboard = () => {
                           <Typography variant="caption" color="text.secondary">
                             {task.custom_category_name || task.category?.replace('_', ' ')}
                           </Typography>
-                          <Button 
-                            size="small" 
-                            onClick={() => navigateToProduct(task.product_uuid)}
-                          >
-                            View Product
-                          </Button>
+                          <Box>
+                            <Button 
+                              size="small" 
+                              onClick={() => {
+                                history.push({
+                                  pathname: routes.EDIT_BUSINESS_TASK,
+                                  state: {
+                                    from: routes.DASHBOARD,
+                                    type: 'edit',
+                                    data: task,
+                                    product_uuid: task.product_uuid,
+                                  }
+                                });
+                              }}
+                              sx={{ mr: 1 }}
+                            >
+                              Edit
+                            </Button>
+                            <Button 
+                              size="small" 
+                              onClick={() => navigateToProduct(task.product_uuid)}
+                            >
+                              View Product
+                            </Button>
+                          </Box>
                         </Box>
                       </Paper>
                     </Grid>
                   );
                 })}
               </Grid>
+              
+              {userBusinessTasks.length > 6 && (
+                <Box textAlign="center" mt={2}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      // Navigate to a full business tasks list if we had one
+                      displayAlert('info', 'Full business tasks view coming soon! Use the Product Roadmap to see all tasks.');
+                    }}
+                  >
+                    View All {userBusinessTasks.length} Tasks
+                  </Button>
+                </Box>
+              )}
+              
+              {/* Floating Add Button */}
+              <Fab
+                color="primary"
+                aria-label="add business task"
+                sx={{
+                  position: 'fixed',
+                  bottom: 80,
+                  right: 16,
+                }}
+                onClick={() => {
+                  if (userProducts.length > 0) {
+                    history.push({
+                      pathname: routes.ADD_BUSINESS_TASK,
+                      state: {
+                        from: routes.DASHBOARD,
+                        product_uuid: userProducts[0].product_uuid,
+                      }
+                    });
+                  } else {
+                    displayAlert('info', 'Please create or get access to a product first to add business tasks');
+                  }
+                }}
+              >
+                <AddIcon />
+              </Fab>
             </>
           )}
         </>
@@ -974,6 +1144,13 @@ const Dashboard = () => {
       
       {/* AI Chatbot with Dashboard-specific contextual help */}
       <Chatbot />
+      
+      {/* Business Tasks Import Dialog */}
+      <BusinessTasksImport
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        productUuid={userProducts.length > 0 ? userProducts[0].product_uuid : null}
+      />
     </div>
   );
 };
