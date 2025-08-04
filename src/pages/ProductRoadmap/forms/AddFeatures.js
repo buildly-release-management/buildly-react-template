@@ -121,8 +121,6 @@ const AddFeatures = ({ location, history }) => {
   // Assignment state variables
   const [assignedDeveloper, setAssignedDeveloper] = useState((editData && editData.assigned_developer_uuid) || null);
   const [productTeamMember, setProductTeamMember] = useState((editData && editData.product_team_uuid) || null);
-  const [developerGithubUsername, setDeveloperGithubUsername] = useState((editData && editData.developer_github_username) || '');
-  const [hasGithubProfile, setHasGithubProfile] = useState((editData && editData.has_github_profile) || false);
 
   const complexityMarkers = [
     {
@@ -236,6 +234,11 @@ const AddFeatures = ({ location, history }) => {
         [ut]: userStories[ut],
       };
     });
+
+    // Get GitHub information from assigned developer's profile
+    const assignedUser = organizationMembers.find(member => member.uuid === assignedDeveloper);
+    const developerGithubUsername = assignedUser?.github_username || '';
+    const hasGithubProfile = assignedUser?.has_github_profile || false;
 
     const formData = {
       ...editData,
@@ -608,36 +611,6 @@ const AddFeatures = ({ location, history }) => {
                     </MenuItem>
                   ))}
                 </TextField>
-              </Grid>
-
-              {/* Developer GitHub Username */}
-              <Grid item xs={12} md={8}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  fullWidth
-                  id="developerGithubUsername"
-                  label="Developer GitHub Username"
-                  value={developerGithubUsername}
-                  disabled={viewPage}
-                  onChange={(e) => setDeveloperGithubUsername(e.target.value)}
-                  placeholder="Enter GitHub username"
-                />
-              </Grid>
-
-              {/* Has GitHub Profile */}
-              <Grid item xs={12} md={4}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={hasGithubProfile}
-                      onChange={(e) => setHasGithubProfile(e.target.checked)}
-                      disabled={viewPage}
-                    />
-                  }
-                  label="Has GitHub Profile"
-                  sx={{ mt: 2 }}
-                />
               </Grid>
             </Grid>
 

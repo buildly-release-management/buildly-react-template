@@ -17,7 +17,7 @@ export const getProductBudgetQuery = async (product_uuid, displayAlert) => {
     
     const response = await httpService.makeRequest(
       'get',
-      `${window.env.API_URL}budget/by-product/${product_uuid}/`,
+      `${window.env.API_URL}product/budget/by-product/${product_uuid}/`,
     );
     
     console.log('getProductBudgetQuery: Success response:', response.data);

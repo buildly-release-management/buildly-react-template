@@ -11,7 +11,7 @@ export const useSaveProductBudgetMutation = (product_uuid, displayAlert) => {
       
       const response = await httpService.makeRequest(
         'post',
-        `${window.env.API_URL}budget/by-product/${product_uuid}/`,
+        `${window.env.API_URL}product/budget/by-product/${product_uuid}/`,
         budgetData,
       );
       return response.data;

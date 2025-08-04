@@ -11,7 +11,7 @@ export const getProductPunchlistQuery = async (product_uuid, displayAlert) => {
     
     const response = await httpService.makeRequest(
       'get',
-      `${window.env.API_URL}punchlist/by-product/${product_uuid}/`,
+      `${window.env.API_URL}product/punchlist/by-product/${product_uuid}/`,
     );
     
     console.log('getProductPunchlistQuery: Success response:', response.data);

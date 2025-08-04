@@ -29,6 +29,10 @@ const EditUserProfile = ({ history }) => {
   const first_name = useInput(user && user.first_name, { required: true });
   const last_name = useInput(user && user.last_name, { required: true });
   const userType = useInput(user && user.user_type, { required: true });
+  
+  // GitHub profile fields
+  const [githubUsername, setGithubUsername] = useState(user && user.github_username || '');
+  const [hasGithubProfile, setHasGithubProfile] = useState(user && user.has_github_profile || false);
 
   const { mutate: updateUserMutation, isLoading: isUpdateUserLoading } = useUpdateUserMutation(history, displayAlert);
 
@@ -58,7 +62,9 @@ const EditUserProfile = ({ history }) => {
     if (!first_name.value || !last_name.value || !userType.value) {
       return true;
     }
-    if (first_name.hasChanged() || last_name.hasChanged() || userType.hasChanged()) {
+    if (first_name.hasChanged() || last_name.hasChanged() || userType.hasChanged() || 
+        githubUsername !== (user && user.github_username || '') || 
+        hasGithubProfile !== (user && user.has_github_profile || false)) {
       return false;
     }
     errorKeys.forEach((key) => {
@@ -76,6 +82,8 @@ const EditUserProfile = ({ history }) => {
       first_name: first_name.value,
       last_name: last_name.value,
       user_type: userType.value,
+      github_username: githubUsername,
+      has_github_profile: hasGithubProfile,
     };
     updateUserMutation(profileValues);
     setBtnDisabled(true);
@@ -160,6 +168,52 @@ const EditUserProfile = ({ history }) => {
                   <MenuItem value="">----------</MenuItem>
                   <MenuItem value="Developer">Developer</MenuItem>
                   <MenuItem value="Product Team">Product Team</MenuItem>
+                </TextField>
+              </Grid>
+            </Grid>
+
+            {/* GitHub Profile Section */}
+            <Grid container spacing={isMobile() ? 0 : 3} sx={{ mt: 2 }}>
+              <Grid item xs={12}>
+                <Typography variant="h6" gutterBottom>
+                  🔗 GitHub Integration
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={8}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  id="githubUsername"
+                  label="GitHub Username"
+                  name="githubUsername"
+                  placeholder="Enter your GitHub username"
+                  value={githubUsername}
+                  onChange={(e) => {
+                    setGithubUsername(e.target.value);
+                    setBtnDisabled(toggleSubmitBtn());
+                  }}
+                  helperText="Your GitHub username will be used for repository integrations and developer assignments"
+                  className="textField"
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  select
+                  id="hasGithubProfile"
+                  label="Has GitHub Profile"
+                  value={hasGithubProfile}
+                  onChange={(e) => {
+                    setHasGithubProfile(e.target.value === 'true');
+                    setBtnDisabled(toggleSubmitBtn());
+                  }}
+                  helperText="Indicates if you have an active GitHub profile"
+                >
+                  <MenuItem value={false}>No</MenuItem>
+                  <MenuItem value={true}>Yes</MenuItem>
                 </TextField>
               </Grid>
             </Grid>

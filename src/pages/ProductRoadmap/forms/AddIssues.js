@@ -105,12 +105,6 @@ const AddIssues = ({ history, location }) => {
   const [productTeamMember, setProductTeamMember] = useState(
     (editData && editData.product_team_uuid) || null
   );
-  const [developerGithubUsername, setDeveloperGithubUsername] = useState(
-    (editData && editData.developer_github_username) || ''
-  );
-  const [hasGithubProfile, setHasGithubProfile] = useState(
-    (editData && editData.has_github_profile) || false
-  );
   const [assigneeData, setAssigneeData] = useState([]);
   const [repoList, setRepoList] = useState([]);
 
@@ -212,6 +206,12 @@ const AddIssues = ({ history, location }) => {
     event.preventDefault();
     const dateTime = new Date();
     const issueCred = _.find(credentialData, (cred) => (_.toLower(cred.auth_detail.tool_type) === 'issue'));
+    
+    // Get GitHub information from assigned developer's profile
+    const assignedUser = organizationMembers.find(member => member.uuid === assignedDeveloper);
+    const developerGithubUsername = assignedUser?.github_username || '';
+    const hasGithubProfile = assignedUser?.has_github_profile || false;
+    
     const formData = {
       ...editData,
       edit_date: dateTime,
@@ -548,14 +548,6 @@ const AddIssues = ({ history, location }) => {
                       getOptionLabel={(option) => `👨‍💻 ${option.username} ${option.role ? `(${option.role})` : ''}`}
                       onChange={(e, newValue) => {
                         setAssignedDeveloper(newValue ? newValue.user_id : null);
-                        // Auto-detect GitHub profile
-                        if (newValue && newValue.username) {
-                          setDeveloperGithubUsername(newValue.username);
-                          setHasGithubProfile(true);
-                        } else {
-                          setDeveloperGithubUsername('');
-                          setHasGithubProfile(false);
-                        }
                       }}
                       renderInput={(params) => (
                         <TextField
@@ -597,42 +589,6 @@ const AddIssues = ({ history, location }) => {
                     />
                   </Grid>
 
-                  {/* GitHub Integration Fields */}
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      variant="outlined"
-                      margin="normal"
-                      fullWidth
-                      id="developer-github-username"
-                      label="GitHub Username"
-                      name="developer-github-username"
-                      value={developerGithubUsername}
-                      onChange={(e) => {
-                        setDeveloperGithubUsername(e.target.value);
-                        setHasGithubProfile(!!e.target.value);
-                      }}
-                      placeholder="developer-github-username"
-                      helperText="GitHub username for repository access and tracking"
-                      InputProps={{
-                        startAdornment: <span style={{ marginRight: '8px' }}>🐱</span>
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={hasGithubProfile}
-                          onChange={(e) => setHasGithubProfile(e.target.checked)}
-                          color="primary"
-                        />
-                      }
-                      label="Developer has GitHub profile"
-                      sx={{ mt: 2 }}
-                    />
-                  </Grid>
-
                   <Grid item xs={12}>
                     <Typography variant="body2" color="text.secondary" sx={{ 
                       mt: 1, 
@@ -642,7 +598,7 @@ const AddIssues = ({ history, location }) => {
                       border: '1px solid #E0E0E0'
                     }}>
                       💡 <strong>New Assignment System:</strong> Use specific developer and product team assignments for better tracking. 
-                      GitHub integration enables automatic repository access and commit tracking for assigned developers.
+                      GitHub information is automatically populated from the assigned developer's profile.
                     </Typography>
                   </Grid>
                 </>

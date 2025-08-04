@@ -8,7 +8,7 @@ export const useCreateTaskCategoryMutation = (organizationUuid, displayAlert) =>
     async (categoryData) => {
       const response = await httpService.makeRequest(
         'post',
-        `${window.env.API_URL}task-categories/`,
+        `${window.env.API_URL}product/task-categories/`,
         { ...categoryData, organization_uuid: organizationUuid },
       );
       return response.data;
@@ -33,7 +33,7 @@ export const useUpdateTaskCategoryMutation = (organizationUuid, displayAlert) =>
     async ({ categoryUuid, categoryData }) => {
       const response = await httpService.makeRequest(
         'patch',
-        `${window.env.API_URL}task-categories/${categoryUuid}/`,
+        `${window.env.API_URL}product/task-categories/${categoryUuid}/`,
         categoryData,
       );
       return response.data;
@@ -58,7 +58,7 @@ export const useDeleteTaskCategoryMutation = (organizationUuid, displayAlert) =>
     async (categoryUuid) => {
       const response = await httpService.makeRequest(
         'delete',
-        `${window.env.API_URL}task-categories/${categoryUuid}/`,
+        `${window.env.API_URL}product/task-categories/${categoryUuid}/`,
       );
       return response.data;
     },

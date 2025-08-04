@@ -6,6 +6,7 @@ export const useCreateBusinessTaskMutation = (productUuid, displayAlert) => {
 
   return useMutation(
     async (taskData) => {
+      console.log('useCreateBusinessTaskMutation: Creating task with data:', taskData);
       const response = await httpService.makeRequest(
         'post',
         `${window.env.API_URL}product/business-tasks/`,
@@ -23,7 +24,36 @@ export const useCreateBusinessTaskMutation = (productUuid, displayAlert) => {
         await queryClient.invalidateQueries(['overdueBusinessTasks']);
       },
       onError: (error) => {
-        const errorMessage = error?.response?.data?.detail || 'Failed to create business task';
+        console.error('useCreateBusinessTaskMutation: Error creating task:', error);
+        console.error('useCreateBusinessTaskMutation: Error response:', error?.response?.data);
+        
+        let errorMessage = 'Failed to create business task';
+        if (error?.response?.data) {
+          if (typeof error.response.data === 'string') {
+            errorMessage = error.response.data;
+          } else if (error.response.data.detail) {
+            errorMessage = error.response.data.detail;
+          } else if (error.response.data.message) {
+            errorMessage = error.response.data.message;
+          } else if (error.response.data.error) {
+            errorMessage = error.response.data.error;
+          } else {
+            // Try to extract field-specific errors
+            const fieldErrors = [];
+            Object.keys(error.response.data).forEach(field => {
+              if (Array.isArray(error.response.data[field])) {
+                fieldErrors.push(`${field}: ${error.response.data[field].join(', ')}`);
+              } else if (typeof error.response.data[field] === 'string') {
+                fieldErrors.push(`${field}: ${error.response.data[field]}`);
+              }
+            });
+            
+            if (fieldErrors.length > 0) {
+              errorMessage = `Validation errors: ${fieldErrors.join('; ')}`;
+            }
+          }
+        }
+        
         displayAlert('error', errorMessage);
       },
     }

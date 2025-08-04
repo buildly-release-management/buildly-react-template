@@ -11,7 +11,7 @@ export const useCreatePunchlistItemMutation = (product_uuid, displayAlert) => {
       
       const response = await httpService.makeRequest(
         'post',
-        `${window.env.API_URL}punchlist/by-product/${product_uuid}/`,
+        `${window.env.API_URL}product/punchlist/by-product/${product_uuid}/`,
         punchlistData,
       );
       return response.data;
@@ -44,7 +44,7 @@ export const useUpdatePunchlistStatusMutation = (product_uuid, displayAlert) => 
       
       const response = await httpService.makeRequest(
         'patch',
-        `${window.env.API_URL}punchlist/${punchlist_uuid}/update-status/`,
+        `${window.env.API_URL}product/punchlist/${punchlist_uuid}/update-status/`,
         { status, assigned_to, resolution_notes },
       );
       return response.data;
@@ -77,7 +77,7 @@ export const useDeletePunchlistItemMutation = (product_uuid, displayAlert) => {
       
       const response = await httpService.makeRequest(
         'delete',
-        `${window.env.API_URL}punchlist/${punchlist_uuid}/`,
+        `${window.env.API_URL}product/punchlist/${punchlist_uuid}/`,
       );
       return response.data;
     },

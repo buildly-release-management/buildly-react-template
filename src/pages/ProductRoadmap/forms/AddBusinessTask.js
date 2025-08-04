@@ -169,6 +169,16 @@ const AddBusinessTask = ({ history, location }) => {
     event.preventDefault();
     
     // Validation
+    if (!title.value || title.value.trim() === '') {
+      displayAlert('error', 'Please enter a task title');
+      return;
+    }
+
+    if (!description || description.trim() === '') {
+      displayAlert('error', 'Please enter a task description');
+      return;
+    }
+
     if (!selectedCategory && !selectedCustomCategory) {
       displayAlert('error', 'Please select either a standard category or custom category');
       return;
@@ -179,21 +189,32 @@ const AddBusinessTask = ({ history, location }) => {
       return;
     }
 
+    if (!user?.core_user_uuid) {
+      displayAlert('error', 'User session error: Please refresh and try again');
+      return;
+    }
+
+    if (!product_uuid) {
+      displayAlert('error', 'Product UUID is missing');
+      return;
+    }
+
     const taskData = {
       product_uuid,
-      title: title.value,
-      description,
+      title: title.value.trim(),
+      description: description.trim(),
       category: selectedCategory || undefined,
       custom_category: selectedCustomCategory || undefined,
       priority,
       status,
       assigned_to_user_uuid: assignedToUser,
-      assigned_by_user_uuid: user?.core_user_uuid,
+      assigned_by_user_uuid: user.core_user_uuid,
       release_uuid: selectedRelease || undefined,
       release_version: releaseVersion || undefined,
       feature_name: featureName || undefined,
       milestone: milestone || undefined,
       due_date: dueDate ? dueDate.toISOString() : undefined,
+      start_date: new Date().toISOString(), // Add current date as start date
       estimated_hours: estimatedHours ? parseFloat(estimatedHours) : undefined,
       actual_hours: actualHours ? parseFloat(actualHours) : undefined,
       business_value: businessValue || undefined,
@@ -201,7 +222,7 @@ const AddBusinessTask = ({ history, location }) => {
       success_metrics: successMetrics || undefined,
       stakeholder_emails: stakeholderEmails.length > 0 ? stakeholderEmails : undefined,
       tags: tags.length > 0 ? tags : undefined,
-      progress_percentage: progressPercentage,
+      progress_percentage: progressPercentage || 0,
       risk_level: riskLevel,
       risk_description: riskDescription || undefined,
       blockers: blockers || undefined,
@@ -209,6 +230,8 @@ const AddBusinessTask = ({ history, location }) => {
       recurrence_pattern: isRecurring ? recurrencePattern : undefined,
       requires_approval: requiresApproval,
     };
+
+    console.log('Creating business task with data:', taskData);
 
     if (editPage) {
       updateBusinessTaskMutation({ 
@@ -472,6 +495,52 @@ const AddBusinessTask = ({ history, location }) => {
                   handleDateChange={setDueDate}
                 />
               </Grid>
+
+              {/* Release Assignment */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  select
+                  id="selectedRelease"
+                  label="Assign to Release"
+                  value={selectedRelease || ''}
+                  onChange={(e) => setSelectedRelease(e.target.value)}
+                  helperText="Select a release to assign this task to"
+                >
+                  <MenuItem value="">
+                    <em>No Release Selected</em>
+                  </MenuItem>
+                  {releases && releases.length > 0 && releases.map((release) => (
+                    <MenuItem key={release.release_uuid} value={release.release_uuid}>
+                      📦 {release.name || release.tag_name} 
+                      {release.release_date && (
+                        <span style={{ color: '#666', fontSize: '0.9em', marginLeft: '8px' }}>
+                          ({new Date(release.release_date).toLocaleDateString()})
+                        </span>
+                      )}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              {/* Release Version */}
+              {selectedRelease && (
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    variant="outlined"
+                    margin="normal"
+                    fullWidth
+                    id="releaseVersion"
+                    label="Release Version"
+                    value={releaseVersion}
+                    onChange={(e) => setReleaseVersion(e.target.value)}
+                    placeholder="e.g., v1.2.0"
+                    helperText="Optional: Specify version number for this release"
+                  />
+                </Grid>
+              )}
 
               {/* Progress Section */}
               {editPage && (
