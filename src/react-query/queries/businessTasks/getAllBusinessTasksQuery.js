@@ -12,7 +12,7 @@ export const getAllBusinessTasksQuery = async (filters, displayAlert) => {
     });
 
     const queryString = queryParams.toString();
-    const url = `${window.env.API_URL}business-tasks/${queryString ? `?${queryString}` : ''}`;
+    const url = `${window.env.API_URL}product/business-tasks/${queryString ? `?${queryString}` : ''}`;
     
     const response = await httpService.makeRequest('get', url);
     return response.data;
@@ -33,7 +33,7 @@ export const getBusinessTasksByUserQuery = async (userUuid, filters, displayAler
     });
 
     const queryString = queryParams.toString();
-    const url = `${window.env.API_URL}business-tasks/by-user/${userUuid}/${queryString ? `?${queryString}` : ''}`;
+    const url = `${window.env.API_URL}product/business-tasks/${queryString ? `?${queryString}` : ''}`;
     
     const response = await httpService.makeRequest('get', url);
     return response.data;
@@ -54,7 +54,7 @@ export const getBusinessTasksByReleaseQuery = async (releaseUuid, filters, displ
     });
 
     const queryString = queryParams.toString();
-    const url = `${window.env.API_URL}business-tasks/by-release/${releaseUuid}/${queryString ? `?${queryString}` : ''}`;
+    const url = `${window.env.API_URL}product/business-tasks/${queryString ? `?${queryString}` : ''}`;
     
     const response = await httpService.makeRequest('get', url);
     return response.data;
@@ -66,7 +66,7 @@ export const getBusinessTasksByReleaseQuery = async (releaseUuid, filters, displ
 
 export const getOverdueBusinessTasksQuery = async (productUuid, displayAlert) => {
   try {
-    const url = `${window.env.API_URL}business-tasks/product/${productUuid}/overdue/`;
+    const url = `${window.env.API_URL}product/business-tasks/${productUuid}/overdue/`;
     const response = await httpService.makeRequest('get', url);
     return response.data;
   } catch (error) {
@@ -77,7 +77,7 @@ export const getOverdueBusinessTasksQuery = async (productUuid, displayAlert) =>
 
 export const getBusinessTaskDependenciesQuery = async (taskUuid, displayAlert) => {
   try {
-    const url = `${window.env.API_URL}business-tasks/${taskUuid}/dependencies/`;
+    const url = `${window.env.API_URL}product/business-tasks/${taskUuid}/dependencies/`;
     const response = await httpService.makeRequest('get', url);
     return response.data;
   } catch (error) {

@@ -16,6 +16,8 @@ import Col from 'react-bootstrap/Col';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import { Accordion, AccordionSummary, AccordionDetails, Typography as MuiTypography } from '@mui/material';
+import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 
 import './Insights.css';
 
@@ -68,6 +70,22 @@ const Insights = () => {
   const [budgetLoading, setBudgetLoading] = useState({});
   const [releasePunchlists, setReleasePunchlists] = useState({});
   const [punchlistInputs, setPunchlistInputs] = useState({});
+
+  // Collapsible sections state
+  const [expandedSections, setExpandedSections] = useState({
+    architecture: true,
+    timelines: true,
+    budget: true,
+    productivity: false
+  });
+
+  // Handle section toggle
+  const handleSectionToggle = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   const { data: products, isLoading: areProductsLoading } = useQuery(
     ['allProducts', user.organization.organization_uuid],
@@ -1156,227 +1174,386 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
             </section>
           </div>
 
-          <div className="row">
-            <div className="col-md-7">
-              <Card className="w-100">
-                <Card.Body>
-                  <Card.Title>
-                    Architecture suggestion:
-                    {productData && productData.architecture_type ? ` (${productData?.architecture_type?.toUpperCase()})` : ''}
-                  </Card.Title>
-                  <div className="image-responsive m-2" style={{ height: 350 }}>
-                    <Image src={architectureImg} fluid style={{ height: '100%' }} />
-                  </div>
-                </Card.Body>
-              </Card>
-            </div>
-            <div className="col-md-5">
-              <Card className="w-100">
-                <Card.Body>
-                  <Card.Title>Recommended Buildly Open Source Tools</Card.Title>
-                  <div className="w-100 m-2">
-                    {buildlyTools && buildlyTools.length > 0 ? (
-                      <div>
-                        {buildlyTools.map((tool, index) => (
-                          <Card key={`tool-${index}`} className="mb-2" style={{ border: '1px solid #e0e0e0' }}>
-                            <Card.Body style={{ padding: '10px' }}>
-                              <div className="d-flex justify-content-between align-items-center">
-                                <div style={{ flex: 1 }}>
-                                  <div className="d-flex justify-content-between align-items-start">
-                                    <h6 className="mb-1" style={{ color: '#0C5595' }}>
-                                      <a 
-                                        href={tool.html_url} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        style={{ textDecoration: 'none', color: '#0C5595' }}
-                                      >
-                                        {tool.name}
-                                      </a>
-                                    </h6>
-                                    <div className="d-flex align-items-center">
-                                      {tool.source === 'marketplace' && (
-                                        <small className="badge bg-success me-2">Marketplace</small>
-                                      )}
-                                      <small className="badge bg-primary" style={{ fontSize: '10px' }}>
-                                        {Math.round(tool.relevance_score || 50)}% match
-                                      </small>
+          {/* Architecture & Design Section */}
+          <Accordion expanded={expandedSections.architecture} onChange={() => handleSectionToggle('architecture')}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="architecture-content"
+              id="architecture-header"
+              sx={{
+                backgroundColor: '#0C5595',
+                color: 'white',
+                '& .MuiAccordionSummary-expandIconWrapper': {
+                  color: 'white',
+                },
+                '&:hover': {
+                  backgroundColor: '#0A4A85',
+                },
+              }}
+            >
+              <MuiTypography variant="h6" sx={{ fontWeight: 'bold' }}>
+                🏗️ Architecture & Design
+              </MuiTypography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ padding: 0 }}>
+              <div className="row">
+                <div className="col-md-7">
+                  <Card className="w-100">
+                    <Card.Body>
+                      <Card.Title>
+                        Architecture suggestion:
+                        {productData && productData.architecture_type ? ` (${productData?.architecture_type?.toUpperCase()})` : ''}
+                      </Card.Title>
+                      <div className="image-responsive m-2" style={{ height: 350 }}>
+                        <Image src={architectureImg} fluid style={{ height: '100%' }} />
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </div>
+                <div className="col-md-5">
+                  <Card className="w-100">
+                    <Card.Body>
+                      <Card.Title>Recommended Buildly Open Source Tools</Card.Title>
+                      <div className="w-100 m-2">
+                        {buildlyTools && buildlyTools.length > 0 ? (
+                          <div>
+                            {buildlyTools.map((tool, index) => (
+                              <Card key={`tool-${index}`} className="mb-2" style={{ border: '1px solid #e0e0e0' }}>
+                                <Card.Body style={{ padding: '10px' }}>
+                                  <div className="d-flex justify-content-between align-items-center">
+                                    <div style={{ flex: 1 }}>
+                                      <div className="d-flex justify-content-between align-items-start">
+                                        <h6 className="mb-1" style={{ color: '#0C5595' }}>
+                                          <a 
+                                            href={tool.html_url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            style={{ textDecoration: 'none', color: '#0C5595' }}
+                                          >
+                                            {tool.name}
+                                          </a>
+                                        </h6>
+                                        <div className="d-flex align-items-center">
+                                          {tool.source === 'marketplace' && (
+                                            <small className="badge bg-success me-2">Marketplace</small>
+                                          )}
+                                          <small className="badge bg-primary" style={{ fontSize: '10px' }}>
+                                            {Math.round(tool.relevance_score || 50)}% match
+                                          </small>
+                                        </div>
+                                      </div>
+                                      <small className="text-muted">{tool.description || 'No description available'}</small>
+                                      <div className="mt-1">
+                                        <small className="badge bg-light text-dark me-1">{tool.language || 'Unknown'}</small>
+                                        <small className="badge bg-light text-dark me-1">⭐ {tool.stargazers_count || 0}</small>
+                                        {tool.topics && tool.topics.slice(0, 2).map((topic, idx) => (
+                                          <small key={idx} className="badge bg-secondary me-1">{topic}</small>
+                                        ))}
+                                      </div>
                                     </div>
                                   </div>
-                                  <small className="text-muted">{tool.description || 'No description available'}</small>
-                                  <div className="mt-1">
-                                    <small className="badge bg-light text-dark me-1">{tool.language || 'Unknown'}</small>
-                                    <small className="badge bg-light text-dark me-1">⭐ {tool.stargazers_count || 0}</small>
-                                    {tool.topics && tool.topics.slice(0, 2).map((topic, idx) => (
-                                      <small key={idx} className="badge bg-secondary me-1">{topic}</small>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            </Card.Body>
-                          </Card>
-                        ))}
+                                </Card.Body>
+                              </Card>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center text-muted p-4">
+                            <p>Loading Buildly open source tools...</p>
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="text-center text-muted p-4">
-                        <p>Loading Buildly open source tools...</p>
-                      </div>
-                    )}
-                  </div>
-                </Card.Body>
-              </Card>
-              
-              {/* Marketplace Tools Section */}
-              <Card className="w-100 mt-2">
-                <Card.Body>
-                  <Card.Title>Premium Marketplace Components</Card.Title>
-                  <div className="w-100 m-2">
-                    {marketplaceTools && marketplaceTools.length > 0 ? (
-                      <div>
-                        {marketplaceTools.map((tool, index) => (
-                          <Card key={`marketplace-tool-${index}`} className="mb-2" style={{ border: '1px solid #ffc107', backgroundColor: '#fffbf0' }}>
-                            <Card.Body style={{ padding: '10px' }}>
-                              <div className="d-flex justify-content-between align-items-center">
-                                <div style={{ flex: 1 }}>
-                                  <div className="d-flex justify-content-between align-items-start">
-                                    <h6 className="mb-1" style={{ color: '#d68910' }}>
-                                      <a 
-                                        href={tool.html_url} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        style={{ textDecoration: 'none', color: '#d68910' }}
-                                      >
-                                        {tool.name} ⭐
-                                      </a>
-                                    </h6>
-                                    <div className="d-flex align-items-center">
-                                      <small className="badge bg-warning text-dark me-2">Premium</small>
-                                      <small className="badge bg-primary" style={{ fontSize: '10px' }}>
-                                        {Math.round(tool.relevance_score || 50)}% match
-                                      </small>
+                    </Card.Body>
+                  </Card>
+                  
+                  {/* Marketplace Tools Section */}
+                  <Card className="w-100 mt-2">
+                    <Card.Body>
+                      <Card.Title>Premium Marketplace Components</Card.Title>
+                      <div className="w-100 m-2">
+                        {marketplaceTools && marketplaceTools.length > 0 ? (
+                          <div>
+                            {marketplaceTools.map((tool, index) => (
+                              <Card key={`marketplace-tool-${index}`} className="mb-2" style={{ border: '1px solid #ffc107', backgroundColor: '#fffbf0' }}>
+                                <Card.Body style={{ padding: '10px' }}>
+                                  <div className="d-flex justify-content-between align-items-center">
+                                    <div style={{ flex: 1 }}>
+                                      <div className="d-flex justify-content-between align-items-start">
+                                        <h6 className="mb-1" style={{ color: '#d68910' }}>
+                                          <a 
+                                            href={tool.html_url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            style={{ textDecoration: 'none', color: '#d68910' }}
+                                          >
+                                            {tool.name} ⭐
+                                          </a>
+                                        </h6>
+                                        <div className="d-flex align-items-center">
+                                          <small className="badge bg-warning text-dark me-2">Premium</small>
+                                          <small className="badge bg-primary" style={{ fontSize: '10px' }}>
+                                            {Math.round(tool.relevance_score || 50)}% match
+                                          </small>
+                                        </div>
+                                      </div>
+                                      <small className="text-muted">{tool.description || 'No description available'}</small>
+                                      <div className="mt-1">
+                                        <small className="badge bg-light text-dark me-1">{tool.language || 'React'}</small>
+                                        <small className="badge bg-light text-dark me-1">⭐ {tool.stargazers_count || 0}</small>
+                                        {tool.topics && tool.topics.slice(0, 2).map((topic, idx) => (
+                                          <small key={idx} className="badge bg-warning text-dark me-1">{topic}</small>
+                                        ))}
+                                      </div>
                                     </div>
                                   </div>
-                                  <small className="text-muted">{tool.description || 'No description available'}</small>
-                                  <div className="mt-1">
-                                    <small className="badge bg-light text-dark me-1">{tool.language || 'React'}</small>
-                                    <small className="badge bg-light text-dark me-1">⭐ {tool.stargazers_count || 0}</small>
-                                    {tool.topics && tool.topics.slice(0, 2).map((topic, idx) => (
-                                      <small key={idx} className="badge bg-warning text-dark me-1">{topic}</small>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            </Card.Body>
-                          </Card>
-                        ))}
+                                </Card.Body>
+                              </Card>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center text-muted p-4">
+                            <p>Loading premium marketplace components...</p>
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="text-center text-muted p-4">
-                        <p>Loading premium marketplace components...</p>
-                      </div>
-                    )}
-                  </div>
-                </Card.Body>
-              </Card>
-
-            </div>
-          </div>
-          <Card className="w-100 mt-2">
-            <Card.Body>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <Card.Title>Release Timeline</Card.Title>
-                <div className="btn-group" role="group">
-                  <Button
-                    variant={viewMode === 'timeline' ? 'contained' : 'outlined'}
-                    size="small"
-                    onClick={() => setViewMode('timeline')}
-                    sx={{ mr: 1 }}
-                  >
-                    Timeline View
-                  </Button>
-                  <Button
-                    variant={viewMode === 'gantt' ? 'contained' : 'outlined'}
-                    size="small"
-                    onClick={() => setViewMode('gantt')}
-                  >
-                    Gantt View
-                  </Button>
+                    </Card.Body>
+                  </Card>
                 </div>
               </div>
-              <div className="m-2">
-                {
-                  releaseData && releaseData.length
-                    ? (
-                      viewMode === 'timeline' ? (
-                        <TimelineComponent
-                          reportData={releaseData}
-                          suggestedFeatures={productData?.feature_suggestions}
-                          onReleaseClick={handleReleaseClick}
-                          productContext={{
-                            name: productData?.name,
-                            architecture_type: productData?.architecture_type,
-                            product_uuid: productData?.product_uuid
-                          }}
-                        />
-                      ) : (
-                        <div>
-                          {console.log('Insights: Gantt data being passed:', releaseData)}
-                          <GanttChart
-                            releases={releaseData}
-                            onReleaseClick={handleReleaseClick}
-                            title="Release Gantt Chart"
-                            productContext={{
-                              name: productData?.name,
-                              architecture_type: productData?.architecture_type,
-                              product_uuid: productData?.product_uuid
-                            }}
-                          />
-                        </div>
-                      )
-                    ) : (
-                      <div className="alert alert-warning" role="alert">
-                        No releases for this product!
-                      </div>
-                    )
-                }
-              </div>
-            </Card.Body>
-          </Card>
-
-          {/* Estimates and Team Section */}
-          <Card className="w-100 mt-2">
-            <Card.Body>
-              <Card.Title>Estimates and Team</Card.Title>
-              <div className="m-2">
-                {releaseData && releaseData.length ? (
-                  <div className="row">
-                    {releaseData.map((release, index) => (
-                      <div key={`release-estimate-${index}`} className="col-md-6 mb-4">
-                        <Card style={{ 
-                          border: '2px solid #e0e0e0',
-                          borderRadius: '8px',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                        }}>
-                          <Card.Header style={{ 
-                            backgroundColor: release.bgColor || '#f8f9fa',
-                            color: release.bgColor === '#0C5594' || release.bgColor === '#152944' ? '#fff' : '#000',
-                            fontWeight: 'bold',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between'
-                          }}>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                              {release.icon && (
-                                <release.icon 
-                                  className="me-2" 
-                                  size={18}
-                                  style={{ color: 'inherit' }}
-                                />
-                              )}
-                              {release.name}
+            </AccordionDetails>
+          </Accordion>
+          
+          {/* Timelines & Productivity Section */}
+          <Accordion expanded={expandedSections.timelines} onChange={() => handleSectionToggle('timelines')} sx={{ mt: 2 }}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="timelines-content"
+              id="timelines-header"
+              sx={{
+                backgroundColor: '#28a745',
+                color: 'white',
+                '& .MuiAccordionSummary-expandIconWrapper': {
+                  color: 'white',
+                },
+                '&:hover': {
+                  backgroundColor: '#218838',
+                },
+              }}
+            >
+              <MuiTypography variant="h6" sx={{ fontWeight: 'bold' }}>
+                📅 Timelines & Productivity
+              </MuiTypography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ padding: 2 }}>
+              <Card className="w-100">
+                <Card.Body>
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <Card.Title>Release Timeline</Card.Title>
+                    <div className="btn-group" role="group">
+                      <Button
+                        variant={viewMode === 'timeline' ? 'contained' : 'outlined'}
+                        size="small"
+                        onClick={() => setViewMode('timeline')}
+                        sx={{ mr: 1 }}
+                      >
+                        Timeline View
+                      </Button>
+                      <Button
+                        variant={viewMode === 'gantt' ? 'contained' : 'outlined'}
+                        size="small"
+                        onClick={() => setViewMode('gantt')}
+                      >
+                        Gantt View
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="m-2">
+                    {
+                      releaseData && releaseData.length
+                        ? (
+                          viewMode === 'timeline' ? (
+                            <TimelineComponent
+                              reportData={releaseData}
+                              suggestedFeatures={productData?.feature_suggestions}
+                              onReleaseClick={handleReleaseClick}
+                              productContext={{
+                                name: productData?.name,
+                                architecture_type: productData?.architecture_type,
+                                product_uuid: productData?.product_uuid
+                              }}
+                            />
+                          ) : (
+                            <div>
+                              {console.log('Insights: Gantt data being passed:', releaseData)}
+                              <GanttChart
+                                releases={releaseData}
+                                onReleaseClick={handleReleaseClick}
+                                title="Release Gantt Chart"
+                                productContext={{
+                                  name: productData?.name,
+                                  architecture_type: productData?.architecture_type,
+                                  product_uuid: productData?.product_uuid
+                                }}
+                              />
                             </div>
-                            <small>{release.duration?.weeks || 0} weeks</small>
-                          </Card.Header>
-                          <Card.Body>
+                          )
+                        ) : (
+                          <div className="alert alert-warning" role="alert">
+                            No releases for this product!
+                          </div>
+                        )
+                    }
+                  </div>
+                </Card.Body>
+              </Card>
+
+              {/* Feature & Issue Reports Section */}
+              <div className="row mt-4">
+                <div className="col-md-6">
+                  <Card className="w-100">
+                    <Card.Body>
+                      <Card.Title>Feature Reports</Card.Title>
+                      <div className="m-2">
+                        {releaseData && releaseData.length ? (
+                          <div>
+                            <p><strong>Total Features:</strong> {releaseData.reduce((total, release) => total + (release.features?.length || 0), 0)}</p>
+                            <p><strong>Features by Release:</strong></p>
+                            <ul>
+                              {releaseData.map((release, index) => (
+                                <li key={index}>
+                                  <a 
+                                    href={`/release-details/${release.release_uuid}`}
+                                    style={{ color: '#0C5595', textDecoration: 'none' }}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleReleaseClick(release);
+                                    }}
+                                  >
+                                    {release.name}
+                                  </a>
+                                  : {release.features?.length || 0} features
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <div className="alert alert-info">No feature data available</div>
+                        )}
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </div>
+                <div className="col-md-6">
+                  <Card className="w-100">
+                    <Card.Body>
+                      <Card.Title>Issue Reports</Card.Title>
+                      <div className="m-2">
+                        {releaseData && releaseData.length ? (
+                          <div>
+                            <p><strong>Total Issues:</strong> {releaseData.reduce((total, release) => total + (release.issues?.length || 0), 0)}</p>
+                            <p><strong>Issues by Status:</strong></p>
+                            <ul>
+                              <li>Open: {releaseData.reduce((total, release) => total + (release.issues?.filter(issue => issue.status === 'open')?.length || 0), 0)}</li>
+                              <li>In Progress: {releaseData.reduce((total, release) => total + (release.issues?.filter(issue => issue.status === 'in_progress')?.length || 0), 0)}</li>
+                              <li>Resolved: {releaseData.reduce((total, release) => total + (release.issues?.filter(issue => issue.status === 'resolved')?.length || 0), 0)}</li>
+                            </ul>
+                          </div>
+                        ) : (
+                          <div className="alert alert-info">No issue data available</div>
+                        )}
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Productivity Reports Section */}
+              <Card className="w-100 mt-4">
+                <Card.Body>
+                  <Card.Title>Productivity Reports</Card.Title>
+                  <div className="m-2">
+                    {releaseData && releaseData.length ? (
+                      <div className="row">
+                        <div className="col-md-4">
+                          <h6>Release Velocity</h6>
+                          <p>Average time per release: {Math.round(releaseData.reduce((total, release) => total + (release.duration?.weeks || 0), 0) / releaseData.length)} weeks</p>
+                        </div>
+                        <div className="col-md-4">
+                          <h6>Team Productivity</h6>
+                          <p>Active teams: {releaseData.reduce((teams, release) => {
+                            release.team?.forEach(member => teams.add(member.role));
+                            return teams;
+                          }, new Set()).size}</p>
+                        </div>
+                        <div className="col-md-4">
+                          <h6>Budget Efficiency</h6>
+                          <p>Average cost per release: ${Math.round(releaseData.reduce((total, release) => total + (release.totalCost || 0), 0) / releaseData.length)}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="alert alert-info">No productivity data available</div>
+                    )}
+                  </div>
+                </Card.Body>
+              </Card>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Budget Management Section */}
+          <Accordion expanded={expandedSections.budget} onChange={() => handleSectionToggle('budget')} sx={{ mt: 2 }}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="budget-content"
+              id="budget-header"
+              sx={{
+                backgroundColor: '#6f42c1',
+                color: 'white',
+                '& .MuiAccordionSummary-expandIconWrapper': {
+                  color: 'white',
+                },
+                '&:hover': {
+                  backgroundColor: '#5a2d8a',
+                },
+              }}
+            >
+              <MuiTypography variant="h6" sx={{ fontWeight: 'bold' }}>
+                💰 Budget Management
+              </MuiTypography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ padding: 2 }}>
+              <Card className="w-100">
+                <Card.Body>
+                  <Card.Title>Estimates and Team</Card.Title>
+                  <div className="m-2">
+                    {releaseData && releaseData.length ? (
+                      <div className="row">
+                        {releaseData.map((release, index) => (
+                          <div key={`release-estimate-${index}`} className="col-md-6 mb-4">
+                            <Card style={{ 
+                              border: '2px solid #e0e0e0',
+                              borderRadius: '8px',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                            }}>
+                              <Card.Header style={{ 
+                                backgroundColor: release.bgColor || '#f8f9fa',
+                                color: release.bgColor === '#0C5594' || release.bgColor === '#152944' ? '#fff' : '#000',
+                                fontWeight: 'bold',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                  {release.icon && (
+                                    <release.icon 
+                                      className="me-2" 
+                                      size={18}
+                                      style={{ color: 'inherit' }}
+                                    />
+                                  )}
+                                  {release.name}
+                                </div>
+                                <small>{release.duration?.weeks || 0} weeks</small>
+                              </Card.Header>
+                              <Card.Body>
                             {/* Team Composition */}
                             <div className="mb-3">
                               <h6 style={{ color: '#0C5594', marginBottom: '10px' }}>👥 Team Composition</h6>
@@ -1768,96 +1945,10 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
               </div>
             </Card.Body>
           </Card>
+            </AccordionDetails>
+          </Accordion>
 
-          {/* Feature & Issue Reports Section */}
-          <div className="row mt-4">
-            <div className="col-md-6">
-              <Card className="w-100">
-                <Card.Body>
-                  <Card.Title>Feature Reports</Card.Title>
-                  <div className="m-2">
-                    {releaseData && releaseData.length ? (
-                      <div>
-                        <p><strong>Total Features:</strong> {releaseData.reduce((total, release) => total + (release.features?.length || 0), 0)}</p>
-                        <p><strong>Features by Release:</strong></p>
-                        <ul>
-                          {releaseData.map((release, index) => (
-                            <li key={index}>
-                              <a 
-                                href={`/release-details/${release.release_uuid}`}
-                                style={{ color: '#0C5595', textDecoration: 'none' }}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleReleaseClick(release);
-                                }}
-                              >
-                                {release.name}
-                              </a>
-                              : {release.features?.length || 0} features
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : (
-                      <div className="alert alert-info">No feature data available</div>
-                    )}
-                  </div>
-                </Card.Body>
-              </Card>
-            </div>
-            <div className="col-md-6">
-              <Card className="w-100">
-                <Card.Body>
-                  <Card.Title>Issue Reports</Card.Title>
-                  <div className="m-2">
-                    {releaseData && releaseData.length ? (
-                      <div>
-                        <p><strong>Total Issues:</strong> {releaseData.reduce((total, release) => total + (release.issues?.length || 0), 0)}</p>
-                        <p><strong>Issues by Status:</strong></p>
-                        <ul>
-                          <li>Open: {releaseData.reduce((total, release) => total + (release.issues?.filter(issue => issue.status === 'open')?.length || 0), 0)}</li>
-                          <li>In Progress: {releaseData.reduce((total, release) => total + (release.issues?.filter(issue => issue.status === 'in_progress')?.length || 0), 0)}</li>
-                          <li>Resolved: {releaseData.reduce((total, release) => total + (release.issues?.filter(issue => issue.status === 'resolved')?.length || 0), 0)}</li>
-                        </ul>
-                      </div>
-                    ) : (
-                      <div className="alert alert-info">No issue data available</div>
-                    )}
-                  </div>
-                </Card.Body>
-              </Card>
-            </div>
-          </div>
 
-          {/* Productivity Reports Section */}
-          <Card className="w-100 mt-4">
-            <Card.Body>
-              <Card.Title>Productivity Reports</Card.Title>
-              <div className="m-2">
-                {releaseData && releaseData.length ? (
-                  <div className="row">
-                    <div className="col-md-4">
-                      <h6>Release Velocity</h6>
-                      <p>Average time per release: {Math.round(releaseData.reduce((total, release) => total + (release.duration?.weeks || 0), 0) / releaseData.length)} weeks</p>
-                    </div>
-                    <div className="col-md-4">
-                      <h6>Team Productivity</h6>
-                      <p>Active teams: {releaseData.reduce((teams, release) => {
-                        release.team?.forEach(member => teams.add(member.role));
-                        return teams;
-                      }, new Set()).size}</p>
-                    </div>
-                    <div className="col-md-4">
-                      <h6>Budget Efficiency</h6>
-                      <p>Average cost per release: ${Math.round(releaseData.reduce((total, release) => total + (release.totalCost || 0), 0) / releaseData.length)}</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="alert alert-info">No productivity data available</div>
-                )}
-              </div>
-            </Card.Body>
-          </Card>
 
           {/* Email report modal */}
           <Modal

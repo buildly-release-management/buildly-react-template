@@ -8,7 +8,7 @@ export const useCreateBusinessTaskMutation = (productUuid, displayAlert) => {
     async (taskData) => {
       const response = await httpService.makeRequest(
         'post',
-        `${window.env.API_URL}business-tasks/`,
+        `${window.env.API_URL}product/business-tasks/`,
         taskData,
       );
       return response.data;
@@ -37,7 +37,7 @@ export const useUpdateBusinessTaskMutation = (displayAlert) => {
     async ({ taskUuid, taskData }) => {
       const response = await httpService.makeRequest(
         'patch',
-        `${window.env.API_URL}business-tasks/${taskUuid}/`,
+        `${window.env.API_URL}product/business-tasks/${taskUuid}/`,
         taskData,
       );
       return response.data;
@@ -66,7 +66,7 @@ export const useUpdateTaskProgressMutation = (displayAlert) => {
     async ({ taskUuid, progressData }) => {
       const response = await httpService.makeRequest(
         'patch',
-        `${window.env.API_URL}business-tasks/${taskUuid}/update_progress/`,
+        `${window.env.API_URL}product/business-tasks/${taskUuid}/update_progress/`,
         progressData,
       );
       return response.data;
@@ -94,7 +94,7 @@ export const useCloneBusinessTaskMutation = (displayAlert) => {
     async ({ taskUuid, cloneData }) => {
       const response = await httpService.makeRequest(
         'post',
-        `${window.env.API_URL}business-tasks/${taskUuid}/clone/`,
+        `${window.env.API_URL}product/business-tasks/${taskUuid}/clone/`,
         cloneData,
       );
       return response.data;
@@ -122,7 +122,7 @@ export const useDeleteBusinessTaskMutation = (displayAlert) => {
     async (taskUuid) => {
       const response = await httpService.makeRequest(
         'delete',
-        `${window.env.API_URL}business-tasks/${taskUuid}/`,
+        `${window.env.API_URL}product/business-tasks/${taskUuid}/`,
       );
       return response.data;
     },
