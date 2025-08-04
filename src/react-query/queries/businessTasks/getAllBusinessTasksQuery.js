@@ -7,16 +7,27 @@ export const getAllBusinessTasksQuery = async (filters, displayAlert) => {
     // Add all filter parameters
     Object.entries(filters || {}).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
-        queryParams.append(key, value);
+        // Handle comma-separated status values
+        if (key === 'status' && typeof value === 'string' && value.includes(',')) {
+          const statusValues = value.split(',').map(s => s.trim());
+          statusValues.forEach(status => {
+            queryParams.append('status', status);
+          });
+        } else {
+          queryParams.append(key, value);
+        }
       }
     });
 
     const queryString = queryParams.toString();
     const url = `${window.env.API_URL}product/business-tasks/${queryString ? `?${queryString}` : ''}`;
     
+    console.log('All Business Tasks Query URL:', url);
+    
     const response = await httpService.makeRequest('get', url);
     return response.data;
   } catch (error) {
+    console.error('All Business Tasks Query Error:', error);
     displayAlert('error', 'Failed to fetch business tasks');
     throw error;
   }
@@ -24,28 +35,76 @@ export const getAllBusinessTasksQuery = async (filters, displayAlert) => {
 
 export const getBusinessTasksByUserQuery = async (userUuid, filters, displayAlert) => {
   try {
+    // Use the specific by-user endpoint from the API docs
     const queryParams = new URLSearchParams();
     
-    // Add the user UUID filter
-    if (userUuid) {
-      queryParams.append('assigned_to_user_uuid', userUuid);
-    }
-    
-    // Add other filters
+    // Add other filters (except assigned_to_user_uuid since it's in the URL path)
     Object.entries(filters || {}).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        queryParams.append(key, value);
+      if (value !== undefined && value !== null && value !== '' && key !== 'assigned_to_user_uuid') {
+        // Handle comma-separated status values
+        if (key === 'status' && typeof value === 'string' && value.includes(',')) {
+          const statusValues = value.split(',').map(s => s.trim());
+          statusValues.forEach(status => {
+            queryParams.append('status', status);
+          });
+        } else {
+          queryParams.append(key, value);
+        }
       }
     });
 
     const queryString = queryParams.toString();
-    const url = `${window.env.API_URL}product/business-tasks/${queryString ? `?${queryString}` : ''}`;
+    const url = `${window.env.API_URL}product/business-tasks/by-user/${userUuid}/${queryString ? `?${queryString}` : ''}`;
+    
+    console.log('API_URL from window.env:', window.env.API_URL);
+    console.log('Business Tasks by User Query URL:', url);
+    console.log('User UUID:', userUuid);
+    console.log('Filters:', filters);
+    console.log('Query String:', queryString);
     
     const response = await httpService.makeRequest('get', url);
     return response.data;
   } catch (error) {
-    displayAlert('error', 'Failed to fetch user business tasks');
-    throw error;
+    console.error('Business Tasks Query Error:', error);
+    console.error('Error response:', error.response);
+    
+    // Fallback to the generic endpoint if the by-user endpoint fails
+    try {
+      console.log('Trying fallback endpoint...');
+      const queryParams = new URLSearchParams();
+      
+      // Add the user UUID filter
+      if (userUuid) {
+        queryParams.append('assigned_to_user_uuid', userUuid);
+      }
+      
+      // Add other filters
+      Object.entries(filters || {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          // Handle comma-separated status values
+          if (key === 'status' && typeof value === 'string' && value.includes(',')) {
+            const statusValues = value.split(',').map(s => s.trim());
+            statusValues.forEach(status => {
+              queryParams.append('status', status);
+            });
+          } else {
+            queryParams.append(key, value);
+          }
+        }
+      });
+
+      const queryString = queryParams.toString();
+      const fallbackUrl = `${window.env.API_URL}product/business-tasks/${queryString ? `?${queryString}` : ''}`;
+      
+      console.log('Fallback URL:', fallbackUrl);
+      
+      const fallbackResponse = await httpService.makeRequest('get', fallbackUrl);
+      return fallbackResponse.data;
+    } catch (fallbackError) {
+      console.error('Fallback query also failed:', fallbackError);
+      displayAlert('error', `Failed to fetch user business tasks: ${fallbackError.message}`);
+      throw fallbackError;
+    }
   }
 };
 
@@ -53,18 +112,34 @@ export const getBusinessTasksByReleaseQuery = async (releaseUuid, filters, displ
   try {
     const queryParams = new URLSearchParams();
     
+    // Add release UUID to filters if provided
+    if (releaseUuid) {
+      queryParams.append('release_uuid', releaseUuid);
+    }
+    
     Object.entries(filters || {}).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
-        queryParams.append(key, value);
+        // Handle comma-separated status values
+        if (key === 'status' && typeof value === 'string' && value.includes(',')) {
+          const statusValues = value.split(',').map(s => s.trim());
+          statusValues.forEach(status => {
+            queryParams.append('status', status);
+          });
+        } else {
+          queryParams.append(key, value);
+        }
       }
     });
 
     const queryString = queryParams.toString();
     const url = `${window.env.API_URL}product/business-tasks/${queryString ? `?${queryString}` : ''}`;
     
+    console.log('Release Business Tasks Query URL:', url);
+    
     const response = await httpService.makeRequest('get', url);
     return response.data;
   } catch (error) {
+    console.error('Release Business Tasks Query Error:', error);
     displayAlert('error', 'Failed to fetch release business tasks');
     throw error;
   }

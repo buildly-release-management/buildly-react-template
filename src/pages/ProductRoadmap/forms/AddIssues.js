@@ -24,6 +24,7 @@ import Loader from '@components/Loader/Loader';
 import AIFormHelper from '@components/AIFormHelper/AIFormHelper';
 import useAlert from '@hooks/useAlert';
 import { useInput } from '@hooks/useInput';
+import useOrganizationMembers from '@hooks/useOrganizationMembers';
 import { validators } from '@utils/validators';
 import { UserContext } from '@context/User.context';
 import SmartInput from '@components/SmartInput/SmartInput';
@@ -113,6 +114,9 @@ const AddIssues = ({ history, location }) => {
   const [assigneeData, setAssigneeData] = useState([]);
   const [repoList, setRepoList] = useState([]);
 
+  // Fetch organization members for user assignment
+  const { data: organizationMembers = [], isLoading: isMembersLoading } = useOrganizationMembers();
+
   const repo = useInput((editData && editData.repository) || '', { required: true });
   const statusID = useInput((editData && editData.status) || '');
   const [status, setStatus] = useState('');
@@ -143,11 +147,33 @@ const AddIssues = ({ history, location }) => {
 
   useEffect(() => {
     const prod = _.find(productData, { product_uuid });
-    const assigneeOptions = _.map(prod?.issue_tool_detail?.user_list) || [];
+    const externalAssigneeOptions = _.map(prod?.issue_tool_detail?.user_list) || [];
+    
+    // Convert organization members to the same format as external assignees
+    const orgMemberOptions = organizationMembers.map(member => ({
+      user_id: member.user_uuid,
+      username: member.username,
+      first_name: member.first_name,
+      last_name: member.last_name,
+      email: member.email,
+      source: 'organization' // Mark as organization member
+    }));
+    
+    // Merge external and organization users, preferring organization members for duplicates
+    const combinedOptions = [...orgMemberOptions];
+    externalAssigneeOptions.forEach(extUser => {
+      const existingUser = combinedOptions.find(user => 
+        user.email === extUser.email || user.username === extUser.username
+      );
+      if (!existingUser) {
+        combinedOptions.push({ ...extUser, source: 'external' });
+      }
+    });
 
     setRepoList(prod?.issue_tool_detail?.repository_list || []);
-    setAssigneeData(assigneeOptions);
-  }, [productData]);
+    setAssigneeData(combinedOptions);
+    console.log('AddIssues: Updated assignee data with organization members:', combinedOptions.length);
+  }, [productData, organizationMembers]);
 
   useEffect(() => {
     if (editData) {

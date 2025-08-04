@@ -84,7 +84,10 @@ Please provide completion date estimates in YYYY-MM-DD format, considering:
 3. Realistic development timeline
 4. Buffer time for testing and refinement
 
-Respond with a JSON array of objects with "index" (0-based) and "estimated_completion_date" fields.
+IMPORTANT: Respond with ONLY a valid JSON array of objects with "index" (0-based) and "estimated_completion_date" fields. Do not include any markdown formatting, explanation text, or code blocks. Start your response with [ and end with ].
+
+Example format:
+[{"index": 0, "estimated_completion_date": "2024-12-15"}, {"index": 1, "estimated_completion_date": "2024-12-20"}]
 `;
 
     const response = await fetch(chatbotUrl, {
@@ -99,7 +102,21 @@ Respond with a JSON array of objects with "index" (0-based) and "estimated_compl
 
     if (response.ok) {
       const data = await response.json();
-      const estimates = JSON.parse(data.response || '[]');
+      let responseText = data.response || '[]';
+      
+      // Clean up potential markdown formatting from AI response
+      responseText = responseText.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
+      
+      console.log('AI Response (cleaned):', responseText);
+      
+      let estimates;
+      try {
+        estimates = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('JSON parse error on AI response:', parseError);
+        console.error('Raw response:', data.response);
+        throw new Error(`AI response is not valid JSON: ${parseError.message}`);
+      }
       
       // Apply AI estimates to features
       const updatedFeatures = [...features];

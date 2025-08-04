@@ -2,14 +2,17 @@
 // Open this in browser console or add to a test page
 
 async function testBabbleBeaverCORS() {
+  // Use environment variables if available, fallback to default
+  const BABBLE_URL = window.env?.BABBLE_CHATBOT_URL || 'https://labs-babble.buildly.dev';
+  
   console.log('🚀 Starting BabbleBeaver CORS Test...');
   console.log('Current Origin:', window.location.origin);
-  console.log('Target URL: https://labs-babble.buildly.dev');
+  console.log('Target URL:', BABBLE_URL);
   
   // Test 1: Check debug endpoint
   console.log('\n📋 Test 1: Checking CORS configuration...');
   try {
-    const debugResponse = await fetch('https://labs-babble.buildly.dev/debug/cors', {
+    const debugResponse = await fetch(`${BABBLE_URL}/debug/cors`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -32,7 +35,7 @@ async function testBabbleBeaverCORS() {
   // Test 2: Test actual chatbot endpoint
   console.log('\n🤖 Test 2: Testing chatbot endpoint...');
   try {
-    const chatResponse = await fetch('https://labs-babble.buildly.dev/chatbot', {
+    const chatResponse = await fetch(`${BABBLE_URL}/chatbot`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -72,7 +75,7 @@ async function testBabbleBeaverCORS() {
   // Test 3: Manual preflight test
   console.log('\n🛫 Test 3: Testing preflight OPTIONS request...');
   try {
-    const preflightResponse = await fetch('https://labs-babble.buildly.dev/chatbot', {
+    const preflightResponse = await fetch(`${BABBLE_URL}/chatbot`, {
       method: 'OPTIONS',
       headers: {
         'Access-Control-Request-Method': 'POST',

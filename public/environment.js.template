@@ -1,6 +1,11 @@
 // Template environment configuration
 // This file will be generated automatically by start-dev.sh
 // DO NOT commit actual tokens/secrets to Git
+// 
+// NOTE: URLs below can be customized for different environments:
+// - Development: labs-*.buildly.dev
+// - Production: labs-*.buildly.io
+// - Custom: Set REACT_APP_* environment variables in your deployment
 window.env = {
 API_URL: "https://labs-api.buildly.dev/",
 OAUTH_CLIENT_ID: "your-oauth-client-id",

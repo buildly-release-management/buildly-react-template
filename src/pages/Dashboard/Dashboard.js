@@ -222,8 +222,10 @@ const Dashboard = () => {
   const history = useHistory();
   const user = useContext(UserContext);
   const { displayAlert } = useAlert();
-  const organization = user.organization.organization_uuid;
-  const isDeveloper = user.user_type.toLowerCase() === 'developer';
+  
+  // Safely access user properties with null checking
+  const organization = user?.organization?.organization_uuid;
+  const isDeveloper = user?.user_type?.toLowerCase() === 'developer';
 
   const [userProducts, setUserProducts] = useState([]);
   const [userIssues, setUserIssues] = useState([]);
@@ -277,10 +279,23 @@ const Dashboard = () => {
     }
   );
 
+  // Debug user context
+  useEffect(() => {
+    console.log('Dashboard User Context:', {
+      user: user,
+      core_user_uuid: user?.core_user_uuid,
+      organization: user?.organization?.organization_uuid,
+      user_type: user?.user_type
+    });
+  }, [user]);
+
   // Fetch business tasks assigned to current user
   const { data: businessTasks = [], isLoading: isLoadingBusinessTasks } = useQuery(
     ['userBusinessTasks', user?.core_user_uuid],
-    () => getBusinessTasksByUserQuery(user?.core_user_uuid, { status: 'not_started,in_progress,blocked,review' }, displayAlert),
+    () => {
+      console.log('Fetching business tasks for user:', user?.core_user_uuid);
+      return getBusinessTasksByUserQuery(user?.core_user_uuid, { status: 'not_started,in_progress,blocked,review' }, displayAlert);
+    },
     { 
       refetchOnWindowFocus: false,
       enabled: !!user?.core_user_uuid 
@@ -294,6 +309,12 @@ const Dashboard = () => {
   }, [productQueries.data, user]);
 
   useEffect(() => {
+    console.log('Business Tasks Data Updated:', {
+      businessTasks: businessTasks,
+      length: businessTasks?.length,
+      isLoading: isLoadingBusinessTasks,
+      user_uuid: user?.core_user_uuid
+    });
     if (businessTasks) {
       setUserBusinessTasks(businessTasks);
     }
@@ -483,6 +504,11 @@ const Dashboard = () => {
     
     return { current: currentRelease, next: nextRelease, progress };
   };
+
+  // Early return if user context is not ready
+  if (!user || !organization) {
+    return <Loader open={true} />;
+  }
 
   if (isLoadingProducts || productQueries.isLoading) {
     return <Loader open={true} />;

@@ -550,6 +550,44 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
     }
   }, [budgetData]);
 
+  // Create default budget estimates for releases that don't have them
+  useEffect(() => {
+    if (releaseData && releaseData.length > 0) {
+      setBudgetEstimates(prev => {
+        const updated = { ...prev };
+        let hasUpdates = false;
+        
+        releaseData.forEach(release => {
+          const releaseName = release.name || release.release_name;
+          if (releaseName && !updated[releaseName]) {
+            console.log('Insights: Creating default budget estimate for release:', releaseName);
+            
+            // Calculate default timeline weeks based on release duration or default to 12 weeks
+            const defaultWeeks = release.duration?.weeks || 12;
+            
+            updated[releaseName] = {
+              total_budget: 50000, // Default budget
+              base_cost: 42000,
+              timeline_weeks: defaultWeeks,
+              team: [
+                { role: 'Frontend Developer', count: 1, weeklyRate: 2500 },
+                { role: 'Backend Developer', count: 1, weeklyRate: 2800 },
+                { role: 'QA Engineer', count: 1, weeklyRate: 2200 }
+              ],
+              risk_buffer: 20,
+              confidence: 'Medium',
+              estimation_source: 'default',
+              last_updated: new Date().toISOString()
+            };
+            hasUpdates = true;
+          }
+        });
+        
+        return hasUpdates ? updated : prev;
+      });
+    }
+  }, [releaseData]);
+
   // Fetch Buildly open source tools from GitHub
   useEffect(() => {
     const fetchBuildlyTools = async () => {
@@ -1587,7 +1625,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                       </div>
                                       <div style={{ textAlign: 'right' }}>
                                         <div style={{ fontWeight: 'bold', color: '#28a745' }}>
-                                          ${((member.count || 0) * (member.weeklyRate || 0) * (budgetEstimates[release.name].timeline_weeks || 0)).toLocaleString()}
+                                          ${((member.count || 0) * (member.weeklyRate || 0) * (budgetEstimates[release.name]?.timeline_weeks || release.duration?.weeks || 12)).toLocaleString()}
                                         </div>
                                         <div style={{ fontSize: '12px', color: '#6c757d' }}>
                                           ${((member.count || 0) * (member.weeklyRate || 0)).toLocaleString()}/week
