@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# Change to project root directory
-cd "$(dirname "$0")/.."
+# Initialize container environment for production deployment
+# This script is run inside the Docker container during startup
+
+echo "🐳 Initializing container environment..."
+
+# Stay in the current directory (we're already in /app from Dockerfile WORKDIR)
+cd /app
 
 #Export the current commitID, branch and remote that the build was made from
 export GIT_FETCH_HEAD=`cat .git/FETCH_HEAD`
