@@ -162,7 +162,39 @@ All shell scripts are located in the `scripts/` directory. See `scripts/README.m
 - `start-dev.sh` - Enhanced development server startup
 - `test-deployment.sh` - Pre-deployment validation
 - `run-tests.sh` - Comprehensive test runner
+- `pre-push-check.sh` - Quality gate validation before pushing
 - `deploy.sh` & `deploy-aws.sh` - Deployment scripts
+
+### Quality Gates and Testing Enforcement
+
+This repository enforces quality gates to maintain code standards:
+
+**Automatic Pre-Push Validation:**
+- ESLint checks (must pass with 0 warnings)
+- Test suite execution (all tests must pass)
+- Build verification (must compile successfully)
+- Conventional commit message format
+
+**Manual Validation:**
+```bash
+# Run full pre-push validation
+./scripts/pre-push-check.sh
+
+# Run comprehensive deployment tests
+./scripts/test-deployment.sh
+```
+
+**Repository Protection:**
+- All pushes automatically run quality checks
+- Failed validation will reject the push
+- Bypass only with `git push --no-verify` (not recommended)
+
+**If Push is Rejected:**
+1. Run `./scripts/pre-push-check.sh` to see specific failures
+2. Fix linting: `yarn run lint --fix`
+3. Fix tests: `yarn run test`
+4. Verify build: `yarn run build`
+5. Retry push after fixes
 
 ## Troubleshooting
 

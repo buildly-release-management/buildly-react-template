@@ -14,24 +14,24 @@ if [ ! -f ".env.development.local" ]; then
     echo "📝 Creating a template .env.development.local file..."
     
     cat > .env.development.local << EOF
-API_URL=https://labs-api.buildly.dev/
+API_URL=https://labs-api.buildly.io/
 OAUTH_CLIENT_ID=your-oauth-client-id
-OAUTH_AUTHORIZATION_URL=https://labs-api.buildly.dev/authorize/
-OAUTH_TOKEN_URL=https://labs-api.buildly.dev/token/
-OAUTH_REVOKE_URL=https://labs-api.buildly.dev/revoke_token/
+OAUTH_AUTHORIZATION_URL=https://labs-api.buildly.io/authorize/
+OAUTH_TOKEN_URL=https://labs-api.buildly.io/token/
+OAUTH_REVOKE_URL=https://labs-api.buildly.io/revoke_token/
 OAUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 OAUTH_SCOPE=read write
 TRELLO_API_KEY=your-trello-api-key
 FEEDBACK_SHEET=https://sheet.best/api/sheets/your-sheet-id
-PRODUCT_SERVICE_URL=https://labs-product.buildly.dev/
+PRODUCT_SERVICE_URL=https://labs-product.buildly.io/
 PRODUCT_SERVICE_TOKEN=your-product-service-token
-RELEASE_SERVICE_URL=https://labs-release.buildly.dev/
+RELEASE_SERVICE_URL=https://labs-release.buildly.io/
 RELEASE_SERVICE_TOKEN=your-release-service-token
 FREE_COUPON_CODE=your-coupon-code
 STRIPE_KEY=your-stripe-key
 BOT_API_KEY=your-bot-api-key
-HOSTNAME=labs.buildly.dev
-BABBLE_CHATBOT_URL=https://labs-babble.buildly.dev/chatbot
+HOSTNAME=labs.buildly.io
+BABBLE_CHATBOT_URL=https://labs-babble.buildly.io/chatbot
 GITHUB_CLIENT_ID=your-github-client-id
 PRODUCTION=false
 EOF
