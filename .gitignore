@@ -8,6 +8,12 @@ package-lock.json
 # production
 /dist
 
+# testing and coverage
+/coverage
+*.lcov
+test-results*
+junit.xml
+
 # environment files with secrets
 public/environment.js
 

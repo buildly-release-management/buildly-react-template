@@ -6,6 +6,20 @@ echo "============================================"
 # Change to project root directory
 cd "$(dirname "$0")/.."
 
+# Check for minimal test mode
+if [ "$1" = "--minimal" ] || [ "$1" = "-m" ]; then
+    echo "🔬 Running minimal Jest validation only..."
+    if command -v yarn &> /dev/null; then
+        yarn test -- --testPathPattern="minimal.test.js" --watchAll=false --verbose
+    elif command -v npm &> /dev/null; then
+        npm test -- --testPathPattern="minimal.test.js" --watchAll=false --verbose
+    else
+        echo "❌ Neither yarn nor npm found. Please install a package manager."
+        exit 1
+    fi
+    exit $?
+fi
+
 # Colors for output
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -27,7 +41,14 @@ run_test_area() {
     local pattern=$2
     echo -e "\n${YELLOW}📋 Testing $area...${NC}"
     
-    npm test -- --testPathPattern="$pattern" --watchAll=false --silent
+    if command -v yarn &> /dev/null; then
+        yarn test -- --testPathPattern="$pattern" --watchAll=false --silent
+    elif command -v npm &> /dev/null; then
+        npm test -- --testPathPattern="$pattern" --watchAll=false --silent
+    else
+        echo "❌ Neither yarn nor npm found. Please install a package manager."
+        return 1
+    fi
     local exit_code=$?
     print_status $exit_code "$area tests"
     return $exit_code
@@ -36,11 +57,27 @@ run_test_area() {
 # Main test execution
 main() {
     echo "📦 Installing dependencies if needed..."
-    npm install --silent
+    if command -v yarn &> /dev/null; then
+        yarn install --silent
+    elif command -v npm &> /dev/null; then
+        npm install --silent
+    else
+        echo "❌ Neither yarn nor npm found. Please install a package manager."
+        return 1
+    fi
 
     echo -e "\n🏃‍♂️ Starting test execution...\n"
 
     local overall_status=0
+
+    # Start with minimal Jest validation test
+    echo -e "\n${YELLOW}🔬 Validating Jest setup...${NC}"
+    run_test_area "Jest Setup Validation" "__tests__/minimal.test.js"
+    if [ $? -ne 0 ]; then 
+        echo -e "${RED}❌ Jest setup is broken. Stopping test execution.${NC}"
+        echo -e "${YELLOW}💡 Fix Jest configuration before running other tests${NC}"
+        return 1
+    fi
 
     # Test individual areas
     run_test_area "Insights Page (Collapsible Sections)" "__tests__/pages/Insights.test.js"
@@ -63,7 +100,14 @@ main() {
 
     # Run all tests together for coverage
     echo -e "\n${YELLOW}📊 Running full test suite with coverage...${NC}"
-    npm run test-coverage -- --watchAll=false --silent
+    if command -v yarn &> /dev/null; then
+        yarn run test-coverage -- --watchAll=false --silent
+    elif command -v npm &> /dev/null; then
+        npm run test-coverage -- --watchAll=false --silent
+    else
+        echo "❌ Neither yarn nor npm found. Please install a package manager."
+        return 1
+    fi
     local coverage_status=$?
     print_status $coverage_status "Test coverage report"
 
