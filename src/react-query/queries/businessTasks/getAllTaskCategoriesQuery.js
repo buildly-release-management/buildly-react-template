@@ -1,6 +1,5 @@
 import { httpService } from '@modules/http/http.service';
-
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from 'react-query';
 
 const getAllTaskCategoriesQuery = (organizationUuid) => ({
   queryKey: ['taskCategories', organizationUuid],
