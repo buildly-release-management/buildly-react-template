@@ -60,15 +60,15 @@ yarn install
 Create a `.env.development.local` file in the project root with the following variables:
 
 ```bash
-API_URL=https://labs-api.buildly.dev
+API_URL=https://labs-api.buildly.io
 OAUTH_CLIENT_ID=your-oauth-client-id
-OAUTH_AUTHORIZATION_URL=https://labs-api.buildly.dev/o/authorize/
-OAUTH_TOKEN_URL=https://labs-api.buildly.dev/o/token/
-OAUTH_REVOKE_URL=https://labs-api.buildly.dev/o/revoke_token/
+OAUTH_AUTHORIZATION_URL=https://labs-api.buildly.io/o/authorize/
+OAUTH_TOKEN_URL=https://labs-api.buildly.io/o/token/
+OAUTH_REVOKE_URL=https://labs-api.buildly.io/o/revoke_token/
 OAUTH_REDIRECT_URL=http://localhost:3000/auth/callback
 OAUTH_SCOPE=read write
-PRODUCT_SERVICE_URL=https://labs-api.buildly.dev
-RELEASE_SERVICE_URL=https://labs-api.buildly.dev
+PRODUCT_SERVICE_URL=https://labs-api.buildly.io
+RELEASE_SERVICE_URL=https://labs-api.buildly.io
 PRODUCTION=false
 ```
 
@@ -80,6 +80,12 @@ To build the project:
 yarn run build
 ```
 
+For production build:
+
+```bash
+yarn run build:prod
+```
+
 To run the development server:
 
 ```bash
@@ -87,7 +93,7 @@ yarn start
 ```
 
 ```bash
-./start-dev.sh
+./scripts/start-dev.sh
 ```
 
 This script will:
@@ -102,6 +108,8 @@ This script will:
 ```bash
 yarn run serve
 ```
+
+Note: The serve command serves files from the `dist` directory after building.
 
 Your Buildly React Template will be running locally and listening to the port 3000, so you can access it via your browser typing this address: 127.0.0.1:3000
 
@@ -125,9 +133,36 @@ The dashboard automatically becomes the default landing page after user login an
 
 To **run tests** using [Jest](https://jestjs.io/):
 
+```bash
+yarn run test
 ```
-$ yarn run test
+
+To run tests in production mode:
+
+```bash
+yarn run test:prod
 ```
+
+To run tests with coverage:
+
+```bash
+yarn run test-coverage
+```
+
+You can also use the test script:
+
+```bash
+./scripts/run-tests.sh
+```
+
+## Scripts Directory
+
+All shell scripts are located in the `scripts/` directory. See `scripts/README.md` for detailed documentation of available scripts including:
+
+- `start-dev.sh` - Enhanced development server startup
+- `test-deployment.sh` - Pre-deployment validation
+- `run-tests.sh` - Comprehensive test runner
+- `deploy.sh` & `deploy-aws.sh` - Deployment scripts
 
 ## Troubleshooting
 
@@ -153,11 +188,11 @@ If you encounter issues starting the development server:
 For local development, create a `.env.development.local` file in the project root with your configuration:
 
 ```bash
-API_URL=https://labs-api.buildly.dev/
+API_URL=https://labs-api.buildly.io/
 OAUTH_CLIENT_ID=your-oauth-client-id
-OAUTH_TOKEN_URL=https://labs-api.buildly.dev/token/
-PRODUCT_SERVICE_URL=https://labs-product.buildly.dev/
-RELEASE_SERVICE_URL=https://labs-release.buildly.dev/
+OAUTH_TOKEN_URL=https://labs-api.buildly.io/token/
+PRODUCT_SERVICE_URL=https://labs-product.buildly.io/
+RELEASE_SERVICE_URL=https://labs-release.buildly.io/
 PRODUCTION=false
 # ... other environment variables
 ```
@@ -179,18 +214,6 @@ PRODUCTION=false
 - `.env.development.local` - Contains actual development secrets
 - `public/environment.js` - Generated file with runtime configuration
 - All files in `.gitignore` should never contain real secrets
-
-To run tests in production mode:
-
-```bash
-yarn test:prod
-```
-
-To run tests with coverage:
-
-```bash
-yarn test-coverage
-```
 
 ## Troubleshooting
 
@@ -245,16 +268,16 @@ Docker container via flags as below or configured as environment variables in Tr
 
 |             Parameter               |            Description             |                    Default                |
 |-------------------------------------|------------------------------------|-------------------------------------------|
-| `API_URL`                           | Buildly Core URL                   | `https://labs-api.buildly.dev/`      |
+| `API_URL`                           | Buildly Core URL                   | `https://labs-api.buildly.io/`      |
 | `OAUTH_CLIENT_ID`                   | The client identifier issued to the client during Buildly Core deployment  | `your-oauth-client-id` |
-| `OAUTH_AUTHORIZATION_URL`           | OAuth authorization endpoint       | `https://labs-api.buildly.dev/authorize/` |
-| `OAUTH_TOKEN_URL`                   | Buildly Core URL used to authenticate users | `https://labs-api.buildly.dev/token/` |
-| `OAUTH_REVOKE_URL`                  | OAuth token revocation endpoint   | `https://labs-api.buildly.dev/revoke_token/` |
+| `OAUTH_AUTHORIZATION_URL`           | OAuth authorization endpoint       | `https://labs-api.buildly.io/authorize/` |
+| `OAUTH_TOKEN_URL`                   | Buildly Core URL used to authenticate users | `https://labs-api.buildly.io/token/` |
+| `OAUTH_REVOKE_URL`                  | OAuth token revocation endpoint   | `https://labs-api.buildly.io/revoke_token/` |
 | `OAUTH_REDIRECT_URL`                | OAuth callback URL                 | `http://localhost:3000/auth/callback` |
 | `OAUTH_SCOPE`                       | OAuth permission scopes            | `read write` |
-| `PRODUCT_SERVICE_URL`               | Product service API endpoint       | `https://labs-product.buildly.dev/` |
+| `PRODUCT_SERVICE_URL`               | Product service API endpoint       | `https://labs-product.buildly.io/` |
 | `PRODUCT_SERVICE_TOKEN`             | Authentication token for product service | `your-product-service-token` |
-| `RELEASE_SERVICE_URL`               | Release service API endpoint       | `https://labs-release.buildly.dev/` |
+| `RELEASE_SERVICE_URL`               | Release service API endpoint       | `https://labs-release.buildly.io/` |
 | `RELEASE_SERVICE_TOKEN`             | Authentication token for release service | `your-release-service-token` |
 | `GITHUB_CLIENT_ID`                  | GitHub OAuth client ID             | `your-github-client-id` |
 | `TRELLO_API_KEY`                    | Trello integration API key         | `your-trello-api-key` |
@@ -262,15 +285,15 @@ Docker container via flags as below or configured as environment variables in Tr
 | `FREE_COUPON_CODE`                  | Default coupon code for free access | `your-coupon-code` |
 | `STRIPE_KEY`                        | Stripe payment integration key     | `your-stripe-key` |
 | `BOT_API_KEY`                       | Chatbot API key                     | `your-bot-api-key` |
-| `BABBLE_CHATBOT_URL`                | Chatbot service URL                 | `https://labs-babble.buildly.dev/chatbot` |
-| `HOSTNAME`                          | Application hostname                | `labs.buildly.dev` |
+| `BABBLE_CHATBOT_URL`                | Chatbot service URL                 | `https://labs-babble.buildly.io/chatbot` |
+| `HOSTNAME`                          | Application hostname                | `labs.buildly.io` |
 | `PRODUCTION`                        | Production environment flag         | `false` |
-| `OAUTH_AUTHORIZATION_URL`           | OAuth authorization endpoint | `https://labs-api.buildly.dev/o/authorize/` |
-| `OAUTH_REVOKE_URL`                  | OAuth token revocation endpoint | `https://labs-api.buildly.dev/o/revoke_token/` |
+| `OAUTH_AUTHORIZATION_URL`           | OAuth authorization endpoint | `https://labs-api.buildly.io/o/authorize/` |
+| `OAUTH_REVOKE_URL`                  | OAuth token revocation endpoint | `https://labs-api.buildly.io/o/revoke_token/` |
 | `OAUTH_REDIRECT_URL`                | OAuth redirect URL for local development | `http://localhost:3000/auth/callback` |
 | `OAUTH_SCOPE`                       | OAuth scope permissions | `read write` |
-| `PRODUCT_SERVICE_URL`               | Product service API endpoint | `https://labs-api.buildly.dev` |
-| `RELEASE_SERVICE_URL`               | Release service API endpoint | `https://labs-api.buildly.dev` |
+| `PRODUCT_SERVICE_URL`               | Product service API endpoint | `https://labs-api.buildly.io` |
+| `RELEASE_SERVICE_URL`               | Release service API endpoint | `https://labs-api.buildly.io` |
 | `PRODUCTION`                        | Production mode flag | `false` |
 
 Specify each parameter using `-e`, `--env`, and `--env-file` flags to set simple (non-array) environment variables to `docker run`. For example,

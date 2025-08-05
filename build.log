@@ -1,0 +1,5 @@
+
+> buildly-react-template@v1.0.3 build
+> webpack --mode development --openssl-legacy-provider
+
+sh: 1: webpack: not found

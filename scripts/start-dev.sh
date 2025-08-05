@@ -5,6 +5,9 @@
 
 echo "🚀 Starting Buildly React Template Development Server"
 
+# Change to project root directory
+cd "$(dirname "$0")/.."
+
 # Check if .env.development.local exists
 if [ ! -f ".env.development.local" ]; then
     echo "⚠️  Warning: .env.development.local not found"

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Change to project root directory
+cd "$(dirname "$0")/.."
+
 #Export the current commitID, branch and remote that the build was made from
 export GIT_FETCH_HEAD=`cat .git/FETCH_HEAD`
 

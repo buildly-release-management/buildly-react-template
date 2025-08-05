@@ -49,6 +49,7 @@ export const calculateProductStatus = (product, releases = [], features = [], is
   // 4. Feature/Release Progress Analysis
   const progressStatus = calculateProgressStatus(releases, features, issues);
   statusData.details.features = progressStatus.features;
+  statusData.details.issues = progressStatus.issues;
   statusData.details.releases = progressStatus.releases;
 
   // 5. Calculate overall score and status

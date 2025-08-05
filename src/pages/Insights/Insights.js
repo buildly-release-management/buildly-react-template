@@ -1260,8 +1260,8 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                   {getStatusLabel(statusData.timeline)}
                                 </div>
                                 <small style={{ color: '#6c757d' }}>
-                                  {statusData.details.timeline.daysRemaining !== null ? 
-                                    `${statusData.details.timeline.daysRemaining} days remaining` : 'No timeline set'}
+                                  {statusData?.details?.timeline?.daysRemaining !== null ? 
+                                    `${statusData?.details?.timeline?.daysRemaining} days remaining` : 'No timeline set'}
                                 </small>
                               </div>
                             </div>
@@ -1287,7 +1287,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                   {getStatusLabel(statusData.budget)}
                                 </div>
                                 <small style={{ color: '#6c757d' }}>
-                                  {statusData.details.budget.budgetUtilization}% utilized
+                                  {statusData?.details?.budget?.budgetUtilization || 0}% utilized
                                 </small>
                               </div>
                             </div>
@@ -1313,7 +1313,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                   {getStatusLabel(statusData.resources)}
                                 </div>
                                 <small style={{ color: '#6c757d' }}>
-                                  {statusData.details.resources.activeTeamMembers} active members
+                                  {statusData?.details?.resources?.activeTeamMembers || 0} active members
                                 </small>
                               </div>
                             </div>
@@ -1324,7 +1324,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                             <div className="col-md-4">
                               <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
-                                  {statusData.details.features.completed || 0}/{statusData.details.features.total || 0}
+                                  {statusData?.details?.features?.completed || 0}/{statusData?.details?.features?.total || 0}
                                 </div>
                                 <small>Features Complete</small>
                               </div>
@@ -1332,7 +1332,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                             <div className="col-md-4">
                               <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
-                                  {statusData.details.issues.completed || 0}/{statusData.details.issues.total || 0}
+                                  {statusData?.details?.issues?.completed || 0}/{statusData?.details?.issues?.total || 0}
                                 </div>
                                 <small>Issues Resolved</small>
                               </div>
@@ -1340,7 +1340,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                             <div className="col-md-4">
                               <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
-                                  {statusData.details.releases.completed || 0}/{statusData.details.releases.total || 0}
+                                  {statusData?.details?.releases?.completed || 0}/{statusData?.details?.releases?.total || 0}
                                 </div>
                                 <small>Releases Done</small>
                               </div>

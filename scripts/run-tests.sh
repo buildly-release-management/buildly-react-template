@@ -3,6 +3,9 @@
 echo "🧪 Running Buildly React Template Test Suite"
 echo "============================================"
 
+# Change to project root directory
+cd "$(dirname "$0")/.."
+
 # Colors for output
 GREEN='\033[0;32m'
 RED='\033[0;31m'
