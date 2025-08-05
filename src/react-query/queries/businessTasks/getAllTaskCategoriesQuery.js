@@ -18,7 +18,6 @@ const getAllTaskCategoriesQuery = async (organizationUuid, displayAlert) => {
     }
 
     const data = await response.json();
-    console.log('Task categories response:', data); // Debug log
     
     // Handle different possible response structures
     if (Array.isArray(data)) {

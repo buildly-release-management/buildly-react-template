@@ -6,9 +6,6 @@ export const useSaveProductBudgetMutation = (product_uuid, displayAlert) => {
 
   return useMutation(
     async (budgetData) => {
-      console.log('useSaveProductBudgetMutation: Saving budget for product:', product_uuid);
-      console.log('useSaveProductBudgetMutation: Budget data:', budgetData);
-      
       const response = await httpService.makeRequest(
         'post',
         `${window.env.API_URL}product/budget/by-product/${product_uuid}/`,
@@ -23,7 +20,6 @@ export const useSaveProductBudgetMutation = (product_uuid, displayAlert) => {
         }
         // Invalidate and refetch budget queries
         await queryClient.invalidateQueries(['productBudget', product_uuid]);
-        console.log('useSaveProductBudgetMutation: Budget saved successfully:', data);
       },
       onError: (error) => {
         console.error('useSaveProductBudgetMutation: Error saving budget:', error);

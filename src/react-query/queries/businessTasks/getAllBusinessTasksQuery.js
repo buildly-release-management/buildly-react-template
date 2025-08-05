@@ -22,8 +22,6 @@ export const getAllBusinessTasksQuery = async (filters, displayAlert) => {
     const queryString = queryParams.toString();
     const url = `${window.env.API_URL}product/business-tasks/${queryString ? `?${queryString}` : ''}`;
     
-    console.log('All Business Tasks Query URL:', url);
-    
     const response = await httpService.makeRequest('get', url);
     return response.data;
   } catch (error) {
@@ -56,12 +54,6 @@ export const getBusinessTasksByUserQuery = async (userUuid, filters, displayAler
     const queryString = queryParams.toString();
     const url = `${window.env.API_URL}product/business-tasks/by-user/${userUuid}/${queryString ? `?${queryString}` : ''}`;
     
-    console.log('API_URL from window.env:', window.env.API_URL);
-    console.log('Business Tasks by User Query URL:', url);
-    console.log('User UUID:', userUuid);
-    console.log('Filters:', filters);
-    console.log('Query String:', queryString);
-    
     const response = await httpService.makeRequest('get', url);
     return response.data;
   } catch (error) {
@@ -70,7 +62,6 @@ export const getBusinessTasksByUserQuery = async (userUuid, filters, displayAler
     
     // Fallback to the generic endpoint if the by-user endpoint fails
     try {
-      console.log('Trying fallback endpoint...');
       const queryParams = new URLSearchParams();
       
       // Add the user UUID filter
@@ -95,8 +86,6 @@ export const getBusinessTasksByUserQuery = async (userUuid, filters, displayAler
 
       const queryString = queryParams.toString();
       const fallbackUrl = `${window.env.API_URL}product/business-tasks/${queryString ? `?${queryString}` : ''}`;
-      
-      console.log('Fallback URL:', fallbackUrl);
       
       const fallbackResponse = await httpService.makeRequest('get', fallbackUrl);
       return fallbackResponse.data;
@@ -133,8 +122,6 @@ export const getBusinessTasksByReleaseQuery = async (releaseUuid, filters, displ
 
     const queryString = queryParams.toString();
     const url = `${window.env.API_URL}product/business-tasks/${queryString ? `?${queryString}` : ''}`;
-    
-    console.log('Release Business Tasks Query URL:', url);
     
     const response = await httpService.makeRequest('get', url);
     return response.data;

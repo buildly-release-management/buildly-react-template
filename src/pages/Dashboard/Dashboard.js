@@ -279,21 +279,10 @@ const Dashboard = () => {
     }
   );
 
-  // Debug user context
-  useEffect(() => {
-    console.log('Dashboard User Context:', {
-      user: user,
-      core_user_uuid: user?.core_user_uuid,
-      organization: user?.organization?.organization_uuid,
-      user_type: user?.user_type
-    });
-  }, [user]);
-
   // Fetch business tasks assigned to current user
   const { data: businessTasks = [], isLoading: isLoadingBusinessTasks } = useQuery(
     ['userBusinessTasks', user?.core_user_uuid],
     () => {
-      console.log('Fetching business tasks for user:', user?.core_user_uuid);
       return getBusinessTasksByUserQuery(user?.core_user_uuid, { status: 'not_started,in_progress,blocked,review' }, displayAlert);
     },
     { 
@@ -309,12 +298,6 @@ const Dashboard = () => {
   }, [productQueries.data, user]);
 
   useEffect(() => {
-    console.log('Business Tasks Data Updated:', {
-      businessTasks: businessTasks,
-      length: businessTasks?.length,
-      isLoading: isLoadingBusinessTasks,
-      user_uuid: user?.core_user_uuid
-    });
     if (businessTasks) {
       setUserBusinessTasks(businessTasks);
     }
@@ -369,19 +352,6 @@ const Dashboard = () => {
         // Check if user is mentioned or commented
         const isMentioned = issue.description?.includes(`@${username}`) || 
                            issue.description?.includes(userEmail);
-
-        // Debug logging for assigned issues
-        if (isAssignedDeveloper || isAssignedTeamMember) {
-          console.log('Dashboard Debug - Issue Assignment Found:', {
-            issueName: issue.name,
-            issueId: issue.issue_uuid,
-            assigned_developer_uuid: issue.assigned_developer_uuid,
-            product_team_uuid: issue.product_team_uuid,
-            currentUserUuid: user.core_user_uuid,
-            isAssignedDeveloper,
-            isAssignedTeamMember
-          });
-        }
         
         return isCreator || isAssignedDeveloper || isAssignedTeamMember || isLegacyAssigned || isMentioned;
       });
@@ -415,19 +385,6 @@ const Dashboard = () => {
         // Check if user is mentioned  
         const isMentioned = feature.description?.includes(`@${username}`) || 
                            feature.description?.includes(userEmail);
-
-        // Debug logging for assigned features
-        if (isAssignedDeveloper || isAssignedTeamMember) {
-          console.log('Dashboard Debug - Feature Assignment Found:', {
-            featureName: feature.name,
-            featureId: feature.feature_uuid,
-            assigned_developer_uuid: feature.assigned_developer_uuid,
-            product_team_uuid: feature.product_team_uuid,
-            currentUserUuid: user.core_user_uuid,
-            isAssignedDeveloper,
-            isAssignedTeamMember
-          });
-        }
           
         return isCreator || isAssignedDeveloper || isAssignedTeamMember || isLegacyAssigned || isMentioned;
       });
@@ -450,15 +407,6 @@ const Dashboard = () => {
     });
 
     // Set state
-    console.log('Dashboard Debug:', {
-      totalProducts: Object.keys(productData).length,
-      productsWithAccess: productsWithAccess.length,
-      allIssues: allIssues.length,
-      allFeatures: allFeatures.length,
-      allComments: allComments.length,
-      userInfo: { userEmail, userName, username }
-    });
-    
     setUserProducts(productsWithAccess);
     setUserIssues(allIssues);
     setUserFeatures(allFeatures);

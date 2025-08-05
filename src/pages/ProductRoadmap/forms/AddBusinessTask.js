@@ -208,35 +208,35 @@ const AddBusinessTask = ({ history, location }) => {
       product_uuid,
       title: title.value.trim(),
       description: description.trim(),
-      category: selectedCategory || undefined,
-      custom_category: selectedCustomCategory || undefined,
-      priority,
-      status,
-      assigned_to_user_uuid: assignedToUser,
+      category: selectedCategory || 'general', // Provide default value
+      priority: priority || 'medium', // Ensure priority has a value
+      status: status || 'not_started', // Ensure status has a value
       assigned_by_user_uuid: user.core_user_uuid,
-      release_uuid: selectedRelease || undefined,
-      release_version: releaseVersion || undefined,
-      feature_name: featureName || undefined,
-      milestone: milestone || undefined,
-      due_date: dueDate ? dueDate.toISOString() : undefined,
-      start_date: new Date().toISOString(), // Add current date as start date
-      estimated_hours: estimatedHours ? parseFloat(estimatedHours) : undefined,
-      actual_hours: actualHours ? parseFloat(actualHours) : undefined,
-      business_value: businessValue || undefined,
-      acceptance_criteria: acceptanceCriteria || undefined,
-      success_metrics: successMetrics || undefined,
-      stakeholder_emails: stakeholderEmails.length > 0 ? stakeholderEmails : undefined,
-      tags: tags.length > 0 ? tags : undefined,
+      start_date: new Date().toISOString(),
       progress_percentage: progressPercentage || 0,
-      risk_level: riskLevel,
-      risk_description: riskDescription || undefined,
-      blockers: blockers || undefined,
-      is_recurring: isRecurring,
-      recurrence_pattern: isRecurring ? recurrencePattern : undefined,
-      requires_approval: requiresApproval,
+      risk_level: riskLevel || 'low', // Provide default value
+      is_recurring: Boolean(isRecurring), // Ensure boolean type
+      requires_approval: Boolean(requiresApproval), // Ensure boolean type
     };
 
-    console.log('Creating business task with data:', taskData);
+    // Add optional fields only if they have values
+    if (selectedCustomCategory) taskData.custom_category = selectedCustomCategory;
+    if (assignedToUser) taskData.assigned_to_user_uuid = assignedToUser;
+    if (selectedRelease) taskData.release_uuid = selectedRelease;
+    if (releaseVersion) taskData.release_version = releaseVersion;
+    if (featureName) taskData.feature_name = featureName;
+    if (milestone) taskData.milestone = milestone;
+    if (dueDate) taskData.due_date = dueDate.toISOString();
+    if (estimatedHours) taskData.estimated_hours = parseFloat(estimatedHours);
+    if (actualHours) taskData.actual_hours = parseFloat(actualHours);
+    if (businessValue) taskData.business_value = businessValue;
+    if (acceptanceCriteria) taskData.acceptance_criteria = acceptanceCriteria;
+    if (successMetrics) taskData.success_metrics = successMetrics;
+    if (stakeholderEmails.length > 0) taskData.stakeholder_emails = stakeholderEmails;
+    if (tags.length > 0) taskData.tags = tags;
+    if (riskDescription) taskData.risk_description = riskDescription;
+    if (blockers) taskData.blockers = blockers;
+    if (isRecurring && recurrencePattern) taskData.recurrence_pattern = recurrencePattern;
 
     if (editPage) {
       updateBusinessTaskMutation({ 

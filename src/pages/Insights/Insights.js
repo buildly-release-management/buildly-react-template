@@ -93,14 +93,8 @@ const Insights = () => {
     { 
       refetchOnWindowFocus: false,
       onSuccess: (data) => {
-        console.log('Insights: Products loaded:', data);
-        console.log('Insights: Current selectedProduct:', selectedProduct);
-        console.log('Insights: Current activeProduct:', activeProduct);
-        
         // Test if the product service is accessible
         if (data && data.length > 0) {
-          console.log('Insights: Available product UUIDs:', data.map(p => p.product_uuid));
-          
           // Check if the current selectedProduct exists in the available products
           if (selectedProduct && !data.find(p => p.product_uuid === selectedProduct)) {
             console.warn('Insights: Selected product UUID not found in available products:', selectedProduct);
@@ -109,7 +103,6 @@ const Insights = () => {
         
         // If no product is selected but we have products, select the first one
         if (data && data.length > 0 && (!selectedProduct || selectedProduct === 0)) {
-          console.log('Insights: Auto-selecting first product:', data[0].product_uuid);
           setSelectedProduct(data[0].product_uuid);
           setActiveProduct(data[0].product_uuid);
         }
@@ -364,13 +357,8 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
   useEffect(() => {
     const processInsightsData = async () => {
       if (selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0)) {
-        console.log('Insights: Processing data for product:', selectedProduct);
-        console.log('Insights: Report data:', reportData);
-        console.log('Insights: Release report:', releaseReport);
-        
         if (reportData) {
           // Don't require budget - set productData even without budget
-          console.log('Insights: Setting product data');
         
         // set the image to display
         let img = null;
@@ -392,16 +380,12 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
 
         // Process release data if available
         if (releaseReport && releaseReport.release_data) {
-          console.log('Insights: Processing release data');
-          
           // get release data - handle null budget properly with fallback data
           const budgetReleaseData = reportData.budget?.release_data || [];
-          console.log('Insights: Budget data available:', !!reportData.budget, 'Budget release data:', budgetReleaseData.length);
           
           // If no budget data, create default budget entries for existing releases
           let processedBudgetData = budgetReleaseData;
           if (budgetReleaseData.length === 0 && releaseReport.release_data.length > 0) {
-            console.log('Insights: Creating default budget data for releases');
             processedBudgetData = releaseReport.release_data.map(release => ({
               release: release.release_name || release.name,
               team: [
@@ -423,7 +407,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
 
           // Map features and issues to releases
           if (releaseReport.features_data && releaseReport.features_data.length > 0) {
-            console.log('Insights: Mapping features to releases');
             releaseReport.release_data = releaseReport.release_data.map(release => {
               const releaseFeatures = releaseReport.features_data.filter(feature => {
                 // Match by release UUID if available, otherwise try to match by name
@@ -444,7 +427,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
 
           // Map issues to releases
           if (releaseReport.issues_data && releaseReport.issues_data.length > 0) {
-            console.log('Insights: Mapping issues to releases');
             releaseReport.release_data = releaseReport.release_data.map(release => {
               const releaseIssues = releaseReport.issues_data.filter(issue => {
                 // Match by release UUID if available, otherwise try to match by name
@@ -469,7 +451,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
           );
 
           // Enhance releases with AI-estimated feature completion dates
-          console.log('Insights: Processing AI feature completion dates...');
           const enhancedReleases = await Promise.all(
             releaseReport.release_data.map(async (release) => {
               if (release.features && release.features.length > 0) {
@@ -536,7 +517,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
   // Initialize budget estimates from API data
   useEffect(() => {
     if (budgetData && budgetData.release_budgets) {
-      console.log('Insights: Initializing budget estimates from API data');
       const budgetEstimatesFromAPI = {};
       
       budgetData.release_budgets.forEach(releaseBudget => {
@@ -546,7 +526,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
       });
       
       setBudgetEstimates(budgetEstimatesFromAPI);
-      console.log('Insights: Budget estimates loaded:', Object.keys(budgetEstimatesFromAPI));
     }
   }, [budgetData]);
 
@@ -607,7 +586,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
           
           if (marketplaceResponse.ok) {
             const repos = await marketplaceResponse.json();
-            console.log(`Found ${repos.length} repositories in buildly-marketplace organization`);
             
             // Filter and process marketplace tools
             const premiumTools = repos.filter(repo => 

@@ -2,8 +2,6 @@ import { httpService } from '@modules/http/http.service';
 
 export const getReleaseProductReportQuery = async (product_uuid, displayAlert) => {
   try {
-    console.log('getReleaseProductReportQuery: Fetching real release data for product:', product_uuid);
-    
     // Fetch actual release data from existing endpoints
     const [releasesResponse, featuresResponse, issuesResponse] = await Promise.allSettled([
       httpService.makeRequest('get', `${window.env.API_URL}release/release/?product_uuid=${product_uuid}`),
@@ -15,12 +13,6 @@ export const getReleaseProductReportQuery = async (product_uuid, displayAlert) =
     const releases = releasesResponse.status === 'fulfilled' ? releasesResponse.value.data : [];
     const features = featuresResponse.status === 'fulfilled' ? featuresResponse.value.data : [];
     const issues = issuesResponse.status === 'fulfilled' ? issuesResponse.value.data : [];
-    
-    console.log('getReleaseProductReportQuery: Real data fetched:', {
-      releases: releases.length,
-      features: features.length,
-      issues: issues.length
-    });
     
     return {
       release_data: releases,

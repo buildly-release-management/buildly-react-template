@@ -6,7 +6,6 @@ export const useCreateBusinessTaskMutation = (productUuid, displayAlert) => {
 
   return useMutation(
     async (taskData) => {
-      console.log('useCreateBusinessTaskMutation: Creating task with data:', taskData);
       const response = await httpService.makeRequest(
         'post',
         `${window.env.API_URL}product/business-tasks/`,
