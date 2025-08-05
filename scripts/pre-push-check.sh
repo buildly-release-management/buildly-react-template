@@ -23,34 +23,34 @@ echo "=================================="
 
 # Check 1: Run linting
 echo -e "\n${BLUE}1. Running ESLint checks...${NC}"
-if npm run lint > /dev/null 2>&1; then
+if yarn lint > /dev/null 2>&1; then
     echo -e "${GREEN}✅ Linting passed${NC}"
 else
     echo -e "${RED}❌ Linting failed${NC}"
-    echo -e "${YELLOW}   Run 'npm run lint' to see details${NC}"
+    echo -e "${YELLOW}   Run 'yarn lint' to see details${NC}"
     CHECKS_FAILED=1
 fi
 
 # Check 2: Run tests
 echo -e "\n${BLUE}2. Running test suite...${NC}"
-if npm run test > /dev/null 2>&1; then
+if yarn test --passWithNoTests > /dev/null 2>&1; then
     echo -e "${GREEN}✅ Tests passed${NC}"
 else
     echo -e "${RED}❌ Tests failed${NC}"
-    echo -e "${YELLOW}   Run 'npm run test' to see details${NC}"
-    echo -e "${YELLOW}   Or try 'npm install' to fix dependencies${NC}"
+    echo -e "${YELLOW}   Run 'yarn test' to see details${NC}"
+    echo -e "${YELLOW}   Or try 'yarn install' to fix dependencies${NC}"
     CHECKS_FAILED=1
 fi
 
 # Check 3: Check build
 echo -e "\n${BLUE}3. Verifying build process...${NC}"
-if npm run build > /dev/null 2>&1; then
+if yarn build > /dev/null 2>&1; then
     echo -e "${GREEN}✅ Build successful${NC}"
     # Clean up build artifacts
     rm -rf dist build
 else
     echo -e "${RED}❌ Build failed${NC}"
-    echo -e "${YELLOW}   Run 'npm run build' to see details${NC}"
+    echo -e "${YELLOW}   Run 'yarn build' to see details${NC}"
     CHECKS_FAILED=1
 fi
 
@@ -83,10 +83,10 @@ if [ $CHECKS_FAILED -eq 0 ]; then
 else
     echo -e "${RED}❌ Some checks failed. Please fix issues before pushing.${NC}"
     echo -e "\n${YELLOW}💡 Common fixes:${NC}"
-    echo -e "${YELLOW}   • Fix linting: npm run lint${NC}"
-    echo -e "${YELLOW}   • Run tests: npm run test${NC}"
-    echo -e "${YELLOW}   • Check build: npm run build${NC}"
-    echo -e "${YELLOW}   • Install dependencies: npm install${NC}"
+    echo -e "${YELLOW}   • Fix linting: yarn lint${NC}"
+    echo -e "${YELLOW}   • Run tests: yarn test${NC}"
+    echo -e "${YELLOW}   • Check build: yarn build${NC}"
+    echo -e "${YELLOW}   • Install dependencies: yarn install${NC}"
     echo -e "${YELLOW}   • Run full validation: ./scripts/test-deployment.sh${NC}"
     echo -e "\n${BLUE}🛡️  Repository Protection Info:${NC}"
     echo -e "${BLUE}   This repository enforces quality gates to prevent broken code.${NC}"

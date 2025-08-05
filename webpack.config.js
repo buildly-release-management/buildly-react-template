@@ -29,7 +29,7 @@ module.exports = (env, argv) => {
                 '@babel/preset-typescript',
               ],
               plugins: [
-                '@babel/plugin-proposal-class-properties',
+                // Class properties are now handled by @babel/preset-env automatically
               ],
             },
           }],

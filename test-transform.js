@@ -11,9 +11,7 @@ const config = {
   ],
   plugins: [
     '@babel/plugin-transform-runtime',
-    ['@babel/plugin-proposal-class-properties', {
-      loose: true
-    }]
+    // Class properties are now handled by @babel/preset-env automatically
   ]
 };
 
