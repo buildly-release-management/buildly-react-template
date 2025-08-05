@@ -152,7 +152,7 @@ const BudgetDeploymentStep = ({ data, setData, classes, onComplete }) => {
         Budget & Deployment Planning
       </Typography>
       
-      <Typography variant="body1" textAlign="center" color="textSecondary" mb={4}>
+      <Typography variant="body1" textAlign="center" sx={{ color: '#fff' }} mb={4}>
         Let's finalize your project with budget planning and deployment strategy. 
         We'll help you understand the investment required and deployment options.
       </Typography>
@@ -164,25 +164,25 @@ const BudgetDeploymentStep = ({ data, setData, classes, onComplete }) => {
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>
                 <BudgetIcon />
-                <Typography variant="h6" ml={1}>
+                <Typography variant="h6" ml={1} sx={{ color: '#fff' }}>
                   Budget Analysis
                 </Typography>
               </Box>
               
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" style={{ opacity: 0.9 }}>
+                  <Typography variant="body2" sx={{ color: '#fff', opacity: 0.95 }}>
                     Estimated Monthly Cost
                   </Typography>
-                  <Typography variant="h5">
+                  <Typography variant="h5" sx={{ color: '#fff' }}>
                     ${getEstimatedMonthlyCost().toLocaleString()}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" style={{ opacity: 0.9 }}>
+                  <Typography variant="body2" sx={{ color: '#fff', opacity: 0.95 }}>
                     Recommended Total Budget
                   </Typography>
-                  <Typography variant="h5">
+                  <Typography variant="h5" sx={{ color: '#fff' }}>
                     {getBudgetLabel(getRecommendedBudget())}
                   </Typography>
                 </Grid>
@@ -217,7 +217,7 @@ const BudgetDeploymentStep = ({ data, setData, classes, onComplete }) => {
                 />
               </Box>
               
-              <Typography variant="body2" color="textSecondary" textAlign="center">
+              <Typography variant="body2" sx={{ color: '#fff' }} textAlign="center">
                 Budget Range: {getBudgetLabel(data.budgetRange?.[0] || 50000)} - {getBudgetLabel(data.budgetRange?.[1] || 200000)}
               </Typography>
             </CardContent>
@@ -228,7 +228,7 @@ const BudgetDeploymentStep = ({ data, setData, classes, onComplete }) => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="h6" gutterBottom sx={{ color: '#fff' }}>
                 Budget Breakdown
               </Typography>
               
@@ -241,7 +241,7 @@ const BudgetDeploymentStep = ({ data, setData, classes, onComplete }) => {
                     <Typography variant="body2" fontWeight="bold">
                       {item.category} ({item.percentage}%)
                     </Typography>
-                    <Typography variant="caption" color="textSecondary">
+                    <Typography variant="caption" sx={{ color: '#fff' }}>
                       ${item.amount.toLocaleString()}/month
                     </Typography>
                   </Box>

@@ -9,7 +9,8 @@ import TopBar from '@layout/TopBar/TopBar';
 import ProductRoadmap from '@pages/ProductRoadmap/ProductRoadmap';
 import UserManagement from '@pages/UserManagement/UserManagement';
 import { routes } from '@routes/routesConstants';
-import NewProduct from '@pages/NewProduct/NewProduct';
+import NewProductAI from '@pages/NewProduct/NewProductAI';
+import EditProductAI from '@pages/NewProduct/EditProductAI';
 import DeveloperForm from '@pages/DeveloperForm/DeveloperForm';
 import ProductPortfolio from '@pages/ProductPortfolio/ProductPortfolio';
 import UserProfile from '@pages/UserProfile/UserProfile';
@@ -57,7 +58,8 @@ const ContainerDashboard = ({ location, history }) => {
             <Route path={routes.PRODUCT_ROADMAP} component={ProductRoadmap} />
             <Route path={routes.USER_PROFILE} component={UserProfile} />
             <Route path={routes.USER_MANAGEMENT} component={UserManagement} />
-            <Route path={routes.NEW_PRODUCT} component={NewProduct} />
+            <Route path={routes.NEW_PRODUCT} component={NewProductAI} />
+            <Route path="/app/product-portfolio/edit/:productId" component={EditProductAI} />
             <Route path={routes.DEVELOPER_FORM} component={DeveloperForm} />
             <Route path={routes.PRODUCT_PORTFOLIO} component={ProductPortfolio} />
             <Route path={routes.RELEASE} component={ReleaseList} />

@@ -27,8 +27,8 @@ import {
   Schedule as TimelineIcon,
   Person as PersonIcon,
   Code as DevIcon,
-  Design as DesignIcon,
-  Management as ManageIcon,
+  Brush as DesignIcon,
+  SupervisorAccount as ManageIcon,
 } from '@mui/icons-material';
 
 const TeamTimelineStep = ({ data, setData, classes }) => {

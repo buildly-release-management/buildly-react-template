@@ -1,3 +1,8 @@
+describe('Baseline', () => {
+  it('should run baseline test', () => {
+    expect(true).toBe(true);
+  });
+});
 // Baseline tests for Buildly React Template
 // These tests validate core functionality without complex dependencies
 

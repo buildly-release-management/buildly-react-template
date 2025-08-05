@@ -22,7 +22,7 @@ import {
   Code as CodeIcon,
   Storage as DatabaseIcon,
   Cloud as CloudIcon,
-  Integration as IntegrationIcon,
+  Link as IntegrationIcon,
 } from '@mui/icons-material';
 
 const TechnicalStep = ({ data, setData, classes }) => {

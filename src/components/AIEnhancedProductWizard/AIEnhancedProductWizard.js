@@ -20,10 +20,10 @@ import {
   Chip,
   LinearProgress,
   Avatar,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Dialog,
+  // DialogTitle,
+  // DialogContent,
+  // DialogActions,
+  // Dialog,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -37,7 +37,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCreateProductMutation } from '@react-query/mutations/product/createProductMutation';
 import { useHistory } from 'react-router-dom';
-import { useAlert } from '@hooks/useAlert';
+import useAlert from '@hooks/useAlert';
 import { useContext } from 'react';
 import { UserContext } from '@context/User.context';
 
@@ -63,21 +63,29 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: theme.spacing(2),
     padding: theme.spacing(3),
     marginBottom: theme.spacing(2),
-    background: 'rgba(255, 255, 255, 0.95)',
+    background: '#fff',
+    color: '#111',
     backdropFilter: 'blur(10px)',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
   },
   stepContent: {
     minHeight: 400,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
+    background: '#f5f6fa',
+    color: '#111',
+    borderRadius: theme.spacing(1),
   },
   aiSuggestionCard: {
     background: 'linear-gradient(45deg, #6366f1, #8b5cf6)',
-    color: 'white',
+    color: '#fff',
     marginBottom: theme.spacing(2),
     borderRadius: theme.spacing(1.5),
+    '&, & *': {
+      color: '#fff !important',
+      textShadow: '0 1px 2px rgba(0,0,0,0.25)',
+    },
   },
   suggestionChip: {
     margin: theme.spacing(0.5),
@@ -87,7 +95,8 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   editSection: {
-    background: theme.palette.grey[50],
+    background: '#f5f6fa',
+    color: '#111',
     borderRadius: theme.spacing(1),
     padding: theme.spacing(2),
     marginBottom: theme.spacing(1),
@@ -97,6 +106,7 @@ const useStyles = makeStyles((theme) => ({
     '&:hover': {
       borderColor: theme.palette.primary.main,
       background: theme.palette.primary.light + '20',
+      color: '#111',
     },
   },
   completedStep: {
@@ -216,13 +226,14 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
   // Generate AI suggestions based on current data
   const generateAISuggestions = async (step, currentData) => {
     setIsGeneratingAI(true);
-    
-    // Simulate AI API call - replace with actual AI service
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    let suggestions = [];
-    
-    switch (step) {
+    try {
+      // Simulate AI API call - replace with actual AI service
+      await new Promise((resolve, reject) => {
+        // Simulate 10% chance of failure
+        setTimeout(() => (Math.random() < 0.1 ? reject(new Error('AI service unavailable')) : resolve()), 1500);
+      });
+      let suggestions = [];
+      switch (step) {
       case 0: // Overview
         suggestions = Object.keys(AI_SUGGESTIONS.productType).map(type => ({
           type: 'productType',
@@ -275,8 +286,12 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
         break;
     }
     
-    setAiSuggestions(suggestions);
-    setIsGeneratingAI(false);
+      setAiSuggestions(suggestions);
+      setIsGeneratingAI(false);
+    } catch (err) {
+      setIsGeneratingAI(false);
+      displayAlert('error', 'Failed to fetch AI suggestions. Please try again.');
+    }
   };
 
   // Apply AI suggestion
@@ -376,28 +391,40 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
 
   const progress = ((currentStep + 1) / WIZARD_STEPS.length) * 100;
 
+  // Helper function to render step content (moved above return for scope)
+  const renderStepContent = (step, data, setData, classes) => {
+    switch (step) {
+      case 0:
+        return <ProductOverviewStep data={data} setData={setData} classes={classes} />;
+      case 1:
+        return <FeaturesStep data={data} setData={setData} classes={classes} />;
+      case 2:
+        return <TechnicalStep data={data} setData={setData} classes={classes} />;
+      case 3:
+        return <TeamTimelineStep data={data} setData={setData} classes={classes} />;
+      case 4:
+        return (
+          <BudgetDeploymentStep 
+            data={data} 
+            setData={setData} 
+            classes={classes} 
+            onComplete={handleWizardComplete}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="lg"
-      fullWidth
-      PaperProps={{
-        style: {
-          background: 'transparent',
-          boxShadow: 'none',
-          overflow: 'visible',
-        },
-      }}
-    >
-      <Box className={classes.wizardContainer}>
-        {/* Header */}
-        <Card className={classes.wizardCard}>
-          <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-              <Box display="flex" alignItems="center">
-                <Avatar className={classes.aiAvatar}>
-                  <AIIcon />
+    <Box className={classes.wizardContainer}>
+      {/* Header */}
+      <Card className={classes.wizardCard}>
+        <CardContent>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+            <Box display="flex" alignItems="center">
+              <Avatar className={classes.aiAvatar}>
+                <AIIcon />
                 </Avatar>
                 <Box ml={2}>
                   <Typography variant="h5" fontWeight="bold">
@@ -509,10 +536,10 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
                 onClick={handleBack}
                 disabled={currentStep === 0}
                 variant="outlined"
+                style={{ minWidth: 120, fontWeight: 600 }}
               >
                 Previous
               </Button>
-              
               <Box>
                 {currentStep === WIZARD_STEPS.length - 1 ? (
                   <Button
@@ -521,6 +548,7 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
                     onClick={handleSave}
                     size="large"
                     startIcon={<CheckIcon />}
+                    style={{ minWidth: 180, fontWeight: 700, fontSize: '1.1rem' }}
                   >
                     {editMode ? 'Update Product' : 'Create Product'}
                   </Button>
@@ -531,6 +559,7 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
                     variant="contained"
                     color="primary"
                     size="large"
+                    style={{ minWidth: 180, fontWeight: 700, fontSize: '1.1rem' }}
                   >
                     Continue
                   </Button>
@@ -540,33 +569,33 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
           </CardContent>
         </Card>
       </Box>
-    </Dialog>
   );
 };
 
-// Helper function to render step content
-const renderStepContent = (step, data, setData, classes) => {
-  switch (step) {
-    case 0:
-      return <ProductOverviewStep data={data} setData={setData} classes={classes} />;
-    case 1:
-      return <FeaturesStep data={data} setData={setData} classes={classes} />;
-    case 2:
-      return <TechnicalStep data={data} setData={setData} classes={classes} />;
-    case 3:
-      return <TeamTimelineStep data={data} setData={setData} classes={classes} />;
-    case 4:
-      return (
-        <BudgetDeploymentStep 
-          data={data} 
-          setData={setData} 
-          classes={classes} 
-          onComplete={() => handleWizardComplete(data)}
-        />
-      );
-    default:
-      return null;
-  }
-};
+
+  // Helper function to render step content (moved inside component for scope)
+  const renderStepContent = (step, data, setData, classes) => {
+    switch (step) {
+      case 0:
+        return <ProductOverviewStep data={data} setData={setData} classes={classes} />;
+      case 1:
+        return <FeaturesStep data={data} setData={setData} classes={classes} />;
+      case 2:
+        return <TechnicalStep data={data} setData={setData} classes={classes} />;
+      case 3:
+        return <TeamTimelineStep data={data} setData={setData} classes={classes} />;
+      case 4:
+        return (
+          <BudgetDeploymentStep 
+            data={data} 
+            setData={setData} 
+            classes={classes} 
+            onComplete={handleWizardComplete}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
 export default AIEnhancedProductWizard;

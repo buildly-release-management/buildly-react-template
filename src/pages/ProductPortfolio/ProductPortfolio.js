@@ -41,7 +41,7 @@ import { routes } from '@routes/routesConstants';
 import useAlert from '@hooks/useAlert';
 import { getAllProductQuery } from '@react-query/queries/product/getAllProductQuery';
 import { useDeleteProductMutation } from '@react-query/mutations/product/deleteProductMutation';
-import AddProduct from '@pages/NewProduct/NewProduct';
+import NewProductAI from '@pages/NewProduct/NewProductAI';
 import { useStore } from '@zustand/product/productStore';
 import { productColumns, getProductsData } from './ProductPortfolioConstants';
 import { calculateProductStatus, getStatusColor, getStatusLabel } from '@utils/productStatus';
@@ -50,7 +50,7 @@ import useOrganizationMembers from '@hooks/useOrganizationMembers';
 const useStyles = makeStyles((theme) => ({
   root: {
     padding: theme.spacing(5),
-    paddingTop: 0,
+    paddingTop: theme.spacing(10), // Add top margin to push content below navigation
   },
   productCard: {
     margin: theme.spacing(1),
@@ -161,12 +161,7 @@ const ProductPortfolio = ({ history }) => {
   };
 
   const editProduct = (item) => {
-    history.push(`${editProductPath}/:${item.product_uuid}`, {
-      type: 'editP',
-      from: redirectTo || location.pathname,
-      data: item,
-      product_uuid: item.product_uuid,
-    });
+    history.push(`/app/product-portfolio/edit/${item.product_uuid}`);
   };
 
   const viewProductRoadmap = (item) => {
@@ -531,8 +526,8 @@ const ProductPortfolio = ({ history }) => {
           menuIndex={menuIndex}
           setMenuIndex={setMenuIndex}
         >
-          <Route path={addProductPath} component={AddProduct} />
-          <Route path={`${editProductPath}/:id`} component={AddProduct} />
+          <Route path={addProductPath} component={NewProductAI} />
+          <Route path={`${editProductPath}/:id`} component={NewProductAI} />
         </DataTableWrapper>
       )}
       

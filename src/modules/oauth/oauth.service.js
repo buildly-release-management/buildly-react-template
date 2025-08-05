@@ -88,7 +88,7 @@ function hasValidAccessToken() {
 function setAccessToken(token) {
   if (token) {
     localStorage.setItem('token', JSON.stringify(token));
-    const expires_in = 3600;
+    const expires_in = 8 * 3600; // 8 hours
     // if (token.expires_in) {
     const expiresInMilliSeconds = expires_in * 1000;
     const now = new Date();

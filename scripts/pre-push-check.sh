@@ -15,6 +15,20 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+
+# Detect package manager
+if command -v yarn &> /dev/null; then
+  PKG_RUN="yarn"
+  PKG_LINT="yarn lint"
+  PKG_TEST="yarn test --watchAll=false"
+  PKG_BUILD="yarn build"
+else
+  PKG_RUN="npm"
+  PKG_LINT="npm run lint"
+  PKG_TEST="npm run test -- --watchAll=false"
+  PKG_BUILD="npm run build"
+fi
+
 # Track if any checks fail
 CHECKS_FAILED=0
 
@@ -24,7 +38,7 @@ echo "=================================="
 
 # Check 1: Run linting
 echo -e "\n${BLUE}1. Running ESLint checks...${NC}"
-LINT_OUTPUT=$(yarn lint 2>&1)
+LINT_OUTPUT=$($PKG_LINT 2>&1)
 LINT_EXIT=$?
 echo "$LINT_OUTPUT"
 if [ $LINT_EXIT -eq 0 ]; then
@@ -42,7 +56,7 @@ fi
 
 # Check 2: Run tests
 echo -e "\n${BLUE}2. Running test suite...${NC}"
-TEST_OUTPUT=$(yarn test --watchAll=false 2>&1)
+TEST_OUTPUT=$($PKG_TEST 2>&1)
 TEST_EXIT=$?
 echo "$TEST_OUTPUT"
 if [ $TEST_EXIT -eq 0 ]; then
@@ -59,13 +73,13 @@ fi
 
 # Check 3: Check build
 echo -e "\n${BLUE}3. Verifying build process...${NC}"
-if yarn build > /dev/null 2>&1; then
+if $PKG_BUILD > /dev/null 2>&1; then
     echo -e "${GREEN}✅ Build successful${NC}"
     # Clean up build artifacts
     rm -rf dist build
 else
     echo -e "${RED}❌ Build failed${NC}"
-    echo -e "${YELLOW}   Run 'yarn build' to see details${NC}"
+    echo -e "${YELLOW}   Run '$PKG_BUILD' to see details${NC}"
     CHECKS_FAILED=1
 fi
 
