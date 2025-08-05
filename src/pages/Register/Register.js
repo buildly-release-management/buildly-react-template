@@ -117,7 +117,7 @@ const Register = ({ history }) => {
 
   const { mutate: registerMutation, isLoading: isRegisterLoading } = useRegisterMutation(history, routes.LOGIN, displayAlert);
 
-  const { mutate: socialLoginMutation, isLoading: isSocialLoginLoading } = useSocialLoginMutation(history, routes.MISSING_DATA, routes.PRODUCT_PORTFOLIO, displayAlert);
+  const { mutate: socialLoginMutation, isLoading: isSocialLoginLoading } = useSocialLoginMutation(history, routes.MISSING_DATA, routes.DASHBOARD, displayAlert);
 
   useEffect(() => {
     const queryParameters = new URLSearchParams(window.location.search);

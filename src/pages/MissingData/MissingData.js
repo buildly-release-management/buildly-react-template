@@ -68,7 +68,7 @@ const MissingData = ({ history }) => {
     { refetchOnWindowFocus: false },
   );
 
-  const { mutate: addOrgSocialUserMutation, isLoading: isAddOrgSocialUserLoading } = useAddOrgSocialUserMutation(history, _.includes(orgNamesData, orgName), routes.LOGIN, routes.PRODUCT_PORTFOLIO, displayAlert);
+  const { mutate: addOrgSocialUserMutation, isLoading: isAddOrgSocialUserLoading } = useAddOrgSocialUserMutation(history, _.includes(orgNamesData, orgName), routes.LOGIN, routes.DASHBOARD, displayAlert);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

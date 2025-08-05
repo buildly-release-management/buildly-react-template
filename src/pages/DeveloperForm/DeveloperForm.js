@@ -107,7 +107,7 @@ const DeveloperForm = ({ loading, history }) => {
   });
   const [formError, setFormError] = useState({});
 
-  const { mutate: addDataMutation, isLoading: isAddingDataLoading } = useAddDataMutation(history, routes.PRODUCT_PORTFOLIO, displayAlert);
+  const { mutate: addDataMutation, isLoading: isAddingDataLoading } = useAddDataMutation(history, routes.DASHBOARD, displayAlert);
   const { mutate: updateUserMutation, isLoading: isUpdateUserLoading } = useUpdateUserMutation(history, displayAlert);
 
   const handleSubmit = (event) => {

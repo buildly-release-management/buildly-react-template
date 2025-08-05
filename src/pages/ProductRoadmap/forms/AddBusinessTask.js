@@ -129,11 +129,16 @@ const AddBusinessTask = ({ history, location }) => {
   const [formError, setFormError] = useState({});
 
   // React queries
-  const { data: taskCategories, isLoading: isCategoriesLoading } = useQuery(
+  const { data: taskCategoriesResponse, isLoading: isCategoriesLoading } = useQuery(
     ['taskCategories', organizationUuid],
     () => getAllTaskCategoriesQuery(organizationUuid, displayAlert),
     { refetchOnWindowFocus: false, enabled: !!organizationUuid }
   );
+
+  // Ensure taskCategories is always an array
+  const taskCategories = Array.isArray(taskCategoriesResponse) 
+    ? taskCategoriesResponse 
+    : taskCategoriesResponse?.results || [];
 
   const { data: releases, isLoading: isReleasesLoading } = useQuery(
     ['allReleases', product_uuid],
@@ -390,7 +395,7 @@ const AddBusinessTask = ({ history, location }) => {
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {taskCategories?.map((category) => (
+                  {taskCategories && taskCategories.length > 0 && taskCategories.map((category) => (
                     <MenuItem key={category.category_uuid} value={category.category_uuid}>
                       <Chip
                         size="small"

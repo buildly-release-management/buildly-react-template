@@ -40,7 +40,7 @@ const RegistrationFinish = ({ history }) => {
     { refetchOnWindowFocus: false },
   );
 
-  const { mutate: addSubscriptionMutation, isLoading: isAddSubscriptionLoading } = useAddSubscriptionMutation(displayAlert, history, routes.PRODUCT_PORTFOLIO);
+  const { mutate: addSubscriptionMutation, isLoading: isAddSubscriptionLoading } = useAddSubscriptionMutation(displayAlert, history, routes.DASHBOARD);
 
   if (user) {
     if (!organization) {

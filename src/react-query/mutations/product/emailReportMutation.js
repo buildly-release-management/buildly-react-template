@@ -4,10 +4,11 @@ import _ from 'lodash';
 
 export const useEmailReportMutation = (product_uuid, displayAlert) => useMutation(
   async (emailReportData) => {
+    // Send email data to the backend for processing
     const response = await httpService.sendDirectServiceRequest(
       `pdf_report/${product_uuid}/`,
-      'GET',
-      null,
+      'POST',
+      emailReportData,
       'product',
       false,
     );
@@ -15,12 +16,11 @@ export const useEmailReportMutation = (product_uuid, displayAlert) => useMutatio
   },
   {
     onSuccess: async (data) => {
-      displayAlert('success', 'Report successfully emailed!');
+      displayAlert('success', 'Report successfully emailed! Please check your inbox.');
     },
-  },
-  {
-    onError: () => {
-      displayAlert('error', "Couldn't email the report");
+    onError: (error) => {
+      console.error('Email report error:', error);
+      displayAlert('error', "Couldn't email the report. Please try again or contact support.");
     },
   },
 );

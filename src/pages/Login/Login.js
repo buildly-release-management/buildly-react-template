@@ -82,9 +82,9 @@ const Login = ({ history }) => {
 
   const { mutate: resetPasswordCheckMutation, isLoading: isPasswordCheckLoading } = useResetPasswordCheckMutation(history, routes.RESET_PASSWORD, routes.LOGIN, displayAlert);
 
-  const { mutate: loginMutation, isLoading: isLoginLoading } = useLoginMutation(history, routes.PRODUCT_PORTFOLIO, displayAlert);
+  const { mutate: loginMutation, isLoading: isLoginLoading } = useLoginMutation(history, routes.DASHBOARD, displayAlert);
 
-  const { mutate: socialLoginMutation, isLoading: isSocialLoginLoading } = useSocialLoginMutation(history, routes.MISSING_DATA, routes.PRODUCT_PORTFOLIO, displayAlert);
+  const { mutate: socialLoginMutation, isLoading: isSocialLoginLoading } = useSocialLoginMutation(history, routes.MISSING_DATA, routes.DASHBOARD, displayAlert);
 
   useEffect(() => {
     const [uid, token] = location.pathname

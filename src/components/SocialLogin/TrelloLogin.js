@@ -12,7 +12,7 @@ const TrelloLogin = ({ history, disabled }) => {
 
   const { displayAlert } = useAlert();
 
-  const { mutate: socialLoginMutation } = useSocialLoginMutation(history, routes.MISSING_DATA, routes.PRODUCT_PORTFOLIO, displayAlert);
+  const { mutate: socialLoginMutation } = useSocialLoginMutation(history, routes.MISSING_DATA, routes.DASHBOARD, displayAlert);
 
   const onBtnClick = () => {
     const search = toQuery({ key: window.env.TRELLO_API_KEY });

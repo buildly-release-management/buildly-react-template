@@ -350,9 +350,13 @@ const Dashboard = () => {
                          issue.creator?.includes(userEmail) ||
                          issue.creator?.includes(username);
         
-        // Check if user is assigned
+        // Check if user is assigned via new UUID-based system
+        const isAssignedDeveloper = issue.assigned_developer_uuid === user.core_user_uuid;
+        const isAssignedTeamMember = issue.product_team_uuid === user.core_user_uuid;
+        
+        // Check if user is assigned via legacy assignees field
         const assignees = issue.issue_detail?.assignees || [];
-        const isAssigned = assignees.some(assignee => {
+        const isLegacyAssigned = assignees.some(assignee => {
           const assigneeStr = typeof assignee === 'string' ? assignee : 
                              assignee?.email || assignee?.username || assignee?.name || String(assignee);
           return assigneeStr && (
@@ -365,8 +369,21 @@ const Dashboard = () => {
         // Check if user is mentioned or commented
         const isMentioned = issue.description?.includes(`@${username}`) || 
                            issue.description?.includes(userEmail);
+
+        // Debug logging for assigned issues
+        if (isAssignedDeveloper || isAssignedTeamMember) {
+          console.log('Dashboard Debug - Issue Assignment Found:', {
+            issueName: issue.name,
+            issueId: issue.issue_uuid,
+            assigned_developer_uuid: issue.assigned_developer_uuid,
+            product_team_uuid: issue.product_team_uuid,
+            currentUserUuid: user.core_user_uuid,
+            isAssignedDeveloper,
+            isAssignedTeamMember
+          });
+        }
         
-        return isCreator || isAssigned || isMentioned;
+        return isCreator || isAssignedDeveloper || isAssignedTeamMember || isLegacyAssigned || isMentioned;
       });
 
       // Filter features: assigned to user, created by user, or mentioning user  
@@ -377,9 +394,13 @@ const Dashboard = () => {
                          feature.creator?.includes(userEmail) ||
                          feature.creator?.includes(username);
         
-        // Check if user is assigned
+        // Check if user is assigned via new UUID-based system
+        const isAssignedDeveloper = feature.assigned_developer_uuid === user.core_user_uuid;
+        const isAssignedTeamMember = feature.product_team_uuid === user.core_user_uuid;
+        
+        // Check if user is assigned via legacy assignees field
         const assignees = feature.assignees || [];
-        const isAssigned = Array.isArray(assignees) ? 
+        const isLegacyAssigned = Array.isArray(assignees) ? 
           assignees.some(assignee => {
             const assigneeStr = typeof assignee === 'string' ? assignee : 
                                assignee?.email || assignee?.username || assignee?.name || String(assignee);
@@ -394,8 +415,21 @@ const Dashboard = () => {
         // Check if user is mentioned  
         const isMentioned = feature.description?.includes(`@${username}`) || 
                            feature.description?.includes(userEmail);
+
+        // Debug logging for assigned features
+        if (isAssignedDeveloper || isAssignedTeamMember) {
+          console.log('Dashboard Debug - Feature Assignment Found:', {
+            featureName: feature.name,
+            featureId: feature.feature_uuid,
+            assigned_developer_uuid: feature.assigned_developer_uuid,
+            product_team_uuid: feature.product_team_uuid,
+            currentUserUuid: user.core_user_uuid,
+            isAssignedDeveloper,
+            isAssignedTeamMember
+          });
+        }
           
-        return isCreator || isAssigned || isMentioned;
+        return isCreator || isAssignedDeveloper || isAssignedTeamMember || isLegacyAssigned || isMentioned;
       });
 
       // Filter comments: created by user or requesting feedback from user
