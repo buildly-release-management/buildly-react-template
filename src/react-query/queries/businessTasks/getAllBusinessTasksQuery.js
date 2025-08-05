@@ -25,7 +25,6 @@ export const getAllBusinessTasksQuery = async (filters, displayAlert) => {
     const response = await httpService.makeRequest('get', url);
     return response.data;
   } catch (error) {
-    console.error('All Business Tasks Query Error:', error);
     displayAlert('error', 'Failed to fetch business tasks');
     throw error;
   }
@@ -56,10 +55,7 @@ export const getBusinessTasksByUserQuery = async (userUuid, filters, displayAler
     
     const response = await httpService.makeRequest('get', url);
     return response.data;
-  } catch (error) {
-    console.error('Business Tasks Query Error:', error);
-    console.error('Error response:', error.response);
-    
+  } catch (error) {    
     // Fallback to the generic endpoint if the by-user endpoint fails
     try {
       const queryParams = new URLSearchParams();
@@ -90,7 +86,6 @@ export const getBusinessTasksByUserQuery = async (userUuid, filters, displayAler
       const fallbackResponse = await httpService.makeRequest('get', fallbackUrl);
       return fallbackResponse.data;
     } catch (fallbackError) {
-      console.error('Fallback query also failed:', fallbackError);
       displayAlert('error', `Failed to fetch user business tasks: ${fallbackError.message}`);
       throw fallbackError;
     }
@@ -126,7 +121,6 @@ export const getBusinessTasksByReleaseQuery = async (releaseUuid, filters, displ
     const response = await httpService.makeRequest('get', url);
     return response.data;
   } catch (error) {
-    console.error('Release Business Tasks Query Error:', error);
     displayAlert('error', 'Failed to fetch release business tasks');
     throw error;
   }

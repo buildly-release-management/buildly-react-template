@@ -45,8 +45,10 @@ const useGetAllTaskCategories = (organizationUuid) => {
     () => getAllTaskCategoriesQuery(organizationUuid),
     {
       enabled: !!organizationUuid,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+      // Task categories are relatively static, longer cache for production
+      staleTime: window.env?.PRODUCTION ? 30 * 60 * 1000 : 5 * 60 * 1000, // 30min prod, 5min dev
+      cacheTime: window.env?.PRODUCTION ? 2 * 60 * 60 * 1000 : 10 * 60 * 1000, // 2hr prod, 10min dev
+      retry: window.env?.PRODUCTION ? 3 : 1,
     }
   );
 };

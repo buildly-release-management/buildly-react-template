@@ -267,7 +267,7 @@ const Dashboard = () => {
             comments,
           };
         } catch (error) {
-          console.error(`Error fetching data for product ${product.name}:`, error);
+          // Error fetching data for product
         }
       }
       
@@ -305,7 +305,6 @@ const Dashboard = () => {
 
   const processUserData = (productData) => {
     if (!productData || !user) {
-      console.warn('processUserData: Missing productData or user data');
       return;
     }
     const userEmail = user.email || '';

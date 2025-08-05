@@ -15,13 +15,6 @@ export const useCreateBusinessTaskMutation = (productUuid, displayAlert) => {
         throw new Error('product_uuid is required but missing from task data');
       }
 
-      console.log('Creating business task with validated data:', {
-        assigned_by_user_uuid: taskData.assigned_by_user_uuid,
-        product_uuid: taskData.product_uuid,
-        title: taskData.title,
-        assigned_to_user_uuid: taskData.assigned_to_user_uuid
-      });
-
       const response = await httpService.makeRequest(
         'post',
         `${window.env.API_URL}product/business-tasks/`,
@@ -39,9 +32,6 @@ export const useCreateBusinessTaskMutation = (productUuid, displayAlert) => {
         await queryClient.invalidateQueries(['overdueBusinessTasks']);
       },
       onError: (error) => {
-        console.error('useCreateBusinessTaskMutation: Error creating task:', error);
-        console.error('useCreateBusinessTaskMutation: Error response:', error?.response?.data);
-        
         let errorMessage = 'Failed to create business task';
         
         // Handle specific database constraint violations

@@ -19,7 +19,9 @@ import {
   Card,
   CardContent,
   CardActions,
-  LinearProgress
+  LinearProgress,
+  Tooltip,
+  Badge
 } from '@mui/material';
 import { 
   Dashboard as DashboardIcon,
@@ -27,7 +29,10 @@ import {
   Assessment as ReportIcon,
   Schedule as ReleaseIcon,
   FilterList as FilterIcon,
-  Upload as ImportIcon
+  Upload as ImportIcon,
+  CheckCircle as HealthyIcon,
+  Warning as AtRiskIcon,
+  Error as CriticalIcon
 } from '@mui/icons-material';
 import { UserContext } from '@context/User.context';
 import DataTableWrapper from '@components/DataTableWrapper/DataTableWrapper';
@@ -39,6 +44,8 @@ import { useDeleteProductMutation } from '@react-query/mutations/product/deleteP
 import AddProduct from '@pages/NewProduct/NewProduct';
 import { useStore } from '@zustand/product/productStore';
 import { productColumns, getProductsData } from './ProductPortfolioConstants';
+import { calculateProductStatus, getStatusColor, getStatusLabel } from '@utils/productStatus';
+import useOrganizationMembers from '@hooks/useOrganizationMembers';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -54,14 +61,16 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   productNavigation: {
-    marginTop: theme.spacing(1),
+    marginTop: theme.spacing(2), // Increased spacing from theme.spacing(1)
     marginBottom: theme.spacing(2),
   },
   filterSection: {
     marginBottom: theme.spacing(3),
+    marginTop: theme.spacing(3), // Added top margin for better spacing
     padding: theme.spacing(2),
     backgroundColor: '#f5f5f5',
     borderRadius: theme.spacing(1),
+    boxShadow: theme.shadows[1], // Added subtle shadow
   },
   statusChip: {
     marginLeft: theme.spacing(1),
@@ -71,6 +80,25 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     marginTop: theme.spacing(1),
   },
+  statusIndicator: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: theme.spacing(1),
+  },
+  healthScore: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
+  statusDetails: {
+    display: 'flex',
+    gap: theme.spacing(1),
+    marginTop: theme.spacing(1),
+    flexWrap: 'wrap',
+  },
+  miniStatusChip: {
+    height: 20,
+    fontSize: '0.7rem',
+  }
 }));
 
 const ProductPortfolio = ({ history }) => {
@@ -90,6 +118,9 @@ const ProductPortfolio = ({ history }) => {
   const organization = user.organization.organization_uuid;
   const { displayAlert } = useAlert();
   const { setActiveProduct } = useStore();
+
+  // Get organization members for resource analysis
+  const { data: organizationMembers = [] } = useOrganizationMembers();
 
   const { data: productData, isLoading: isAllProductLoading } = useQuery(
     ['allProducts', organization],
@@ -143,19 +174,83 @@ const ProductPortfolio = ({ history }) => {
     history.push(routes.PRODUCT_ROADMAP_REPORT);
   };
 
+  // Enhanced product status calculation
+  const getProductStatusData = (product) => {
+    // Mock data for demonstration - in production these would come from actual APIs
+    const mockReleases = [
+      { 
+        name: 'v1.0', 
+        status: 'completed', 
+        target_date: '2024-01-15',
+        team: [
+          { role: 'Frontend Developer', count: 1, weeklyRate: 2500 },
+          { role: 'Backend Developer', count: 1, weeklyRate: 2800 }
+        ]
+      },
+      { 
+        name: 'v1.1', 
+        status: 'active', 
+        target_date: '2024-03-01',
+        duration: { weeks: 12 },
+        team: [
+          { role: 'Frontend Developer', count: 2, weeklyRate: 2500 },
+          { role: 'Backend Developer', count: 1, weeklyRate: 2800 },
+          { role: 'QA Engineer', count: 1, weeklyRate: 2200 }
+        ]
+      }
+    ];
+    
+    const mockFeatures = Array.from({ length: 10 }, (_, i) => ({
+      feature_uuid: `feat-${i}`,
+      name: `Feature ${i + 1}`,
+      status: i < 6 ? 'completed' : i < 8 ? 'in_progress' : 'planned',
+      end_date: `2024-0${Math.floor(Math.random() * 3) + 1}-15`
+    }));
+
+    const mockIssues = Array.from({ length: 5 }, (_, i) => ({
+      issue_uuid: `issue-${i}`,
+      name: `Issue ${i + 1}`,
+      status: i < 3 ? 'completed' : 'in_progress'
+    }));
+
+    const mockBudget = {
+      total_budget: 75000,
+      spent_budget: product.health_score ? (product.health_score / 100) * 75000 : 35000
+    };
+
+    return calculateProductStatus(
+      product, 
+      mockReleases, 
+      mockFeatures, 
+      mockIssues, 
+      mockBudget, 
+      organizationMembers
+    );
+  };
+
   // Product status helper functions
   const getProductStatus = (product) => {
-    // Calculate overall status based on releases, features, issues
-    const score = product.health_score || 0;
-    if (score >= 80) return 'green';
-    if (score >= 60) return 'yellow';
-    return 'red';
+    const statusData = getProductStatusData(product);
+    return statusData.overall;
   };
 
   const getCurrentReleaseStatus = (product) => {
-    // Mock current release status - in production would come from API
-    const statuses = ['green', 'yellow', 'red'];
-    return statuses[Math.floor(Math.random() * statuses.length)];
+    const statusData = getProductStatusData(product);
+    return statusData.timeline;
+  };
+
+  // Get status icon component
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'green':
+        return <HealthyIcon style={{ color: '#4caf50', fontSize: '1.2rem' }} />;
+      case 'yellow':
+        return <AtRiskIcon style={{ color: '#ff9800', fontSize: '1.2rem' }} />;
+      case 'red':
+        return <CriticalIcon style={{ color: '#f44336', fontSize: '1.2rem' }} />;
+      default:
+        return <HealthyIcon style={{ color: '#9e9e9e', fontSize: '1.2rem' }} />;
+    }
   };
 
   // Navigation functions for product quick actions
@@ -193,6 +288,16 @@ const ProductPortfolio = ({ history }) => {
 
   return (
     <div className={classes.root}>
+      {/* Page Header */}
+      <Box sx={{ marginBottom: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#0C5595', marginBottom: 1 }}>
+          📊 Product Portfolio
+        </Typography>
+        <Typography variant="subtitle1" color="text.secondary">
+          Monitor product health, timeline, budget, and team performance
+        </Typography>
+      </Box>
+
       {/* Filter Section */}
       <Box className={classes.filterSection}>
         <Grid container spacing={2} alignItems="center">
@@ -206,9 +311,24 @@ const ProductPortfolio = ({ history }) => {
                 startAdornment={<FilterIcon />}
               >
                 <MenuItem value="all">All Products</MenuItem>
-                <MenuItem value="green">Green Status</MenuItem>
-                <MenuItem value="yellow">Yellow Status</MenuItem>
-                <MenuItem value="red">Red Status</MenuItem>
+                <MenuItem value="green">
+                  <Box display="flex" alignItems="center">
+                    <HealthyIcon style={{ color: '#4caf50', marginRight: 8 }} />
+                    Healthy Products
+                  </Box>
+                </MenuItem>
+                <MenuItem value="yellow">
+                  <Box display="flex" alignItems="center">
+                    <AtRiskIcon style={{ color: '#ff9800', marginRight: 8 }} />
+                    At Risk Products
+                  </Box>
+                </MenuItem>
+                <MenuItem value="red">
+                  <Box display="flex" alignItems="center">
+                    <CriticalIcon style={{ color: '#f44336', marginRight: 8 }} />
+                    Critical Products
+                  </Box>
+                </MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -261,74 +381,133 @@ const ProductPortfolio = ({ history }) => {
       {/* Card View */}
       {viewMode === 'cards' && (
         <Grid container spacing={2}>
-          {getFilteredProducts().map((product) => (
-            <Grid item xs={12} md={6} lg={4} key={product.product_uuid}>
-              <Card className={classes.productCard}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    {product.name}
-                    <Chip 
-                      size="small" 
-                      label={getProductStatus(product)} 
-                      color={getProductStatus(product) === 'green' ? 'success' : getProductStatus(product) === 'yellow' ? 'warning' : 'error'}
-                      className={classes.statusChip}
-                    />
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    {product.description || 'No description available'}
-                  </Typography>
-                  
-                  {/* Current Release Status */}
-                  <Box className={classes.releaseStatus}>
-                    <Typography variant="body2">Current Release:</Typography>
-                    <Chip 
-                      size="small" 
-                      label={getCurrentReleaseStatus(product)} 
-                      color={getCurrentReleaseStatus(product) === 'green' ? 'success' : getCurrentReleaseStatus(product) === 'yellow' ? 'warning' : 'error'}
-                      className={classes.statusChip}
-                    />
-                  </Box>
-                  
-                  {/* Health Score Progress */}
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="body2" gutterBottom>
-                      Health Score: {product.health_score || 0}%
+          {getFilteredProducts().map((product) => {
+            const statusData = getProductStatusData(product);
+            return (
+              <Grid item xs={12} md={6} lg={4} key={product.product_uuid}>
+                <Card className={classes.productCard}>
+                  <CardContent>
+                    {/* Product Name and Overall Status */}
+                    <Box className={classes.statusIndicator}>
+                      <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                        {product.name}
+                      </Typography>
+                      <Tooltip title={`Overall Status: ${getStatusLabel(statusData.overall)}`}>
+                        <Chip 
+                          size="small" 
+                          icon={getStatusIcon(statusData.overall)}
+                          label={getStatusLabel(statusData.overall)} 
+                          style={{ 
+                            backgroundColor: getStatusColor(statusData.overall),
+                            color: 'white',
+                            fontWeight: 'bold'
+                          }}
+                        />
+                      </Tooltip>
+                    </Box>
+
+                    <Typography variant="body2" color="text.secondary" paragraph>
+                      {product.description || 'No description available'}
                     </Typography>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={product.health_score || 0}
-                      color={getProductStatus(product) === 'green' ? 'success' : getProductStatus(product) === 'yellow' ? 'warning' : 'error'}
-                    />
-                  </Box>
-                </CardContent>
-                
-                <CardActions>
-                  <Tabs 
-                    value={0} 
-                    variant="scrollable" 
-                    scrollButtons="auto"
-                    className={classes.productNavigation}
-                  >
-                    <Tab 
-                      icon={<BacklogIcon />} 
-                      label="Backlog" 
-                      onClick={() => navigateToBacklog(product)}
-                    />
-                    <Tab 
-                      icon={<ReportIcon />} 
-                      label="Report" 
-                      onClick={() => navigateToReport(product)}
-                    />
-                    <Tab 
-                      icon={<ReleaseIcon />} 
-                      label="Releases" 
-                      onClick={() => navigateToReleases(product)}
-                    />
-                  </Tabs>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
+                    
+                    {/* Detailed Status Breakdown */}
+                    <Box className={classes.statusDetails}>
+                      <Tooltip title={`Timeline: ${statusData.details.timeline.daysRemaining ? 
+                        `${statusData.details.timeline.daysRemaining} days remaining` : 'No timeline set'}`}>
+                        <Chip 
+                          size="small" 
+                          label="Timeline"
+                          className={classes.miniStatusChip}
+                          style={{ 
+                            backgroundColor: getStatusColor(statusData.timeline),
+                            color: 'white'
+                          }}
+                        />
+                      </Tooltip>
+                      
+                      <Tooltip title={`Budget: ${statusData.details.budget.budgetUtilization}% utilized`}>
+                        <Chip 
+                          size="small" 
+                          label="Budget"
+                          className={classes.miniStatusChip}
+                          style={{ 
+                            backgroundColor: getStatusColor(statusData.budget),
+                            color: 'white'
+                          }}
+                        />
+                      </Tooltip>
+                      
+                      <Tooltip title={`Resources: ${statusData.details.resources.activeTeamMembers} active team members`}>
+                        <Chip 
+                          size="small" 
+                          label="Team"
+                          className={classes.miniStatusChip}
+                          style={{ 
+                            backgroundColor: getStatusColor(statusData.resources),
+                            color: 'white'
+                          }}
+                        />
+                      </Tooltip>
+                    </Box>
+                    
+                    {/* Health Score Progress */}
+                    <Box className={classes.healthScore}>
+                      <Typography variant="body2" gutterBottom>
+                        Health Score: {statusData.score}%
+                      </Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={statusData.score}
+                        style={{ 
+                          backgroundColor: '#e0e0e0',
+                          '& .MuiLinearProgress-bar': {
+                            backgroundColor: getStatusColor(statusData.overall)
+                          }
+                        }}
+                        sx={{
+                          '& .MuiLinearProgress-bar': {
+                            backgroundColor: getStatusColor(statusData.overall)
+                          }
+                        }}
+                      />
+                    </Box>
+
+                    {/* Quick Stats */}
+                    <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'text.secondary' }}>
+                      <span>Features: {statusData.details.features.completed || 0}/{statusData.details.features.total || 0}</span>
+                      <span>Issues: {statusData.details.issues.completed || 0}/{statusData.details.issues.total || 0}</span>
+                      <span>Releases: {statusData.details.releases.completed || 0}/{statusData.details.releases.total || 0}</span>
+                    </Box>
+                  </CardContent>
+                  
+                  <CardActions>
+                    <Tabs 
+                      value={0} 
+                      variant="scrollable" 
+                      scrollButtons="auto"
+                      className={classes.productNavigation}
+                    >
+                      <Tab 
+                        icon={<BacklogIcon />} 
+                        label="Backlog" 
+                        onClick={() => navigateToBacklog(product)}
+                      />
+                      <Tab 
+                        icon={<ReportIcon />} 
+                        label="Report" 
+                        onClick={() => navigateToReport(product)}
+                      />
+                      <Tab 
+                        icon={<ReleaseIcon />} 
+                        label="Releases" 
+                        onClick={() => navigateToReleases(product)}
+                      />
+                    </Tabs>
+                  </CardActions>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
       )}
 

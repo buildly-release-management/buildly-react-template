@@ -1,0 +1,43 @@
+// Production environment configuration for browser runtime
+// This file should be generated/updated during production deployment
+// DO NOT commit actual tokens/secrets to Git
+
+window.env = {
+  // Production API endpoints
+  API_URL: "https://labs-api.buildly.io/",
+  PRODUCT_SERVICE_URL: "https://labs-product.buildly.io/",
+  RELEASE_SERVICE_URL: "https://labs-release.buildly.io/",
+  BABBLE_CHATBOT_URL: "https://labs-babble.buildly.io/chatbot",
+  
+  // OAuth Configuration
+  OAUTH_CLIENT_ID: "your-production-oauth-client-id",
+  OAUTH_TOKEN_URL: "https://labs-api.buildly.io/token/",
+  
+  // Third-party Services
+  GITHUB_CLIENT_ID: "your-production-github-client-id",
+  TRELLO_API_KEY: "your-production-trello-api-key",
+  STRIPE_KEY: "pk_live_your-production-stripe-key",
+  
+  // Service Tokens
+  PRODUCT_SERVICE_TOKEN: "your-production-product-service-token",
+  RELEASE_SERVICE_TOKEN: "your-production-release-service-token",
+  BOT_API_KEY: "your-production-bot-api-key",
+  
+  // External Services
+  FEEDBACK_SHEET: "https://sheet.best/api/sheets/your-production-sheet-id",
+  FREE_COUPON_CODE: "your-production-coupon-code",
+  
+  // Domain and Production Settings
+  HOSTNAME: "labs.buildly.io",
+  PRODUCTION: true
+};
+
+// Production Performance Optimizations Enabled:
+// ✅ Extended cache times (10-30 minutes)
+// ✅ Mutation retries (2-3 attempts)  
+// ✅ Disabled refetch on window focus
+// ✅ Exponential backoff for failed requests
+// ✅ Minimal console logging
+// ✅ Google Analytics tracking
+// ✅ Service worker for offline support
+// ✅ Optimized bundle with code splitting

@@ -2,6 +2,7 @@ import { useQuery } from 'react-query';
 import { useContext } from 'react';
 import { UserContext } from '@context/User.context';
 import useAlert from '@hooks/useAlert';
+import { getCacheSettingsFor } from '@utils/performanceConfig';
 
 /**
  * Custom hook to fetch organization members for the current user's organization
@@ -37,10 +38,9 @@ export const useOrganizationMembers = () => {
       }));
     },
     { 
-      refetchOnWindowFocus: false, 
       enabled: !!organizationUuid,
-      staleTime: 5 * 60 * 1000, // 5 minutes cache
-      cacheTime: 10 * 60 * 1000, // 10 minutes cache
+      // Use production-optimized cache settings
+      ...getCacheSettingsFor.organizationMembers()
     }
   );
 };

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { getOptimizedCacheSettings } from '@utils/performanceConfig';
 import App from './App';
 import './i18n';
 import './index.css';
@@ -29,7 +30,19 @@ if (window.env.PRODUCTION) {
 
 const stripePromise = loadStripe(window.env.STRIPE_KEY);
 
-const queryClient = new QueryClient();
+// Production-optimized QueryClient configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Use centralized performance configuration
+      ...getOptimizedCacheSettings(),
+    },
+    mutations: {
+      retry: window.env.PRODUCTION ? 2 : 0, // Retry failed mutations in production
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    },
+  },
+});
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <QueryClientProvider client={queryClient}>

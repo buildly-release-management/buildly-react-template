@@ -36,6 +36,8 @@ import monolith from '@assets/architecture-suggestions/GCP - Monolithic.png';
 import multiCloud from '@assets/architecture-suggestions/GCP - MicroServices w_ DataPipeline.png';
 import microApp from '@assets/architecture-suggestions/Digital Ocean - MicroApp w_ FrontEnd.png';
 import { addColorsAndIcons, getReleaseBudgetData, generateAIFeatureEstimates, generateAIBudgetEstimate } from './utils';
+import { calculateProductStatus, generateStatusReport, getStatusColor, getStatusLabel } from '@utils/productStatus';
+import useOrganizationMembers from '@hooks/useOrganizationMembers';
 import TeamConfigModal from '@components/TeamConfigModal/TeamConfigModal';
 
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -71,11 +73,15 @@ const Insights = () => {
 
   // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState({
+    status: true,
     architecture: true,
     timelines: true,
     budget: true,
     productivity: false
   });
+
+  // Get organization members for status analysis
+  const { data: organizationMembers = [] } = useOrganizationMembers();
 
   // Handle section toggle
   const handleSectionToggle = (section) => {
@@ -95,7 +101,7 @@ const Insights = () => {
         if (data && data.length > 0) {
           // Check if the current selectedProduct exists in the available products
           if (selectedProduct && !data.find(p => p.product_uuid === selectedProduct)) {
-            console.warn('Insights: Selected product UUID not found in available products:', selectedProduct);
+            // Selected product UUID not found in available products
           }
         }
         
@@ -106,8 +112,7 @@ const Insights = () => {
         }
       },
       onError: (error) => {
-        console.error('Insights: Error loading products:', error);
-        console.error('Insights: This suggests the product service might be down or unreachable');
+        // Error loading products - product service might be down or unreachable
       }
     },
   );
@@ -329,7 +334,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
       displayAlert('success', 'Team assistance request sent successfully! Our team will contact you soon.');
       
     } catch (error) {
-      console.error('Error sending team help request:', error);
       displayAlert('error', 'Failed to send team assistance request. Please try again.');
     }
   };
@@ -347,7 +351,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
       };
       emailReportMutation(emailData);
     } catch (error) {
-      console.log(error);
+      // Error sending email report
     }
   };
 
@@ -492,19 +496,11 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
 
           releaseReport.release_data = enhancedReleases;
 
-          console.log('Insights: Final release data with icons:', releaseReport.release_data.map(r => ({
-            name: r.name,
-            icon: r.icon?.name || 'Unknown',
-            features: r.features?.length || 0,
-            issues: r.issues?.length || 0
-          })));
-
           // set release data - use the actual array, not the entire report object
           setReleaseData(releaseReport.release_data);
         }
       }
     } else {
-      console.log('Insights: No product selected or product is 0');
       displayReport = false;
     }
     };
@@ -536,9 +532,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
         
         releaseData.forEach(release => {
           const releaseName = release.name || release.release_name;
-          if (releaseName && !updated[releaseName]) {
-            console.log('Insights: Creating default budget estimate for release:', releaseName);
-            
+          if (releaseName && !updated[releaseName]) {            
             // Calculate default timeline weeks based on release duration or default to 12 weeks
             const defaultWeeks = release.duration?.weeks || 12;
             
@@ -568,13 +562,10 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
   // Fetch Buildly open source tools from GitHub
   useEffect(() => {
     const fetchBuildlyTools = async () => {
-      try {
-        console.log('Insights: Fetching Buildly GitHub tools...');
-        
+      try {        
         // First, try to fetch from buildly-marketplace organization with rate limit handling
         let marketplaceTools = [];
         try {
-          console.log('Fetching from buildly-marketplace organization...');
           const marketplaceResponse = await fetch('https://api.github.com/orgs/buildly-marketplace/repos?per_page=10', {
             headers: {
               'Accept': 'application/vnd.github.v3+json',
@@ -605,14 +596,14 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                   organization: 'buildly-marketplace'
                 });
               } catch (error) {
-                console.warn(`Failed to process marketplace tool ${repo.name}:`, error);
+                // Failed to process marketplace tool
               }
             }
           } else if (marketplaceResponse.status === 403) {
-            console.warn('GitHub API rate limit reached for marketplace organization');
+            // GitHub API rate limit reached for marketplace organization
           }
         } catch (error) {
-          console.warn('Failed to fetch from buildly-marketplace organization:', error);
+          // Failed to fetch from buildly-marketplace organization
         }
         
         // Enhanced fallback data with realistic GitHub repo information
@@ -703,9 +694,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
         
         openSourceTools = openSourceFallback;
         
-        if (premiumTools.length < 2) {
-          console.log('Using fallback premium tools due to API limitations...');
-          
+        if (premiumTools.length < 2) {          
           // Add fallback premium tools, avoiding duplicates
           const existingNames = new Set(premiumTools.map(tool => tool.name));
           const additionalPremiumTools = premiumFallback.filter(tool => !existingNames.has(tool.name));
@@ -734,13 +723,9 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
           .sort((a, b) => (b.relevance_score || 0) - (a.relevance_score || 0))
           .slice(0, 4);
         
-        console.log('Insights: Fetched open source tools:', validOpenSourceTools.length);
-        console.log('Insights: Fetched premium tools:', validPremiumTools.length);
         setBuildlyTools(validOpenSourceTools);
         setMarketplaceTools(validPremiumTools);
-      } catch (error) {
-        console.error('Insights: Error fetching buildly tools:', error);
-        
+      } catch (error) {        
         // Ultimate fallback with essential tools
         setBuildlyTools([
           {
@@ -836,7 +821,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
         displayAlert('success', 'PDF report downloaded successfully!');
       })
       .catch((error) => {
-        console.error('Error downloading PDF:', error);
         displayAlert('error', 'Failed to download PDF report. Please try again.');
       });
 
@@ -863,15 +847,12 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
 
   // Handle team configuration
   const handleConfigureTeam = (release) => {
-    console.log('Configure team for release:', release.name);
     setSelectedRelease(release);
     setTeamModalOpen(true);
   };
 
   // Handle AI budget estimation
-  const handleAIEstimate = async (release) => {
-    console.log('Generate AI estimate for release:', release.name);
-    
+  const handleAIEstimate = async (release) => {    
     try {
       setBudgetLoading(prev => ({ ...prev, [release.name]: true }));
       
@@ -886,7 +867,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
       
       displayAlert('success', `AI budget estimate generated for ${release.name}`);
     } catch (error) {
-      console.error('Failed to generate AI estimate:', error);
       displayAlert('error', 'Failed to generate AI budget estimate');
     } finally {
       setBudgetLoading(prev => ({ ...prev, [release.name]: false }));
@@ -944,7 +924,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
 
   // Handle saving budget for entire product
   const handleSaveEntireProduct = async () => {
-    console.log('Save budget for entire product');
     setBudgetLoading(prev => ({ ...prev, saveAll: true }));
     
     try {
@@ -962,17 +941,12 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
         last_updated: new Date().toISOString()
       };
 
-      console.log('Attempting to save budget data via new API:', budgetData);
-
       // Use the new budget API mutation
       await saveBudgetMutation.mutateAsync(budgetData);
       
-      console.log('Budget saved successfully via budget API');
       displayAlert('success', 'Budget saved for entire product successfully!');
       
-    } catch (error) {
-      console.error('Error saving budget via API:', error);
-      
+    } catch (error) {      
       // Fallback to localStorage if API fails
       try {
         // Recreate budgetData for localStorage since it's scoped to the try block
@@ -998,7 +972,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
         
         displayAlert('warning', 'Budget saved locally. It will sync when the backend is available.');
       } catch (localError) {
-        console.error('Failed to save to localStorage:', localError);
         displayAlert('error', 'Failed to save budget. Please try again.');
       }
     } finally {
@@ -1008,7 +981,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
 
   // Handle saving budget template for future releases
   const handleSaveFutureTemplate = async () => {
-    console.log('Save budget template for future releases');
     setBudgetLoading(prev => ({ ...prev, saveTemplate: true }));
 
     try {
@@ -1037,8 +1009,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
         created_by: user?.core_user_uuid
       };
 
-      console.log('Attempting to save budget template:', template);
-
       // Save template to localStorage (since organization update doesn't exist for templates)
       const localTemplateKey = `budget_template_${user.organization.organization_uuid}`;
       const existingTemplates = JSON.parse(localStorage.getItem(localTemplateKey) || '[]');
@@ -1063,11 +1033,9 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
       
       localStorage.setItem(localTemplateKey, JSON.stringify(existingTemplates));
       
-      console.log('Budget template saved successfully to localStorage');
       displayAlert('success', 'Budget template saved for future releases!');
       
     } catch (error) {
-      console.error('Error saving budget template:', error);
       displayAlert('error', 'Failed to save budget template. Please try again.');
     } finally {
       setBudgetLoading(prev => ({ ...prev, saveTemplate: false }));
@@ -1147,6 +1115,271 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
               </Menu>
             </section>
           </div>
+
+          {/* Product Status Dashboard Section */}
+          <Accordion expanded={expandedSections.status} onChange={() => handleSectionToggle('status')}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="status-content"
+              id="status-header"
+              sx={{
+                backgroundColor: '#0C5595',
+                color: 'white',
+                '& .MuiAccordionSummary-expandIconWrapper': {
+                  color: 'white',
+                },
+                '&:hover': {
+                  backgroundColor: '#0A4A85',
+                },
+              }}
+            >
+              <MuiTypography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
+                📊 Product Status Dashboard
+              </MuiTypography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ padding: 2 }}>
+              {(() => {
+                // Generate status data for current product
+                const mockReleases = [
+                  { 
+                    name: 'v1.0', 
+                    status: 'completed', 
+                    target_date: '2024-01-15',
+                    team: [
+                      { role: 'Frontend Developer', count: 1, weeklyRate: 2500 },
+                      { role: 'Backend Developer', count: 1, weeklyRate: 2800 }
+                    ]
+                  },
+                  { 
+                    name: 'v1.1', 
+                    status: 'active', 
+                    target_date: '2024-03-01',
+                    duration: { weeks: 12 },
+                    team: [
+                      { role: 'Frontend Developer', count: 2, weeklyRate: 2500 },
+                      { role: 'Backend Developer', count: 1, weeklyRate: 2800 },
+                      { role: 'QA Engineer', count: 1, weeklyRate: 2200 }
+                    ]
+                  }
+                ];
+                
+                const mockFeatures = Array.from({ length: 15 }, (_, i) => ({
+                  feature_uuid: `feat-${i}`,
+                  name: `Feature ${i + 1}`,
+                  status: i < 8 ? 'completed' : i < 12 ? 'in_progress' : 'planned',
+                  end_date: `2024-0${Math.floor(Math.random() * 3) + 1}-15`
+                }));
+
+                const mockIssues = Array.from({ length: 8 }, (_, i) => ({
+                  issue_uuid: `issue-${i}`,
+                  name: `Issue ${i + 1}`,
+                  status: i < 5 ? 'completed' : 'in_progress'
+                }));
+
+                const mockBudget = {
+                  total_budget: 85000,
+                  spent_budget: 52000
+                };
+
+                const statusData = calculateProductStatus(
+                  productData, 
+                  mockReleases, 
+                  mockFeatures, 
+                  mockIssues, 
+                  mockBudget, 
+                  organizationMembers
+                );
+
+                const statusReport = generateStatusReport(productData, statusData);
+
+                return (
+                  <div className="row">
+                    {/* Overall Status Card */}
+                    <div className="col-md-4">
+                      <Card className="h-100" style={{ 
+                        border: `3px solid ${getStatusColor(statusData.overall)}`,
+                        borderRadius: '8px'
+                      }}>
+                        <Card.Header style={{ 
+                          backgroundColor: getStatusColor(statusData.overall),
+                          color: 'white',
+                          fontWeight: 'bold',
+                          textAlign: 'center'
+                        }}>
+                          🎯 Overall Status
+                        </Card.Header>
+                        <Card.Body style={{ textAlign: 'center' }}>
+                          <h2 style={{ 
+                            color: getStatusColor(statusData.overall),
+                            fontSize: '3rem',
+                            margin: '20px 0'
+                          }}>
+                            {statusData.score}%
+                          </h2>
+                          <h4 style={{ color: getStatusColor(statusData.overall), marginBottom: '20px' }}>
+                            {getStatusLabel(statusData.overall)}
+                          </h4>
+                          <div style={{ fontSize: '0.9rem', color: '#6c757d' }}>
+                            {statusData.overall === 'green' && '✅ Project is on track'}
+                            {statusData.overall === 'yellow' && '⚠️ Project needs attention'}
+                            {statusData.overall === 'red' && '🚨 Critical issues require immediate action'}
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </div>
+
+                    {/* Status Breakdown */}
+                    <div className="col-md-8">
+                      <Card className="h-100">
+                        <Card.Header style={{ 
+                          backgroundColor: '#f8f9fa',
+                          fontWeight: 'bold'
+                        }}>
+                          📈 Status Breakdown
+                        </Card.Header>
+                        <Card.Body>
+                          <div className="row">
+                            <div className="col-md-4">
+                              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                <div style={{ 
+                                  width: '60px',
+                                  height: '60px',
+                                  borderRadius: '50%',
+                                  backgroundColor: getStatusColor(statusData.timeline),
+                                  margin: '0 auto 10px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'white',
+                                  fontSize: '1.5rem'
+                                }}>
+                                  ⏰
+                                </div>
+                                <h6>Timeline</h6>
+                                <div style={{ color: getStatusColor(statusData.timeline), fontWeight: 'bold' }}>
+                                  {getStatusLabel(statusData.timeline)}
+                                </div>
+                                <small style={{ color: '#6c757d' }}>
+                                  {statusData.details.timeline.daysRemaining !== null ? 
+                                    `${statusData.details.timeline.daysRemaining} days remaining` : 'No timeline set'}
+                                </small>
+                              </div>
+                            </div>
+                            
+                            <div className="col-md-4">
+                              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                <div style={{ 
+                                  width: '60px',
+                                  height: '60px',
+                                  borderRadius: '50%',
+                                  backgroundColor: getStatusColor(statusData.budget),
+                                  margin: '0 auto 10px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'white',
+                                  fontSize: '1.5rem'
+                                }}>
+                                  💰
+                                </div>
+                                <h6>Budget</h6>
+                                <div style={{ color: getStatusColor(statusData.budget), fontWeight: 'bold' }}>
+                                  {getStatusLabel(statusData.budget)}
+                                </div>
+                                <small style={{ color: '#6c757d' }}>
+                                  {statusData.details.budget.budgetUtilization}% utilized
+                                </small>
+                              </div>
+                            </div>
+                            
+                            <div className="col-md-4">
+                              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                <div style={{ 
+                                  width: '60px',
+                                  height: '60px',
+                                  borderRadius: '50%',
+                                  backgroundColor: getStatusColor(statusData.resources),
+                                  margin: '0 auto 10px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'white',
+                                  fontSize: '1.5rem'
+                                }}>
+                                  👥
+                                </div>
+                                <h6>Resources</h6>
+                                <div style={{ color: getStatusColor(statusData.resources), fontWeight: 'bold' }}>
+                                  {getStatusLabel(statusData.resources)}
+                                </div>
+                                <small style={{ color: '#6c757d' }}>
+                                  {statusData.details.resources.activeTeamMembers} active members
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Progress Stats */}
+                          <div className="row mt-3">
+                            <div className="col-md-4">
+                              <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
+                                  {statusData.details.features.completed || 0}/{statusData.details.features.total || 0}
+                                </div>
+                                <small>Features Complete</small>
+                              </div>
+                            </div>
+                            <div className="col-md-4">
+                              <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
+                                  {statusData.details.issues.completed || 0}/{statusData.details.issues.total || 0}
+                                </div>
+                                <small>Issues Resolved</small>
+                              </div>
+                            </div>
+                            <div className="col-md-4">
+                              <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
+                                  {statusData.details.releases.completed || 0}/{statusData.details.releases.total || 0}
+                                </div>
+                                <small>Releases Done</small>
+                              </div>
+                            </div>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </div>
+
+                    {/* Recommendations */}
+                    {statusReport.recommendations && statusReport.recommendations.length > 0 && (
+                      <div className="col-12 mt-3">
+                        <Card>
+                          <Card.Header style={{ 
+                            backgroundColor: '#fff3cd',
+                            borderColor: '#ffeaa7',
+                            fontWeight: 'bold'
+                          }}>
+                            💡 Recommendations
+                          </Card.Header>
+                          <Card.Body>
+                            <div className="row">
+                              {statusReport.recommendations.map((recommendation, index) => (
+                                <div key={index} className="col-md-6">
+                                  <Alert variant="warning" style={{ marginBottom: '10px', fontSize: '0.9rem' }}>
+                                    {recommendation}
+                                  </Alert>
+                                </div>
+                              ))}
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </AccordionDetails>
+          </Accordion>
 
           {/* Architecture & Design Section */}
           <Accordion expanded={expandedSections.architecture} onChange={() => handleSectionToggle('architecture')}>
@@ -1357,7 +1590,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                             />
                           ) : (
                             <div>
-                              {console.log('Insights: Gantt data being passed:', releaseData)}
                               <GanttChart
                                 releases={releaseData}
                                 onReleaseClick={handleReleaseClick}

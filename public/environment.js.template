@@ -22,5 +22,15 @@ STRIPE_KEY: "your-stripe-key",
 BOT_API_KEY: "your-bot-api-key",
 HOSTNAME: "labs.buildly.dev",
 BABBLE_CHATBOT_URL: "https://labs-babble.buildly.dev/chatbot",
-PRODUCTION: false
+
+// Production mode settings - set to true for production deployment
+PRODUCTION: false,
+
+// Performance optimization settings (automatically optimized based on PRODUCTION flag)
+// These are used by React Query and other performance-sensitive components:
+// - PRODUCTION=true: Longer cache times, more retries, reduced logging
+// - PRODUCTION=false: Shorter cache times, fewer retries, more logging for debugging
+CACHE_STALE_TIME: null, // Auto-calculated based on PRODUCTION flag
+CACHE_TIME: null,       // Auto-calculated based on PRODUCTION flag
+RETRY_COUNT: null,      // Auto-calculated based on PRODUCTION flag
 };
