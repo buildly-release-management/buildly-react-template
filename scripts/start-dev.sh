@@ -52,7 +52,11 @@ echo "✅ Node.js version: $(node --version)"
 # Check if node_modules exists
 if [ ! -d "node_modules" ]; then
     echo "📦 Installing dependencies..."
-    yarn install
+    if command -v yarn &> /dev/null; then
+        yarn install
+    else
+        npm install
+    fi
 fi
 
 echo "🔧 Loading environment variables..."
@@ -90,4 +94,8 @@ echo "🌐 Starting development server on http://localhost:3000"
 echo "📊 Dashboard will be available at http://localhost:3000/app/dashboard"
 
 # Start the development server
-yarn start
+if command -v yarn &> /dev/null; then
+    yarn start
+else
+    npm start
+fi

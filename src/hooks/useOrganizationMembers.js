@@ -3,6 +3,7 @@ import { useContext } from 'react';
 import { UserContext } from '@context/User.context';
 import useAlert from '@hooks/useAlert';
 import { getCacheSettingsFor } from '@utils/performanceConfig';
+import { getCoreuserQuery } from '@react-query/queries/coreuser/getCoreuserQuery';
 
 /**
  * Custom hook to fetch organization members for the current user's organization
@@ -16,7 +17,6 @@ export const useOrganizationMembers = () => {
   return useQuery(
     ['organizationMembers', organizationUuid],
     async () => {
-      const { getCoreuserQuery } = await import('@react-query/queries/coreuser/getCoreuserQuery');
       const allUsers = await getCoreuserQuery(displayAlert);
       
       // Filter users by current organization and only active users

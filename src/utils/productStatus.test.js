@@ -3,7 +3,7 @@
  * Simple test file to verify the status calculation logic
  */
 
-import { calculateProductStatus, getStatusColor, getStatusLabel } from '../src/utils/productStatus';
+import { calculateProductStatus, getStatusColor, getStatusLabel } from './productStatus';
 
 // Test data
 const mockProduct = {

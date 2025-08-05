@@ -362,8 +362,8 @@ const getStatusScore = (status) => {
  * Helper function to convert score to status
  */
 const getStatusFromScore = (score) => {
-  if (score >= 80) return 'green';
-  if (score >= 60) return 'yellow';
+  if (score >= 80) {return 'green';}
+  if (score >= 60) {return 'yellow';}
   return 'red';
 };
 

@@ -56,7 +56,7 @@ export const extractUserUuid = (userContext) => {
  * @returns {boolean} - True if valid UUID format
  */
 export const isValidUuid = (uuid) => {
-  if (!uuid || typeof uuid !== 'string') return false;
+  if (!uuid || typeof uuid !== 'string') {return false;}
   
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
@@ -72,11 +72,11 @@ export const getCurrentUserUuid = (userContext) => {
   const isValid = isValidUuid(uuid);
   
   let source = 'unknown';
-  if (userContext?.core_user_uuid === uuid) source = 'user_context_core';
-  else if (userContext?.user_uuid === uuid) source = 'user_context_user';
-  else if (userContext?.user_id === uuid) source = 'user_context_id';
-  else if (userContext?.id === uuid) source = 'user_context_generic_id';
-  else source = 'jwt_token';
+  if (userContext?.core_user_uuid === uuid) {source = 'user_context_core';}
+  else if (userContext?.user_uuid === uuid) {source = 'user_context_user';}
+  else if (userContext?.user_id === uuid) {source = 'user_context_id';}
+  else if (userContext?.id === uuid) {source = 'user_context_generic_id';}
+  else {source = 'jwt_token';}
   
   return {
     uuid,

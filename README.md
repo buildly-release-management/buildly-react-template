@@ -198,6 +198,28 @@ This repository enforces quality gates to maintain code standards:
 
 ## Troubleshooting
 
+### Push Rejected? Quality Gates Enforced! 🛡️
+
+**If your push is rejected with "remote rejected" or "fatal error in commit_refs":**
+
+This repository enforces quality gates. Your push was rejected because code validation failed.
+
+**Quick Fix:**
+```bash
+# 1. See what's failing
+./scripts/pre-push-check.sh
+
+# 2. Fix the issues shown
+yarn run lint --fix
+yarn run test
+yarn run build
+
+# 3. Try pushing again
+git push origin master
+```
+
+**📖 Detailed Help:** See `devdocs/PUSH_REJECTION_GUIDE.md` for complete troubleshooting steps.
+
 ### Local Development Issues
 
 If you encounter issues starting the development server:
