@@ -6,6 +6,22 @@ export const useCreateBusinessTaskMutation = (productUuid, displayAlert) => {
 
   return useMutation(
     async (taskData) => {
+      // Validate required fields before sending to API
+      if (!taskData.assigned_by_user_uuid) {
+        throw new Error('assigned_by_user_uuid is required but missing from task data');
+      }
+      
+      if (!taskData.product_uuid) {
+        throw new Error('product_uuid is required but missing from task data');
+      }
+
+      console.log('Creating business task with validated data:', {
+        assigned_by_user_uuid: taskData.assigned_by_user_uuid,
+        product_uuid: taskData.product_uuid,
+        title: taskData.title,
+        assigned_to_user_uuid: taskData.assigned_to_user_uuid
+      });
+
       const response = await httpService.makeRequest(
         'post',
         `${window.env.API_URL}product/business-tasks/`,
@@ -27,7 +43,12 @@ export const useCreateBusinessTaskMutation = (productUuid, displayAlert) => {
         console.error('useCreateBusinessTaskMutation: Error response:', error?.response?.data);
         
         let errorMessage = 'Failed to create business task';
-        if (error?.response?.data) {
+        
+        // Handle specific database constraint violations
+        if (error?.message?.includes('assigned_by_user_uuid') || 
+            error?.response?.data?.detail?.includes('assigned_by_user_uuid')) {
+          errorMessage = 'User session error: The task creator information is missing. Please refresh the page and try again.';
+        } else if (error?.response?.data) {
           if (typeof error.response.data === 'string') {
             errorMessage = error.response.data;
           } else if (error.response.data.detail) {

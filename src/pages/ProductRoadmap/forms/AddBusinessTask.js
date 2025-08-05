@@ -85,6 +85,14 @@ const AddBusinessTask = ({ history, location }) => {
   const organizationUuid = organization?.organization_uuid;
   const { displayAlert } = useAlert();
 
+  // Debug user context on component mount
+  useEffect(() => {
+    console.log('AddBusinessTask: User context data:', user);
+    console.log('AddBusinessTask: User core_user_uuid:', user?.core_user_uuid);
+    console.log('AddBusinessTask: User id:', user?.id);
+    console.log('AddBusinessTask: User user_uuid:', user?.user_uuid);
+  }, [user]);
+
   const [openFormModal, setFormModal] = useState(true);
   const [openConfirmModal, setConfirmModal] = useState(false);
   const { product_uuid, release_uuid } = location && location.state;
@@ -195,6 +203,7 @@ const AddBusinessTask = ({ history, location }) => {
     }
 
     if (!user?.core_user_uuid) {
+      console.error('AddBusinessTask: Missing core_user_uuid in user context:', user);
       displayAlert('error', 'User session error: Please refresh and try again');
       return;
     }
@@ -204,6 +213,16 @@ const AddBusinessTask = ({ history, location }) => {
       return;
     }
 
+    // Ensure we have all required fields for the database
+    const requiredUserUuid = user.core_user_uuid || user.user_uuid || user.user_id || user.id;
+    if (!requiredUserUuid) {
+      console.error('AddBusinessTask: No valid user UUID found in user context:', user);
+      displayAlert('error', 'User identification error: Please log out and log back in');
+      return;
+    }
+
+    console.log('AddBusinessTask: Using user UUID for assigned_by_user_uuid:', requiredUserUuid);
+
     const taskData = {
       product_uuid,
       title: title.value.trim(),
@@ -211,7 +230,7 @@ const AddBusinessTask = ({ history, location }) => {
       category: selectedCategory || 'general', // Provide default value
       priority: priority || 'medium', // Ensure priority has a value
       status: status || 'not_started', // Ensure status has a value
-      assigned_by_user_uuid: user.core_user_uuid,
+      assigned_by_user_uuid: requiredUserUuid, // Use the validated UUID
       start_date: new Date().toISOString(),
       progress_percentage: progressPercentage || 0,
       risk_level: riskLevel || 'low', // Provide default value

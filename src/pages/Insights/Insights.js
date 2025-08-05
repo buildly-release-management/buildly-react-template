@@ -68,8 +68,6 @@ const Insights = () => {
   const [selectedRelease, setSelectedRelease] = useState(null);
   const [budgetEstimates, setBudgetEstimates] = useState({});
   const [budgetLoading, setBudgetLoading] = useState({});
-  const [releasePunchlists, setReleasePunchlists] = useState({});
-  const [punchlistInputs, setPunchlistInputs] = useState({});
 
   // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState({
@@ -895,53 +893,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
     }
   };
 
-  // Handle adding punchlist item
-  const handleAddPunchlistItem = (releaseId, description) => {
-    if (!description.trim()) return;
-
-    const newItem = {
-      id: Date.now(),
-      description: description.trim(),
-      status: 'Open',
-      priority: 'Medium',
-      created_date: new Date().toISOString().split('T')[0],
-      assignee: null
-    };
-
-    setReleasePunchlists(prev => ({
-      ...prev,
-      [releaseId]: [...(prev[releaseId] || []), newItem]
-    }));
-
-    // Clear the input
-    setPunchlistInputs(prev => ({
-      ...prev,
-      [releaseId]: ''
-    }));
-
-    displayAlert('success', 'Punchlist item added successfully');
-  };
-
-  // Handle updating punchlist item status
-  const handleUpdatePunchlistStatus = (releaseId, itemId, newStatus) => {
-    setReleasePunchlists(prev => ({
-      ...prev,
-      [releaseId]: (prev[releaseId] || []).map(item =>
-        item.id === itemId ? { ...item, status: newStatus } : item
-      )
-    }));
-  };
-
-  // Handle removing punchlist item
-  const handleRemovePunchlistItem = (releaseId, itemId) => {
-    setReleasePunchlists(prev => ({
-      ...prev,
-      [releaseId]: (prev[releaseId] || []).filter(item => item.id !== itemId)
-    }));
-    
-    displayAlert('success', 'Punchlist item removed');
-  };
-
   // Handle team configuration save
   const handleTeamSave = (teamConfig) => {
     if (!selectedRelease) return;
@@ -1214,7 +1165,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                 },
               }}
             >
-              <MuiTypography variant="h6" sx={{ fontWeight: 'bold' }}>
+              <MuiTypography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
                 🏗️ Architecture & Design
               </MuiTypography>
             </AccordionSummary>
@@ -1538,7 +1489,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                 },
               }}
             >
-              <MuiTypography variant="h6" sx={{ fontWeight: 'bold' }}>
+              <MuiTypography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
                 💰 Budget Management
               </MuiTypography>
             </AccordionSummary>
@@ -1558,23 +1509,32 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                             }}>
                               <Card.Header style={{ 
                                 backgroundColor: release.bgColor || '#f8f9fa',
-                                color: release.bgColor === '#0C5594' || release.bgColor === '#152944' ? '#fff' : '#000',
+                                color: 'white',
                                 fontWeight: 'bold',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between'
                               }}>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', color: 'white' }}>
                                   {release.icon && (
                                     <release.icon 
                                       className="me-2" 
                                       size={18}
-                                      style={{ color: 'inherit' }}
+                                      style={{ color: 'white' }}
                                     />
                                   )}
-                                  {release.name}
+                                  <span style={{ color: 'white' }}>
+                                    {release.name} - Budget vs Actual
+                                  </span>
                                 </div>
-                                <small>{release.duration?.weeks || 0} weeks</small>
+                                <div style={{ textAlign: 'right', color: 'white' }}>
+                                  <div style={{ fontSize: '12px' }}>
+                                    Budget: {release.duration?.weeks || 0} weeks
+                                  </div>
+                                  <div style={{ fontSize: '12px' }}>
+                                    Actual: {Math.ceil((release.duration?.weeks || 0) * 1.2)} weeks
+                                  </div>
+                                </div>
                               </Card.Header>
                               <Card.Body>
                             {/* Team Composition */}
@@ -1656,6 +1616,55 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                               )}
                             </div>
 
+                            {/* Budget vs Actual Comparison */}
+                            <div className="mb-3" style={{ marginTop: '20px' }}>
+                              <h6 style={{ color: '#0C5594', marginBottom: '10px' }}>📊 Budget vs Actual</h6>
+                              <div style={{ 
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '10px',
+                                padding: '15px',
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: '6px',
+                                border: '1px solid #dee2e6'
+                              }}>
+                                <div style={{ textAlign: 'center' }}>
+                                  <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '5px' }}>
+                                    Original Budget
+                                  </div>
+                                  <div style={{ fontWeight: 'bold', color: '#28a745', fontSize: '16px' }}>
+                                    {release.duration?.weeks || 0} weeks
+                                  </div>
+                                  <div style={{ fontSize: '12px', color: '#6c757d' }}>
+                                    ${(budgetEstimates[release.name]?.total_budget || 50000).toLocaleString()}
+                                  </div>
+                                </div>
+                                <div style={{ textAlign: 'center' }}>
+                                  <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '5px' }}>
+                                    Actual/Projected
+                                  </div>
+                                  <div style={{ fontWeight: 'bold', color: '#dc3545', fontSize: '16px' }}>
+                                    {Math.ceil((release.duration?.weeks || 0) * 1.2)} weeks
+                                  </div>
+                                  <div style={{ fontSize: '12px', color: '#6c757d' }}>
+                                    ${Math.round((budgetEstimates[release.name]?.total_budget || 50000) * 1.15).toLocaleString()}
+                                  </div>
+                                </div>
+                              </div>
+                              <div style={{ 
+                                marginTop: '10px',
+                                padding: '10px',
+                                backgroundColor: '#fff3cd',
+                                borderRadius: '4px',
+                                border: '1px solid #ffeaa7',
+                                fontSize: '12px',
+                                textAlign: 'center'
+                              }}>
+                                <strong>Variance:</strong> +{Math.ceil((release.duration?.weeks || 0) * 0.2)} weeks 
+                                (+${Math.round((budgetEstimates[release.name]?.total_budget || 50000) * 0.15).toLocaleString()})
+                              </div>
+                            </div>
+
                             {/* Action Buttons */}
                             <div style={{ 
                               display: 'flex',
@@ -1703,151 +1712,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                               >
                                 📋 View Details
                               </Button>
-                            </div>
-
-                            {/* Punchlist Section */}
-                            <div style={{ 
-                              marginTop: '20px',
-                              padding: '15px',
-                              backgroundColor: '#f8f9fa',
-                              borderRadius: '6px',
-                              border: '1px solid #dee2e6'
-                            }}>
-                              <h6 style={{ 
-                                color: '#495057',
-                                marginBottom: '12px',
-                                fontWeight: 'bold'
-                              }}>
-                                🔧 Punchlist ({(releasePunchlists[release.release_uuid] || []).length} items)
-                              </h6>
-                              
-                              {/* Add new punchlist item */}
-                              <div style={{ 
-                                display: 'flex',
-                                gap: '8px',
-                                marginBottom: '12px'
-                              }}>
-                                <input
-                                  type="text"
-                                  placeholder="Add bug or issue..."
-                                  value={punchlistInputs[release.release_uuid] || ''}
-                                  onChange={(e) => setPunchlistInputs(prev => ({
-                                    ...prev,
-                                    [release.release_uuid]: e.target.value
-                                  }))}
-                                  onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                      handleAddPunchlistItem(release.release_uuid, e.target.value);
-                                    }
-                                  }}
-                                  style={{
-                                    flex: 1,
-                                    padding: '6px 10px',
-                                    border: '1px solid #ced4da',
-                                    borderRadius: '4px',
-                                    fontSize: '12px'
-                                  }}
-                                />
-                                <Button
-                                  variant="contained"
-                                  size="small"
-                                  style={{ 
-                                    backgroundColor: '#28a745',
-                                    color: 'white',
-                                    fontSize: '11px',
-                                    minWidth: 'auto',
-                                    padding: '6px 12px'
-                                  }}
-                                  onClick={() => handleAddPunchlistItem(
-                                    release.release_uuid, 
-                                    punchlistInputs[release.release_uuid] || ''
-                                  )}
-                                >
-                                  ➕
-                                </Button>
-                              </div>
-
-                              {/* Punchlist items */}
-                              <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                {(releasePunchlists[release.release_uuid] || []).length > 0 ? (
-                                  releasePunchlists[release.release_uuid].map(item => (
-                                    <div key={item.id} style={{
-                                      display: 'flex',
-                                      justifyContent: 'space-between',
-                                      alignItems: 'center',
-                                      padding: '8px 10px',
-                                      marginBottom: '4px',
-                                      backgroundColor: item.status === 'Resolved' ? '#d4edda' : '#fff',
-                                      border: '1px solid #e9ecef',
-                                      borderRadius: '4px',
-                                      fontSize: '12px'
-                                    }}>
-                                      <div style={{ flex: 1 }}>
-                                        <span style={{ 
-                                          textDecoration: item.status === 'Resolved' ? 'line-through' : 'none',
-                                          color: item.status === 'Resolved' ? '#6c757d' : '#495057'
-                                        }}>
-                                          {item.description}
-                                        </span>
-                                        <div style={{ 
-                                          color: '#6c757d', 
-                                          fontSize: '10px',
-                                          marginTop: '2px'
-                                        }}>
-                                          {item.created_date} • {item.status}
-                                        </div>
-                                      </div>
-                                      <div style={{ display: 'flex', gap: '4px' }}>
-                                        <button
-                                          onClick={() => handleUpdatePunchlistStatus(
-                                            release.release_uuid, 
-                                            item.id, 
-                                            item.status === 'Open' ? 'Resolved' : 'Open'
-                                          )}
-                                          style={{
-                                            border: 'none',
-                                            background: 'transparent',
-                                            cursor: 'pointer',
-                                            fontSize: '12px',
-                                            padding: '2px 6px',
-                                            borderRadius: '3px',
-                                            backgroundColor: item.status === 'Open' ? '#28a745' : '#ffc107'
-                                          }}
-                                          title={item.status === 'Open' ? 'Mark as Resolved' : 'Reopen'}
-                                        >
-                                          {item.status === 'Open' ? '✓' : '↻'}
-                                        </button>
-                                        <button
-                                          onClick={() => handleRemovePunchlistItem(release.release_uuid, item.id)}
-                                          style={{
-                                            border: 'none',
-                                            background: 'transparent',
-                                            cursor: 'pointer',
-                                            fontSize: '12px',
-                                            padding: '2px 6px',
-                                            borderRadius: '3px',
-                                            backgroundColor: '#dc3545',
-                                            color: 'white'
-                                          }}
-                                          title="Remove item"
-                                        >
-                                          ✕
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ))
-                                ) : (
-                                  <div style={{ 
-                                    textAlign: 'center',
-                                    color: '#6c757d',
-                                    fontStyle: 'italic',
-                                    padding: '10px',
-                                    fontSize: '12px'
-                                  }}>
-                                    No issues tracked yet
-                                  </div>
-                                )}
-                              </div>
                             </div>
                           </Card.Body>
                         </Card>
