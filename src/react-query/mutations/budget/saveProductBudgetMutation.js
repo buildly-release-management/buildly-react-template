@@ -6,12 +6,25 @@ export const useSaveProductBudgetMutation = (product_uuid, displayAlert) => {
 
   return useMutation(
     async (budgetData) => {
-      const response = await httpService.makeRequest(
-        'post',
-        `${window.env.API_URL}product/budget/by-product/${product_uuid}/`,
-        budgetData,
-      );
-      return response.data;
+      try {
+        // Try direct product service first
+        const response = await httpService.sendDirectServiceRequest(
+          `budget/by-product/${product_uuid}/`,
+          'POST',
+          budgetData,
+          'product'
+        );
+        return response.data;
+      } catch (error) {
+        // Fallback to main API if direct service fails
+        console.log('useSaveProductBudgetMutation: Direct service failed, trying main API...', error.response?.status);
+        const response = await httpService.makeRequest(
+          'post',
+          `${window.env.API_URL}product/budget/by-product/${product_uuid}/`,
+          budgetData,
+        );
+        return response.data;
+      }
     },
     {
       onSuccess: async (data) => {

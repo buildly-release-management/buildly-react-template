@@ -482,14 +482,27 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
           
           // Use direct HTTP call since we can't call hooks inside async functions
           const { httpService } = await import('@modules/http/http.service');
-          const response = await httpService.makeRequest(
-            'post',
-            `${window.env.API_URL}product/budget/by-product/${productUuid}/`,
-            budgetPayload,
-          );
-          
-          console.log('AIEnhancedProductWizard: Budget saved successfully', response.data);
-          displayAlert('success', 'Product and budget saved successfully!');
+          try {
+            // Try direct product service first
+            const response = await httpService.sendDirectServiceRequest(
+              `budget/by-product/${productUuid}/`,
+              'POST',
+              budgetPayload,
+              'product'
+            );
+            console.log('AIEnhancedProductWizard: Budget saved successfully', response.data);
+            displayAlert('success', 'Product and budget saved successfully!');
+          } catch (directError) {
+            // Fallback to main API if direct service fails
+            console.log('AIEnhancedProductWizard: Direct service failed, trying main API...', directError.response?.status);
+            const response = await httpService.makeRequest(
+              'post',
+              `${window.env.API_URL}product/budget/by-product/${productUuid}/`,
+              budgetPayload,
+            );
+            console.log('AIEnhancedProductWizard: Budget saved successfully', response.data);
+            displayAlert('success', 'Product and budget saved successfully!');
+          }
         } catch (budgetError) {
           console.error('Failed to save budget (non-blocking):', budgetError);
           // Don't fail the entire wizard for budget issues

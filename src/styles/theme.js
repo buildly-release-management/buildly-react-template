@@ -131,7 +131,7 @@ const theme = createTheme({
     '0px 10px 15px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05)', // Higher elevation
     '0px 20px 25px rgba(0, 0, 0, 0.1), 0px 8px 10px rgba(0, 0, 0, 0.04)', // Modal shadow
     '0px 25px 50px rgba(0, 0, 0, 0.15)', // Maximum elevation
-    ...Array(17).fill('none'), // Fill remaining shadow levels
+    ...Array(18).fill('0px 25px 50px rgba(0, 0, 0, 0.15)'), // Fill remaining shadow levels with max shadow
   ],
   breakpoints: {
     values: {

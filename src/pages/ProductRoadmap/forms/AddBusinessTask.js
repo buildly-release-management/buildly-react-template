@@ -104,7 +104,15 @@ const AddBusinessTask = ({ history, location }) => {
   const [selectedCustomCategory, setSelectedCustomCategory] = useState((editData && editData.custom_category) || null);
   const [priority, setPriority] = useState((editData && editData.priority) || 'medium');
   const [status, setStatus] = useState((editData && editData.status) || 'not_started');
-  const [assignedToUser, setAssignedToUser] = useState((editData && editData.assigned_to_user_uuid) || null);
+  const [assignedToUser, setAssignedToUser] = useState(() => {
+    // For edit mode, use existing assignment
+    if (editData && editData.assigned_to_user_uuid) {
+      return editData.assigned_to_user_uuid;
+    }
+    // For new tasks, default to current user if available
+    const userUuidResult = getCurrentUserUuid(user);
+    return userUuidResult.isValid ? userUuidResult.uuid : null;
+  });
   const [selectedRelease, setSelectedRelease] = useState((editData && editData.release_uuid) || release_uuid || '');
   const [releaseVersion, setReleaseVersion] = useState((editData && editData.release_version) || '');
   const [featureName, setFeatureName] = useState((editData && editData.feature_name) || '');

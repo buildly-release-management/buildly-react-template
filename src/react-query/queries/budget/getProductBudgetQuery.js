@@ -12,12 +12,24 @@ export const getProductBudgetQuery = async (product_uuid, displayAlert) => {
       };
     }
     
-    const response = await httpService.makeRequest(
-      'get',
-      `${window.env.API_URL}product/budget/by-product/${product_uuid}/`,
-    );
-    
-    return response.data;
+    try {
+      // Try direct product service first
+      const response = await httpService.sendDirectServiceRequest(
+        `budget/by-product/${product_uuid}/`,
+        'GET',
+        null,
+        'product'
+      );
+      return response.data;
+    } catch (directError) {
+      // Fallback to main API if direct service fails
+      console.log('getProductBudgetQuery: Direct service failed, trying main API...', directError.response?.status);
+      const response = await httpService.makeRequest(
+        'get',
+        `${window.env.API_URL}product/budget/by-product/${product_uuid}/`,
+      );
+      return response.data;
+    }
   } catch (error) {
     console.error('getProductBudgetQuery: Error details:', {
       message: error.message,
