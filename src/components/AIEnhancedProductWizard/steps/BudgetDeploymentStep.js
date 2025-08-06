@@ -277,13 +277,13 @@ const BudgetDeploymentStep = ({ data, setData, classes, onComplete }) => {
                           {option.type}
                           {option.recommended && <Chip label="Recommended" size="small" color="success" sx={{ ml: 1 }} />}
                         </Typography>
-                        <Typography variant="caption" color="textSecondary">
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                           Cost: {option.cost}
                         </Typography>
                       </Box>
                     </Box>
                     
-                    <Typography variant="body2" color="textSecondary" mb={2}>
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.9)' }} mb={2}>
                       {option.description}
                     </Typography>
                     
