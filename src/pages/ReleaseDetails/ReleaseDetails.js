@@ -167,20 +167,22 @@ const ReleaseDetails = ({ history }) => {
 
   // Punchlist handlers using new API
   const handleAddPunchlistItem = async () => {
-    if (!newPunchlistItem.title.trim() || !newPunchlistItem.description.trim()) {
-      displayAlert('warning', 'Please fill in both title and description');
+    // Required field validation
+    if (!newPunchlistItem.title.trim() || !newPunchlistItem.description.trim() || !productUuid || !releaseUuid) {
+      displayAlert('error', 'Missing required punchlist fields. Please fill in all required fields.');
       return;
     }
-    
     try {
-      await createPunchlistMutation.mutateAsync({
+      const payload = {
         ...newPunchlistItem,
         product_uuid: productUuid,
         release_uuid: releaseUuid,
         date_created: new Date().toISOString(),
         status: 'open'
-      });
-      
+      };
+      // Log payload for debugging
+      console.log('Submitting punchlist payload:', payload);
+      await createPunchlistMutation.mutateAsync(payload);
       // Reset form
       setNewPunchlistItem({
         title: '',
@@ -198,7 +200,6 @@ const ReleaseDetails = ({ history }) => {
         assigned_to: '',
         tags: []
       });
-      
       displayAlert('success', 'Punchlist item added successfully');
     } catch (error) {
       console.error('Error adding punchlist item:', error);

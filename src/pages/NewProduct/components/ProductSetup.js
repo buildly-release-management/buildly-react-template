@@ -302,77 +302,60 @@ const ProductSetup = ({
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const dateTime = new Date();
+    // Build third_party_tool array as required by API
     let tools = [];
-    let newFeatCred;
-    let newIssueCred;
-    switch (featuresTool.value) {
-      case 'trello': {
-        const ft = _.find(allThirdPartyToolData, (tool) => (
-          _.toLower(tool.name) === 'trello'
-          && _.toLower(tool.tool_type) === 'feature'
-        ));
-        tools = [...tools, ft?.thirdpartytool_uuid];
-        newFeatCred = {
-          third_party_tool: ft?.thirdpartytool_uuid,
-          auth_detail: trelloAuth,
-        };
-        break;
-      }
-      default:
-        break;
+    if (featuresTool.value === 'trello') {
+      const ft = _.find(allThirdPartyToolData, (tool) => (
+        _.toLower(tool.name) === 'trello' && _.toLower(tool.tool_type) === 'feature'
+      ));
+      if (ft?.thirdpartytool_uuid) tools.push(ft.thirdpartytool_uuid);
     }
-    switch (issuesTool.value) {
-      case 'github': {
-        const it = _.find(allThirdPartyToolData, (tool) => (
-          _.toLower(tool.name) === 'github'
-          && _.toLower(tool.tool_type) === 'issue'
-        ));
-        tools = [...tools, it?.thirdpartytool_uuid];
-        newIssueCred = {
-          third_party_tool: it?.thirdpartytool_uuid,
-          auth_detail: githubIssueAuth,
-        };
-        break;
-      }
-      default:
-        break;
+    if (issuesTool.value === 'github') {
+      const it = _.find(allThirdPartyToolData, (tool) => (
+        _.toLower(tool.name) === 'github' && _.toLower(tool.tool_type) === 'issue'
+      ));
+      if (it?.thirdpartytool_uuid) tools.push(it.thirdpartytool_uuid);
     }
 
-    const updatedFeatureCreds = !_.isMatch(
-      newFeatCred?.auth_detail.tool_name, featCred?.auth_detail.tool_name,
-    );
+    // Required field validation (API: name, description, organization_uuid, product_info.product_type, product_info.expected_traffic, product_info.team_needed, product_info.product_timezone)
+    const requiredFields = [
+      name.value,
+      description.value,
+      getOrganization(),
+      productFormData?.product_info?.product_type,
+      productFormData?.product_info?.expected_traffic,
+      productFormData?.product_info?.team_needed,
+      productFormData?.product_info?.product_timezone,
+    ];
+    if (requiredFields.some(f => !f || (typeof f === 'string' && !f.trim()))) {
+      displayAlert('error', 'Missing required product fields. Please complete all required fields.');
+      return;
+    }
 
-    const updatedIssueCreds = !_.isMatch(
-      newIssueCred?.auth_detail.tool_name, issueCred?.auth_detail.tool_name,
-    );
+    // Only include required product_info fields
+    const productInfo = {
+      product_type: productFormData?.product_info?.product_type,
+      expected_traffic: productFormData?.product_info?.expected_traffic,
+      team_needed: productFormData?.product_info?.team_needed,
+      product_timezone: productFormData?.product_info?.product_timezone,
+    };
 
+    // Format dates as ISO 8601 strings
+    const isoStartDate = startDate ? new Date(startDate).toISOString() : undefined;
+    const isoEndDate = endDate ? new Date(endDate).toISOString() : undefined;
+
+    // Construct payload strictly as per API docs
     const formData = {
-      ...productFormData,
       name: name.value,
       description: description.value,
-      start_date: startDate,
-      end_date: endDate,
-      create_date: dateTime,
-      edit_date: dateTime,
       organization_uuid: getOrganization(),
+      product_info: productInfo,
+      start_date: isoStartDate,
+      end_date: isoEndDate,
       third_party_tool: tools,
-      product_info: {
-        ...productFormData?.product_info,
-      },
-      featureCreds: updatedFeatureCreds
-        ? {
-          ...featCred,
-          ...newFeatCred,
-          auth_detail: { ...featCred?.auth_detail, ...newFeatCred?.auth_detail },
-        } : newFeatCred,
-      issueCreds: updatedIssueCreds
-        ? {
-          ...issueCred,
-          ...newIssueCred,
-          auth_detail: { ...issueCred?.auth_detail, ...newIssueCred?.auth_detail },
-        } : newIssueCred,
     };
+    // Log payload for debugging
+    console.log('Submitting product formData:', formData);
     updateProductFormData(formData);
     handleNext();
   };

@@ -179,47 +179,29 @@ const AddBusinessTask = ({ history, location }) => {
   };
 
   const handleSubmit = () => {
-    if (!title.isValid) {
-      displayAlert('error', 'Please provide a valid task title');
-      return;
-    }
-
-    if (!assignedToUser) {
-      displayAlert('error', 'Please assign the task to a user');
-      return;
-    }
-
-    // Enhanced user UUID extraction with validation
+    // Required field validation
     const userUuidResult = getCurrentUserUuid(user);
-    
-    if (!userUuidResult.uuid || !userUuidResult.isValid) {
-      displayAlert('error', 'User identification error: Please log out and log back in');
+    if (!title.isValid || !description.trim() || !product_uuid || !userUuidResult.uuid || !userUuidResult.isValid || !assignedToUser || (!selectedCategory && !selectedCustomCategory) || !priority || !status) {
+      displayAlert('error', 'Missing required business task fields. Please complete all required fields.');
       return;
     }
-
-    if (!product_uuid) {
-      displayAlert('error', 'Product UUID is missing');
-      return;
-    }
-
     const taskData = {
       product_uuid,
       title: title.value.trim(),
       description: description.trim(),
-      category: selectedCategory || 'general', // Provide default value
-      priority: priority || 'medium', // Ensure priority has a value
-      status: status || 'not_started', // Ensure status has a value
-      assigned_by_user_uuid: userUuidResult.uuid, // Use the validated UUID
+      category: selectedCategory || 'general',
+      priority: priority || 'medium',
+      status: status || 'not_started',
+      assigned_by_user_uuid: userUuidResult.uuid,
+      assigned_to_user_uuid: assignedToUser,
       start_date: new Date().toISOString(),
       progress_percentage: progressPercentage || 0,
-      risk_level: riskLevel || 'low', // Provide default value
-      is_recurring: Boolean(isRecurring), // Ensure boolean type
-      requires_approval: Boolean(requiresApproval), // Ensure boolean type
+      risk_level: riskLevel || 'low',
+      is_recurring: Boolean(isRecurring),
+      requires_approval: Boolean(requiresApproval),
     };
-
     // Add optional fields only if they have values
     if (selectedCustomCategory) taskData.custom_category = selectedCustomCategory;
-    if (assignedToUser) taskData.assigned_to_user_uuid = assignedToUser;
     if (selectedRelease) taskData.release_uuid = selectedRelease;
     if (releaseVersion) taskData.release_version = releaseVersion;
     if (featureName) taskData.feature_name = featureName;
@@ -235,7 +217,8 @@ const AddBusinessTask = ({ history, location }) => {
     if (riskDescription) taskData.risk_description = riskDescription;
     if (blockers) taskData.blockers = blockers;
     if (isRecurring && recurrencePattern) taskData.recurrence_pattern = recurrencePattern;
-
+    // Log payload for debugging
+    console.log('Submitting business task payload:', taskData);
     if (editPage) {
       updateBusinessTaskMutation({ 
         taskUuid: editData.task_uuid, 
