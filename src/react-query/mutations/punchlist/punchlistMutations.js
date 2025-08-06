@@ -9,10 +9,11 @@ export const useCreatePunchlistItemMutation = (product_uuid, displayAlert) => {
       console.log('useCreatePunchlistItemMutation: Creating punchlist item for product:', product_uuid);
       console.log('useCreatePunchlistItemMutation: Punchlist data:', punchlistData);
       
-      const response = await httpService.makeRequest(
-        'post',
-        `${window.env.API_URL}product/punchlist/`,
+      const response = await httpService.sendDirectServiceRequest(
+        'punchlist/',
+        'POST',
         { ...punchlistData, product_uuid },
+        'product'
       );
       return response.data;
     },
@@ -42,10 +43,11 @@ export const useUpdatePunchlistStatusMutation = (product_uuid, displayAlert) => 
     async ({ punchlist_uuid, status, assigned_to, resolution_notes }) => {
       console.log('useUpdatePunchlistStatusMutation: Updating punchlist item:', punchlist_uuid);
       
-      const response = await httpService.makeRequest(
-        'patch',
-        `${window.env.API_URL}product/punchlist/${punchlist_uuid}/update-status/`,
+      const response = await httpService.sendDirectServiceRequest(
+        `punchlist/${punchlist_uuid}/update-status/`,
+        'PATCH',
         { status, assigned_to, resolution_notes },
+        'product'
       );
       return response.data;
     },
@@ -75,9 +77,11 @@ export const useDeletePunchlistItemMutation = (product_uuid, displayAlert) => {
     async (punchlist_uuid) => {
       console.log('useDeletePunchlistItemMutation: Deleting punchlist item:', punchlist_uuid);
       
-      const response = await httpService.makeRequest(
-        'delete',
-        `${window.env.API_URL}product/punchlist/${punchlist_uuid}/`,
+      const response = await httpService.sendDirectServiceRequest(
+        `punchlist/${punchlist_uuid}/`,
+        'DELETE',
+        null,
+        'product'
       );
       return response.data;
     },

@@ -48,6 +48,10 @@ import { getProductReportQuery } from '@react-query/queries/product/getProductRe
 import { getProductBudgetQuery } from '@react-query/queries/budget/getProductBudgetQuery';
 import { useSaveProductBudgetMutation } from '@react-query/mutations/budget/saveProductBudgetMutation';
 import { getReleaseProductReportQuery } from '@react-query/queries/release/getReleaseProductReportQuery';
+import { getAllFeatureQuery } from '@react-query/queries/release/getAllFeatureQuery';
+import { getAllIssueQuery } from '@react-query/queries/release/getAllIssueQuery';
+import { getAllReleaseQuery } from '@react-query/queries/release/getAllReleaseQuery';
+import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
 import { useStore } from '@zustand/product/productStore';
 
 const Insights = () => {
@@ -130,6 +134,31 @@ const Insights = () => {
   const { data: budgetData, isLoading: isGettingProductBudget } = useQuery(
     ['productBudget', selectedProduct],
     () => getProductBudgetQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+  );
+
+  // New queries for features, issues, and releases
+  const { data: featuresData, isLoading: isGettingFeatures } = useQuery(
+    ['allFeatures', selectedProduct],
+    () => getAllFeatureQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+  );
+
+  const { data: issuesData, isLoading: isGettingIssues } = useQuery(
+    ['allIssues', selectedProduct],
+    () => getAllIssueQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+  );
+
+  const { data: releasesData, isLoading: isGettingReleases } = useQuery(
+    ['allReleases', selectedProduct],
+    () => getAllReleaseQuery(selectedProduct, displayAlert),
+    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+  );
+
+  const { data: statusLookupData, isLoading: isGettingStatuses } = useQuery(
+    ['allStatuses', selectedProduct],
+    () => getAllStatusQuery(selectedProduct, displayAlert),
     { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
   );
 
@@ -1045,7 +1074,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
   return (
     <>
       {(areProductsLoading || isEmailingReport || isGettingProductReport || isGettingReleaseProductReport)
-      && <Loader open={areProductsLoading || isEmailingReport || isGettingProductReport || isGettingReleaseProductReport} />}
+      && <Loader open={areProductsLoading || isEmailingReport || isGettingProductReport || isGettingReleaseProductReport || isGettingFeatures || isGettingIssues || isGettingReleases || isGettingStatuses} />}
       <div className="insightsSelectedProductRoot">
         <Grid container mb={2} alignItems="center">
           <Grid item md={4}>
@@ -1139,8 +1168,37 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
             </AccordionSummary>
             <AccordionDetails sx={{ padding: 2 }}>
               {(() => {
-                // Generate status data for current product
-                const mockReleases = [
+                // Use real data when available, fallback to mock data for missing endpoints
+                
+                // Real budget data (already available)
+                const realBudget = budgetData ? {
+                  total_budget: budgetData.total_budget || 0,
+                  spent_budget: budgetData.spent_budget || 0
+                } : {
+                  total_budget: 85000,
+                  spent_budget: 52000
+                };
+
+                // Real releases data from API
+                const releases = releasesData && releasesData.length > 0 ? releasesData.map(release => ({
+                  name: release.name || 'Unnamed Release',
+                  release_uuid: release.release_uuid,
+                  release_date: release.release_date,
+                  start_date: release.start_date,
+                  environment: release.environment,
+                  prerelease: release.prerelease,
+                  // Calculate status based on dates
+                  status: (() => {
+                    const now = new Date();
+                    const releaseDate = new Date(release.release_date);
+                    const startDate = new Date(release.start_date);
+                    
+                    if (releaseDate < now) return 'completed';
+                    if (startDate <= now && releaseDate >= now) return 'active';
+                    return 'planned';
+                  })(),
+                  target_date: release.release_date
+                })) : [
                   { 
                     name: 'v1.0', 
                     status: 'completed', 
@@ -1163,45 +1221,81 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                   }
                 ];
                 
-                const mockFeatures = Array.from({ length: 15 }, (_, i) => ({
+                // Real features data from API
+                const features = featuresData && featuresData.length > 0 ? featuresData.map(feature => ({
+                  feature_uuid: feature.feature_uuid,
+                  name: feature.name || `Feature ${feature.feature_uuid}`,
+                  status: (() => {
+                    // Map status UUID to status name if we have status data
+                    if (statusLookupData && feature.status) {
+                      const statusObj = statusLookupData.find(s => s.status_uuid === feature.status);
+                      return statusObj ? statusObj.name.toLowerCase() : 'unknown';
+                    }
+                    return 'unknown';
+                  })(),
+                  end_date: feature.end_date,
+                  start_date: feature.start_date,
+                  priority: feature.priority || 'Medium',
+                  archived: feature.archived || false,
+                  is_approved: feature.is_approved || false,
+                  assigned_developer_uuid: feature.assigned_developer_uuid
+                })) : Array.from({ length: 15 }, (_, i) => ({
                   feature_uuid: `feat-${i}`,
                   name: `Feature ${i + 1}`,
                   status: i < 8 ? 'completed' : i < 12 ? 'in_progress' : 'planned',
-                  end_date: `2024-0${Math.floor(Math.random() * 3) + 1}-15`
+                  end_date: `2024-0${Math.floor(Math.random() * 3) + 1}-15`,
+                  priority: i < 5 ? 'High' : i < 10 ? 'Medium' : 'Low',
+                  archived: false,
+                  is_approved: i < 12
                 }));
 
-                const mockIssues = Array.from({ length: 8 }, (_, i) => ({
+                // Real issues data from API
+                const issues = issuesData && issuesData.length > 0 ? issuesData.map(issue => ({
+                  issue_uuid: issue.issue_uuid,
+                  name: issue.name || `Issue ${issue.issue_uuid}`,
+                  status: (() => {
+                    // Map status UUID to status name if we have status data
+                    if (statusLookupData && issue.status) {
+                      const statusObj = statusLookupData.find(s => s.status_uuid === issue.status);
+                      return statusObj ? statusObj.name.toLowerCase() : 'unknown';
+                    }
+                    return 'unknown';
+                  })(),
+                  issue_type: issue.issue_type || 'Unknown',
+                  start_date: issue.start_date,
+                  end_date: issue.end_date,
+                  archived: issue.archived || false,
+                  assigned_developer_uuid: issue.assigned_developer_uuid
+                })) : Array.from({ length: 8 }, (_, i) => ({
                   issue_uuid: `issue-${i}`,
                   name: `Issue ${i + 1}`,
-                  status: i < 5 ? 'completed' : 'in_progress'
+                  status: i < 5 ? 'completed' : 'in_progress',
+                  issue_type: i % 2 === 0 ? 'FE' : 'BE',
+                  archived: false
                 }));
 
-                const mockBudget = {
-                  total_budget: 85000,
-                  spent_budget: 52000
-                };
-
-                const statusData = calculateProductStatus(
+                // Calculate status using real data
+                const calculatedStatus = calculateProductStatus(
                   productData, 
-                  mockReleases, 
-                  mockFeatures, 
-                  mockIssues, 
-                  mockBudget, 
+                  releases, 
+                  features, 
+                  issues, 
+                  realBudget,
                   organizationMembers
                 );
 
-                const statusReport = generateStatusReport(productData, statusData);
+                const statusReport = generateStatusReport(productData, calculatedStatus);
 
                 return (
                   <div className="row">
                     {/* Overall Status Card */}
                     <div className="col-md-4">
                       <Card className="h-100" style={{ 
-                        border: `3px solid ${getStatusColor(statusData.overall)}`,
+                        border: `3px solid ${getStatusColor(calculatedStatus.overall)}`,
                         borderRadius: '8px'
                       }}>
                         <Card.Header style={{ 
-                          backgroundColor: getStatusColor(statusData.overall),
+                          backgroundColor: getStatusColor(calculatedStatus.overall),
                           color: 'white',
                           fontWeight: 'bold',
                           textAlign: 'center'
@@ -1210,19 +1304,19 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                         </Card.Header>
                         <Card.Body style={{ textAlign: 'center' }}>
                           <h2 style={{ 
-                            color: getStatusColor(statusData.overall),
+                            color: getStatusColor(calculatedStatus.overall),
                             fontSize: '3rem',
                             margin: '20px 0'
                           }}>
-                            {statusData.score}%
+                            {calculatedStatus.score}%
                           </h2>
-                          <h4 style={{ color: getStatusColor(statusData.overall), marginBottom: '20px' }}>
-                            {getStatusLabel(statusData.overall)}
+                          <h4 style={{ color: getStatusColor(calculatedStatus.overall), marginBottom: '20px' }}>
+                            {getStatusLabel(calculatedStatus.overall)}
                           </h4>
                           <div style={{ fontSize: '0.9rem', color: '#6c757d' }}>
-                            {statusData.overall === 'green' && '✅ Project is on track'}
-                            {statusData.overall === 'yellow' && '⚠️ Project needs attention'}
-                            {statusData.overall === 'red' && '🚨 Critical issues require immediate action'}
+                            {calculatedStatus.overall === 'green' && '✅ Project is on track'}
+                            {calculatedStatus.overall === 'yellow' && '⚠️ Project needs attention'}
+                            {calculatedStatus.overall === 'red' && '🚨 Critical issues require immediate action'}
                           </div>
                         </Card.Body>
                       </Card>
@@ -1245,7 +1339,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                   width: '60px',
                                   height: '60px',
                                   borderRadius: '50%',
-                                  backgroundColor: getStatusColor(statusData.timeline),
+                                  backgroundColor: getStatusColor(calculatedStatus.timeline),
                                   margin: '0 auto 10px',
                                   display: 'flex',
                                   alignItems: 'center',
@@ -1256,12 +1350,12 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                   ⏰
                                 </div>
                                 <h6>Timeline</h6>
-                                <div style={{ color: getStatusColor(statusData.timeline), fontWeight: 'bold' }}>
-                                  {getStatusLabel(statusData.timeline)}
+                                <div style={{ color: getStatusColor(calculatedStatus.timeline), fontWeight: 'bold' }}>
+                                  {getStatusLabel(calculatedStatus.timeline)}
                                 </div>
                                 <small style={{ color: '#6c757d' }}>
-                                  {statusData?.details?.timeline?.daysRemaining !== null ? 
-                                    `${statusData?.details?.timeline?.daysRemaining} days remaining` : 'No timeline set'}
+                                  {calculatedStatus?.details?.timeline?.daysRemaining !== null ? 
+                                    `${calculatedStatus?.details?.timeline?.daysRemaining} days remaining` : 'No timeline set'}
                                 </small>
                               </div>
                             </div>
@@ -1272,7 +1366,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                   width: '60px',
                                   height: '60px',
                                   borderRadius: '50%',
-                                  backgroundColor: getStatusColor(statusData.budget),
+                                  backgroundColor: getStatusColor(calculatedStatus.budget),
                                   margin: '0 auto 10px',
                                   display: 'flex',
                                   alignItems: 'center',
@@ -1283,11 +1377,11 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                   💰
                                 </div>
                                 <h6>Budget</h6>
-                                <div style={{ color: getStatusColor(statusData.budget), fontWeight: 'bold' }}>
-                                  {getStatusLabel(statusData.budget)}
+                                <div style={{ color: getStatusColor(calculatedStatus.budget), fontWeight: 'bold' }}>
+                                  {getStatusLabel(calculatedStatus.budget)}
                                 </div>
                                 <small style={{ color: '#6c757d' }}>
-                                  {statusData?.details?.budget?.budgetUtilization || 0}% utilized
+                                  {calculatedStatus?.details?.budget?.budgetUtilization || 0}% utilized
                                 </small>
                               </div>
                             </div>
@@ -1298,7 +1392,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                   width: '60px',
                                   height: '60px',
                                   borderRadius: '50%',
-                                  backgroundColor: getStatusColor(statusData.resources),
+                                  backgroundColor: getStatusColor(calculatedStatus.resources),
                                   margin: '0 auto 10px',
                                   display: 'flex',
                                   alignItems: 'center',
@@ -1309,11 +1403,11 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                   👥
                                 </div>
                                 <h6>Resources</h6>
-                                <div style={{ color: getStatusColor(statusData.resources), fontWeight: 'bold' }}>
-                                  {getStatusLabel(statusData.resources)}
+                                <div style={{ color: getStatusColor(calculatedStatus.resources), fontWeight: 'bold' }}>
+                                  {getStatusLabel(calculatedStatus.resources)}
                                 </div>
                                 <small style={{ color: '#6c757d' }}>
-                                  {statusData?.details?.resources?.activeTeamMembers || 0} active members
+                                  {calculatedStatus?.details?.resources?.activeTeamMembers || 0} active members
                                 </small>
                               </div>
                             </div>
@@ -1324,7 +1418,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                             <div className="col-md-4">
                               <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
-                                  {statusData?.details?.features?.completed || 0}/{statusData?.details?.features?.total || 0}
+                                  {calculatedStatus?.details?.features?.completed || 0}/{calculatedStatus?.details?.features?.total || 0}
                                 </div>
                                 <small>Features Complete</small>
                               </div>
@@ -1332,7 +1426,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                             <div className="col-md-4">
                               <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
-                                  {statusData?.details?.issues?.completed || 0}/{statusData?.details?.issues?.total || 0}
+                                  {calculatedStatus?.details?.issues?.completed || 0}/{calculatedStatus?.details?.issues?.total || 0}
                                 </div>
                                 <small>Issues Resolved</small>
                               </div>
@@ -1340,7 +1434,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                             <div className="col-md-4">
                               <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
-                                  {statusData?.details?.releases?.completed || 0}/{statusData?.details?.releases?.total || 0}
+                                  {calculatedStatus?.details?.releases?.completed || 0}/{calculatedStatus?.details?.releases?.total || 0}
                                 </div>
                                 <small>Releases Done</small>
                               </div>
@@ -1370,6 +1464,49 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                   </Alert>
                                 </div>
                               ))}
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      </div>
+                    )}
+
+                    {/* Debug: API Data Status - Remove in production */}
+                    {process.env.NODE_ENV === 'development' && (
+                      <div className="col-12 mt-3">
+                        <Card>
+                          <Card.Header style={{ 
+                            backgroundColor: '#e3f2fd',
+                            borderColor: '#2196f3',
+                            fontWeight: 'bold'
+                          }}>
+                            🔧 API Data Status (Debug - Development Only)
+                          </Card.Header>
+                          <Card.Body>
+                            <div className="row">
+                              <div className="col-md-3">
+                                <small className="text-muted">Features API:</small>
+                                <div className={`badge ${featuresData ? 'bg-success' : 'bg-warning'}`}>
+                                  {featuresData ? `${featuresData.length} items` : 'Using mock data'}
+                                </div>
+                              </div>
+                              <div className="col-md-3">
+                                <small className="text-muted">Issues API:</small>
+                                <div className={`badge ${issuesData ? 'bg-success' : 'bg-warning'}`}>
+                                  {issuesData ? `${issuesData.length} items` : 'Using mock data'}
+                                </div>
+                              </div>
+                              <div className="col-md-3">
+                                <small className="text-muted">Releases API:</small>
+                                <div className={`badge ${releasesData ? 'bg-success' : 'bg-warning'}`}>
+                                  {releasesData ? `${releasesData.length} items` : 'Using mock data'}
+                                </div>
+                              </div>
+                              <div className="col-md-3">
+                                <small className="text-muted">Status API:</small>
+                                <div className={`badge ${statusLookupData ? 'bg-success' : 'bg-warning'}`}>
+                                  {statusLookupData ? `${statusLookupData.length} statuses` : 'Using defaults'}
+                                </div>
+                              </div>
                             </div>
                           </Card.Body>
                         </Card>

@@ -368,7 +368,8 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
         productPayload.product_team = data.productTeamUuid;
       }
       
-      // Store additional wizard data in product_info as JSON for reference
+      // Store additional wizard data in product_info as an object for backend processing
+      // IMPORTANT: Backend expects product_info as an object (not JSON string) to use .get() method
       const additionalInfo = {
         features: data.features || [],
         targetUsers: data.targetUsers,
@@ -384,7 +385,7 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
       };
       
       if (Object.keys(additionalInfo).some(key => additionalInfo[key] !== undefined && additionalInfo[key] !== null && additionalInfo[key] !== '')) {
-        productPayload.product_info = JSON.stringify(additionalInfo);
+        productPayload.product_info = additionalInfo; // Send as object, not JSON string
       }
 
       // Add product_uuid for updates
@@ -394,10 +395,60 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
 
       console.log('AIEnhancedProductWizard: Processing product with payload:', productPayload);
       
+      let productResult;
       if (editMode) {
-        await updateProductMutation.mutateAsync(productPayload);
+        productResult = await updateProductMutation.mutateAsync(productPayload);
       } else {
-        await createProductMutation.mutateAsync(productPayload);
+        productResult = await createProductMutation.mutateAsync(productPayload);
+      }
+      
+      // Save budget data if available and we have budget information
+      const productUuid = productResult?.product_uuid || editData?.product_uuid;
+      if (productUuid && data.budgetRange && data.budgetRange.length === 2) {
+        try {
+          const budgetPayload = {
+            product_uuid: productUuid,
+            total_budget: data.budgetRange[1], // Use upper range as total budget
+            release_budgets: [],
+            last_updated: new Date().toISOString()
+          };
+          
+          // If we have team information, calculate more detailed budget
+          if (data.team && Object.keys(data.team).length > 0) {
+            const teamSize = Object.values(data.team).reduce((sum, count) => sum + (parseInt(count) || 0), 0);
+            const estimatedDuration = data.estimatedDuration?.includes('3-6') ? 4.5 :
+                                    data.estimatedDuration?.includes('6-9') ? 7.5 :
+                                    data.estimatedDuration?.includes('9-12') ? 10.5 : 6;
+            
+            // Average monthly cost per team member
+            const avgMonthlyCost = 8000;
+            const calculatedBudget = teamSize * avgMonthlyCost * estimatedDuration;
+            
+            // Use calculated budget if it's within the range, otherwise use range
+            if (calculatedBudget >= data.budgetRange[0] && calculatedBudget <= data.budgetRange[1]) {
+              budgetPayload.total_budget = Math.round(calculatedBudget);
+            }
+          }
+          
+          console.log('AIEnhancedProductWizard: Saving budget with payload:', budgetPayload);
+          
+          // Use direct HTTP call since we can't call hooks inside async functions
+          const { httpService } = await import('@modules/http/http.service');
+          const response = await httpService.makeRequest(
+            'post',
+            `${window.env.API_URL}product/budget/by-product/${productUuid}/`,
+            budgetPayload,
+          );
+          
+          console.log('AIEnhancedProductWizard: Budget saved successfully', response.data);
+          displayAlert('success', 'Product and budget saved successfully!');
+        } catch (budgetError) {
+          console.error('Failed to save budget (non-blocking):', budgetError);
+          // Don't fail the entire wizard for budget issues
+          displayAlert('warning', 'Product created successfully, but budget information could not be saved. You can update it later.');
+        }
+      } else {
+        displayAlert('success', 'Product created successfully!');
       }
       
       onClose();

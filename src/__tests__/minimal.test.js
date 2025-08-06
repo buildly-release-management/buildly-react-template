@@ -60,8 +60,10 @@ describe('Minimal Section', () => {
       const punchlistMutationsPath = path.join(__dirname, '../react-query/mutations/punchlist/punchlistMutations.js');
       const punchlistContent = fs.readFileSync(punchlistMutationsPath, 'utf8');
       
-      // Check that endpoints use correct product/punchlist/ structure
-      expect(punchlistContent).toContain('product/punchlist/');
+      // Check that endpoints use correct sendDirectServiceRequest with product service
+      expect(punchlistContent).toContain('sendDirectServiceRequest');
+      expect(punchlistContent).toContain("'product'");
+      expect(punchlistContent).toContain('punchlist/');
       expect(punchlistContent).toContain('update-status/');
       expect(punchlistContent).toContain('useCreatePunchlistItemMutation');
       expect(punchlistContent).toContain('useUpdatePunchlistStatusMutation');

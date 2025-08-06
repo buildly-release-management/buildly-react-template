@@ -6,9 +6,11 @@ export const getProductPunchlistQuery = async (product_uuid, displayAlert) => {
       return [];
     }
     
-    const response = await httpService.makeRequest(
-      'get',
-      `${window.env.API_URL}product/punchlist/by-product/${product_uuid}/`,
+    const response = await httpService.sendDirectServiceRequest(
+      `punchlist/by-product/${product_uuid}/`,
+      'GET',
+      null,
+      'product'
     );
     
     return response.data;
