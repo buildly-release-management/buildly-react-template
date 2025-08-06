@@ -30,11 +30,6 @@ import { httpService } from '@modules/http/http.service';
 import useAlert from '@hooks/useAlert';
 import { UserContext } from '@context/User.context';
 
-// architecture designs
-import microservice from '@assets/architecture-suggestions/GCP - MicroServices.png';
-import monolith from '@assets/architecture-suggestions/GCP - Monolithic.png';
-import multiCloud from '@assets/architecture-suggestions/GCP - MicroServices w_ DataPipeline.png';
-import microApp from '@assets/architecture-suggestions/Digital Ocean - MicroApp w_ FrontEnd.png';
 import { addColorsAndIcons, getReleaseBudgetData, generateAIFeatureEstimates, generateAIBudgetEstimate } from './utils';
 import { calculateProductStatus, generateStatusReport, getStatusColor, getStatusLabel } from '@utils/productStatus';
 import useOrganizationMembers from '@hooks/useOrganizationMembers';
@@ -64,7 +59,6 @@ const Insights = () => {
   const [selectedProduct, setSelectedProduct] = useState(activeProduct || 0);
   const [productData, setProductData] = useState([]);
   const [releaseData, setReleaseData] = useState([]);
-  const [architectureImg, setArchitectureImg] = useState(null);
   const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'gantt'
   const [buildlyTools, setBuildlyTools] = useState([]);
   const [marketplaceTools, setMarketplaceTools] = useState([]);
@@ -391,23 +385,8 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
         if (reportData) {
           // Don't require budget - set productData even without budget
         
-        // set the image to display
-        let img = null;
-        if (reportData.architecture_type) {
-          if (reportData.architecture_type.toLowerCase() === 'monolith') {
-            img = monolith;
-          } else if (reportData.architecture_type.toLowerCase() === 'microservice') {
-            img = microservice;
-          } else if (['micro-app', 'mini-app'].includes(reportData.architecture_type.toLowerCase())) {
-            img = microApp;
-          } else if (reportData.architecture_type.toLowerCase() === 'multicloud microservice') {
-            img = multiCloud;
-          }
-        }
-        
         // set states
         setProductData(reportData);
-        setArchitectureImg(img);
 
         // Process release data if available
         if (releaseReport && releaseReport.release_data) {
@@ -544,7 +523,13 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
       
       budgetData.release_budgets.forEach(releaseBudget => {
         if (releaseBudget.release_name && releaseBudget.budget_estimate) {
-          budgetEstimatesFromAPI[releaseBudget.release_name] = releaseBudget.budget_estimate;
+          // Merge the budget estimate with team configuration data
+          const budgetEstimate = {
+            ...releaseBudget.budget_estimate,
+            // Map team_configuration back to team if it exists
+            team: releaseBudget.team_configuration || releaseBudget.budget_estimate.team || []
+          };
+          budgetEstimatesFromAPI[releaseBudget.release_name] = budgetEstimate;
         }
       });
       
@@ -960,13 +945,20 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
       const budgetData = {
         product_uuid: selectedProduct,
         total_budget: Object.values(budgetEstimates).reduce((total, estimate) => total + (estimate.total_budget || 0), 0),
-        release_budgets: releaseData.map(release => ({
-          release_uuid: release.release_uuid,
-          release_name: release.name,
-          budget_estimate: budgetEstimates[release.name] || null,
-          team_configuration: release.team || [],
-          total_cost: release.totalCost || 0
-        })),
+        release_budgets: releaseData.map(release => {
+          const estimate = budgetEstimates[release.name] || null;
+          return {
+            release_uuid: release.release_uuid,
+            release_name: release.name,
+            budget_estimate: estimate ? {
+              ...estimate,
+              // Ensure team data is included in budget_estimate
+              team: estimate.team || []
+            } : null,
+            team_configuration: estimate?.team || [],
+            total_cost: release.totalCost || estimate?.total_budget || 0
+          };
+        }),
         last_updated: new Date().toISOString()
       };
 
@@ -981,13 +973,20 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
         // Recreate budgetData for localStorage since it's scoped to the try block
         const fallbackBudgetData = {
           total_budget: Object.values(budgetEstimates).reduce((total, estimate) => total + (estimate.total_budget || 0), 0),
-          release_budgets: releaseData.map(release => ({
-            release_uuid: release.release_uuid,
-            release_name: release.name,
-            budget_estimate: budgetEstimates[release.name] || null,
-            team_configuration: release.team || [],
-            total_cost: release.totalCost || 0
-          })),
+          release_budgets: releaseData.map(release => {
+            const estimate = budgetEstimates[release.name] || null;
+            return {
+              release_uuid: release.release_uuid,
+              release_name: release.name,
+              budget_estimate: estimate ? {
+                ...estimate,
+                // Ensure team data is included in budget_estimate
+                team: estimate.team || []
+              } : null,
+              team_configuration: estimate?.team || [],
+              total_cost: release.totalCost || estimate?.total_budget || 0
+            };
+          }),
           last_updated: new Date().toISOString()
         };
         
@@ -1471,7 +1470,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                     )}
 
                     {/* Debug: API Data Status - Remove in production */}
-                    {process.env.NODE_ENV === 'development' && (
+                    {(process.env.NODE_ENV === 'development' && window.location.hostname === 'localhost') && (
                       <div className="col-12 mt-3">
                         <Card>
                           <Card.Header style={{ 
@@ -1541,20 +1540,182 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
             </AccordionSummary>
             <AccordionDetails sx={{ padding: 0 }}>
               <div className="row">
-                <div className="col-md-7">
-                  <Card className="w-100">
+                <div className="col-md-6">
+                  <Card className="w-100 h-100">
                     <Card.Body>
-                      <Card.Title>
-                        Architecture suggestion:
-                        {productData && productData.architecture_type ? ` (${productData?.architecture_type?.toUpperCase()})` : ''}
+                      <Card.Title className="d-flex align-items-center">
+                        <i className="fas fa-cloud me-2" style={{ color: '#0C5595' }}></i>
+                        Cloud Architecture & Hosting Suggestions
                       </Card.Title>
-                      <div className="image-responsive m-2" style={{ height: 350 }}>
-                        <Image src={architectureImg} fluid style={{ height: '100%' }} />
-                      </div>
+                      {(() => {
+                        const getCloudRecommendations = () => {
+                          const archType = productData?.architecture_type?.toLowerCase() || '';
+                          const hostingProvider = productData?.product_info?.hostingProvider || 'Not specified';
+                          
+                          // Determine architecture type and hosting recommendations
+                          let architectureRec = 'Cloud-Native Microservices';
+                          let hostingRec = ['AWS', 'Google Cloud Platform', 'Microsoft Azure'];
+                          let deploymentPattern = 'Container-based deployment with auto-scaling';
+                          
+                          if (archType.includes('monolith')) {
+                            architectureRec = 'Monolithic Cloud Deployment';
+                            deploymentPattern = 'Single application deployment with load balancing';
+                          } else if (archType.includes('microservice')) {
+                            architectureRec = 'Microservices Architecture';
+                            deploymentPattern = 'Containerized services with orchestration';
+                          } else if (archType.includes('micro-app') || archType.includes('mini-app')) {
+                            architectureRec = 'Micro-Frontend Architecture';
+                            deploymentPattern = 'CDN-hosted micro-frontends with API gateway';
+                          }
+                          
+                          return { architectureRec, hostingRec, deploymentPattern, currentHosting: hostingProvider };
+                        };
+                        
+                        const { architectureRec, hostingRec, deploymentPattern, currentHosting } = getCloudRecommendations();
+                        
+                        return (
+                          <div>
+                            <div className="mb-3">
+                              <strong>Architecture Pattern:</strong>
+                              <div className="badge bg-primary ms-2">{architectureRec}</div>
+                            </div>
+                            
+                            <div className="mb-3">
+                              <strong>Current Hosting:</strong>
+                              <div className="badge bg-info ms-2">{currentHosting}</div>
+                            </div>
+                            
+                            <div className="mb-3">
+                              <strong>Recommended Providers:</strong>
+                              <div className="mt-2">
+                                {hostingRec.map((provider, index) => (
+                                  <span key={index} className="badge bg-success me-1 mb-1">{provider}</span>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div className="mb-3">
+                              <strong>Deployment Strategy:</strong>
+                              <p className="text-muted mt-1 mb-0">{deploymentPattern}</p>
+                            </div>
+                            
+                            <div className="mt-3 p-2" style={{ backgroundColor: '#f8f9fa', borderRadius: '5px' }}>
+                              <small className="text-muted">
+                                <strong>Key Benefits:</strong> Scalability, High availability, Cost optimization, 
+                                Global distribution, Managed services
+                              </small>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </Card.Body>
                   </Card>
                 </div>
-                <div className="col-md-5">
+                
+                <div className="col-md-6">
+                  <Card className="w-100 h-100">
+                    <Card.Body>
+                      <Card.Title className="d-flex align-items-center">
+                        <i className="fas fa-code me-2" style={{ color: '#0C5595' }}></i>
+                        Technology Stack Recommendations
+                      </Card.Title>
+                      {(() => {
+                        const getTechRecommendations = () => {
+                          const productType = productData?.type?.toLowerCase() || '';
+                          const archType = productData?.architecture_type?.toLowerCase() || '';
+                          
+                          // Default recommendations based on modern web development best practices
+                          let frontend = ['React', 'Vue.js', 'Angular'];
+                          let backend = ['Node.js', 'Python/Django', 'Python/FastAPI'];
+                          let database = ['PostgreSQL', 'MongoDB', 'Redis'];
+                          let devops = ['Docker', 'Kubernetes', 'CI/CD Pipeline'];
+                          
+                          // Customize based on product type
+                          if (productType.includes('ecommerce') || productType.includes('marketplace')) {
+                            frontend = ['React', 'Next.js', 'Vue.js'];
+                            backend = ['Node.js', 'Python/Django', 'PHP/Laravel'];
+                            database = ['PostgreSQL', 'MySQL', 'Redis'];
+                          } else if (productType.includes('saas') || productType.includes('dashboard')) {
+                            frontend = ['React', 'Angular', 'Vue.js'];
+                            backend = ['Python/Django', 'Node.js', 'Java/Spring'];
+                            database = ['PostgreSQL', 'MongoDB', 'InfluxDB'];
+                          } else if (productType.includes('mobile') || productType.includes('api')) {
+                            frontend = ['React Native', 'Flutter', 'Swift/Kotlin'];
+                            backend = ['Node.js', 'Python/FastAPI', 'Go'];
+                            database = ['MongoDB', 'PostgreSQL', 'Firebase'];
+                          }
+                          
+                          return { frontend, backend, database, devops };
+                        };
+                        
+                        const { frontend, backend, database, devops } = getTechRecommendations();
+                        
+                        return (
+                          <div>
+                            <div className="mb-3">
+                              <strong className="d-flex align-items-center">
+                                <i className="fas fa-desktop me-1" style={{ fontSize: '14px' }}></i>
+                                Frontend:
+                              </strong>
+                              <div className="mt-1">
+                                {frontend.map((tech, index) => (
+                                  <span key={index} className="badge bg-primary me-1 mb-1">{tech}</span>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div className="mb-3">
+                              <strong className="d-flex align-items-center">
+                                <i className="fas fa-server me-1" style={{ fontSize: '14px' }}></i>
+                                Backend:
+                              </strong>
+                              <div className="mt-1">
+                                {backend.map((tech, index) => (
+                                  <span key={index} className="badge bg-success me-1 mb-1">{tech}</span>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div className="mb-3">
+                              <strong className="d-flex align-items-center">
+                                <i className="fas fa-database me-1" style={{ fontSize: '14px' }}></i>
+                                Database:
+                              </strong>
+                              <div className="mt-1">
+                                {database.map((tech, index) => (
+                                  <span key={index} className="badge bg-info me-1 mb-1">{tech}</span>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div className="mb-3">
+                              <strong className="d-flex align-items-center">
+                                <i className="fas fa-cogs me-1" style={{ fontSize: '14px' }}></i>
+                                DevOps:
+                              </strong>
+                              <div className="mt-1">
+                                {devops.map((tech, index) => (
+                                  <span key={index} className="badge bg-warning text-dark me-1 mb-1">{tech}</span>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div className="mt-3 p-2" style={{ backgroundColor: '#f8f9fa', borderRadius: '5px' }}>
+                              <small className="text-muted">
+                                <strong>Selection Criteria:</strong> Industry standards, Community support, 
+                                Scalability, Development speed, Long-term maintenance
+                              </small>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </Card.Body>
+                  </Card>
+                </div>
+              </div>
+              
+              <div className="row mt-3">
+                <div className="col-12">
                   <Card className="w-100">
                     <Card.Body>
                       <Card.Title>Recommended Buildly Open Source Tools</Card.Title>
@@ -1816,20 +1977,16 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                   <div className="m-2">
                     {releaseData && releaseData.length ? (
                       <div className="row">
-                        <div className="col-md-4">
+                        <div className="col-md-6">
                           <h6>Release Velocity</h6>
                           <p>Average time per release: {Math.round(releaseData.reduce((total, release) => total + (release.duration?.weeks || 0), 0) / releaseData.length)} weeks</p>
                         </div>
-                        <div className="col-md-4">
+                        <div className="col-md-6">
                           <h6>Team Productivity</h6>
                           <p>Active teams: {releaseData.reduce((teams, release) => {
                             release.team?.forEach(member => teams.add(member.role));
                             return teams;
                           }, new Set()).size}</p>
-                        </div>
-                        <div className="col-md-4">
-                          <h6>Budget Efficiency</h6>
-                          <p>Average cost per release: ${Math.round(releaseData.reduce((total, release) => total + (release.totalCost || 0), 0) / releaseData.length)}</p>
                         </div>
                       </div>
                     ) : (
@@ -1898,10 +2055,10 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                                 </div>
                                 <div style={{ textAlign: 'right', color: 'white' }}>
                                   <div style={{ fontSize: '12px' }}>
-                                    Budget: {release.duration?.weeks || 0} weeks
+                                    Estimated: {budgetEstimates[release.name]?.timeline_weeks || release.duration?.weeks || 12} weeks
                                   </div>
                                   <div style={{ fontSize: '12px' }}>
-                                    Actual: {Math.ceil((release.duration?.weeks || 0) * 1.2)} weeks
+                                    Actual: {Math.ceil((budgetEstimates[release.name]?.timeline_weeks || release.duration?.weeks || 12) * 1.2)} weeks
                                   </div>
                                 </div>
                               </Card.Header>

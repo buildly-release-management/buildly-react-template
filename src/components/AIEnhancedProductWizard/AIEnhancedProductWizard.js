@@ -406,27 +406,75 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
       const productUuid = productResult?.product_uuid || editData?.product_uuid;
       if (productUuid && data.budgetRange && data.budgetRange.length === 2) {
         try {
+          // Create detailed team configuration from wizard data
+          const teamConfiguration = [];
+          if (data.team && Object.keys(data.team).length > 0) {
+            // Convert team role counts to detailed team configuration
+            Object.entries(data.team).forEach(([role, count]) => {
+              if (count > 0) {
+                // Estimate weekly rates based on role
+                const roleRates = {
+                  'Frontend Developer': 2500,
+                  'Backend Developer': 2800,
+                  'Full-stack Developer': 3000,
+                  'QA Engineer': 2200,
+                  'Product Manager': 3500,
+                  'UI/UX Designer': 2600,
+                  'DevOps Engineer': 3200,
+                };
+                
+                teamConfiguration.push({
+                  role: role,
+                  count: parseInt(count),
+                  weeklyRate: roleRates[role] || 2500
+                });
+              }
+            });
+          }
+
+          // Calculate timeline in weeks
+          const estimatedDuration = data.estimatedDuration?.includes('1-3') ? 8 :
+                                  data.estimatedDuration?.includes('3-6') ? 18 :
+                                  data.estimatedDuration?.includes('6-9') ? 30 :
+                                  data.estimatedDuration?.includes('9-12') ? 42 : 24;
+
           const budgetPayload = {
             product_uuid: productUuid,
             total_budget: data.budgetRange[1], // Use upper range as total budget
-            release_budgets: [],
+            release_budgets: [{
+              release_uuid: null, // Will be generated or linked when releases are created
+              release_name: 'Initial Release',
+              budget_estimate: {
+                total_budget: data.budgetRange[1],
+                base_cost: Math.round(data.budgetRange[1] * 0.8), // 80% of budget as base cost
+                timeline_weeks: estimatedDuration,
+                team: teamConfiguration,
+                risk_buffer: 20,
+                confidence: 'Medium',
+                estimation_source: 'wizard_configured',
+                last_updated: new Date().toISOString()
+              },
+              team_configuration: teamConfiguration,
+              total_cost: data.budgetRange[1]
+            }],
             last_updated: new Date().toISOString()
           };
           
           // If we have team information, calculate more detailed budget
-          if (data.team && Object.keys(data.team).length > 0) {
-            const teamSize = Object.values(data.team).reduce((sum, count) => sum + (parseInt(count) || 0), 0);
-            const estimatedDuration = data.estimatedDuration?.includes('3-6') ? 4.5 :
-                                    data.estimatedDuration?.includes('6-9') ? 7.5 :
-                                    data.estimatedDuration?.includes('9-12') ? 10.5 : 6;
+          if (teamConfiguration.length > 0) {
+            const calculatedCost = teamConfiguration.reduce((sum, member) => {
+              return sum + (member.count * member.weeklyRate * estimatedDuration);
+            }, 0);
             
-            // Average monthly cost per team member
-            const avgMonthlyCost = 8000;
-            const calculatedBudget = teamSize * avgMonthlyCost * estimatedDuration;
+            // Apply risk buffer
+            const bufferedCost = calculatedCost * 1.2; // 20% buffer
             
             // Use calculated budget if it's within the range, otherwise use range
-            if (calculatedBudget >= data.budgetRange[0] && calculatedBudget <= data.budgetRange[1]) {
-              budgetPayload.total_budget = Math.round(calculatedBudget);
+            if (bufferedCost >= data.budgetRange[0] && bufferedCost <= data.budgetRange[1]) {
+              budgetPayload.total_budget = Math.round(bufferedCost);
+              budgetPayload.release_budgets[0].budget_estimate.total_budget = Math.round(bufferedCost);
+              budgetPayload.release_budgets[0].budget_estimate.base_cost = Math.round(calculatedCost);
+              budgetPayload.release_budgets[0].total_cost = Math.round(bufferedCost);
             }
           }
           

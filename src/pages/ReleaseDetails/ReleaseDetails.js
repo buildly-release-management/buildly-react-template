@@ -178,7 +178,10 @@ const ReleaseDetails = ({ history }) => {
         product_uuid: productUuid,
         release_uuid: releaseUuid,
         date_created: new Date().toISOString(),
-        status: 'open'
+        status: 'open',
+        // Add required fields for the API
+        application_name: releaseDetails?.name || 'Web Application',
+        version: releaseDetails?.version || '1.0.0'
       };
       // Log payload for debugging
       console.log('Submitting punchlist payload:', payload);

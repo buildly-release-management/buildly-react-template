@@ -9,10 +9,37 @@ export const useCreatePunchlistItemMutation = (product_uuid, displayAlert) => {
       console.log('useCreatePunchlistItemMutation: Creating punchlist item for product:', product_uuid);
       console.log('useCreatePunchlistItemMutation: Punchlist data:', punchlistData);
       
+      // Map frontend fields to API expected fields
+      const apiPayload = {
+        product_uuid: punchlistData.product_uuid || product_uuid,
+        reporter_name: punchlistData.reporter_name,
+        reporter_email: punchlistData.reporter_email,
+        application_name: punchlistData.application_name || 'Web Application', // Default if not provided
+        version: punchlistData.version || '1.0.0', // Default if not provided
+        issue_title: punchlistData.title, // Map title to issue_title
+        description: punchlistData.description,
+        expected_behavior: punchlistData.expected_behavior,
+        // Optional fields
+        severity: punchlistData.severity,
+        priority: punchlistData.priority,
+        steps_to_reproduce: punchlistData.steps_to_reproduce,
+        actual_behavior: punchlistData.actual_behavior,
+        environment: punchlistData.environment,
+        browser_version: punchlistData.browser_version,
+        screenshots: punchlistData.screenshots,
+        assigned_to: punchlistData.assigned_to,
+        tags: punchlistData.tags,
+        release_uuid: punchlistData.release_uuid,
+        date_created: punchlistData.date_created,
+        status: punchlistData.status
+      };
+      
+      console.log('useCreatePunchlistItemMutation: Transformed API payload:', apiPayload);
+      
       const response = await httpService.sendDirectServiceRequest(
         'punchlist/',
         'POST',
-        { ...punchlistData, product_uuid },
+        apiPayload,
         'product'
       );
       return response.data;
