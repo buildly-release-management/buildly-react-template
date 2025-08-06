@@ -1,14 +1,14 @@
-describe('Baseline', () => {
-  it('should run baseline test', () => {
-    expect(true).toBe(true);
-  });
-});
 // Baseline tests for Buildly React Template
 // These tests validate core functionality without complex dependencies
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
+describe('Baseline', () => {
+  it('should run baseline test', () => {
+    expect(true).toBe(true);
+  });
+});
 
 describe('Baseline Tests', () => {
   test('Jest configuration is working correctly', () => {
