@@ -48,7 +48,6 @@ import AIFormHelper from '@components/AIFormHelper/AIFormHelper';
 // Import wizard steps
 import ProductOverviewStep from './steps/ProductOverviewStep';
 import FeaturesStep from './steps/FeaturesStep';
-import TechnicalStep from './steps/TechnicalStep';
 import TeamTimelineStep from './steps/TeamTimelineStep';
 import BudgetDeploymentStep from './steps/BudgetDeploymentStep';
 
@@ -166,12 +165,6 @@ const WIZARD_STEPS = [
     aiPrompt: 'Based on your product type, here are some suggested features...',
   },
   {
-    id: 'technical',
-    title: 'Technical Details',
-    description: 'Technology stack and integrations',
-    aiPrompt: 'I recommend these technologies for your project...',
-  },
-  {
     id: 'team',
     title: 'Team & Timeline',
     description: 'Resources and project timeline',
@@ -197,11 +190,9 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
     description: '',
     type: '',
     features: [],
-    techStack: [],
     team: {},
     budget: '',
     timeline: '',
-    integrations: [],
   });
   const [aiSuggestions, setAiSuggestions] = useState([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -264,25 +255,14 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
         }
         break;
         
-      case 2: // Technical
-        if (currentData.type && AI_SUGGESTIONS.productType[currentData.type]) {
-          suggestions = AI_SUGGESTIONS.productType[currentData.type].techStack.map(tech => ({
-            type: 'technology',
-            value: tech,
-            description: `Recommended for ${currentData.type.toLowerCase()}`,
-            confidence: 0.88,
-          }));
-        }
-        break;
-        
-      case 3: // Team
+      case 2: // Team & Timeline (was case 3)
         suggestions = [
           { type: 'timeline', value: '4-6 months', description: 'Realistic timeline for MVP', confidence: 0.85 },
           { type: 'team', value: 'Agile team of 4-6', description: '2 developers, 1 designer, 1 PM', confidence: 0.9 },
         ];
         break;
         
-      case 4: // Budget
+      case 3: // Budget & Deployment (was case 4)
         if (currentData.type && AI_SUGGESTIONS.productType[currentData.type]) {
           suggestions = [
             {
@@ -316,11 +296,6 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
       case 'feature':
         if (!newData.features.includes(suggestion.value)) {
           newData.features.push(suggestion.value);
-        }
-        break;
-      case 'technology':
-        if (!newData.techStack.includes(suggestion.value)) {
-          newData.techStack.push(suggestion.value);
         }
         break;
       case 'budget':
@@ -371,29 +346,46 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
         return;
       }
 
-      // Transform wizard data to API format
+      // Transform wizard data to API format - only include fields that exist in the API
       const productPayload = {
         name: data.productName || data.name,
         description: data.description || '',
-        product_type: data.productType || data.type,
-        target_users: data.targetUsers,
-        features: data.features?.join(', ') || '',
-        tech_stack: data.techStack?.join(', ') || '',
-        integrations: data.integrations?.join(', ') || '',
-        team_size: Object.values(data.team || {}).reduce((sum, count) => sum + (parseInt(count) || 0), 0),
-        estimated_timeline: data.estimatedDuration,
-        development_methodology: data.methodology,
-        team_location: data.teamLocation,
-        budget_range: data.budgetRange ? `${data.budgetRange[0]}-${data.budgetRange[1]}` : '',
-        deployment_type: data.deploymentType,
-        hosting_provider: data.hostingProvider,
-        domain_name: data.domainName,
-        analytics_platform: data.analyticsPllatform,
-        error_monitoring: data.errorMonitoring,
-        performance_monitoring: data.performanceMonitoring,
         // Add organization_uuid as required by the API
         organization_uuid: organization.organization_uuid,
       };
+
+      // Add optional fields that exist in the API
+      if (data.startDate) {
+        productPayload.start_date = data.startDate;
+      }
+      if (data.endDate) {
+        productPayload.end_date = data.endDate;
+      }
+      if (data.projectManagerUuid) {
+        productPayload.project_manager_uuid = data.projectManagerUuid;
+      }
+      if (data.productTeamUuid) {
+        productPayload.product_team = data.productTeamUuid;
+      }
+      
+      // Store additional wizard data in product_info as JSON for reference
+      const additionalInfo = {
+        features: data.features || [],
+        targetUsers: data.targetUsers,
+        budgetRange: data.budgetRange,
+        methodology: data.methodology,
+        teamLocation: data.teamLocation,
+        teamSize: Object.values(data.team || {}).reduce((sum, count) => sum + (parseInt(count) || 0), 0),
+        estimatedTimeline: data.estimatedDuration,
+        deploymentType: data.deploymentType,
+        hostingProvider: data.hostingProvider,
+        domainName: data.domainName,
+        productType: data.productType || data.type,
+      };
+      
+      if (Object.keys(additionalInfo).some(key => additionalInfo[key] !== undefined && additionalInfo[key] !== null && additionalInfo[key] !== '')) {
+        productPayload.product_info = JSON.stringify(additionalInfo);
+      }
 
       // Add product_uuid for updates
       if (editMode && editData?.product_uuid) {
@@ -432,10 +424,8 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
       case 1:
         return <FeaturesStep data={data} setData={setData} classes={classes} />;
       case 2:
-        return <TechnicalStep data={data} setData={setData} classes={classes} />;
-      case 3:
         return <TeamTimelineStep data={data} setData={setData} classes={classes} />;
-      case 4:
+      case 3:
         return (
           <BudgetDeploymentStep 
             data={data} 
@@ -609,30 +599,5 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
   );
 };
 
-
-  // Helper function to render step content (moved inside component for scope)
-  const renderStepContent = (step, data, setData, classes) => {
-    switch (step) {
-      case 0:
-        return <ProductOverviewStep data={data} setData={setData} classes={classes} />;
-      case 1:
-        return <FeaturesStep data={data} setData={setData} classes={classes} />;
-      case 2:
-        return <TechnicalStep data={data} setData={setData} classes={classes} />;
-      case 3:
-        return <TeamTimelineStep data={data} setData={setData} classes={classes} />;
-      case 4:
-        return (
-          <BudgetDeploymentStep 
-            data={data} 
-            setData={setData} 
-            classes={classes} 
-            onComplete={handleWizardComplete}
-          />
-        );
-      default:
-        return null;
-    }
-  };
 
 export default AIEnhancedProductWizard;

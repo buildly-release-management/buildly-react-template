@@ -191,10 +191,15 @@ const AddBusinessTask = ({ history, location }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Required field validation
+    // Required field validation - only validate fields that are actually required by the API
     const userUuidResult = getCurrentUserUuid(user);
-    if (!title.isValid || !description.trim() || !product_uuid || !userUuidResult.uuid || !userUuidResult.isValid || !assignedToUser || (!selectedCategory && !selectedCustomCategory) || !priority || !status) {
+    if (!title.isValid || !description.trim() || !product_uuid || !assignedToUser) {
       displayAlert('error', 'Missing required business task fields. Please complete all required fields.');
+      return;
+    }
+    // Check if user UUID is available for assigned_by_user_uuid
+    if (!userUuidResult.uuid || !userUuidResult.isValid) {
+      displayAlert('error', 'Unable to determine current user for task assignment.');
       return;
     }
     const taskData = {
