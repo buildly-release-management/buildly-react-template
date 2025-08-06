@@ -255,7 +255,7 @@ describe('Insights Performance Tests', () => {
       defaultOptions: {
         queries: {
           retry: (failureCount, error) => {
-            if (error?.response?.status === 404) return false;
+            if (error?.response?.status === 404) {return false;}
             return failureCount < 2;
           },
           refetchOnWindowFocus: false
