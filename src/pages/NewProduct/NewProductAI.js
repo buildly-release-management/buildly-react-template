@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
 import { Box } from '@mui/material';
+import { useHistory } from 'react-router-dom';
 import AIEnhancedProductWizard from '@components/AIEnhancedProductWizard/AIEnhancedProductWizard';
 
 const NewProductAI = () => {
   const [wizardOpen, setWizardOpen] = useState(true);
+  const history = useHistory();
 
   const handleWizardClose = () => {
     setWizardOpen(false);
     // Redirect to product portfolio after closing
-    window.location.href = '/app/product-portfolio';
-  };
-
-  const handleWizardSave = (productData) => {
-    // Handle product creation logic here
-    console.log('Product created with AI wizard:', productData);
-    setWizardOpen(false);
-    window.location.href = '/app/product-portfolio';
+    history.push('/app/product-portfolio');
   };
 
   return (
@@ -23,7 +18,7 @@ const NewProductAI = () => {
       <AIEnhancedProductWizard
         open={wizardOpen}
         onClose={handleWizardClose}
-        onSave={handleWizardSave}
+        onSave={() => {}} // This is now handled internally by the wizard
       />
     </Box>
   );

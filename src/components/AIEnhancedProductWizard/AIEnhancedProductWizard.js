@@ -36,6 +36,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCreateProductMutation } from '@react-query/mutations/product/createProductMutation';
+import { useUpdateProductMutation } from '@react-query/mutations/product/updateProductMutation';
 import { useHistory } from 'react-router-dom';
 import useAlert from '@hooks/useAlert';
 import { useContext } from 'react';
@@ -208,7 +209,16 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
 
   // Product creation mutation
   const createProductMutation = useCreateProductMutation(
-    organization?.product_uuid,
+    organization?.organization_uuid,
+    history,
+    '/dashboard',
+    () => {}, // clearProductFormData callback
+    displayAlert
+  );
+
+  // Product update mutation
+  const updateProductMutation = useUpdateProductMutation(
+    organization?.organization_uuid,
     history,
     '/dashboard',
     () => {}, // clearProductFormData callback
@@ -350,10 +360,21 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
 
   const handleWizardComplete = async (data) => {
     try {
+      // Validate required fields
+      if (!data.productName && !data.name) {
+        displayAlert('error', 'Product name is required');
+        return;
+      }
+
+      if (!organization?.organization_uuid) {
+        displayAlert('error', 'Organization information is missing. Please refresh and try again.');
+        return;
+      }
+
       // Transform wizard data to API format
       const productPayload = {
         name: data.productName || data.name,
-        description: data.description,
+        description: data.description || '',
         product_type: data.productType || data.type,
         target_users: data.targetUsers,
         features: data.features?.join(', ') || '',
@@ -370,15 +391,27 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
         analytics_platform: data.analyticsPllatform,
         error_monitoring: data.errorMonitoring,
         performance_monitoring: data.performanceMonitoring,
-        // Add any additional fields your API expects
-        organization: organization?.product_uuid,
+        // Add organization_uuid as required by the API
+        organization_uuid: organization.organization_uuid,
       };
 
-      await createProductMutation.mutateAsync(productPayload);
+      // Add product_uuid for updates
+      if (editMode && editData?.product_uuid) {
+        productPayload.product_uuid = editData.product_uuid;
+      }
+
+      console.log('AIEnhancedProductWizard: Processing product with payload:', productPayload);
+      
+      if (editMode) {
+        await updateProductMutation.mutateAsync(productPayload);
+      } else {
+        await createProductMutation.mutateAsync(productPayload);
+      }
+      
       onClose();
     } catch (error) {
-      console.error('Failed to create product:', error);
-      displayAlert('error', 'Failed to create product. Please try again.');
+      console.error('Failed to save product:', error);
+      // Error will be handled by the mutation's onError callback
     }
   };
 
@@ -545,12 +578,16 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={handleSave}
+                    onClick={() => handleWizardComplete(productData)}
                     size="large"
                     startIcon={<CheckIcon />}
                     style={{ minWidth: 180, fontWeight: 700, fontSize: '1.1rem' }}
+                    disabled={createProductMutation.isLoading || updateProductMutation.isLoading}
                   >
-                    {editMode ? 'Update Product' : 'Create Product'}
+                    {(createProductMutation.isLoading || updateProductMutation.isLoading)
+                      ? 'Saving...' 
+                      : (editMode ? 'Update Product' : 'Create Product')
+                    }
                   </Button>
                 ) : (
                   <Button

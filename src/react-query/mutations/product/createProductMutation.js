@@ -8,11 +8,13 @@ export const useCreateProductMutation = (organization, history, redirectTo, clea
 
   return useMutation(
     async (createProductData) => {
+      console.log('useCreateProductMutation: Creating product with data:', createProductData);
       const response = await httpService.makeRequest(
         'post',
         `${window.env.API_URL}product/product/`,
         createProductData,
       );
+      console.log('useCreateProductMutation: Product created successfully:', response);
       return response;
     },
     {
@@ -25,10 +27,21 @@ export const useCreateProductMutation = (organization, history, redirectTo, clea
           history.push(redirectTo, { selected_product: data.data.product_uuid });
         }
       },
-    },
-    {
-      onError: () => {
-        displayAlert('error', 'Unable to create product!');
+      onError: (error) => {
+        console.error('useCreateProductMutation: Error creating product:', error);
+        console.error('useCreateProductMutation: Error response:', error.response?.data);
+        let errorMessage = 'Unable to create product!';
+        
+        // Handle specific API errors
+        if (error.response?.data?.detail) {
+          errorMessage = error.response.data.detail;
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        displayAlert('error', errorMessage);
       },
     },
   );

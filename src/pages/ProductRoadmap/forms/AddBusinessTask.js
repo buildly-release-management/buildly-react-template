@@ -161,6 +161,17 @@ const AddBusinessTask = ({ history, location }) => {
   const { mutate: createBusinessTaskMutation, isLoading: isCreatingTask } = useCreateBusinessTaskMutation(product_uuid, displayAlert);
   const { mutate: updateBusinessTaskMutation, isLoading: isUpdatingTask } = useUpdateBusinessTaskMutation(displayAlert);
 
+  // Success handlers for mutations
+  const handleCreateSuccess = () => {
+    setFormModal(false);
+    history.push(redirectTo);
+  };
+
+  const handleUpdateSuccess = () => {
+    setFormModal(false);
+    history.push(redirectTo);
+  };
+
   const closeFormModal = () => {
     const dataHasChanged = (
       title.hasChanged() ||
@@ -178,7 +189,8 @@ const AddBusinessTask = ({ history, location }) => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     // Required field validation
     const userUuidResult = getCurrentUserUuid(user);
     if (!title.isValid || !description.trim() || !product_uuid || !userUuidResult.uuid || !userUuidResult.isValid || !assignedToUser || (!selectedCategory && !selectedCustomCategory) || !priority || !status) {
@@ -223,9 +235,13 @@ const AddBusinessTask = ({ history, location }) => {
       updateBusinessTaskMutation({ 
         taskUuid: editData.task_uuid, 
         taskData 
+      }, {
+        onSuccess: handleUpdateSuccess
       });
     } else {
-      createBusinessTaskMutation(taskData);
+      createBusinessTaskMutation(taskData, {
+        onSuccess: handleCreateSuccess
+      });
     }
   };
 
