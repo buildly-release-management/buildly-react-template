@@ -63,6 +63,7 @@ const Insights = () => {
   const [viewMode, setViewMode] = useState('timeline'); // 'timeline' or 'gantt'
   const [buildlyTools, setBuildlyTools] = useState([]);
   const [marketplaceTools, setMarketplaceTools] = useState([]);
+  const [loaderTimeout, setLoaderTimeout] = useState(false);
   
   // Team configuration states
   const [teamModalOpen, setTeamModalOpen] = useState(false);
@@ -541,7 +542,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
 
                 // Calculate release span based on feature completion dates
                 const calculateReleaseEndDate = (features, defaultReleaseDate) => {
-                  if (!features || features.length === 0) return defaultReleaseDate;
+                  if (!features || features.length === 0) {return defaultReleaseDate;}
 
                   const completionDates = features
                     .map(f => f.estimated_completion_date)
@@ -549,7 +550,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                     .map(date => new Date(date))
                     .sort((a, b) => b - a);
 
-                  if (completionDates.length === 0) return defaultReleaseDate;
+                  if (completionDates.length === 0) {return defaultReleaseDate;}
 
                   const latestFeatureDate = completionDates[0];
                   const bufferDays = 7;
@@ -839,7 +840,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
     const calculateRelevanceScore = (tool, productData) => {
       let score = 50; // Base score
       
-      if (!tool || !productData) return score;
+      if (!tool || !productData) {return score;}
       
       const toolName = tool.name?.toLowerCase() || '';
       const toolDesc = tool.description?.toLowerCase() || '';
@@ -856,7 +857,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
       
       // Language/framework relevance
       if (language.includes('javascript') || language.includes('react')) {
-        if (toolName.includes('react') || toolName.includes('ui')) score += 25;
+        if (toolName.includes('react') || toolName.includes('ui')) {score += 25;}
       }
       if (language.includes('angular') && toolName.includes('angular')) {
         score += 25;
@@ -875,6 +876,21 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
       fetchBuildlyTools();
     }
   }, [productData]);
+
+  // Timeout effect to prevent loader from staying on indefinitely
+  useEffect(() => {
+    if (selectedProduct && _.toNumber(selectedProduct) !== 0) {
+      // Reset timeout when product changes
+      setLoaderTimeout(false);
+      
+      // Set a timeout to force hide loader after 30 seconds
+      const timer = setTimeout(() => {
+        setLoaderTimeout(true);
+      }, 30000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [selectedProduct]);
 
   /**
    * Download pdf report
@@ -954,7 +970,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
 
   // Handle team configuration save
   const handleTeamSave = (teamConfig) => {
-    if (!selectedRelease) return;
+    if (!selectedRelease) {return;}
 
     // Calculate budget based on team configuration
     const estimate = budgetEstimates[selectedRelease.name];
@@ -1143,12 +1159,16 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
   // Check if Timeline/Budget data is ready for rendering
   const isTimelineBudgetDataReady = selectedProduct && 
     !isEssentialDataLoading && 
-    (releaseData && releaseData.length > 0) && 
-    (productData && productData.name);
+    (productData && productData.name) &&
+    // Either we have release data OR the release report has loaded (even if empty)
+    (releaseReport !== undefined);
   
   // Show loader for essential data AND while Timeline/Budget data is processing
-  const shouldShowLoader = isEssentialDataLoading || isEmailingReport || 
-    (selectedProduct && _.toNumber(selectedProduct) !== 0 && !isTimelineBudgetDataReady);
+  // But force hide after timeout to prevent infinite loading
+  const shouldShowLoader = !loaderTimeout && (
+    isEssentialDataLoading || isEmailingReport || 
+    (selectedProduct && _.toNumber(selectedProduct) !== 0 && !isTimelineBudgetDataReady)
+  );
 
   return (
     <>
@@ -1283,8 +1303,8 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                     const releaseDate = new Date(release.release_date);
                     const startDate = new Date(release.start_date);
                     
-                    if (releaseDate < now) return 'completed';
-                    if (startDate <= now && releaseDate >= now) return 'active';
+                    if (releaseDate < now) {return 'completed';}
+                    if (startDate <= now && releaseDate >= now) {return 'active';}
                     return 'planned';
                   })(),
                   target_date: release.release_date

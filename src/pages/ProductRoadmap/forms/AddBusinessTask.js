@@ -30,7 +30,7 @@ import { validators } from '@utils/validators';
 import { UserContext } from '@context/User.context';
 import SmartInput from '@components/SmartInput/SmartInput';
 import { getCurrentUserUuid } from '@utils/userUuid';
-import { getAllTaskCategoriesQuery } from '@react-query/queries/businessTasks/getAllTaskCategoriesQuery';
+import { getAllTaskCategoriesQuery, useGetAllTaskCategories } from '@react-query/queries/businessTasks/getAllTaskCategoriesQuery';
 import { getAllReleaseQuery } from '@react-query/queries/release/getAllReleaseQuery';
 import { useCreateBusinessTaskMutation, useUpdateBusinessTaskMutation } from '@react-query/mutations/businessTasks/businessTaskMutations';
 import { 
@@ -101,7 +101,7 @@ const AddBusinessTask = ({ history, location }) => {
   // Form fields
   const title = useInput((editData && editData.title) || '', { required: true });
   const [description, setDescription] = useState((editData && editData.description) || '');
-  const [selectedCategory, setSelectedCategory] = useState((editData && editData.category) || '');
+  const [selectedCategory, setSelectedCategory] = useState((editData && editData.category) || 'general');
   const [selectedCustomCategory, setSelectedCustomCategory] = useState((editData && editData.custom_category) || null);
   const [priority, setPriority] = useState((editData && editData.priority) || 'medium');
   const [status, setStatus] = useState((editData && editData.status) || 'not_started');
@@ -145,16 +145,12 @@ const AddBusinessTask = ({ history, location }) => {
   const [formError, setFormError] = useState({});
 
   // React queries
-  const { data: taskCategoriesResponse, isLoading: isCategoriesLoading } = useQuery(
-    ['taskCategories', organizationUuid],
-    () => getAllTaskCategoriesQuery(organizationUuid, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !!organizationUuid }
-  );
+  const { data: taskCategoriesResponse, isLoading: isCategoriesLoading } = useGetAllTaskCategories(organizationUuid, displayAlert);
 
-  // Ensure taskCategories is always an array
+  // Ensure taskCategories is always an array with fallback to standard categories
   const taskCategories = Array.isArray(taskCategoriesResponse) 
     ? taskCategoriesResponse 
-    : taskCategoriesResponse?.results || [];
+    : taskCategoriesResponse?.results || STANDARD_TASK_CATEGORIES;
 
   const { data: releases, isLoading: isReleasesLoading } = useQuery(
     ['allReleases', product_uuid],
@@ -223,7 +219,7 @@ const AddBusinessTask = ({ history, location }) => {
     
     // Debug logging to help identify the issue
     devLog.log('Form validation debug:', {
-      title: { value: title.value, isValid: title.isValid },
+      title: { value: title.value, trimmed: title.value.trim(), isEmpty: !title.value.trim() },
       description: { value: description, trimmed: description.trim(), isEmpty: !description.trim() },
       product_uuid: { value: product_uuid, exists: !!product_uuid },
       assignedToUser: { value: assignedToUser, exists: !!assignedToUser },
@@ -232,13 +228,13 @@ const AddBusinessTask = ({ history, location }) => {
     
     // Required field validation - only validate fields that are actually required by the API
     const userUuidResult = getCurrentUserUuid(user);
-    if (!title.isValid || !description.trim() || !product_uuid || !assignedToUser) {
+    if (!title.value.trim() || !description.trim() || !product_uuid || !assignedToUser) {
       // More specific error message
       const missingFields = [];
-      if (!title.isValid) missingFields.push('title');
-      if (!description.trim()) missingFields.push('description');
-      if (!product_uuid) missingFields.push('product selection');
-      if (!assignedToUser) missingFields.push('user assignment');
+      if (!title.value.trim()) {missingFields.push('Task Title');}
+      if (!description.trim()) {missingFields.push('Description');}
+      if (!product_uuid) {missingFields.push('Product Selection');}
+      if (!assignedToUser) {missingFields.push('User Assignment');}
       
       displayAlert('error', `Missing required business task fields: ${missingFields.join(', ')}. Please complete all required fields.`);
       return;
@@ -264,22 +260,22 @@ const AddBusinessTask = ({ history, location }) => {
       requires_approval: Boolean(requiresApproval),
     };
     // Add optional fields only if they have values
-    if (selectedCustomCategory) taskData.custom_category = selectedCustomCategory;
-    if (selectedRelease) taskData.release_uuid = selectedRelease;
-    if (releaseVersion) taskData.release_version = releaseVersion;
-    if (featureName) taskData.feature_name = featureName;
-    if (milestone) taskData.milestone = milestone;
-    if (dueDate) taskData.due_date = dueDate.toISOString();
-    if (estimatedHours) taskData.estimated_hours = parseFloat(estimatedHours);
-    if (actualHours) taskData.actual_hours = parseFloat(actualHours);
-    if (businessValue) taskData.business_value = businessValue;
-    if (acceptanceCriteria) taskData.acceptance_criteria = acceptanceCriteria;
-    if (successMetrics) taskData.success_metrics = successMetrics;
-    if (stakeholderEmails.length > 0) taskData.stakeholder_emails = stakeholderEmails;
-    if (tags.length > 0) taskData.tags = tags;
-    if (riskDescription) taskData.risk_description = riskDescription;
-    if (blockers) taskData.blockers = blockers;
-    if (isRecurring && recurrencePattern) taskData.recurrence_pattern = recurrencePattern;
+    if (selectedCustomCategory) {taskData.custom_category = selectedCustomCategory;}
+    if (selectedRelease) {taskData.release_uuid = selectedRelease;}
+    if (releaseVersion) {taskData.release_version = releaseVersion;}
+    if (featureName) {taskData.feature_name = featureName;}
+    if (milestone) {taskData.milestone = milestone;}
+    if (dueDate) {taskData.due_date = dueDate.toISOString();}
+    if (estimatedHours) {taskData.estimated_hours = parseFloat(estimatedHours);}
+    if (actualHours) {taskData.actual_hours = parseFloat(actualHours);}
+    if (businessValue) {taskData.business_value = businessValue;}
+    if (acceptanceCriteria) {taskData.acceptance_criteria = acceptanceCriteria;}
+    if (successMetrics) {taskData.success_metrics = successMetrics;}
+    if (stakeholderEmails.length > 0) {taskData.stakeholder_emails = stakeholderEmails;}
+    if (tags.length > 0) {taskData.tags = tags;}
+    if (riskDescription) {taskData.risk_description = riskDescription;}
+    if (blockers) {taskData.blockers = blockers;}
+    if (isRecurring && recurrencePattern) {taskData.recurrence_pattern = recurrencePattern;}
     // Log payload for debugging
     devLog.log('Submitting business task payload:', taskData);
     if (editPage) {
@@ -317,9 +313,8 @@ const AddBusinessTask = ({ history, location }) => {
 
   const submitDisabled = () => {
     return (
-      !title.value ||
-      !description ||
-      (!selectedCategory && !selectedCustomCategory) ||
+      !title.value.trim() ||
+      !description.trim() ||
       !assignedToUser ||
       isCreatingTask ||
       isUpdatingTask
@@ -409,7 +404,7 @@ const AddBusinessTask = ({ history, location }) => {
                   value={selectedCategory}
                   onChange={(e) => {
                     setSelectedCategory(e.target.value);
-                    if (e.target.value) setSelectedCustomCategory(null);
+                    if (e.target.value) {setSelectedCustomCategory(null);}
                   }}
                   helperText="Select a standard category or use custom category below"
                 >
@@ -436,7 +431,7 @@ const AddBusinessTask = ({ history, location }) => {
                   value={selectedCustomCategory || ''}
                   onChange={(e) => {
                     setSelectedCustomCategory(e.target.value);
-                    if (e.target.value) setSelectedCategory('');
+                    if (e.target.value) {setSelectedCategory('');}
                   }}
                   helperText="Organization-specific categories"
                 >
@@ -444,11 +439,11 @@ const AddBusinessTask = ({ history, location }) => {
                     <em>None</em>
                   </MenuItem>
                   {taskCategories && taskCategories.length > 0 && taskCategories.map((category) => (
-                    <MenuItem key={category.category_uuid} value={category.category_uuid}>
+                    <MenuItem key={category.value || category.category_uuid || category.id} value={category.value || category.category_uuid || category.id}>
                       <Chip
                         size="small"
-                        label={category.name}
-                        style={{ backgroundColor: category.color, color: 'white' }}
+                        label={category.label || category.name}
+                        style={{ backgroundColor: category.color || '#1976d2', color: 'white' }}
                         className={classes.categoryChip}
                       />
                     </MenuItem>

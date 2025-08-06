@@ -54,7 +54,7 @@ const useSessionManager = (options = {}) => {
 
   // Show session expiration warning
   const showSessionWarning = useCallback((timeRemaining) => {
-    if (!enableWarnings) return;
+    if (!enableWarnings) {return;}
 
     displayAlert('warning', 
       `Your session will expire in ${timeRemaining}. Please save your work and refresh the page to extend your session.`, 
@@ -66,7 +66,7 @@ const useSessionManager = (options = {}) => {
 
   // Show session expired notification
   const showSessionExpired = useCallback(() => {
-    if (!enableWarnings) return;
+    if (!enableWarnings) {return;}
 
     displayAlert('error', 
       'Your session has expired. Please refresh the page and log in again.', 
