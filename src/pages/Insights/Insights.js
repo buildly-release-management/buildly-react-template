@@ -1140,8 +1140,15 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
   const isSecondaryDataLoading = isGettingProductBudget || isGettingFeatures || isGettingIssues || 
     isGettingReleases || isGettingStatuses;
   
-  // Show loader for essential data, but don't block UI for secondary data like budget/features
-  const shouldShowLoader = isEssentialDataLoading || isEmailingReport;
+  // Check if Timeline/Budget data is ready for rendering
+  const isTimelineBudgetDataReady = selectedProduct && 
+    !isEssentialDataLoading && 
+    (releaseData && releaseData.length > 0) && 
+    (productData && productData.name);
+  
+  // Show loader for essential data AND while Timeline/Budget data is processing
+  const shouldShowLoader = isEssentialDataLoading || isEmailingReport || 
+    (selectedProduct && _.toNumber(selectedProduct) !== 0 && !isTimelineBudgetDataReady);
 
   return (
     <>

@@ -125,6 +125,7 @@ const ProductRoadmap = ({ history }) => {
   });
   const [featSearch, setFeatSearch] = useState('');
   const [issSearch, setIssSearch] = useState('');
+  const [hideCompleted, setHideCompleted] = useState(true); // Shared filter state for both Tabular and Kanban
 
   const { data: productData, isLoading: isAllProductLoading } = useQuery(
     ['allProducts', organization],
@@ -708,6 +709,8 @@ Please respond with ONLY a JSON object in this exact format (no markdown, no cod
                             setFeatSearch={setFeatSearch}
                             issSearch={issSearch}
                             setIssSearch={setIssSearch}
+                            hideCompleted={hideCompleted}
+                            setHideCompleted={setHideCompleted}
                           />
                         )}
                       />
@@ -731,6 +734,12 @@ Please respond with ONLY a JSON object in this exact format (no markdown, no cod
                             generateAIFeatureSuggestion={generateAIFeatureSuggestion}
                             showRelatedIssues={showRelatedIssues}
                             editBoard={editBoard}
+                            featSearch={featSearch}
+                            setFeatSearch={setFeatSearch}
+                            issSearch={issSearch}
+                            setIssSearch={setIssSearch}
+                            hideCompleted={hideCompleted}
+                            setHideCompleted={setHideCompleted}
                           />
                         )}
                       />

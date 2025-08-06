@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { useQuery } from 'react-query';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  Button, Divider, IconButton, ListItemIcon, MenuItem, Typography,
+  Button, Checkbox, Divider, FormControlLabel, IconButton, ListItemIcon, MenuItem, Typography,
 } from '@mui/material';
 import {
   AddTask as AddTaskIcon,
@@ -55,6 +55,8 @@ const Tabular = ({
   issSearch,
   setIssSearch,
   generateAIFeatureSuggestion,
+  hideCompleted,
+  setHideCompleted,
 }) => {
   const classes = useStyles();
   const { displayAlert } = useAlert();
@@ -165,9 +167,24 @@ const Tabular = ({
       _url: iss.issue_detail?.url || '',
     }));
 
-    setFeatureRows(_.orderBy(featRows, ['_status_order_id', 'feature_detail.kanban_column_order']));
-    setIssueRows(_.orderBy(issRows, ['_status_order_id', 'issue_detail.kanban_column_order']));
-  }, [statuses, features, issues]);
+    // Filter out completed items if hideCompleted is enabled
+    const filteredFeatRows = hideCompleted 
+      ? featRows.filter(feat => {
+          const status = feat._status?.toLowerCase();
+          return status !== 'done' && status !== 'complete' && status !== 'completed' && status !== 'closed';
+        })
+      : featRows;
+
+    const filteredIssRows = hideCompleted 
+      ? issRows.filter(iss => {
+          const status = iss._status?.toLowerCase();
+          return status !== 'done' && status !== 'complete' && status !== 'completed' && status !== 'closed';
+        })
+      : issRows;
+
+    setFeatureRows(_.orderBy(filteredFeatRows, ['_status_order_id', 'feature_detail.kanban_column_order']));
+    setIssueRows(_.orderBy(filteredIssRows, ['_status_order_id', 'issue_detail.kanban_column_order']));
+  }, [statuses, features, issues, hideCompleted]);
 
   useEffect(() => {
     if (!_.isEmpty(suggestedFeatures)) {
@@ -315,6 +332,7 @@ const Tabular = ({
             menuIndex={menuIndex}
             setMenuIndex={setMenuIndex}
             extraOptions={{
+              search: true,
               searchText: featSearch,
               searchProps: {
                 onChange: (e) => {
@@ -323,13 +341,25 @@ const Tabular = ({
               },
               customSearch,
               customSearchRender: (searchText, handleSearch, hideSearch, options) => (
-                <SearchInput
-                  searchText={featSearch}
-                  setSearchText={setFeatSearch}
-                  onSearch={handleSearch}
-                  onHide={hideSearch}
-                  options={options}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <SearchInput
+                    searchText={featSearch}
+                    setSearchText={setFeatSearch}
+                    onSearch={handleSearch}
+                    onHide={hideSearch}
+                    options={options}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={hideCompleted}
+                        onChange={(e) => setHideCompleted(e.target.checked)}
+                        color="primary"
+                      />
+                    }
+                    label="Hide Completed"
+                  />
+                </div>
               ),
             }}
           />
@@ -351,6 +381,7 @@ const Tabular = ({
             menuIndex={menuIndex}
             setMenuIndex={setMenuIndex}
             extraOptions={{
+              search: true,
               searchText: issSearch,
               searchProps: {
                 onChange: (e) => {
@@ -359,13 +390,25 @@ const Tabular = ({
               },
               customSearch,
               customSearchRender: (searchText, handleSearch, hideSearch, options) => (
-                <SearchInput
-                  searchText={issSearch}
-                  setSearchText={setIssSearch}
-                  onSearch={handleSearch}
-                  onHide={hideSearch}
-                  options={options}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <SearchInput
+                    searchText={issSearch}
+                    setSearchText={setIssSearch}
+                    onSearch={handleSearch}
+                    onHide={hideSearch}
+                    options={options}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={hideCompleted}
+                        onChange={(e) => setHideCompleted(e.target.checked)}
+                        color="primary"
+                      />
+                    }
+                    label="Hide Completed"
+                  />
+                </div>
               ),
             }}
           />

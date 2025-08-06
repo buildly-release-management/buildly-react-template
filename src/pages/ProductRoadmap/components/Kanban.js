@@ -14,7 +14,9 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Checkbox,
   Chip,
+  FormControlLabel,
   Grid,
   IconButton,
   Typography,
@@ -40,6 +42,7 @@ import {
   Task as TaskIcon,
 } from '@mui/icons-material';
 import Loader from '@components/Loader/Loader';
+import SearchInput from '@components/SearchInput/SearchInput';
 import useAlert from '@hooks/useAlert';
 import { getAllCredentialQuery } from '@react-query/queries/product/getAllCredentialQuery';
 import { getAllStatusQuery } from '@react-query/queries/release/getAllStatusQuery';
@@ -147,6 +150,12 @@ const Kanban = ({
   showRelatedIssues,
   editBoard,
   generateAIFeatureSuggestion,
+  featSearch,
+  setFeatSearch,
+  issSearch,
+  setIssSearch,
+  hideCompleted,
+  setHideCompleted,
 }) => {
   const classes = useStyles();
   const { displayAlert } = useAlert();
@@ -220,7 +229,16 @@ const Kanban = ({
           const feature = item;
 
           if (issues && issues.length) {
-            const featureIssues = issues.filter((issue) => issue.feature === feature.feature_uuid).sort((a, b) => a.issue_detail.kanban_column_order - b.issue_detail.kanban_column_order);
+            let featureIssues = issues.filter((issue) => issue.feature === feature.feature_uuid).sort((a, b) => a.issue_detail.kanban_column_order - b.issue_detail.kanban_column_order);
+            
+            // Filter out completed issues if hideCompleted is enabled
+            if (hideCompleted) {
+              featureIssues = featureIssues.filter(issue => {
+                const statusName = statuses.find(status => status.status_uuid === issue.status)?.name?.toLowerCase();
+                return statusName !== 'done' && statusName !== 'complete' && statusName !== 'completed' && statusName !== 'closed';
+              });
+            }
+            
             feature.issues = featureIssues;
             // if (featureIssues.length) {
             //   statusItems.push(...featureIssues);
@@ -230,6 +248,34 @@ const Kanban = ({
           statusItems.push(feature);
         });
 
+        // Filter out completed features if hideCompleted is enabled
+        let filteredStatusItems = statusItems;
+        if (hideCompleted) {
+          filteredStatusItems = statusItems.filter(item => {
+            const statusName = statuses.find(status => status.status_uuid === item.status)?.name?.toLowerCase();
+            return statusName !== 'done' && statusName !== 'complete' && statusName !== 'completed' && statusName !== 'closed';
+          });
+        }
+
+        // Apply search filtering
+        if (featSearch || issSearch) {
+          filteredStatusItems = filteredStatusItems.filter(item => {
+            // Feature search
+            const featureMatch = !featSearch || 
+              item.name?.toLowerCase().includes(featSearch.toLowerCase()) ||
+              item.description?.toLowerCase().includes(featSearch.toLowerCase());
+            
+            // Issue search - check if any of the item's issues match the search
+            const issueMatch = !issSearch || 
+              (item.issues && item.issues.some(issue => 
+                issue.name?.toLowerCase().includes(issSearch.toLowerCase()) ||
+                issue.description?.toLowerCase().includes(issSearch.toLowerCase())
+              ));
+            
+            return featureMatch && issueMatch;
+          });
+        }
+
         // const issuesNotInFeatures = statusIssues.filter((issue) => !featureUuids.includes(issue.feature));
         // statusItems.push(...issuesNotInFeatures);
 
@@ -237,7 +283,7 @@ const Kanban = ({
           ...cols,
           [sts.status_uuid]: {
             name: sts.name,
-            items: statusItems,
+            items: filteredStatusItems,
           },
         };
 
@@ -247,7 +293,7 @@ const Kanban = ({
       });
       setColumns(cols);
     }
-  }, [statuses, features, issues]);
+  }, [statuses, features, issues, hideCompleted, featSearch, issSearch]);
 
   const onDragEnd = (result, columns) => {
     console.log('Kanban: onDragEnd called with result:', result);
@@ -412,6 +458,37 @@ const Kanban = ({
         <FormHelperText error style={{ marginBottom: '16px' }}>
           Upgrade to be able to create more features
         </FormHelperText>
+      )}
+
+      {!!selectedProduct && _.toNumber(selectedProduct) !== 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+          <SearchInput
+            searchText={featSearch}
+            setSearchText={setFeatSearch}
+            onSearch={() => {}} // Features and issues are filtered in real-time through data processing
+            onHide={() => {}}
+            options={{}}
+            placeholder="Search features..."
+          />
+          <SearchInput
+            searchText={issSearch}
+            setSearchText={setIssSearch}
+            onSearch={() => {}} // Issues are filtered in real-time through data processing
+            onHide={() => {}}
+            options={{}}
+            placeholder="Search issues..."
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={hideCompleted}
+                onChange={(e) => setHideCompleted(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Hide Completed"
+          />
+        </div>
       )}
 
       {!!selectedProduct && _.toNumber(selectedProduct) !== 0 && (

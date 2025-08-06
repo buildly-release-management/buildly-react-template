@@ -2,6 +2,20 @@ const handleInputs = (event) => {
   // Input handling logic here
 };
 
+// Upload callback function for image uploads
+const uploadCallback = (file) => {
+  return new Promise((resolve, reject) => {
+    // Simple file reader for demo purposes
+    // In production, you would upload to your server/CDN
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      resolve({ data: { link: e.target.result } });
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 export const toolbarConfig = {
   options: [
     'inline',

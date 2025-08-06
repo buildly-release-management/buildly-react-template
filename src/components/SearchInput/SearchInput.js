@@ -4,16 +4,20 @@ import { Clear as ClearIcon } from '@mui/icons-material';
 import './SearchInput.css';
 
 const SearchInput = ({
-  options,
+  options = {},
   onSearch,
   onHide,
   searchText,
   setSearchText,
+  placeholder = "Search...",
 }) => {
   const onClose = (e) => {
     onHide(e);
     setSearchText('');
   };
+
+  // Safely access the aria-label or use placeholder as fallback
+  const ariaLabel = options?.textLabels?.toolbar?.search || placeholder;
 
   return (
     <div>
@@ -23,8 +27,9 @@ const SearchInput = ({
             fullWidth
             variant="standard"
             className="searchTextField"
+            placeholder={placeholder}
             InputProps={{
-              'aria-label': options.textLabels.toolbar.search,
+              'aria-label': ariaLabel,
             }}
             value={searchText || ''}
             onChange={(e) => {
