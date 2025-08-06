@@ -505,7 +505,7 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
             displayAlert('success', 'Product and budget saved successfully!');
           }
         } catch (budgetError) {
-          console.error('Failed to save budget (non-blocking):', budgetError);
+          devLog.error('Failed to save budget (non-blocking):', budgetError);
           // Don't fail the entire wizard for budget issues
           displayAlert('warning', 'Product created successfully, but budget information could not be saved. You can update it later.');
         }
@@ -515,7 +515,7 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
       
       onClose();
     } catch (error) {
-      console.error('Failed to save product:', error);
+      devLog.error('Failed to save product:', error);
       // Error will be handled by the mutation's onError callback
     }
   };
