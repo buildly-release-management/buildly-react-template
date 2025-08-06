@@ -81,6 +81,51 @@ function hasValidAccessToken() {
 }
 
 /**
+ * Gets the time remaining until token expiration in milliseconds
+ * @returns {number} milliseconds until expiration, or 0 if expired/no token
+ */
+function getTimeUntilExpiration() {
+  const expiresAt = localStorage.getItem('expires_at');
+  if (!expiresAt) return 0;
+  
+  const now = new Date();
+  const timeRemaining = parseInt(expiresAt, 10) - now.getTime();
+  return Math.max(0, timeRemaining);
+}
+
+/**
+ * Gets the time remaining until token expiration in human-readable format
+ * @returns {string} formatted time remaining
+ */
+function getFormattedTimeUntilExpiration() {
+  const timeMs = getTimeUntilExpiration();
+  if (timeMs <= 0) return 'Expired';
+  
+  const minutes = Math.floor(timeMs / (1000 * 60));
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  
+  if (days > 0) {
+    return `${days} day${days > 1 ? 's' : ''} ${hours % 24} hour${(hours % 24) !== 1 ? 's' : ''}`;
+  } else if (hours > 0) {
+    return `${hours} hour${hours > 1 ? 's' : ''} ${minutes % 60} minute${(minutes % 60) !== 1 ? 's' : ''}`;
+  } else {
+    return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+  }
+}
+
+/**
+ * Checks if the session is about to expire (within warning threshold)
+ * @param {number} warningThresholdMinutes - minutes before expiration to show warning (default: 30)
+ * @returns {boolean} true if session expires within threshold
+ */
+function isSessionAboutToExpire(warningThresholdMinutes = 30) {
+  const timeMs = getTimeUntilExpiration();
+  const thresholdMs = warningThresholdMinutes * 60 * 1000;
+  return timeMs > 0 && timeMs <= thresholdMs;
+}
+
+/**
  * sets access token in the local storage and adds expires_at key
  * that indicates the token expiration unix timestamp
  * @param token - the token response
@@ -88,7 +133,7 @@ function hasValidAccessToken() {
 function setAccessToken(token) {
   if (token) {
     localStorage.setItem('token', JSON.stringify(token));
-    const expires_in = 8 * 3600; // 8 hours
+    const expires_in = 24 * 3600; // 24 hours (extended from 8 hours)
     // if (token.expires_in) {
     const expiresInMilliSeconds = expires_in * 1000;
     const now = new Date();
@@ -122,4 +167,7 @@ export const oauthService = {
   getJwtToken,
   logout,
   setCurrentCoreUser,
+  getTimeUntilExpiration,
+  getFormattedTimeUntilExpiration,
+  isSessionAboutToExpire,
 };

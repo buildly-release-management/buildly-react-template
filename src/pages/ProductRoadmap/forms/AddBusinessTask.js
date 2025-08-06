@@ -110,9 +110,8 @@ const AddBusinessTask = ({ history, location }) => {
     if (editData && editData.assigned_to_user_uuid) {
       return editData.assigned_to_user_uuid;
     }
-    // For new tasks, default to current user if available
-    const userUuidResult = getCurrentUserUuid(user);
-    return userUuidResult.isValid ? userUuidResult.uuid : null;
+    // For new tasks, we'll set this in useEffect when data is available
+    return null;
   });
   const [selectedRelease, setSelectedRelease] = useState((editData && editData.release_uuid) || release_uuid || '');
   const [releaseVersion, setReleaseVersion] = useState((editData && editData.release_version) || '');
@@ -166,6 +165,27 @@ const AddBusinessTask = ({ history, location }) => {
   // Fetch organization members for user assignment
   const { data: organizationMembers = [], isLoading: isMembersLoading } = useOrganizationMembers();
 
+  // Effect to set default assignedToUser when data is available
+  useEffect(() => {
+    // Only set if not in edit mode and no user is currently assigned
+    if (!editPage && !assignedToUser && user && organizationMembers.length > 0) {
+      const userUuidResult = getCurrentUserUuid(user);
+      if (userUuidResult.isValid) {
+        // Check if the current user is in the organization members list
+        const currentUserInMembers = organizationMembers.find(member => 
+          (member.core_user_uuid === userUuidResult.uuid) || 
+          (member.id === userUuidResult.uuid)
+        );
+        if (currentUserInMembers) {
+          setAssignedToUser(userUuidResult.uuid);
+          devLog.log('Auto-assigned task to current user:', userUuidResult.uuid);
+        } else {
+          devLog.log('Current user not found in organization members, leaving assignment blank');
+        }
+      }
+    }
+  }, [user, organizationMembers, editPage, assignedToUser]);
+
   // Mutations
   const { mutate: createBusinessTaskMutation, isLoading: isCreatingTask } = useCreateBusinessTaskMutation(product_uuid, displayAlert);
   const { mutate: updateBusinessTaskMutation, isLoading: isUpdatingTask } = useUpdateBusinessTaskMutation(displayAlert);
@@ -200,10 +220,27 @@ const AddBusinessTask = ({ history, location }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Debug logging to help identify the issue
+    devLog.log('Form validation debug:', {
+      title: { value: title.value, isValid: title.isValid },
+      description: { value: description, trimmed: description.trim(), isEmpty: !description.trim() },
+      product_uuid: { value: product_uuid, exists: !!product_uuid },
+      assignedToUser: { value: assignedToUser, exists: !!assignedToUser },
+      user: { context: user, hasUuid: !!getCurrentUserUuid(user).uuid }
+    });
+    
     // Required field validation - only validate fields that are actually required by the API
     const userUuidResult = getCurrentUserUuid(user);
     if (!title.isValid || !description.trim() || !product_uuid || !assignedToUser) {
-      displayAlert('error', 'Missing required business task fields. Please complete all required fields.');
+      // More specific error message
+      const missingFields = [];
+      if (!title.isValid) missingFields.push('title');
+      if (!description.trim()) missingFields.push('description');
+      if (!product_uuid) missingFields.push('product selection');
+      if (!assignedToUser) missingFields.push('user assignment');
+      
+      displayAlert('error', `Missing required business task fields: ${missingFields.join(', ')}. Please complete all required fields.`);
       return;
     }
     // Check if user UUID is available for assigned_by_user_uuid

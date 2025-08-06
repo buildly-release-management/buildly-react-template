@@ -4,6 +4,7 @@ import { Route, Redirect, Switch } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { Container } from '@mui/material';
 import { UserContext, getUser } from '@context/User.context';
+import useSessionManager from '@hooks/useSessionManager';
 import Insights from '@pages/Insights/Insights';
 import TopBar from '@layout/TopBar/TopBar';
 import ProductRoadmap from '@pages/ProductRoadmap/ProductRoadmap';
@@ -36,6 +37,13 @@ const useStyles = makeStyles((theme) => ({
 
 const ContainerDashboard = ({ location, history }) => {
   const classes = useStyles();
+  
+  // Initialize session manager with warnings
+  const sessionManager = useSessionManager({
+    warningThresholdMinutes: 30, // Show warning 30 minutes before expiration
+    checkIntervalSeconds: 60,    // Check session every minute
+    enableWarnings: true,        // Enable session warnings
+  });
 
   return (
     <div className={classes.root}>
@@ -43,6 +51,7 @@ const ContainerDashboard = ({ location, history }) => {
         <TopBar
           location={location}
           history={history}
+          sessionManager={sessionManager}
         />
         <Container className={classes.content}>
           <Switch>

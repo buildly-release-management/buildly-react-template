@@ -29,6 +29,7 @@ import {
 } from '@mui/material';
 import logo from '@assets/buildly-product-labs-orange-white.png';
 import { UserContext } from '@context/User.context';
+import SessionStatus from '@components/SessionStatus/SessionStatus';
 import { routes } from '@routes/routesConstants';
 import { hasGlobalAdminRights, hasAdminRights } from '@utils/permissions';
 import { useElements, useStripe } from '@stripe/react-stripe-js';
@@ -156,7 +157,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const TopBar = ({ history, location }) => {
+const TopBar = ({ history, location, sessionManager }) => {
   const classes = useStyles();
   const user = useContext(UserContext);
   const isAdmin = hasAdminRights(user) || hasGlobalAdminRights(user);
@@ -394,6 +395,18 @@ const TopBar = ({ history, location }) => {
               <Typography>{user.first_name}</Typography>
               <Typography>{`${user.organization.name}, ${user.user_type}`}</Typography>
             </div>
+            
+            {/* Session Status Display */}
+            {sessionManager && (
+              <Box sx={{ mr: 2 }}>
+                <SessionStatus 
+                  sessionStatus={sessionManager.sessionStatus}
+                  refreshSession={sessionManager.refreshSession}
+                  showRefreshButton={true}
+                />
+              </Box>
+            )}
+            
             <Tooltip title="Account settings">
               <IconButton
                 size="small"
