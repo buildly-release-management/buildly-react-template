@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import _ from 'lodash';
+import { devLog } from '@utils/devLogger';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import {
   MainContainer, ChatContainer, MessageList, Message, MessageInput, TypingIndicator,
@@ -126,7 +127,7 @@ const generateContextualSuggestions = async (pathname) => {
       return [];
     }
     
-    console.log('Chatbot: Using URL:', chatbotUrl, 'Production:', window.env.PRODUCTION);
+    devLog.log('Chatbot: Using URL:', chatbotUrl, 'Production:', window.env.PRODUCTION);
     
     const response = await fetch(chatbotUrl, {
       method: 'POST',
@@ -290,16 +291,16 @@ const Chatbot = () => {
       // Check for specific error types
       if (error.response && error.response.status === 500) {
         errorMessage = "The chatbot service is experiencing technical difficulties. Our team has been notified.";
-        console.log('Chatbot 500 error - service issue, not CORS');
+        devLog.error('Chatbot 500 error - service issue, not CORS');
       } else if (error.message.includes('CORS')) {
         errorMessage = "The chatbot service is currently unavailable due to a configuration issue. Please try again later.";
-        console.log('CORS error detected');
+        devLog.error('CORS error detected');
       } else if (error.message.includes('fetch')) {
         errorMessage = "Unable to connect to the chatbot service. Please check your internet connection.";
-        console.log('Network/fetch error');
+        devLog.error('Network/fetch error');
       } else if (error.response && error.response.status >= 400 && error.response.status < 500) {
         errorMessage = "There was an issue with your request. Please try rephrasing your question.";
-        console.log(`Chatbot client error: ${error.response.status}`);
+        devLog.error(`Chatbot client error: ${error.response.status}`);
       }
       
       setMessages([...chatMessages, {

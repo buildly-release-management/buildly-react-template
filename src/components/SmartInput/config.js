@@ -1,5 +1,5 @@
-const uploadCallback = (event) => {
-  console.log('event', event);
+const handleInputs = (event) => {
+  // Input handling logic here
 };
 
 export const toolbarConfig = {

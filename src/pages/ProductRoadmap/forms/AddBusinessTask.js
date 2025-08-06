@@ -23,6 +23,7 @@ import FormModal from '@components/Modal/FormModal';
 import Loader from '@components/Loader/Loader';
 import AIFormHelper from '@components/AIFormHelper/AIFormHelper';
 import useAlert from '@hooks/useAlert';
+import { devLog } from '@utils/devLogger';
 import { useInput } from '@hooks/useInput';
 import useOrganizationMembers from '@hooks/useOrganizationMembers';
 import { validators } from '@utils/validators';
@@ -243,7 +244,7 @@ const AddBusinessTask = ({ history, location }) => {
     if (blockers) taskData.blockers = blockers;
     if (isRecurring && recurrencePattern) taskData.recurrence_pattern = recurrencePattern;
     // Log payload for debugging
-    console.log('Submitting business task payload:', taskData);
+    devLog.log('Submitting business task payload:', taskData);
     if (editPage) {
       updateBusinessTaskMutation({ 
         taskUuid: editData.task_uuid, 

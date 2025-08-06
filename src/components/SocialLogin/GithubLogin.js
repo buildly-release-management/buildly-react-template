@@ -33,7 +33,7 @@ const GithubLogin = ({ socialLoginMutation, history, disabled }) => {
   };
 
   const onFailure = (error) => {
-    console.log(error);
+    // Handle GitHub login failure silently
   };
 
   return (

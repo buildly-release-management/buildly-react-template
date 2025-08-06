@@ -41,7 +41,7 @@ const TrelloLogin = ({ history, disabled }) => {
   };
 
   const onFailure = (error) => {
-    console.log(error);
+    // Handle Trello login failure silently
   };
 
   return (

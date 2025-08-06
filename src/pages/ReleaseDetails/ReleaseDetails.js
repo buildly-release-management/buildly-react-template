@@ -41,6 +41,7 @@ import { getProductPunchlistQuery } from '@react-query/queries/punchlist/getProd
 import { useCreatePunchlistItemMutation, useUpdatePunchlistStatusMutation, useDeletePunchlistItemMutation } from '@react-query/mutations/punchlist/punchlistMutations';
 import ReleaseForm from './components/ReleaseForm';
 import './ReleaseDetails.css';
+import { devLog } from '@utils/devLogger';
 
 const ReleaseDetails = ({ history }) => {
   const { releaseUuid } = useParams();
@@ -225,7 +226,7 @@ const ReleaseDetails = ({ history }) => {
       };
       
       // Log payload for debugging
-      console.log('Submitting punchlist payload:', payload);
+      devLog.log('Submitting punchlist payload:', payload);
       await createPunchlistMutation.mutateAsync(payload);
       
       // Reset form
@@ -257,7 +258,7 @@ const ReleaseDetails = ({ history }) => {
 
   const handleUpdatePunchlistStatus = async (itemUuid, newStatus) => {
     try {
-      console.log('Updating punchlist status:', { itemUuid, newStatus });
+      devLog.log('Updating punchlist status:', { itemUuid, newStatus });
       await updatePunchlistMutation.mutateAsync({
         punchlist_uuid: itemUuid,
         status: newStatus,
@@ -274,7 +275,7 @@ const ReleaseDetails = ({ history }) => {
 
   const handleRemovePunchlistItem = async (itemUuid) => {
     try {
-      console.log('Deleting punchlist item:', itemUuid);
+      devLog.log('Deleting punchlist item:', itemUuid);
       await deletePunchlistMutation.mutateAsync(itemUuid);
       displayAlert('success', 'Punchlist item removed');
     } catch (error) {

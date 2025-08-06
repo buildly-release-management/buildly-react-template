@@ -1,18 +1,19 @@
 import { useMutation, useQueryClient } from 'react-query';
 import { httpService } from '@modules/http/http.service';
+import { devLog } from '@utils/devLogger';
 
 export const useUpdateProductMutation = (organization, history, redirectTo, clearProductFormData, displayAlert) => {
   const queryClient = useQueryClient();
 
   return useMutation(
     async (updateProductData) => {
-      console.log('useUpdateProductMutation: Updating product with data:', updateProductData);
+      devLog.log('useUpdateProductMutation: Updating product with data:', updateProductData);
       const response = await httpService.makeRequest(
         'put',
-        `${window.env.API_URL}product/product/${updateProductData.product_uuid}/`,
-        updateProductData,
+        `product/${updateProductData.product_uuid}/`,
+        updateProductData
       );
-      console.log('useUpdateProductMutation: Product updated successfully:', response);
+      devLog.log('useUpdateProductMutation: Product updated successfully:', response);
       return response;
     },
     {

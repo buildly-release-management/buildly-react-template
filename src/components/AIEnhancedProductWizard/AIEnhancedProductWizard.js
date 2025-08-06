@@ -41,6 +41,7 @@ import { useHistory } from 'react-router-dom';
 import useAlert from '@hooks/useAlert';
 import { useContext } from 'react';
 import { UserContext } from '@context/User.context';
+import { devLog } from '@utils/devLogger';
 
 // Import existing AI helper
 import AIFormHelper from '@components/AIFormHelper/AIFormHelper';
@@ -393,7 +394,7 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
         productPayload.product_uuid = editData.product_uuid;
       }
 
-      console.log('AIEnhancedProductWizard: Processing product with payload:', productPayload);
+      devLog.log('AIEnhancedProductWizard: Processing product with payload:', productPayload);
       
       let productResult;
       if (editMode) {
@@ -478,7 +479,7 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
             }
           }
           
-          console.log('AIEnhancedProductWizard: Saving budget with payload:', budgetPayload);
+          devLog.log('AIEnhancedProductWizard: Saving budget with payload:', budgetPayload);
           
           // Use direct HTTP call since we can't call hooks inside async functions
           const { httpService } = await import('@modules/http/http.service');
@@ -490,17 +491,17 @@ const AIEnhancedProductWizard = ({ open, onClose, editData = null, onSave }) => 
               budgetPayload,
               'product'
             );
-            console.log('AIEnhancedProductWizard: Budget saved successfully', response.data);
+            devLog.log('AIEnhancedProductWizard: Budget saved successfully', response.data);
             displayAlert('success', 'Product and budget saved successfully!');
           } catch (directError) {
             // Fallback to main API if direct service fails
-            console.log('AIEnhancedProductWizard: Direct service failed, trying main API...', directError.response?.status);
+            devLog.log('AIEnhancedProductWizard: Direct service failed, trying main API...', directError.response?.status);
             const response = await httpService.makeRequest(
               'post',
               `${window.env.API_URL}product/budget/by-product/${productUuid}/`,
               budgetPayload,
             );
-            console.log('AIEnhancedProductWizard: Budget saved successfully', response.data);
+            devLog.log('AIEnhancedProductWizard: Budget saved successfully', response.data);
             displayAlert('success', 'Product and budget saved successfully!');
           }
         } catch (budgetError) {

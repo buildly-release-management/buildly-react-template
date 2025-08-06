@@ -1,4 +1,5 @@
 import { oauthService } from '@modules/oauth/oauth.service';
+import { devLog } from '@utils/devLogger';
 import request from './main';
 
 /**
@@ -26,7 +27,7 @@ function makeRequest(method, url, body, useJwt, contentType, responseType, skipA
   }
 
   // Enhanced logging for debugging
-  console.log('makeRequest: Request details', {
+  devLog.log('makeRequest: Request details', {
     method,
     url,
     hasToken: !!token,
@@ -73,7 +74,7 @@ function sendDirectServiceRequest(endpoint, method = 'GET', body = null, service
   // Construct full URL
   const url = `${baseUrl}${endpoint}`;
   
-  console.log('sendDirectServiceRequest: Making request', {
+  devLog.log('sendDirectServiceRequest: Making request', {
     service,
     endpoint,
     method,

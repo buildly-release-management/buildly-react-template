@@ -1,13 +1,15 @@
 import { useMutation, useQueryClient } from 'react-query';
 import { httpService } from '@modules/http/http.service';
+import { oauthService } from '@modules/oauth/oauth.service';
+import { devLog } from '@utils/devLogger';
 
 export const useCreatePunchlistItemMutation = (product_uuid, displayAlert) => {
   const queryClient = useQueryClient();
 
   return useMutation(
     async (punchlistData) => {
-      console.log('useCreatePunchlistItemMutation: Creating punchlist item for product:', product_uuid);
-      console.log('useCreatePunchlistItemMutation: Punchlist data:', punchlistData);
+      devLog.log('useCreatePunchlistItemMutation: Creating punchlist item for product:', product_uuid);
+      devLog.log('useCreatePunchlistItemMutation: Punchlist data:', punchlistData);
       
       // Validate required fields before sending to API
       const requiredFields = [
@@ -57,7 +59,7 @@ export const useCreatePunchlistItemMutation = (product_uuid, displayAlert) => {
         status: punchlistData.status || 'open'
       };
       
-      console.log('useCreatePunchlistItemMutation: Transformed API payload:', apiPayload);
+      devLog.log('useCreatePunchlistItemMutation: Transformed API payload:', apiPayload);
       
       const response = await httpService.sendDirectServiceRequest(
         'punchlist/',
@@ -74,7 +76,7 @@ export const useCreatePunchlistItemMutation = (product_uuid, displayAlert) => {
         }
         // Invalidate and refetch punchlist queries
         await queryClient.invalidateQueries(['productPunchlist', product_uuid]);
-        console.log('useCreatePunchlistItemMutation: Punchlist item created successfully:', data);
+        devLog.log('useCreatePunchlistItemMutation: Punchlist item created successfully:', data);
       },
       onError: (error) => {
         console.error('useCreatePunchlistItemMutation: Error creating punchlist item:', error);
@@ -91,7 +93,7 @@ export const useUpdatePunchlistStatusMutation = (product_uuid, displayAlert) => 
 
   return useMutation(
     async ({ punchlist_uuid, status, assigned_to, resolution_notes }) => {
-      console.log('useUpdatePunchlistStatusMutation: Updating punchlist item:', punchlist_uuid);
+      devLog.log('useUpdatePunchlistStatusMutation: Updating punchlist item:', punchlist_uuid);
       
       // Validate required parameters
       if (!punchlist_uuid) {
@@ -107,7 +109,7 @@ export const useUpdatePunchlistStatusMutation = (product_uuid, displayAlert) => 
         resolution_notes: resolution_notes || ''
       };
       
-      console.log('useUpdatePunchlistStatusMutation: Update payload:', updatePayload);
+      devLog.log('useUpdatePunchlistStatusMutation: Update payload:', updatePayload);
       
       const response = await httpService.sendDirectServiceRequest(
         `punchlist/${punchlist_uuid}/update-status/`,
@@ -124,7 +126,7 @@ export const useUpdatePunchlistStatusMutation = (product_uuid, displayAlert) => 
         }
         // Invalidate and refetch punchlist queries
         await queryClient.invalidateQueries(['productPunchlist', product_uuid]);
-        console.log('useUpdatePunchlistStatusMutation: Status updated successfully:', data);
+        devLog.log('useUpdatePunchlistStatusMutation: Status updated successfully:', data);
       },
       onError: (error) => {
         console.error('useUpdatePunchlistStatusMutation: Error updating status:', error);
@@ -141,7 +143,7 @@ export const useDeletePunchlistItemMutation = (product_uuid, displayAlert) => {
 
   return useMutation(
     async (punchlist_uuid) => {
-      console.log('useDeletePunchlistItemMutation: Deleting punchlist item:', punchlist_uuid);
+      devLog.log('useDeletePunchlistItemMutation: Deleting punchlist item:', punchlist_uuid);
       
       // Validate required parameter
       if (!punchlist_uuid) {
@@ -163,7 +165,7 @@ export const useDeletePunchlistItemMutation = (product_uuid, displayAlert) => {
         }
         // Invalidate and refetch punchlist queries
         await queryClient.invalidateQueries(['productPunchlist', product_uuid]);
-        console.log('useDeletePunchlistItemMutation: Item deleted successfully:', data);
+        devLog.log('useDeletePunchlistItemMutation: Item deleted successfully:', data);
       },
       onError: (error) => {
         console.error('useDeletePunchlistItemMutation: Error deleting item:', error);

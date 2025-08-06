@@ -1,4 +1,6 @@
+import { useQuery } from 'react-query';
 import { httpService } from '@modules/http/http.service';
+import { devLog } from '@utils/devLogger';
 
 export const getAllFeatureQuery = async (product_uuid, displayAlert) => {
   try {
@@ -17,7 +19,7 @@ export const getAllFeatureQuery = async (product_uuid, displayAlert) => {
       return response.data;
     } catch (directError) {
       // Fallback to main API if direct service fails
-      console.log('getAllFeatureQuery: Direct service failed, trying main API...', directError.response?.status);
+      devLog.log('getAllFeatureQuery: Direct service failed, trying main API...', directError.response?.status);
       const response = await httpService.makeRequest(
         'get',
         `${window.env.RELEASE_SERVICE_URL}feature/?product_uuid=${product_uuid}`,

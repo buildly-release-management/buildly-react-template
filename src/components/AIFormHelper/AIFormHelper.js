@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { devLog } from '@utils/devLogger';
 import {
   IconButton,
   Tooltip,
@@ -50,9 +51,9 @@ const AIFormHelper = ({
     // Use the configured chatbot URL (automatically set based on environment)
     const chatbotUrl = window.env.BABBLE_CHATBOT_URL;
       
-    console.log('AIFormHelper: Making request to:', chatbotUrl);
-    console.log('AIFormHelper: With prompt:', prompt);
-    console.log('AIFormHelper: window.env object:', window.env);
+    devLog.log('AIFormHelper: Making request to:', chatbotUrl);
+    devLog.log('AIFormHelper: With prompt:', prompt);
+    devLog.log('AIFormHelper: window.env object:', window.env);
 
     // Check if URL is available
     if (!chatbotUrl) {
@@ -67,14 +68,14 @@ const AIFormHelper = ({
         body: JSON.stringify({ prompt }),
       });
       
-      console.log('AIFormHelper: Response status:', response.status);
+      devLog.log('AIFormHelper: Response status:', response.status);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('AIFormHelper: Response data:', data);
+      devLog.log('AIFormHelper: Response data:', data);
       
       // Split response by lines and clean up
       const suggestions = data.response

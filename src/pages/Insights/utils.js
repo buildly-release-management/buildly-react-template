@@ -4,6 +4,7 @@
  * @param releases
  * @returns {*[]|*}
  */
+import { devLog } from '@utils/devLogger';
 import {
   FaRegCalendarCheck, FaCloudsmith, FaQuestionCircle, FaPlaneDeparture, FaHubspot,
 } from 'react-icons/fa';
@@ -107,7 +108,7 @@ Example format:
       // Clean up potential markdown formatting from AI response
       responseText = responseText.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
       
-      console.log('AI Response (cleaned):', responseText);
+      devLog.log('AI Response (cleaned):', responseText);
       
       let estimates;
       try {
@@ -137,7 +138,7 @@ Example format:
       return updatedFeatures;
     }
   } catch (error) {
-    console.log('AI estimation failed, using fallback:', error);
+    devLog.warn('AI estimation failed, using fallback:', error);
   }
 
   // Fallback to simple estimation
@@ -218,7 +219,7 @@ Respond with JSON format:
       };
     }
   } catch (error) {
-    console.log('AI budget estimation failed, using fallback:', error);
+    devLog.warn('AI budget estimation failed, using fallback:', error);
   }
 
   // Fallback estimation based on features and issues
@@ -270,10 +271,7 @@ export const getReleaseBudgetData = (budgetData, releaseData) => {
 };
 
 export const addColorsAndIcons = (releases, budget) => {
-  console.log('addColorsAndIcons: Processing releases:', releases);
-  
   if (!releases || releases.length === 0) {
-    console.log('addColorsAndIcons: No releases to process');
     return [];
   }
 
@@ -281,7 +279,6 @@ export const addColorsAndIcons = (releases, budget) => {
   
   return releases.map((release, index) => {
     const releaseName = (release.name || release.release_name || '').toLowerCase();
-    console.log('addColorsAndIcons: Processing release name:', releaseName);
     
     let icon = FaPlaneDeparture; // Default icon
     
@@ -297,8 +294,6 @@ export const addColorsAndIcons = (releases, budget) => {
     } else if (releaseName.includes('final') || releaseName.includes('production') || releaseName.includes('v1.0')) {
       icon = FaRegCalendarCheck; // Check icon for final release
     }
-
-    console.log('addColorsAndIcons: Assigned icon:', icon, 'for release:', releaseName);
 
     const bgColor = colors[index % colors.length];
     
@@ -337,7 +332,6 @@ export const addColorsAndIcons = (releases, budget) => {
       budget: budget ? (budget / releases.length).toFixed(0) : null,
     };
     
-    console.log('addColorsAndIcons: Final processed release:', processedRelease);
     return processedRelease;
   });
 };

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from 'react-query';
 import { httpService } from '@modules/http/http.service';
+import { devLog } from '@utils/devLogger';
 import { useStore } from '@zustand/product/productStore';
 
 export const useCreateProductMutation = (organization, history, redirectTo, clearProductFormData, displayAlert) => {
@@ -8,13 +9,13 @@ export const useCreateProductMutation = (organization, history, redirectTo, clea
 
   return useMutation(
     async (createProductData) => {
-      console.log('useCreateProductMutation: Creating product with data:', createProductData);
+      devLog.log('useCreateProductMutation: Creating product with data:', createProductData);
       const response = await httpService.makeRequest(
         'post',
-        `${window.env.API_URL}product/product/`,
-        createProductData,
+        `product/by-org/${organizationUuid}/`,
+        createProductData
       );
-      console.log('useCreateProductMutation: Product created successfully:', response);
+      devLog.log('useCreateProductMutation: Product created successfully:', response);
       return response;
     },
     {

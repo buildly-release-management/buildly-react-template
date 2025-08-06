@@ -1,4 +1,5 @@
 import { httpService } from '@modules/http/http.service';
+import { devLog } from '@utils/devLogger';
 
 export const getAllStatusQuery = async (product_uuid, displayAlert) => {
   try {
@@ -17,7 +18,7 @@ export const getAllStatusQuery = async (product_uuid, displayAlert) => {
       return response.data;
     } catch (directError) {
       // Fallback to main API if direct service fails
-      console.log('getAllStatusQuery: Direct service failed, trying main API...', directError.response?.status);
+      devLog.log('getAllStatusQuery: Direct service failed, trying main API...', directError.response?.status);
       const response = await httpService.makeRequest(
         'get',
         `${window.env.API_URL}release/status/?product_uuid=${product_uuid}`,

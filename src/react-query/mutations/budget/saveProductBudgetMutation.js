@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from 'react-query';
 import { httpService } from '@modules/http/http.service';
+import { devLog } from '@utils/devLogger';
 
 export const useSaveProductBudgetMutation = (product_uuid, displayAlert) => {
   const queryClient = useQueryClient();
@@ -17,7 +18,7 @@ export const useSaveProductBudgetMutation = (product_uuid, displayAlert) => {
         return response.data;
       } catch (error) {
         // Fallback to main API if direct service fails
-        console.log('useSaveProductBudgetMutation: Direct service failed, trying main API...', error.response?.status);
+        devLog.log('useSaveProductBudgetMutation: Direct service failed, trying main API...', error.response?.status);
         const response = await httpService.makeRequest(
           'post',
           `${window.env.API_URL}product/budget/by-product/${product_uuid}/`,

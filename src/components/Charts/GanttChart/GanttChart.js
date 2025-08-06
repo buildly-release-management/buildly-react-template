@@ -32,7 +32,6 @@ const GanttChart = ({ releases = [], title = "Release Timeline", productContext 
   const [budgetEstimates, setBudgetEstimates] = useState({});
   const [savingBudget, setSavingBudget] = useState(false);
 
-    // Handle team configuration and AI budget generation
   const handleTeamConfig = async (release) => {
     setTeamConfigModal({ open: true, release });
     
@@ -316,7 +315,7 @@ const GanttChart = ({ releases = [], title = "Release Timeline", productContext 
         const release = releases[element.index];
         if (release) {
           // TODO: Navigate to release details
-          console.log('Navigate to release:', release);
+          devLog.log('Navigate to release:', release);
         }
       }
     },
