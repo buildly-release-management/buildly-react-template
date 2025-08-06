@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import _ from 'lodash';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Image from 'react-bootstrap/Image';
@@ -54,6 +54,7 @@ const Insights = () => {
   const { activeProduct, setActiveProduct } = useStore();
   const user = useContext(UserContext);
   const { displayAlert } = useAlert();
+  const queryClient = useQueryClient();
 
   // states
   const [selectedProduct, setSelectedProduct] = useState(activeProduct || 0);
@@ -68,6 +69,22 @@ const Insights = () => {
   const [selectedRelease, setSelectedRelease] = useState(null);
   const [budgetEstimates, setBudgetEstimates] = useState({});
   const [budgetLoading, setBudgetLoading] = useState({});
+
+  // Handler to clear cached data when product changes
+  const handleProductChange = async (newProductUuid) => {
+    // Clear all related queries to prevent stale data
+    queryClient.removeQueries(['productReport']);
+    queryClient.removeQueries(['releaseProductReport']);
+    queryClient.removeQueries(['productBudget']);
+    queryClient.removeQueries(['allFeatures']);
+    queryClient.removeQueries(['allIssues']);
+    queryClient.removeQueries(['allReleases']);
+    queryClient.removeQueries(['allStatuses']);
+    
+    // Update the selected product
+    setActiveProduct(newProductUuid);
+    setSelectedProduct(newProductUuid);
+  };
 
   // Collapsible sections state
   const [expandedSections, setExpandedSections] = useState({
@@ -117,43 +134,91 @@ const Insights = () => {
   const { data: reportData, isLoading: isGettingProductReport } = useQuery(
     ['productReport', selectedProduct],
     () => getProductReportQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+    { 
+      refetchOnWindowFocus: false, 
+      enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 2
+    },
   );
   const { data: releaseReport, isLoading: isGettingReleaseProductReport } = useQuery(
     ['releaseProductReport', selectedProduct],
     () => getReleaseProductReportQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+    { 
+      refetchOnWindowFocus: false, 
+      enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 2
+    },
   );
 
   const { data: budgetData, isLoading: isGettingProductBudget } = useQuery(
     ['productBudget', selectedProduct],
     () => getProductBudgetQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+    { 
+      refetchOnWindowFocus: false, 
+      enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: (failureCount, error) => {
+        // Don't retry on 404 errors (budget doesn't exist)
+        if (error?.response?.status === 404) {
+          return false;
+        }
+        return failureCount < 2;
+      }
+    },
   );
 
   // New queries for features, issues, and releases
   const { data: featuresData, isLoading: isGettingFeatures } = useQuery(
     ['allFeatures', selectedProduct],
     () => getAllFeatureQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+    { 
+      refetchOnWindowFocus: false, 
+      enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
+      staleTime: 3 * 60 * 1000, // 3 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 2
+    },
   );
 
   const { data: issuesData, isLoading: isGettingIssues } = useQuery(
     ['allIssues', selectedProduct],
     () => getAllIssueQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+    { 
+      refetchOnWindowFocus: false, 
+      enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
+      staleTime: 3 * 60 * 1000, // 3 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 2
+    },
   );
 
   const { data: releasesData, isLoading: isGettingReleases } = useQuery(
     ['allReleases', selectedProduct],
     () => getAllReleaseQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+    { 
+      refetchOnWindowFocus: false, 
+      enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
+      staleTime: 3 * 60 * 1000, // 3 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 2
+    },
   );
 
   const { data: statusLookupData, isLoading: isGettingStatuses } = useQuery(
     ['allStatuses', selectedProduct],
     () => getAllStatusQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+    { 
+      refetchOnWindowFocus: false, 
+      enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
+      staleTime: 15 * 60 * 1000, // 15 minutes (statuses change rarely)
+      cacheTime: 30 * 60 * 1000, // 30 minutes
+      retry: 2
+    },
   );
 
   const { mutate: emailReportMutation, isLoading: isEmailingReport } = useEmailReportMutation(selectedProduct, displayAlert);
@@ -1070,10 +1135,17 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
     }
   };
 
+  // Check if any critical data is still loading - only show loader while essential data loads
+  const isEssentialDataLoading = areProductsLoading || isGettingProductReport || isGettingReleaseProductReport;
+  const isSecondaryDataLoading = isGettingProductBudget || isGettingFeatures || isGettingIssues || 
+    isGettingReleases || isGettingStatuses;
+  
+  // Show loader for essential data, but don't block UI for secondary data like budget/features
+  const shouldShowLoader = isEssentialDataLoading || isEmailingReport;
+
   return (
     <>
-      {(areProductsLoading || isEmailingReport || isGettingProductReport || isGettingReleaseProductReport)
-      && <Loader open={areProductsLoading || isEmailingReport || isGettingProductReport || isGettingReleaseProductReport || isGettingFeatures || isGettingIssues || isGettingReleases || isGettingStatuses} />}
+      {shouldShowLoader && <Loader open={shouldShowLoader} />}
       <div className="insightsSelectedProductRoot">
         <Grid container mb={2} alignItems="center">
           <Grid item md={4}>
@@ -1092,8 +1164,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
               className="insightsSelectedProduct"
               value={selectedProduct}
               onChange={(e) => {
-                setActiveProduct(e.target.value);
-                setSelectedProduct(e.target.value);
+                handleProductChange(e.target.value);
               }}
             >
               <MenuItem value={0}>Select</MenuItem>
@@ -1113,6 +1184,19 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
 
       {!!selectedProduct && displayReport && _.toNumber(selectedProduct) !== 0 && (
         <>
+          {/* Show secondary loading indicator for additional data */}
+          {isSecondaryDataLoading && (
+            <Alert variant="info" className="mb-3">
+              Loading additional insights data... ({[
+                isGettingProductBudget && 'budget',
+                isGettingFeatures && 'features',
+                isGettingIssues && 'issues',
+                isGettingReleases && 'releases',
+                isGettingStatuses && 'statuses'
+              ].filter(Boolean).join(', ')})
+            </Alert>
+          )}
+          
           <div className="row mb-3">
             <section className="text-end">
               <Button

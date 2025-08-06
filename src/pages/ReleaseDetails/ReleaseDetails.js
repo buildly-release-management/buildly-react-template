@@ -98,9 +98,9 @@ const ReleaseDetails = ({ history }) => {
     }
   );
 
-  const createPunchlistMutation = useCreatePunchlistItemMutation(productUuid, displayAlert, refetchPunchlist);
-  const updatePunchlistMutation = useUpdatePunchlistStatusMutation(productUuid, displayAlert, refetchPunchlist);
-  const deletePunchlistMutation = useDeletePunchlistItemMutation(productUuid, displayAlert, refetchPunchlist);
+  const createPunchlistMutation = useCreatePunchlistItemMutation(productUuid, displayAlert);
+  const updatePunchlistMutation = useUpdatePunchlistStatusMutation(productUuid, displayAlert);
+  const deletePunchlistMutation = useDeletePunchlistItemMutation(productUuid, displayAlert);
 
   let featureNames = [];
   let barChartSummaryData = [];
@@ -167,11 +167,42 @@ const ReleaseDetails = ({ history }) => {
 
   // Punchlist handlers using new API
   const handleAddPunchlistItem = async () => {
-    // Required field validation
-    if (!newPunchlistItem.title.trim() || !newPunchlistItem.description.trim() || !productUuid || !releaseUuid) {
-      displayAlert('error', 'Missing required punchlist fields. Please fill in all required fields.');
+    // Required field validation with specific error messages
+    const validationErrors = [];
+    
+    if (!newPunchlistItem.title?.trim()) {
+      validationErrors.push('Issue Title is required');
+    }
+    if (!newPunchlistItem.description?.trim()) {
+      validationErrors.push('Description is required');
+    }
+    if (!newPunchlistItem.reporter_name?.trim()) {
+      validationErrors.push('Reporter Name is required');
+    }
+    if (!newPunchlistItem.reporter_email?.trim()) {
+      validationErrors.push('Reporter Email is required');
+    } else {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(newPunchlistItem.reporter_email)) {
+        validationErrors.push('Please enter a valid email address');
+      }
+    }
+    if (!newPunchlistItem.expected_behavior?.trim()) {
+      validationErrors.push('Expected Behavior is required');
+    }
+    if (!productUuid) {
+      validationErrors.push('Product UUID is missing');
+    }
+    if (!releaseUuid) {
+      validationErrors.push('Release UUID is missing');
+    }
+    
+    if (validationErrors.length > 0) {
+      displayAlert('error', validationErrors.join(', '));
       return;
     }
+    
     try {
       const payload = {
         ...newPunchlistItem,
@@ -179,13 +210,24 @@ const ReleaseDetails = ({ history }) => {
         release_uuid: releaseUuid,
         date_created: new Date().toISOString(),
         status: 'open',
-        // Add required fields for the API
-        application_name: releaseDetails?.name || 'Web Application',
-        version: releaseDetails?.version || '1.0.0'
+        // Ensure required fields have proper values
+        application_name: releaseDetails?.name || newPunchlistItem.application_name || 'Web Application',
+        version: releaseDetails?.version || newPunchlistItem.version || '1.0.0',
+        severity: newPunchlistItem.severity || 'medium',
+        priority: newPunchlistItem.priority || 'medium',
+        steps_to_reproduce: newPunchlistItem.steps_to_reproduce || '',
+        actual_behavior: newPunchlistItem.actual_behavior || '',
+        environment: newPunchlistItem.environment || '',
+        browser_version: newPunchlistItem.browser_version || '',
+        screenshots: newPunchlistItem.screenshots || [],
+        assigned_to: newPunchlistItem.assigned_to || '',
+        tags: newPunchlistItem.tags || []
       };
+      
       // Log payload for debugging
       console.log('Submitting punchlist payload:', payload);
       await createPunchlistMutation.mutateAsync(payload);
+      
       // Reset form
       setNewPunchlistItem({
         title: '',
@@ -201,32 +243,44 @@ const ReleaseDetails = ({ history }) => {
         browser_version: '',
         screenshots: [],
         assigned_to: '',
-        tags: []
+        tags: [],
+        application_name: '',
+        version: ''
       });
       displayAlert('success', 'Punchlist item added successfully');
     } catch (error) {
       console.error('Error adding punchlist item:', error);
+      const errorMessage = error?.message || error?.response?.data?.detail || 'Failed to add punchlist item';
+      displayAlert('error', errorMessage);
     }
   };
 
   const handleUpdatePunchlistStatus = async (itemUuid, newStatus) => {
     try {
+      console.log('Updating punchlist status:', { itemUuid, newStatus });
       await updatePunchlistMutation.mutateAsync({
-        uuid: itemUuid,
-        status: newStatus
+        punchlist_uuid: itemUuid,
+        status: newStatus,
+        assigned_to: '', // Optional field
+        resolution_notes: '' // Optional field
       });
       displayAlert('success', `Item marked as ${newStatus}`);
     } catch (error) {
       console.error('Error updating punchlist status:', error);
+      const errorMessage = error?.message || error?.response?.data?.detail || 'Failed to update punchlist status';
+      displayAlert('error', errorMessage);
     }
   };
 
   const handleRemovePunchlistItem = async (itemUuid) => {
     try {
+      console.log('Deleting punchlist item:', itemUuid);
       await deletePunchlistMutation.mutateAsync(itemUuid);
       displayAlert('success', 'Punchlist item removed');
     } catch (error) {
       console.error('Error removing punchlist item:', error);
+      const errorMessage = error?.message || error?.response?.data?.detail || 'Failed to remove punchlist item';
+      displayAlert('error', errorMessage);
     }
   };
 

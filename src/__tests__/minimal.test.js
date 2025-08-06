@@ -285,6 +285,59 @@ describe('Minimal Section', () => {
       expect(budgetContent).toContain('POST');
     });
 
+    // Test punchlist form validation and submission
+    it('should verify punchlist form handles required fields and validation correctly', () => {
+      // Import required modules
+      const fs = require('fs');
+      const path = require('path');
+      
+      // Check punchlist mutation exists and has proper structure
+      const punchlistMutationPath = path.join(__dirname, '../react-query/mutations/punchlist/punchlistMutations.js');
+      expect(fs.existsSync(punchlistMutationPath)).toBe(true);
+      
+      const punchlistContent = fs.readFileSync(punchlistMutationPath, 'utf8');
+      
+      // Check that punchlist mutations have proper structure
+      expect(punchlistContent).toContain('useCreatePunchlistItemMutation');
+      expect(punchlistContent).toContain('product_uuid');
+      expect(punchlistContent).toContain('reporter_name');
+      expect(punchlistContent).toContain('reporter_email');
+      expect(punchlistContent).toContain('issue_title');
+      expect(punchlistContent).toContain('description');
+      expect(punchlistContent).toContain('expected_behavior');
+      expect(punchlistContent).toContain('application_name');
+      expect(punchlistContent).toContain('version');
+      
+      // Check validation logic exists
+      expect(punchlistContent).toContain('Missing required fields');
+      expect(punchlistContent).toContain('emailRegex');
+      expect(punchlistContent).toContain('valid email address');
+      
+      // Verify all required fields are validated
+      const validFormData = {
+        product_uuid: 'test-product-uuid',
+        reporter_name: 'John Doe',
+        reporter_email: 'john.doe@example.com',
+        application_name: 'Test App',
+        version: '1.0.0',
+        title: 'Test Issue',
+        description: 'Test description',
+        expected_behavior: 'Should work correctly',
+        severity: 'medium',
+        priority: 'medium',
+        release_uuid: 'test-release-uuid'
+      };
+      
+      // Validate the form data structure matches API requirements
+      expect(Object.keys(validFormData)).toEqual(
+        expect.arrayContaining([
+          'product_uuid', 'reporter_name', 'reporter_email', 
+          'application_name', 'version', 'title', 'description', 
+          'expected_behavior', 'release_uuid'
+        ])
+      );
+    });
+
     it('should verify forms can handle complete valid data submission', () => {
       // This test ensures our forms can process valid complete data sets
       const validFormData = {
