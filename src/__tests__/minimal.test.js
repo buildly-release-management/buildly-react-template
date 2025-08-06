@@ -177,7 +177,7 @@ describe('Minimal Section', () => {
       };
       
       // Verify the form validates required fields
-      expect(taskFormContent).toContain('title.isValid');
+      expect(taskFormContent).toContain('title.value.trim()');
       expect(taskFormContent).toContain('description.trim()');
       expect(taskFormContent).toContain('product_uuid');
       expect(taskFormContent).toContain('assignedToUser');
