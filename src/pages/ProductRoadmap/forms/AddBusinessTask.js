@@ -101,8 +101,7 @@ const AddBusinessTask = ({ history, location }) => {
   // Form fields
   const title = useInput((editData && editData.title) || '', { required: true });
   const [description, setDescription] = useState((editData && editData.description) || '');
-  const [selectedCategory, setSelectedCategory] = useState((editData && editData.category) || 'general');
-  const [selectedCustomCategory, setSelectedCustomCategory] = useState((editData && editData.custom_category) || null);
+  const [selectedCategory, setSelectedCategory] = useState((editData && editData.category) || '');
   const [priority, setPriority] = useState((editData && editData.priority) || 'medium');
   const [status, setStatus] = useState((editData && editData.status) || 'not_started');
   const [assignedToUser, setAssignedToUser] = useState(() => {
@@ -143,6 +142,7 @@ const AddBusinessTask = ({ history, location }) => {
   const [requiresApproval, setRequiresApproval] = useState((editData && editData.requires_approval) || false);
   
   const [formError, setFormError] = useState({});
+  const [categoryError, setCategoryError] = useState('');
 
   // React queries
   const { data: taskCategoriesResponse, isLoading: isCategoriesLoading } = useGetAllTaskCategories(organizationUuid, displayAlert);
@@ -228,14 +228,16 @@ const AddBusinessTask = ({ history, location }) => {
     
     // Required field validation - only validate fields that are actually required by the API
     const userUuidResult = getCurrentUserUuid(user);
-    if (!title.value.trim() || !description.trim() || !product_uuid || !assignedToUser) {
+    if (!title.value.trim() || !description.trim() || !selectedCategory || !product_uuid || !assignedToUser) {
       // More specific error message
       const missingFields = [];
       if (!title.value.trim()) {missingFields.push('Task Title');}
       if (!description.trim()) {missingFields.push('Description');}
+      if (!selectedCategory) {missingFields.push('Category');}
       if (!product_uuid) {missingFields.push('Product Selection');}
       if (!assignedToUser) {missingFields.push('User Assignment');}
       
+      setCategoryError(!selectedCategory ? 'Please select a category' : '');
       displayAlert('error', `Missing required business task fields: ${missingFields.join(', ')}. Please complete all required fields.`);
       return;
     }
@@ -248,7 +250,7 @@ const AddBusinessTask = ({ history, location }) => {
       product_uuid,
       title: title.value.trim(),
       description: description.trim(),
-      category: selectedCategory || 'general',
+      category: selectedCategory || 'project_management',
       priority: priority || 'medium',
       status: status || 'not_started',
       assigned_by_user_uuid: userUuidResult.uuid,
@@ -259,8 +261,6 @@ const AddBusinessTask = ({ history, location }) => {
       is_recurring: Boolean(isRecurring),
       requires_approval: Boolean(requiresApproval),
     };
-    // Add optional fields only if they have values
-    if (selectedCustomCategory) {taskData.custom_category = selectedCustomCategory;}
     if (selectedRelease) {taskData.release_uuid = selectedRelease;}
     if (releaseVersion) {taskData.release_version = releaseVersion;}
     if (featureName) {taskData.feature_name = featureName;}
@@ -397,55 +397,25 @@ const AddBusinessTask = ({ history, location }) => {
                 <TextField
                   variant="outlined"
                   margin="normal"
+                  required
                   fullWidth
                   select
                   id="category"
-                  label="Standard Category"
+                  label="Category"
                   value={selectedCategory}
                   onChange={(e) => {
                     setSelectedCategory(e.target.value);
-                    if (e.target.value) {setSelectedCustomCategory(null);}
+                    setCategoryError('');
                   }}
-                  helperText="Select a standard category or use custom category below"
+                  error={!!categoryError}
+                  helperText={categoryError || "Select a task category"}
                 >
                   <MenuItem value="">
-                    <em>None</em>
+                    <em>Select Category</em>
                   </MenuItem>
                   {STANDARD_TASK_CATEGORIES.map((category) => (
                     <MenuItem key={category.value} value={category.value}>
                       {category.icon} {category.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-
-              {/* Custom Category */}
-              <Grid item xs={12} md={6}>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  fullWidth
-                  select
-                  id="customCategory"
-                  label="Custom Category"
-                  value={selectedCustomCategory || ''}
-                  onChange={(e) => {
-                    setSelectedCustomCategory(e.target.value);
-                    if (e.target.value) {setSelectedCategory('');}
-                  }}
-                  helperText="Organization-specific categories"
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  {taskCategories && taskCategories.length > 0 && taskCategories.map((category) => (
-                    <MenuItem key={category.value || category.category_uuid || category.id} value={category.value || category.category_uuid || category.id}>
-                      <Chip
-                        size="small"
-                        label={category.label || category.name}
-                        style={{ backgroundColor: category.color || '#1976d2', color: 'white' }}
-                        className={classes.categoryChip}
-                      />
                     </MenuItem>
                   ))}
                 </TextField>

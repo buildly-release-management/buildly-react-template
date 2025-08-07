@@ -29,6 +29,7 @@ import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
   CheckBox as CheckBoxIcon,
   CheckBoxOutlineBlank as CheckBoxOutlineBlankIcon,
+  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { Modal, Form, Table } from 'react-bootstrap';
 import Chatbot from '@components/Chatbot/Chatbot';
@@ -351,7 +352,7 @@ const ReleaseList = () => {
           <TableCell align="right">
             <Dropdown>
               <Dropdown.Toggle variant="light" id="dropdown-basic">
-                <IconButton aria-label="expand row" size="small" />
+                <MoreVertIcon />
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item onClick={() => deleteRelease(row)}>

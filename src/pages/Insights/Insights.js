@@ -76,6 +76,7 @@ const Insights = () => {
   // Handler to clear cached data when product changes
   const handleProductChange = async (newProductUuid) => {
     // Clear all related queries to prevent stale data
+    await queryClient.cancelQueries();
     queryClient.removeQueries(['productReport']);
     queryClient.removeQueries(['releaseProductReport']);
     queryClient.removeQueries(['productBudget']);
@@ -84,9 +85,27 @@ const Insights = () => {
     queryClient.removeQueries(['allReleases']);
     queryClient.removeQueries(['allStatuses']);
     
+    // Reset local data states to prevent showing stale data
+    setProductData([]);
+    setReleaseData([]);
+    setBudgetEstimates({});
+    setBuildlyTools([]);
+    setMarketplaceTools([]);
+    
     // Update the selected product
     setActiveProduct(newProductUuid);
     setSelectedProduct(newProductUuid);
+    
+    // Force immediate refetch of new data
+    setTimeout(() => {
+      queryClient.invalidateQueries(['productReport', newProductUuid]);
+      queryClient.invalidateQueries(['releaseProductReport', newProductUuid]);
+      queryClient.invalidateQueries(['productBudget', newProductUuid]);
+      queryClient.invalidateQueries(['allFeatures', newProductUuid]);
+      queryClient.invalidateQueries(['allIssues', newProductUuid]);
+      queryClient.invalidateQueries(['allReleases', newProductUuid]);
+      queryClient.invalidateQueries(['allStatuses', newProductUuid]);
+    }, 100);
   };
 
   // Collapsible sections state
