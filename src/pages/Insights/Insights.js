@@ -153,6 +153,7 @@ const Insights = () => {
       }
     },
   );
+  // Consolidated data queries with optimized caching
   const { data: reportData, isLoading: isGettingProductReport } = useQuery(
     ['productReport', selectedProduct],
     () => getProductReportQuery(selectedProduct, displayAlert),
@@ -160,10 +161,11 @@ const Insights = () => {
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
       staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+      cacheTime: 15 * 60 * 1000, // 15 minutes - increased cache time
       retry: 2
     },
   );
+  
   const { data: releaseReport, isLoading: isGettingReleaseProductReport } = useQuery(
     ['releaseProductReport', selectedProduct],
     () => getReleaseProductReportQuery(selectedProduct, displayAlert),
@@ -171,19 +173,20 @@ const Insights = () => {
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
       staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+      cacheTime: 15 * 60 * 1000, // 15 minutes - increased cache time
       retry: 2
     },
   );
 
+  // Optimize budget query with longer cache since budgets change less frequently
   const { data: budgetData, isLoading: isGettingProductBudget } = useQuery(
     ['productBudget', selectedProduct],
     () => getProductBudgetQuery(selectedProduct, displayAlert),
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+      staleTime: 10 * 60 * 1000, // 10 minutes - increased
+      cacheTime: 30 * 60 * 1000, // 30 minutes - increased
       retry: (failureCount, error) => {
         // Don't retry on 404 errors (budget doesn't exist)
         if (error?.response?.status === 404) {
@@ -194,15 +197,15 @@ const Insights = () => {
     },
   );
 
-  // New queries for features, issues, and releases
+  // Enhanced queries with better caching and dependency optimization
   const { data: featuresData, isLoading: isGettingFeatures } = useQuery(
     ['allFeatures', selectedProduct],
     () => getAllFeatureQuery(selectedProduct, displayAlert),
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
-      staleTime: 3 * 60 * 1000, // 3 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+      staleTime: 5 * 60 * 1000, // 5 minutes - increased
+      cacheTime: 20 * 60 * 1000, // 20 minutes - increased
       retry: 2
     },
   );
@@ -214,7 +217,7 @@ const Insights = () => {
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
       staleTime: 3 * 60 * 1000, // 3 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+      cacheTime: 15 * 60 * 1000, // 15 minutes - increased
       retry: 2
     },
   );
@@ -225,20 +228,21 @@ const Insights = () => {
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
-      staleTime: 3 * 60 * 1000, // 3 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+      staleTime: 5 * 60 * 1000, // 5 minutes - increased
+      cacheTime: 20 * 60 * 1000, // 20 minutes - increased
       retry: 2
     },
   );
 
+  // Statuses change rarely, so we can cache them longer
   const { data: statusLookupData, isLoading: isGettingStatuses } = useQuery(
-    ['allStatuses', selectedProduct],
+    ['allStatuses'],  // Removed selectedProduct dependency since statuses are likely global
     () => getAllStatusQuery(selectedProduct, displayAlert),
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
-      staleTime: 15 * 60 * 1000, // 15 minutes (statuses change rarely)
-      cacheTime: 30 * 60 * 1000, // 30 minutes
+      staleTime: 30 * 60 * 1000, // 30 minutes - statuses change rarely
+      cacheTime: 60 * 60 * 1000, // 1 hour - much longer cache
       retry: 2
     },
   );
@@ -522,7 +526,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
             });
           }
 
-          // Map issues to releases
+          // Enhanced issue mapping to releases
           if (releaseReport.issues_data && releaseReport.issues_data.length > 0) {
             releaseReport.release_data = releaseReport.release_data.map(release => {
               const releaseIssues = releaseReport.issues_data.filter(issue => {
@@ -539,6 +543,40 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                   status: issue.status,
                   type: issue.ticket_type
                 }))
+              };
+            });
+          }
+
+          // Additionally map standalone issuesData if releaseReport.issues_data is empty
+          if (issuesData && issuesData.length > 0 && (!releaseReport.issues_data || releaseReport.issues_data.length === 0)) {
+            releaseReport.release_data = releaseReport.release_data.map(release => {
+              const releaseIssues = issuesData.filter(issue => {
+                // Try multiple matching strategies for issues
+                return issue.release_uuid === release.release_uuid ||
+                       issue.product_uuid === release.product_uuid ||
+                       (issue.release_name && (issue.release_name === release.name || issue.release_name === release.release_name)) ||
+                       (issue.assigned_to_release && (issue.assigned_to_release === release.release_uuid || issue.assigned_to_release === release.name));
+              });
+              
+              return {
+                ...release,
+                issues: [
+                  ...(release.issues || []), // Keep existing issues
+                  ...releaseIssues.map(issue => ({
+                    name: issue.name || issue.issue_name || `Issue ${issue.issue_uuid}`,
+                    description: issue.description,
+                    status: (() => {
+                      // Map status UUID to status name if we have status data
+                      if (statusLookupData && issue.status) {
+                        const statusObj = statusLookupData.find(s => s.status_uuid === issue.status);
+                        return statusObj ? statusObj.name.toLowerCase() : 'unknown';
+                      }
+                      return issue.status || 'unknown';
+                    })(),
+                    type: issue.issue_type || 'Unknown',
+                    issue_uuid: issue.issue_uuid
+                  }))
+                ]
               };
             });
           }
