@@ -106,21 +106,16 @@ const getContextualHelp = (pathname) => {
 };
 
 // Generate contextual suggestions using BabbleBeaver AI
-const generateContextualSuggestions = async (pathname) => {
-  const pageContextMap = {
-    '/app/dashboard': 'Generate 3 helpful questions a user might ask about using a product management dashboard, creating their first product, starting a release, or getting started with project management. Include questions about navigation and next steps. Return only the questions, one per line.',
-    '/app/product-portfolio': 'Generate 3 helpful questions a user might ask about managing products, setting complexity scores, or organizing product features. Return only the questions, one per line.',
-    '/app/product-roadmap': 'Generate 3 helpful questions a user might ask about product roadmaps, AI feature suggestions, Kanban boards, or feature management. Include questions about AI assistance and workflow optimization. Return only the questions, one per line.',
-    '/app/releases': 'Generate 3 helpful questions a user might ask about creating releases, AI release generation, punchlist management, or deployment processes. Include questions about release planning and tracking. Return only the questions, one per line.',
-    '/app/insights': 'Generate 3 helpful questions a user might ask about analytics, AI budget estimation, team assistance requests, or performance metrics. Include questions about insights and team management. Return only the questions, one per line.',
-    'default': 'Generate 3 helpful questions a user might ask about getting started with Buildly, finding documentation, using AI features, or contacting support. Return only the questions, one per line.'
-  };
-
-  const prompt = pageContextMap[pathname] || pageContextMap['default'];
+const generateContextualSuggestions = async (context) => {
+  const prompt = `Generate 3 short, contextual suggestions for a user on a ${context.page} page. 
+Context: ${context.description || 'General help'}
+Make suggestions practical and actionable.`;
 
   try {
-    // Use the configured chatbot URL (automatically set based on environment)
-    const chatbotUrl = window.env.BABBLE_CHATBOT_URL;
+    // Use proxy endpoint to avoid CORS issues
+    const chatbotUrl = window.env.PRODUCTION 
+      ? window.env.BABBLE_CHATBOT_URL 
+      : '/api/babble/chatbot';
     
     if (!chatbotUrl) {
       console.warn('Chatbot: BABBLE_CHATBOT_URL not configured');
@@ -131,9 +126,17 @@ const generateContextualSuggestions = async (pathname) => {
     
     const response = await fetch(chatbotUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      mode: 'cors',
       body: JSON.stringify({ prompt }),
     });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
     
     const data = await response.json();
     
@@ -150,7 +153,12 @@ const generateContextualSuggestions = async (pathname) => {
       'How do I create a new project?'
     ];
   } catch (error) {
-    console.error('Error generating contextual suggestions:', error);
+    devLog.error('Error generating contextual suggestions:', error);
+    console.warn('Chatbot contextual suggestions failed:', {
+      error: error.message,
+      url: window.env.PRODUCTION ? window.env.BABBLE_CHATBOT_URL : '/api/babble/chatbot',
+      production: window.env.PRODUCTION
+    });
     return [
       'How do I get started?',
       'Where can I find help?',
@@ -268,7 +276,11 @@ const Chatbot = () => {
 
       const response = await fetch(chatbotUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        mode: 'cors',
         body: JSON.stringify({ prompt: contextualPrompt }),
       });
       
@@ -284,7 +296,13 @@ const Chatbot = () => {
         timestamp: new Date(),
       }]);
     } catch (error) {
-      console.error('Chatbot error:', error);
+      devLog.error('Chatbot error:', error);
+      console.warn('Chatbot message failed:', {
+        error: error.message,
+        url: chatbotUrl,
+        production: window.env.PRODUCTION,
+        type: error.name
+      });
       
       let errorMessage = "I'm sorry, I'm having trouble connecting right now.";
       
@@ -292,12 +310,9 @@ const Chatbot = () => {
       if (error.response && error.response.status === 500) {
         errorMessage = "The chatbot service is experiencing technical difficulties. Our team has been notified.";
         devLog.error('Chatbot 500 error - service issue, not CORS');
-      } else if (error.message.includes('CORS')) {
+      } else if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
         errorMessage = "The chatbot service is currently unavailable due to a configuration issue. Please try again later.";
-        devLog.error('CORS error detected');
-      } else if (error.message.includes('fetch')) {
-        errorMessage = "Unable to connect to the chatbot service. Please check your internet connection.";
-        devLog.error('Network/fetch error');
+        devLog.error('CORS/fetch error detected:', error.message);
       } else if (error.response && error.response.status >= 400 && error.response.status < 500) {
         errorMessage = "There was an issue with your request. Please try rephrasing your question.";
         devLog.error(`Chatbot client error: ${error.response.status}`);
