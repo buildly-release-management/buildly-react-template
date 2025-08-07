@@ -16,11 +16,19 @@ const useStyles = makeStyles((theme) => ({
   sessionStatus: {
     display: 'flex',
     alignItems: 'center',
-    gap: theme.spacing(1),
+    gap: theme.spacing(0.5), // Reduced gap
   },
   sessionChip: {
-    fontSize: '0.75rem',
-    height: '24px',
+    fontSize: '0.7rem', // Smaller font
+    height: '20px', // Smaller height
+    '& .MuiChip-label': {
+      padding: '0 6px', // Reduced padding
+    },
+    '& .MuiChip-icon': {
+      fontSize: '0.85rem', // Smaller icon
+      marginLeft: '4px',
+      marginRight: '-2px',
+    },
   },
   warningChip: {
     backgroundColor: theme.palette.warning.main,
@@ -37,15 +45,19 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   validChip: {
-    backgroundColor: theme.palette.success.main,
-    color: theme.palette.success.contrastText,
+    backgroundColor: '#e8f5e8', // Light green background
+    color: '#2e7d32', // Darker green text
+    border: '1px solid #c8e6c9', // Light green border
     '& .MuiChip-icon': {
-      color: theme.palette.success.contrastText,
+      color: '#2e7d32', // Darker green icon
     },
   },
   refreshButton: {
-    padding: theme.spacing(0.5),
+    padding: theme.spacing(0.25), // Smaller padding
     color: theme.palette.text.secondary,
+    '& .MuiSvgIcon-root': {
+      fontSize: '1rem', // Smaller icon
+    },
   },
 }));
 
@@ -60,6 +72,7 @@ const SessionStatus = ({ sessionStatus, refreshSession, showRefreshButton = true
           label="Session Expired"
           className={`${classes.sessionChip} ${classes.expiredChip}`}
           size="small"
+          variant="outlined"
         />
       </Box>
     );
@@ -73,18 +86,6 @@ const SessionStatus = ({ sessionStatus, refreshSession, showRefreshButton = true
 
   return (
     <Box className={classes.sessionStatus}>
-      <Tooltip 
-        title={`Session expires in ${sessionStatus.formattedTimeRemaining}${sessionStatus.isAboutToExpire ? ' - Please save your work!' : ''}`}
-        arrow
-      >
-        <Chip
-          icon={chipIcon}
-          label={sessionStatus.formattedTimeRemaining}
-          className={chipClass}
-          size="small"
-        />
-      </Tooltip>
-      
       {showRefreshButton && (
         <Tooltip title="Refresh session status" arrow>
           <IconButton
@@ -96,6 +97,19 @@ const SessionStatus = ({ sessionStatus, refreshSession, showRefreshButton = true
           </IconButton>
         </Tooltip>
       )}
+      
+      <Tooltip 
+        title={`Session expires in ${sessionStatus.formattedTimeRemaining}${sessionStatus.isAboutToExpire ? ' - Please save your work!' : ''}`}
+        arrow
+      >
+        <Chip
+          icon={chipIcon}
+          label={sessionStatus.formattedTimeRemaining}
+          className={chipClass}
+          size="small"
+          variant="outlined"
+        />
+      </Tooltip>
     </Box>
   );
 };

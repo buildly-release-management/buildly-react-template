@@ -106,11 +106,11 @@ function getFormattedTimeUntilExpiration() {
   const days = Math.floor(hours / 24);
   
   if (days > 0) {
-    return `${days} day${days > 1 ? 's' : ''} ${hours % 24} hour${(hours % 24) !== 1 ? 's' : ''}`;
+    return `${days}d ${hours % 24}hrs`;
   } else if (hours > 0) {
-    return `${hours} hour${hours > 1 ? 's' : ''} ${minutes % 60} minute${(minutes % 60) !== 1 ? 's' : ''}`;
+    return `${hours}hrs ${minutes % 60}mns`;
   } else {
-    return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    return `${minutes}mns`;
   }
 }
 

@@ -110,6 +110,7 @@ const useStyles = makeStyles((theme) => ({
     placeContent: 'flex-end center',
     alignItems: 'flex-end',
     color: '#FFFFFF', // Changed from theme.palette.contrast.text to white
+    marginLeft: theme.spacing(2), // Add spacing from session status
     '& p': {
       fontSize: 12,
       color: '#FFFFFF', // Ensure all text is white
@@ -391,21 +392,20 @@ const TopBar = ({ history, location, sessionManager }) => {
                 ))}
               </TextField>
             )}
+            
+            {/* Session Status Display - moved before user info */}
+            {sessionManager && (
+              <SessionStatus 
+                sessionStatus={sessionManager.sessionStatus}
+                refreshSession={sessionManager.refreshSession}
+                showRefreshButton={true}
+              />
+            )}
+            
             <div className={classes.userInfo}>
               <Typography>{user.first_name}</Typography>
               <Typography>{`${user.organization.name}, ${user.user_type}`}</Typography>
             </div>
-            
-            {/* Session Status Display */}
-            {sessionManager && (
-              <Box sx={{ mr: 2 }}>
-                <SessionStatus 
-                  sessionStatus={sessionManager.sessionStatus}
-                  refreshSession={sessionManager.refreshSession}
-                  showRefreshButton={true}
-                />
-              </Box>
-            )}
             
             <Tooltip title="Account settings">
               <IconButton
