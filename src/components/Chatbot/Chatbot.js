@@ -107,8 +107,8 @@ const getContextualHelp = (pathname) => {
 
 // Generate contextual suggestions using BabbleBeaver AI
 const generateContextualSuggestions = async (context) => {
-  const prompt = `Generate 3 short, contextual suggestions for a user on a ${context.page} page. 
-Context: ${context.description || 'General help'}
+  const prompt = `Generate 3 short, contextual suggestions for a user on a ${context.page} page. \
+Context: ${context.description || 'General help'}\
 Make suggestions practical and actionable.`;
 
   try {
@@ -124,6 +124,10 @@ Make suggestions practical and actionable.`;
     
     devLog.log('Chatbot: Using URL:', chatbotUrl, 'Production:', window.env.PRODUCTION);
     
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
     const response = await fetch(chatbotUrl, {
       method: 'POST',
       headers: { 
@@ -131,8 +135,11 @@ Make suggestions practical and actionable.`;
         'Accept': 'application/json',
       },
       mode: 'cors',
+      signal: controller.signal,
       body: JSON.stringify({ prompt }),
     });
+    
+    clearTimeout(timeoutId);
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -153,12 +160,15 @@ Make suggestions practical and actionable.`;
       'How do I create a new project?'
     ];
   } catch (error) {
-    devLog.error('Error generating contextual suggestions:', error);
-    console.warn('Chatbot contextual suggestions failed:', {
-      error: error.message,
-      url: window.env.PRODUCTION ? window.env.BABBLE_CHATBOT_URL : '/api/babble/chatbot',
-      production: window.env.PRODUCTION
-    });
+    // Don't log CORS/network errors to reduce noise
+    if (error.name === 'AbortError') {
+      devLog.warn('Chatbot request timed out');
+    } else if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+      devLog.warn('Chatbot service unavailable (CORS/Network error)');
+    } else {
+      devLog.error('Error generating contextual suggestions:', error);
+    }
+    
     return [
       'How do I get started?',
       'Where can I find help?',
@@ -196,15 +206,42 @@ const Chatbot = () => {
     // Initialize with contextual message
     const initialMessage = getInitialMessage(location.pathname, user?.first_name || 'there');
     setMessages([initialMessage]);
-    // Generate dynamic suggestions using BabbleBeaver AI
+    
+    // Only try to load suggestions if chatbot is actually available
     const loadSuggestions = async () => {
+      // Check if chatbot service is available before making requests
+      const chatbotUrl = window.env.PRODUCTION ? window.env.BABBLE_CHATBOT_URL : '/api/babble/chatbot';
+      if (!chatbotUrl) {
+        devLog.warn('Chatbot: BABBLE_CHATBOT_URL not configured, skipping suggestions');
+        setContextualSuggestions([
+          'How do I get started?',
+          'Where can I find help?',
+          'How do I create a new project?'
+        ]);
+        return;
+      }
+
       setLoadingSuggestions(true);
-      const suggestions = await generateContextualSuggestions(location.pathname);
-      setContextualSuggestions(suggestions);
-      setLoadingSuggestions(false);
+      try {
+        const suggestions = await generateContextualSuggestions(location.pathname);
+        setContextualSuggestions(suggestions);
+      } catch (error) {
+        devLog.warn('Failed to load contextual suggestions, using defaults');
+        setContextualSuggestions([
+          'How do I get started?',
+          'Where can I find help?',
+          'How do I create a new project?'
+        ]);
+      } finally {
+        setLoadingSuggestions(false);
+      }
     };
-    loadSuggestions();
+
+    // Add a debounce to prevent rapid requests
+    const timeoutId = setTimeout(loadSuggestions, 500);
     setHasContextualInfo(contextualHelp.links.length > 0);
+
+    return () => clearTimeout(timeoutId);
   }, [location.pathname, user]);
 
   useEffect(() => {

@@ -246,8 +246,10 @@ const AddBusinessTask = ({ history, location }) => {
       displayAlert('error', 'Unable to determine current user for task assignment.');
       return;
     }
+
+    // Create a clean task data object with only valid, non-null values
     const taskData = {
-      product_uuid,
+      product_uuid: product_uuid,
       title: title.value.trim(),
       description: description.trim(),
       category: selectedCategory || 'project_management',
@@ -256,26 +258,66 @@ const AddBusinessTask = ({ history, location }) => {
       assigned_by_user_uuid: userUuidResult.uuid,
       assigned_to_user_uuid: assignedToUser,
       start_date: new Date().toISOString(),
-      progress_percentage: progressPercentage || 0,
+      progress_percentage: progressPercentage ? parseInt(progressPercentage, 10) : 0,
       risk_level: riskLevel || 'low',
       is_recurring: Boolean(isRecurring),
       requires_approval: Boolean(requiresApproval),
     };
-    if (selectedRelease) {taskData.release_uuid = selectedRelease;}
-    if (releaseVersion) {taskData.release_version = releaseVersion;}
-    if (featureName) {taskData.feature_name = featureName;}
-    if (milestone) {taskData.milestone = milestone;}
-    if (dueDate) {taskData.due_date = dueDate.toISOString();}
-    if (estimatedHours) {taskData.estimated_hours = parseFloat(estimatedHours);}
-    if (actualHours) {taskData.actual_hours = parseFloat(actualHours);}
-    if (businessValue) {taskData.business_value = businessValue;}
-    if (acceptanceCriteria) {taskData.acceptance_criteria = acceptanceCriteria;}
-    if (successMetrics) {taskData.success_metrics = successMetrics;}
-    if (stakeholderEmails.length > 0) {taskData.stakeholder_emails = stakeholderEmails;}
-    if (tags.length > 0) {taskData.tags = tags;}
-    if (riskDescription) {taskData.risk_description = riskDescription;}
-    if (blockers) {taskData.blockers = blockers;}
-    if (isRecurring && recurrencePattern) {taskData.recurrence_pattern = recurrencePattern;}
+
+    // Only add optional fields if they have valid values - avoid sending undefined/null
+    if (selectedRelease && selectedRelease.trim()) {
+      taskData.release_uuid = selectedRelease.trim();
+    }
+    if (releaseVersion && releaseVersion.trim()) {
+      taskData.release_version = releaseVersion.trim();
+    }
+    if (featureName && featureName.trim()) {
+      taskData.feature_name = featureName.trim();
+    }
+    if (milestone && milestone.trim()) {
+      taskData.milestone = milestone.trim();
+    }
+    if (dueDate) {
+      taskData.due_date = dueDate.toISOString();
+    }
+    if (estimatedHours && !isNaN(parseFloat(estimatedHours)) && parseFloat(estimatedHours) > 0) {
+      taskData.estimated_hours = parseFloat(estimatedHours);
+    }
+    if (actualHours && !isNaN(parseFloat(actualHours)) && parseFloat(actualHours) >= 0) {
+      taskData.actual_hours = parseFloat(actualHours);
+    }
+    if (businessValue && businessValue.trim()) {
+      taskData.business_value = businessValue.trim();
+    }
+    if (acceptanceCriteria && acceptanceCriteria.trim()) {
+      taskData.acceptance_criteria = acceptanceCriteria.trim();
+    }
+    if (successMetrics && successMetrics.trim()) {
+      taskData.success_metrics = successMetrics.trim();
+    }
+    if (stakeholderEmails && Array.isArray(stakeholderEmails) && stakeholderEmails.length > 0) {
+      taskData.stakeholder_emails = stakeholderEmails.filter(email => email && email.trim());
+    }
+    if (tags && Array.isArray(tags) && tags.length > 0) {
+      taskData.tags = tags.filter(tag => tag && tag.trim());
+    }
+    if (riskDescription && riskDescription.trim()) {
+      taskData.risk_description = riskDescription.trim();
+    }
+    if (blockers && blockers.trim()) {
+      taskData.blockers = blockers.trim();
+    }
+    if (isRecurring && recurrencePattern && recurrencePattern.trim()) {
+      taskData.recurrence_pattern = recurrencePattern.trim();
+    }
+
+    // Ensure no undefined values are present
+    Object.keys(taskData).forEach(key => {
+      if (taskData[key] === undefined || taskData[key] === null) {
+        delete taskData[key];
+      }
+    });
+
     // Log payload for debugging
     devLog.log('Submitting business task payload:', taskData);
     if (editPage) {

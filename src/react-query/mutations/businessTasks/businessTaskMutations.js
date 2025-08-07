@@ -32,12 +32,25 @@ export const useCreateBusinessTaskMutation = (productUuid, displayAlert) => {
         await queryClient.invalidateQueries(['overdueBusinessTasks']);
       },
       onError: (error) => {
+        // Enhanced error logging for debugging
+        console.error('Business task creation failed:', {
+          error: error,
+          message: error.message,
+          response: error.response,
+          data: error.response?.data,
+          status: error.response?.status,
+          statusText: error.response?.statusText
+        });
+
         let errorMessage = 'Failed to create business task';
         
         // Handle specific database constraint violations
         if (error?.message?.includes('assigned_by_user_uuid') || 
             error?.response?.data?.detail?.includes('assigned_by_user_uuid')) {
           errorMessage = 'User session error: The task creator information is missing. Please refresh the page and try again.';
+        } else if (error?.response?.data?.detail?.includes('Failing row contains')) {
+          // Handle database constraint violations
+          errorMessage = 'Data validation error: Some required fields may have invalid values. Please check all fields and try again.';
         } else if (error?.response?.data) {
           if (typeof error.response.data === 'string') {
             errorMessage = error.response.data;
