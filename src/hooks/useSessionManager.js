@@ -42,12 +42,13 @@ const useSessionManager = (options = {}) => {
       hasShownWarning: prev.hasShownWarning,
     }));
 
-    devLog.log('Session status updated:', {
-      isValid,
-      timeRemaining,
-      formattedTimeRemaining,
-      isAboutToExpire,
-    });
+    // Only log session changes, not every status update
+    // devLog.log('Session status updated:', {
+    //   isValid,
+    //   timeRemaining,
+    //   formattedTimeRemaining,
+    //   isAboutToExpire,
+    // });
 
     return { isValid, timeRemaining, formattedTimeRemaining, isAboutToExpire };
   }, [warningThresholdMinutes]);
