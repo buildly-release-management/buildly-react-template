@@ -17,7 +17,8 @@ import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { Accordion, AccordionSummary, AccordionDetails, Typography as MuiTypography } from '@mui/material';
-import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import { ExpandMore as ExpandMoreIcon, Info as InfoIcon, Help as HelpIcon } from '@mui/icons-material';
+import { Tooltip, IconButton } from '@mui/material';
 
 import './Insights.css';
 
@@ -70,6 +71,7 @@ const Insights = () => {
   const [selectedRelease, setSelectedRelease] = useState(null);
   const [budgetEstimates, setBudgetEstimates] = useState({});
   const [budgetLoading, setBudgetLoading] = useState({});
+  const [helpInfoOpen, setHelpInfoOpen] = useState(false);
 
   // Handler to clear cached data when product changes
   const handleProductChange = async (newProductUuid) => {
@@ -1246,11 +1248,6 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
               >
                 <MenuItem onClick={getPdf}>Download Report</MenuItem>
                 <MenuItem onClick={openEmailModal}>Email report</MenuItem>
-                {needsTeamAssistance() && (
-                  <MenuItem onClick={openTeamHelpModal} style={{ color: '#1976d2' }}>
-                    🚀 Request Team Help
-                  </MenuItem>
-                )}
               </Menu>
             </section>
           </div>
@@ -1645,9 +1642,49 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                 },
               }}
             >
-              <MuiTypography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
-                🏗️ Architecture & Design
-              </MuiTypography>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <MuiTypography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
+                  🏗️ Architecture & Design
+                </MuiTypography>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Tooltip 
+                    title="Our Request Help feature connects you with expert developers and architects to accelerate your project. Get personalized assistance with technical challenges, architecture decisions, and implementation guidance."
+                    placement="left"
+                    arrow
+                  >
+                    <IconButton 
+                      size="small" 
+                      sx={{ color: 'white' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setHelpInfoOpen(!helpInfoOpen);
+                      }}
+                    >
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    startIcon={<HelpIcon />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowTeamHelpModal(true);
+                    }}
+                    sx={{
+                      backgroundColor: '#ffffff',
+                      color: '#0C5595',
+                      fontWeight: 'bold',
+                      minWidth: '140px',
+                      '&:hover': {
+                        backgroundColor: '#f5f5f5',
+                      },
+                    }}
+                  >
+                    Request Help
+                  </Button>
+                </div>
+              </div>
             </AccordionSummary>
             <AccordionDetails sx={{ padding: 0 }}>
               <div className="row">
