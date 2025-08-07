@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import _ from 'lodash';
 import { useQuery } from 'react-query';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { Dropdown, ProgressBar } from 'react-bootstrap';
 import DoughnutChart from '@components/Charts/Doughnut/DoughnutChart';
 import BarChart from '@components/Charts/BarChart/BarChart';
@@ -22,6 +22,7 @@ import {
   Typography,
   Tooltip,
   MenuItem,
+  Menu,
   Grid,
 } from '@mui/material';
 import {
@@ -49,13 +50,28 @@ import { useStore } from '@zustand/product/productStore';
 import './ReleaseList.css';
 
 const ReleaseList = () => {
+  const history = useHistory();
   const user = useContext(UserContext);
   const organization = user.organization.organization_uuid;
+
+    // User context validation
+  useEffect(() => {
+    const userContext = {
+      user: !!user,
+      organization: organization?.organization_uuid || organization || '',
+      userOrg: user?.organization,
+      hasValidOrg: !!(user?.organization?.organization_uuid || organization)
+    };
+
+    if (!userContext.hasValidOrg) {
+      return;
+    }
+  }, [user, organization]);
 
   const { displayAlert } = useAlert();
   const { activeProduct, setActiveProduct } = useStore();
 
-  const [selectedProduct, setSelectedProduct] = useState(activeProduct || 0);
+  const [selectedProduct, setSelectedProduct] = useState(0); // Initialize to safe default
   const [releasesSummary, setReleasesSummary] = useState(null);
   const [displayReleases, setDisplayReleases] = useState([]);
 
@@ -73,10 +89,29 @@ const ReleaseList = () => {
     { refetchOnWindowFocus: false },
   );
 
+  // Set selectedProduct after productData loads and validate activeProduct exists
+  useEffect(() => {
+    if (productData && !_.isEmpty(productData) && activeProduct) {
+      const productExists = productData.some(prod => prod.product_uuid === activeProduct);
+      if (productExists) {
+        setSelectedProduct(activeProduct);
+      } else {
+        // Reset to default if activeProduct doesn't exist in current organization
+        setActiveProduct(0);
+        setSelectedProduct(0);
+      }
+    } else if (!activeProduct || activeProduct === 0) {
+      setSelectedProduct(0);
+    }
+  }, [productData, activeProduct, setActiveProduct]);
+
   const { data: releases, isLoading: isAllReleaseLoading } = useQuery(
     ['allReleases', selectedProduct],
     () => getAllReleaseQuery(selectedProduct, displayAlert),
-    { refetchOnWindowFocus: false, enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) },
+    { 
+      refetchOnWindowFocus: false, 
+      enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0)
+    },
   );
 
   const { data: features, isLoading: isAllFeatureLoading } = useQuery(
@@ -184,10 +219,11 @@ const ReleaseList = () => {
     setShow(true);
   };
 
-  const handleClose = () => setShow(false);
+  const handleClose = () => {
+    setShow(false);
+  };
 
   const handleAIGenerateRelease = async () => {
-    console.log('Generate AI release from unfinished features');
     
     if (!selectedProduct) {
       displayAlert('warning', 'Please select a product first');
@@ -200,21 +236,13 @@ const ReleaseList = () => {
         feature.status !== 'Completed' && feature.status !== 'Released'
       ) || [];
       
-      console.log('Unfinished features found:', unfinishedFeatures.length);
-      
       if (unfinishedFeatures.length === 0) {
         displayAlert('info', 'No unfinished features found to create a release');
         return;
       }
 
-      // Debug: Check feature structure
-      console.log('Sample feature structure:', unfinishedFeatures[0]);
-      console.log('Feature UUID field exists?', 'feature_uuid' in unfinishedFeatures[0]);
-      console.log('Available feature keys:', Object.keys(unfinishedFeatures[0] || {}));
-
       // Find current product info for repository details
       const currentProduct = productData?.find(p => p.product_uuid === selectedProduct);
-      console.log('Current product data:', currentProduct);
       
       // Get product info which might contain repository details
       let productInfo = {};
@@ -225,8 +253,6 @@ const ReleaseList = () => {
       } catch (e) {
         console.warn('Failed to parse product_info:', e);
       }
-      
-      console.log('Product info:', productInfo);
 
       // Select high-priority unfinished features for the release
       const priorityFeatures = unfinishedFeatures
@@ -259,9 +285,6 @@ const ReleaseList = () => {
         return;
       }
 
-      console.log('Creating release with data:', releaseData);
-      console.log('Features being sent:', releaseData.features);
-      console.log('Repository info:', { repository: releaseData.repository, owner_name: releaseData.owner_name });
       createReleaseMutation(releaseData);
     } catch (error) {
       console.error('Failed to generate AI release:', error);
@@ -298,119 +321,36 @@ const ReleaseList = () => {
   const borderWidth = 1;
   const borderColor = '#000000';
 
+  // State for expanded rows and menus (moved to component level)
+  const [expandedRows, setExpandedRows] = useState({});
+  const [menuAnchors, setMenuAnchors] = useState({});
+
+  const toggleRowExpansion = (releaseId) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [releaseId]: !prev[releaseId]
+    }));
+  };
+
+  const handleMenuOpen = (releaseId, anchorEl) => {
+    setMenuAnchors(prev => ({
+      ...prev,
+      [releaseId]: anchorEl
+    }));
+  };
+
+  const handleMenuClose = (releaseId) => {
+    setMenuAnchors(prev => ({
+      ...prev,
+      [releaseId]: null
+    }));
+  };
+
   const initProgressBar = (row) => {
     const value = Math.round((row.features_done / row.features_count) * 100);
     // eslint-disable-next-line no-nested-ternary
     const theme = value > 74 ? 'info' : value > 40 ? 'warning' : 'danger';
     return { value, theme };
-  };
-
-  const Row = (props) => {
-    const { row } = props;
-    const [open, setOpen] = React.useState(false);
-
-    let progressBarObj = {
-      value: 0,
-      theme: 'danger',
-    };
-
-    if (row.features_count > 0) {
-      progressBarObj = initProgressBar(row);
-    }
-
-    return (
-      <>
-        <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
-          <TableCell>
-            <IconButton
-              aria-label="expand row"
-              size="small"
-              onClick={() => setOpen(!open)}
-            >
-              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-            </IconButton>
-          </TableCell>
-          <TableCell>
-            <Link to={`${routes.RELEASE}/${row.release_uuid}`}>{row.name}</Link>
-            {' '}
-          </TableCell>
-          <TableCell>
-            <Tooltip
-              title={`${progressBarObj.value}% achieved`}
-              placement="right-start"
-            >
-              <ProgressBar
-                now={progressBarObj.value}
-                label={`${progressBarObj.value}%`}
-                variant={progressBarObj.theme}
-              />
-            </Tooltip>
-          </TableCell>
-          <TableCell align="center">{row.features_count}</TableCell>
-          <TableCell align="center">{row.issues_count}</TableCell>
-          <TableCell align="center">{row.release_date}</TableCell>
-          <TableCell align="right">
-            <Dropdown>
-              <Dropdown.Toggle variant="light" id="dropdown-basic">
-                <MoreVertIcon />
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                <Dropdown.Item onClick={() => deleteRelease(row)}>
-                  Delete release
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <TableCell
-            style={{
-              paddingBottom: 0,
-              paddingTop: 0,
-              paddingLeft: 8,
-              backgroundColor: '#f5f5f5',
-            }}
-            colSpan={12}
-          >
-            <Collapse in={open} timeout="auto" unmountOnExit>
-              <Box sx={{ margin: 1 }}>
-                <Table size="small" aria-label="features">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell width="12" />
-                      <TableCell width="33%">Name</TableCell>
-                      <TableCell>Progress</TableCell>
-                      <TableCell align="center">Complexity</TableCell>
-                      <TableCell align="center">Issues</TableCell>
-                      <TableCell align="right">Assignees</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {row?.featuresList?.length > 0 ? (
-                      row.featuresList.map((feature) => (
-                        <FeatureRow
-                          key={feature.feature_uuid}
-                          feature={feature}
-                        />
-                      ))
-                    ) : (
-                      <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
-                        <TableCell />
-                        <TableCell>No features to display</TableCell>
-                        <TableCell />
-                        <TableCell />
-                        <TableCell />
-                        <TableCell />
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </Box>
-            </Collapse>
-          </TableCell>
-        </TableRow>
-      </>
-    );
   };
 
   const FeatureRow = (props) => {
@@ -511,7 +451,11 @@ const ReleaseList = () => {
           color="primary"
           label="Product Options"
           className="release-list-selected-product"
-          value={selectedProduct}
+          value={
+            productData && productData.some(prod => prod.product_uuid === selectedProduct) 
+              ? selectedProduct 
+              : 0
+          }
           onChange={(e) => {
             setActiveProduct(e.target.value);
             setSelectedProduct(e.target.value);
@@ -536,14 +480,10 @@ const ReleaseList = () => {
         </Typography>
       )}
 
-      {(isAllProductLoading || isAllReleaseLoading || isAllFeatureLoading || isAllIssueLoading
-      || isReleaseDetailsLoading || isCreatingReleaseLoading || isDeletingReleaseLoading) && (
+      {/* Show loader only for critical operations that should block UI */}
+      {(isCreatingReleaseLoading || isDeletingReleaseLoading) && (
         <Loader
-          open={
-              isAllProductLoading || isAllReleaseLoading || isAllFeatureLoading
-              || isAllIssueLoading || isReleaseDetailsLoading
-              || isCreatingReleaseLoading || isDeletingReleaseLoading
-            }
+          open={isCreatingReleaseLoading || isDeletingReleaseLoading}
         />
       )}
       {!_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0) && (
@@ -635,41 +575,191 @@ const ReleaseList = () => {
               <div className="d-flex justify-content-between">
                 <Typography variant="h6">Releases</Typography>
               </div>
-              <TableContainer component={Paper} className="mt-2">
-                <Table aria-label="collapsible table">
-                  <TableHead
-                    sx={{
-                      '& .MuiTableCell-root': {
-                        backgroundColor: '#EDEDED',
-                      },
-                    }}
-                  >
-                    <TableRow
-                      sx={{
-                        '& th': {
-                          fontWeight: '500',
-                        },
-                      }}
-                    >
-                      <TableCell width="12" />
-                      <TableCell width="33%">Name</TableCell>
-                      <TableCell>Progress</TableCell>
-                      <TableCell align="center">Features</TableCell>
-                      <TableCell align="center">Issues</TableCell>
-                      <TableCell align="center">Release date</TableCell>
-                      <TableCell align="right" />
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {!_.isEmpty(displayReleases)
-                      ? displayReleases.map((row) => (
-                        <Row key={row.release_uuid} row={row} />
-                      ))
-                      : []}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <div style={{ height: 100 }} />
+              
+              {/* Div-based table layout */}
+              <div style={{ 
+                marginTop: '16px',
+                border: '1px solid #ddd',
+                borderRadius: '4px'
+              }}>
+                <div style={{ width: '100%' }}>
+                  {/* Header */}
+                  <div style={{ 
+                    backgroundColor: '#EDEDED', 
+                    display: 'flex',
+                    borderBottom: '1px solid #ddd'
+                  }}>
+                    <div style={{ width: '60px', padding: '16px' }}></div>
+                    <div style={{ width: '30%', padding: '16px' }}>Name</div>
+                    <div style={{ width: '20%', padding: '16px' }}>Progress</div>
+                    <div style={{ width: '10%', padding: '16px', textAlign: 'center' }}>Features</div>
+                    <div style={{ width: '10%', padding: '16px', textAlign: 'center' }}>Issues</div>
+                    <div style={{ width: '15%', padding: '16px', textAlign: 'center' }}>Release date</div>
+                    <div style={{ width: '60px', padding: '16px', textAlign: 'right' }}>Actions</div>
+                  </div>
+                  
+                  {/* Body */}
+                  <div>
+                    {!_.isEmpty(displayReleases) ? (
+                      displayReleases.map((row) => {
+                        // Calculate progress for this row
+                        const progressValue = row.features_count > 0 ? 
+                          Math.round((row.features_done / row.features_count) * 100) : 0;
+                        const progressTheme = progressValue > 74 ? 'info' : 
+                          progressValue > 40 ? 'warning' : 'danger';
+
+                        // Get state for this specific row
+                        const isExpanded = expandedRows[row.release_uuid] || false;
+                        const menuAnchorEl = menuAnchors[row.release_uuid] || null;
+
+                        return (
+                          <div key={row.release_uuid}>
+                            <div style={{ 
+                              display: 'flex', 
+                              borderBottom: '1px solid #ddd',
+                              alignItems: 'center',
+                              minHeight: '60px'
+                            }}>
+                              {/* Expand/Collapse Button */}
+                              <div style={{ width: '60px', padding: '8px' }}>
+                                <button
+                                  onClick={() => {
+                                    toggleRowExpansion(row.release_uuid);
+                                  }}
+                                  style={{ 
+                                    background: 'none',
+                                    border: '1px solid #ccc',
+                                    padding: '8px',
+                                    cursor: 'pointer',
+                                    borderRadius: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                >
+                                  {isExpanded ? '▲' : '▼'}
+                                </button>
+                              </div>
+                              
+                              {/* Release Name Link */}
+                              <div style={{ width: '30%', padding: '8px' }}>
+                                <Link 
+                                  to={`${routes.RELEASE}/${row.release_uuid}`}
+                                  className="release-table-link"
+                                  style={{ 
+                                    color: '#1976d2', 
+                                    textDecoration: 'none'
+                                  }}
+                                >
+                                  {row.name}
+                                </Link>
+                              </div>
+                              
+                              {/* Progress Bar */}
+                              <div style={{ width: '20%', padding: '8px' }}>
+                                <ProgressBar
+                                  now={progressValue}
+                                  label={`${progressValue}%`}
+                                  variant={progressTheme}
+                                />
+                              </div>
+                              
+                              {/* Features Count */}
+                              <div style={{ width: '10%', padding: '8px', textAlign: 'center' }}>
+                                {row.features_count}
+                              </div>
+                              
+                              {/* Issues Count */}
+                              <div style={{ width: '10%', padding: '8px', textAlign: 'center' }}>
+                                {row.issues_count}
+                              </div>
+                              
+                              {/* Release Date */}
+                              <div style={{ width: '15%', padding: '8px', textAlign: 'center' }}>
+                                {row.release_date}
+                              </div>
+                              
+                              {/* Actions Menu */}
+                              <div style={{ width: '60px', padding: '8px', textAlign: 'right' }}>
+                                <button
+                                  onClick={(event) => {
+                                    handleMenuOpen(row.release_uuid, event.currentTarget);
+                                  }}
+                                  style={{ 
+                                    background: 'none',
+                                    border: '1px solid #ccc',
+                                    padding: '8px',
+                                    cursor: 'pointer',
+                                    borderRadius: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                >
+                                  ⋮
+                                </button>
+                                
+                                {/* Material-UI Menu */}
+                                <Menu
+                                  anchorEl={menuAnchorEl}
+                                  open={Boolean(menuAnchorEl)}
+                                  onClose={() => handleMenuClose(row.release_uuid)}
+                                  anchorOrigin={{
+                                    vertical: 'bottom',
+                                    horizontal: 'right',
+                                  }}
+                                  transformOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                  }}
+                                >
+                                  <MenuItem onClick={() => {
+                                    handleMenuClose(row.release_uuid);
+                                    history.push(`${routes.RELEASE}/${row.release_uuid}`);
+                                  }}>
+                                    Edit release
+                                  </MenuItem>
+                                  <MenuItem onClick={() => {
+                                    handleMenuClose(row.release_uuid);
+                                    if (window.confirm(`Delete release "${row.name}"?`)) {
+                                      deleteRelease(row);
+                                    }
+                                  }}>
+                                    Delete release
+                                  </MenuItem>
+                                </Menu>
+                              </div>
+                            </div>
+                            
+                            {/* Expanded content */}
+                            {isExpanded && (
+                              <div style={{ 
+                                padding: '16px',
+                                backgroundColor: '#f9f9f9',
+                                borderBottom: '1px solid #ddd'
+                              }}>
+                                <div>
+                                  <strong>Description:</strong> {row.description || 'No description available'}
+                                </div>
+                                <div style={{ marginTop: '8px' }}>
+                                  <strong>Features:</strong> {row.features_done} of {row.features_count} completed
+                                </div>
+                                <div style={{ marginTop: '8px' }}>
+                                  <strong>Status:</strong> {row.status || 'Active'}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div style={{padding: '20px', textAlign: 'center', color: '#666'}}>
+                        No releases found
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </>
           ) : (
             <>

@@ -7,6 +7,25 @@
   margin-bottom: 16px;
 }
 
+/* Fix for release table links */
+.release-table-link {
+  color: #1976d2 !important;
+  text-decoration: none !important;
+}
+
+.release-table-link:hover {
+  color: #1565c0 !important;
+  text-decoration: underline !important;
+}
+
+.release-table-link:visited {
+  color: #1976d2 !important;
+}
+
+.release-table-link:active {
+  color: #1976d2 !important;
+}
+
 .release-list-selected-product {
   width: 250px;
 }

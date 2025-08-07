@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useMemo } from 'react';
 import _ from 'lodash';
 import { useQuery, useQueryClient } from 'react-query';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -30,6 +30,7 @@ import Chatbot from '@components/Chatbot/Chatbot';
 import { httpService } from '@modules/http/http.service';
 import useAlert from '@hooks/useAlert';
 import { UserContext } from '@context/User.context';
+import { devLog } from '@utils/devLogger';
 
 import { addColorsAndIcons, getReleaseBudgetData, generateAIFeatureEstimates, generateAIBudgetEstimate } from './utils';
 import { calculateProductStatus, generateStatusReport, getStatusColor, getStatusLabel } from '@utils/productStatus';
@@ -172,9 +173,15 @@ const Insights = () => {
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 15 * 60 * 1000, // 15 minutes - increased cache time
-      retry: 2
+      staleTime: 10 * 60 * 1000, // 10 minutes - longer cache for release data
+      cacheTime: 30 * 60 * 1000, // 30 minutes - much longer cache
+      retry: 2,
+      // Keep previous data while fetching new data to prevent UI flicker
+      keepPreviousData: true,
+      // Only refetch if the data is truly stale
+      refetchOnMount: 'always',
+      // Background refetch for better UX
+      refetchInterval: 15 * 60 * 1000 // Refetch every 15 minutes in background
     },
   );
 
@@ -469,177 +476,42 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
     }
   };
 
-  // effects
+  // Memoized data processing to prevent unnecessary re-calculations
+  const processedReleaseData = useMemo(() => {
+    if (!releaseReport?.release_data || releaseReport.release_data.length === 0) {
+      return [];
+    }
+
+    // The data is already pre-processed in the query with embedded features and issues
+    const enhancedReleases = releaseReport.release_data.map(release => ({
+      ...release,
+      // Add colors for timeline display (remove problematic emoji icon)
+      bgColor: '#0D5595',
+      // Ensure calculated_end_date exists
+      calculated_end_date: release.calculated_end_date || release.release_date
+    }));
+
+    devLog.log('Processed release data for timeline:', enhancedReleases.length);
+    return enhancedReleases;
+  }, [releaseReport]);
+
+  // effects - optimized with memoization
   useEffect(() => {
-    const processInsightsData = async () => {
-      if (selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0)) {
-        if (reportData) {
-          // Don't require budget - set productData even without budget
-        
+    if (selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0)) {
+      if (reportData) {
         // set states
         setProductData(reportData);
-
-        // Process release data if available
-        if (releaseReport && releaseReport.release_data) {
-          // get release data - handle null budget properly with fallback data
-          const budgetReleaseData = reportData.budget?.release_data || [];
-          
-          // If no budget data, create default budget entries for existing releases
-          let processedBudgetData = budgetReleaseData;
-          if (budgetReleaseData.length === 0 && releaseReport.release_data.length > 0) {
-            processedBudgetData = releaseReport.release_data.map(release => ({
-              release: release.release_name || release.name,
-              team: [
-                {
-                  name: 'Development Team',
-                  budget: Math.floor(Math.random() * 50000) + 25000, // Random budget between 25k-75k
-                },
-                {
-                  name: 'QA Team', 
-                  budget: Math.floor(Math.random() * 25000) + 10000, // Random budget between 10k-35k
-                }
-              ]
-            }));
-          }
-
-          releaseReport.release_data = getReleaseBudgetData(
-            processedBudgetData, releaseReport?.release_data,
-          );
-
-          // Map features and issues to releases
-          if (releaseReport.features_data && releaseReport.features_data.length > 0) {
-            releaseReport.release_data = releaseReport.release_data.map(release => {
-              const releaseFeatures = releaseReport.features_data.filter(feature => {
-                // Match by release UUID if available, otherwise try to match by name
-                return feature.release_uuid === release.release_uuid ||
-                       (feature.release && (feature.release === release.name || feature.release === release.release_name));
-              });
-              
-              return {
-                ...release,
-                features: releaseFeatures.map(feature => ({
-                  name: feature.feature_name || feature.name,
-                  description: feature.description,
-                  status: feature.status
-                }))
-              };
-            });
-          }
-
-          // Enhanced issue mapping to releases
-          if (releaseReport.issues_data && releaseReport.issues_data.length > 0) {
-            releaseReport.release_data = releaseReport.release_data.map(release => {
-              const releaseIssues = releaseReport.issues_data.filter(issue => {
-                // Match by release UUID if available, otherwise try to match by name
-                return issue.release_uuid === release.release_uuid ||
-                       (issue.release && (issue.release === release.name || issue.release === release.release_name));
-              });
-              
-              return {
-                ...release,
-                issues: releaseIssues.map(issue => ({
-                  name: issue.issue_name || issue.name,
-                  description: issue.description,
-                  status: issue.status,
-                  type: issue.ticket_type
-                }))
-              };
-            });
-          }
-
-          // Additionally map standalone issuesData if releaseReport.issues_data is empty
-          if (issuesData && issuesData.length > 0 && (!releaseReport.issues_data || releaseReport.issues_data.length === 0)) {
-            releaseReport.release_data = releaseReport.release_data.map(release => {
-              const releaseIssues = issuesData.filter(issue => {
-                // Try multiple matching strategies for issues
-                return issue.release_uuid === release.release_uuid ||
-                       issue.product_uuid === release.product_uuid ||
-                       (issue.release_name && (issue.release_name === release.name || issue.release_name === release.release_name)) ||
-                       (issue.assigned_to_release && (issue.assigned_to_release === release.release_uuid || issue.assigned_to_release === release.name));
-              });
-              
-              return {
-                ...release,
-                issues: [
-                  ...(release.issues || []), // Keep existing issues
-                  ...releaseIssues.map(issue => ({
-                    name: issue.name || issue.issue_name || `Issue ${issue.issue_uuid}`,
-                    description: issue.description,
-                    status: (() => {
-                      // Map status UUID to status name if we have status data
-                      if (statusLookupData && issue.status) {
-                        const statusObj = statusLookupData.find(s => s.status_uuid === issue.status);
-                        return statusObj ? statusObj.name.toLowerCase() : 'unknown';
-                      }
-                      return issue.status || 'unknown';
-                    })(),
-                    type: issue.issue_type || 'Unknown',
-                    issue_uuid: issue.issue_uuid
-                  }))
-                ]
-              };
-            });
-          }
-
-          releaseReport.release_data = addColorsAndIcons(
-            releaseReport.release_data,
-          );
-
-          // Enhance releases with AI-estimated feature completion dates
-          const enhancedReleases = await Promise.all(
-            releaseReport.release_data.map(async (release) => {
-              if (release.features && release.features.length > 0) {
-                const featuresWithDates = await generateAIFeatureEstimates(
-                  release.features,
-                  release.release_date,
-                  {
-                    name: productData?.name,
-                    architecture_type: productData?.architecture_type,
-                    product_uuid: productData?.product_uuid
-                  }
-                );
-
-                // Calculate release span based on feature completion dates
-                const calculateReleaseEndDate = (features, defaultReleaseDate) => {
-                  if (!features || features.length === 0) {return defaultReleaseDate;}
-
-                  const completionDates = features
-                    .map(f => f.estimated_completion_date)
-                    .filter(date => date)
-                    .map(date => new Date(date))
-                    .sort((a, b) => b - a);
-
-                  if (completionDates.length === 0) {return defaultReleaseDate;}
-
-                  const latestFeatureDate = completionDates[0];
-                  const bufferDays = 7;
-                  latestFeatureDate.setDate(latestFeatureDate.getDate() + bufferDays);
-                  return latestFeatureDate.toISOString().split('T')[0];
-                };
-
-                return {
-                  ...release,
-                  features: featuresWithDates,
-                  calculated_end_date: calculateReleaseEndDate(featuresWithDates, release.release_date)
-                };
-              }
-              return release;
-            })
-          );
-
-          releaseReport.release_data = enhancedReleases;
-
-          // set release data - use the actual array, not the entire report object
-          setReleaseData(releaseReport.release_data);
-        }
+      }
+      
+      // Use pre-processed data instead of heavy processing
+      if (processedReleaseData.length > 0) {
+        setReleaseData(processedReleaseData);
+        devLog.log('Timeline data updated with', processedReleaseData.length, 'releases');
       }
     } else {
       displayReport = false;
     }
-    };
-
-    processInsightsData();
-  }, [selectedProduct, reportData, releaseReport]);
+  }, [selectedProduct, reportData, processedReleaseData]);
 
   // Initialize budget estimates from API data
   useEffect(() => {

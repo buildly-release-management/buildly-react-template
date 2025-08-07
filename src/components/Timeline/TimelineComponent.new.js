@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from 'react';
 import './TimelineComponent.css';
 import { Timeline, TimelineEvent } from '@mailtop/horizontal-timeline';
 import { Chip } from '@mui/material';
-import { devLog } from '@utils/devLogger';
 
 const TimelineComponent = ({ reportData, suggestedFeatures, onReleaseClick, productContext }) => {
   const [releaseData, setReleaseData] = useState([]);
@@ -11,16 +10,6 @@ const TimelineComponent = ({ reportData, suggestedFeatures, onReleaseClick, prod
 
   useEffect(() => {
     setReleaseData(reportData || []);
-    
-    // Debug: Log issues data for the first release
-    if (reportData && reportData.length > 0) {
-      devLog.log('Timeline - Release data received:', {
-        totalReleases: reportData.length,
-        firstReleaseIssues: reportData[0]?.issues?.length || 0,
-        firstReleaseFeatures: reportData[0]?.features?.length || 0,
-        sampleIssue: reportData[0]?.issues?.[0] || 'No issues'
-      });
-    }
   }, [reportData]);
 
   useEffect(() => {
@@ -79,16 +68,15 @@ const TimelineComponent = ({ reportData, suggestedFeatures, onReleaseClick, prod
     const isExpanded = expandedFeatures[releaseIndex];
     const visibleFeatures = isExpanded ? features : features.slice(0, maxVisible);
 
+    if (features.length === 0) return null;
+
     return (
       <div style={{ 
         marginTop: '12px', 
         padding: '10px',
         backgroundColor: 'rgba(255,255,255,0.1)',
         borderRadius: '6px',
-        fontSize: '11px',
-        minHeight: '180px', // Ensure consistent height across all releases
-        display: 'flex',
-        flexDirection: 'column'
+        fontSize: '11px'
       }}>
         <div style={{ 
           fontWeight: 'bold', 
@@ -117,7 +105,7 @@ const TimelineComponent = ({ reportData, suggestedFeatures, onReleaseClick, prod
           )}
         </div>
         
-        <div style={{ position: 'relative', paddingLeft: '10px', flex: 1 }}>
+        <div style={{ position: 'relative', paddingLeft: '10px' }}>
           {/* Timeline line */}
           <div style={{
             position: 'absolute',
@@ -129,79 +117,68 @@ const TimelineComponent = ({ reportData, suggestedFeatures, onReleaseClick, prod
             opacity: 0.6
           }} />
           
-          {features.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              color: 'rgba(255,255,255,0.6)',
-              fontStyle: 'italic',
-              marginTop: '40px'
-            }}>
-              No features assigned to this release
-            </div>
-          ) : (
-            visibleFeatures.map((feature, index) => (
-              <div 
-                key={`feat-${releaseIndex}-${index}`}
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center',
-                  marginBottom: '6px',
-                  padding: '6px 8px',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  position: 'relative',
-                  marginLeft: '20px',
-                  maxWidth: '320px', // Slightly wider to accommodate more text
-                  overflow: 'hidden'
-                }}
-              >
-                {/* Timeline dot */}
-                <div style={{
-                  position: 'absolute',
-                  left: '-30px',
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: feature.estimation_source === 'ai' ? '#4CAF50' : '#FFC107',
-                  border: '2px solid white',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                }} />
-                
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <div style={{ 
+          {visibleFeatures.map((feature, index) => (
+            <div 
+              key={`feat-${releaseIndex}-${index}`}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                marginBottom: '6px',
+                padding: '6px 8px',
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderRadius: '8px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                position: 'relative',
+                marginLeft: '20px',
+                maxWidth: '300px', // Prevent overflow
+                overflow: 'hidden'
+              }}
+            >
+              {/* Timeline dot */}
+              <div style={{
+                position: 'absolute',
+                left: '-30px',
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: feature.estimation_source === 'ai' ? '#4CAF50' : '#FFC107',
+                border: '2px solid white',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }} />
+              
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div style={{ 
+                  fontWeight: 'bold',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '250px'
+                }}>
+                  {feature.name || feature.feature_name}
+                </div>
+                <div style={{ 
+                  fontSize: '10px',
+                  opacity: 0.8,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <span>
+                    📅 {feature.estimated_completion_date || 'TBD'}
+                  </span>
+                  <span style={{ 
+                    color: feature.estimation_source === 'ai' ? '#4CAF50' : '#FFC107',
                     fontWeight: 'bold',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '270px'
-                  }}>
-                    {feature.name || feature.feature_name}
-                  </div>
-                  <div style={{ 
-                    fontSize: '10px',
-                    opacity: 0.8,
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    gap: '2px'
                   }}>
-                    <span>
-                      📅 {feature.estimated_completion_date || 'TBD'}
-                    </span>
-                    <span style={{ 
-                      color: feature.estimation_source === 'ai' ? '#4CAF50' : '#FFC107',
-                      fontWeight: 'bold',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '2px'
-                    }}>
-                      {feature.estimation_source === 'ai' ? '🤖 AI' : '📊 Est'}
-                    </span>
-                  </div>
+                    {feature.estimation_source === 'ai' ? '🤖 AI' : '📊 Est'}
+                  </span>
                 </div>
               </div>
-            ))
-          )}
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -260,19 +237,19 @@ const TimelineComponent = ({ reportData, suggestedFeatures, onReleaseClick, prod
   };
 
   return (
-    <Timeline height={780} placeholder>
+    <Timeline height={560} placeholder>
       {releaseData && releaseData.map((releaseItem, idx) => (
         <TimelineEvent
           key={idx}
           color={releaseItem.bgColor}
-          icon="R" // Use a simple text icon instead of emojis
+          icon={releaseItem.icon}
           title={
             <div>
               <span 
                 style={{ cursor: onReleaseClick ? 'pointer' : 'default', color: '#0C5595' }}
                 onClick={() => onReleaseClick && onReleaseClick(releaseItem)}
               >
-                🚀 {releaseItem.name} {/* Show the rocket emoji in the title instead */}
+                {releaseItem.name}
               </span>
               {releaseItem.calculated_end_date && releaseItem.calculated_end_date !== releaseItem.release_date && (
                 <div style={{ 
@@ -306,12 +283,9 @@ const TimelineComponent = ({ reportData, suggestedFeatures, onReleaseClick, prod
                 padding: '12px 16px',
                 borderRadius: '8px',
                 color: releaseItem.bgColor === '#0C5594' || releaseItem.bgColor === '#152944' ? '#fff' : '#000',
-                width: '450px', // Increased width for better content display
-                maxWidth: '450px',
-                minWidth: '450px', // Ensure all releases have same width
-                minHeight: '520px', // Ensure consistent height across all releases
-                display: 'flex',
-                flexDirection: 'column',
+                width: '420px', // Fixed width for consistency
+                maxWidth: '420px',
+                minWidth: '420px', // Ensure all releases have same width
                 border: idx === currentReleaseIndex ? '3px solid #4CAF50' : 'none', // Highlight current release
                 boxShadow: idx === currentReleaseIndex ? '0 4px 12px rgba(76, 175, 80, 0.3)' : 'none'
               }}
@@ -346,18 +320,13 @@ const TimelineComponent = ({ reportData, suggestedFeatures, onReleaseClick, prod
                 )}
               </div>
 
-              {/* Content area with flex growth */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {/* Enhanced Feature List with Accordion */}
-                {renderFeatureList(releaseItem, idx)}
-                
-                {/* Budget and Team Section */}
-                <div style={{ marginTop: 'auto' }}>
-                  {renderBudgetSection(releaseItem)}
-                </div>
-              </div>
+              {/* Enhanced Feature List with Accordion */}
+              {renderFeatureList(releaseItem, idx)}
+              
+              {/* Budget and Team Section */}
+              {renderBudgetSection(releaseItem)}
 
-              {/* Legacy issues section - simplified */}
+              {/* Legacy feature section - simplified */}
               {releaseItem && releaseItem.issues && releaseItem.issues.length > 0 ? (
                 <div style={{ marginBottom: '8px', marginTop: '8px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>

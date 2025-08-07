@@ -30,7 +30,10 @@ const useStyles = makeStyles((theme) => ({
   content: {
     flexGrow: 1,
     height: '100vh',
-    paddingTop: '3.5em',
+    paddingTop: '6rem', // Increased from 3.5em to 6rem for better spacing
+    paddingLeft: theme.spacing(2), // Add horizontal padding 
+    paddingRight: theme.spacing(2), // Add horizontal padding
+    paddingBottom: theme.spacing(2), // Add bottom padding
     maxWidth: '100% !important',
   },
 }));

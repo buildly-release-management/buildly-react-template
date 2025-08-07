@@ -228,11 +228,18 @@ const TopBar = ({ history, location, sessionManager }) => {
 
   const { mutate: addSubscriptionMutation, isLoading: isAddSubscriptionLoading } = useAddSubscriptionMutation(displayAlert);
 
-  if (user) {
-    if (!organization) {
-      setOrganization(user.organization.name);
+  // Safely initialize organization once data is available
+  useEffect(() => {
+    if (user && !organization && orgNamesData && orgNamesData.length > 0) {
+      const userOrgName = user.organization?.name;
+      if (userOrgName && orgNamesData.includes(userOrgName)) {
+        setOrganization(userOrgName);
+      } else {
+        // Fallback to first available organization
+        setOrganization(orgNamesData[0]);
+      }
     }
-  }
+  }, [user, organization, orgNamesData]);
 
   const handleDialogOpen = () => {
     setOpen(true);
@@ -379,7 +386,12 @@ const TopBar = ({ history, location, sessionManager }) => {
                 id="org"
                 label="Organization"
                 select
-                value={organization}
+                value={
+                  // Ensure the organization value exists in the available options
+                  orgNamesData && orgNamesData.includes(organization)
+                    ? organization
+                    : (orgNamesData && orgNamesData.length > 0 ? orgNamesData[0] : '')
+                }
                 onChange={handleOrganizationChange}
               >
                 {_.map(orgNamesData, (org, index) => (
@@ -533,7 +545,13 @@ const TopBar = ({ history, location, sessionManager }) => {
                       formError.product ? formError.product.message : ''
                     }
                     onBlur={(e) => handleBlur(e, 'required', product)}
-                    {...product.bind}
+                    value={
+                      // Ensure the value exists in the available options
+                      stripeProductData && stripeProductData.some(prd => prd.id === product.value)
+                        ? product.value
+                        : ''
+                    }
+                    onChange={product.bind.onChange}
                   >
                     <MenuItem value="">----------</MenuItem>
                     {stripeProductData && !_.isEmpty(stripeProductData)
