@@ -1,5 +1,4 @@
 import React from 'react';
-import Copyright from '@components/Copyright/Copyright';
 
 const Home = () => {
   return (
@@ -11,7 +10,6 @@ const Home = () => {
         src="https://labs-onboarding.buildly.io"
         allowFullScreen
       />
-      <Copyright />
     </>
   );
 };
