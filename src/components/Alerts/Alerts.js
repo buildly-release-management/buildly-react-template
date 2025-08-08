@@ -1,16 +1,10 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import { IconButton, Slide, Snackbar } from '@mui/material';
+import { IconButton, Slide, Snackbar, Box } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useStore } from '@zustand/alert/alertStore';
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: '100%',
-    '& > * + *': {
-      marginTop: theme.spacing(2),
-    },
-  },
+// Define styles object for different alert types
+const alertStyles = {
   success: {
     backgroundColor: '#009900',
     color: '#000',
@@ -31,11 +25,10 @@ const useStyles = makeStyles((theme) => ({
     color: '#000',
     whiteSpace: 'pre-wrap',
   },
-}));
+};
 
 const Alerts = () => {
   const { data, hideAlert } = useStore();
-  const classes = useStyles();
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -47,7 +40,14 @@ const Alerts = () => {
   };
 
   return (
-    <div className={classes.root}>
+    <Box
+      sx={{
+        width: '100%',
+        '& > * + *': {
+          marginTop: 2,
+        },
+      }}
+    >
       {data && (
         <Snackbar
           key={`${data.type}-${data.message}`}
@@ -59,9 +59,7 @@ const Alerts = () => {
           TransitionComponent={(props) => (
             <Slide {...props} direction="left" />
           )}
-          classes={{
-            root: classes[data.type],
-          }}
+          sx={alertStyles[data.type] || alertStyles.info}
           action={(
             <>
               <IconButton
@@ -76,7 +74,7 @@ const Alerts = () => {
           )}
         />
       )}
-    </div>
+    </Box>
   );
 };
 

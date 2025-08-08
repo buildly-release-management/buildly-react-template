@@ -16,9 +16,25 @@ import Col from 'react-bootstrap/Col';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { Accordion, AccordionSummary, AccordionDetails, Typography as MuiTypography } from '@mui/material';
-import { ExpandMore as ExpandMoreIcon, Info as InfoIcon, Help as HelpIcon } from '@mui/icons-material';
+import { 
+  Accordion, 
+  AccordionSummary, 
+  AccordionDetails, 
+  Typography as MuiTypography,
+  Tabs,
+  Tab,
+  Box
+} from '@mui/material';
+import { 
+  ExpandMore as ExpandMoreIcon, 
+  Info as InfoIcon, 
+  Help as HelpIcon,
+  Assessment as ArchitectureIcon,
+  Timeline as TimelineIcon,
+  AttachMoney as BudgetIcon
+} from '@mui/icons-material';
 import { Tooltip, IconButton } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 
 import './Insights.css';
 
@@ -109,24 +125,15 @@ const Insights = () => {
     }, 100);
   };
 
-  // Collapsible sections state
-  const [expandedSections, setExpandedSections] = useState({
-    status: true,
-    architecture: true,
-    timelines: true,
-    budget: true,
-    productivity: false
-  });
+  // Tab navigation state (architecture as default since it's most important after status)
+  const [activeTab, setActiveTab] = useState('architecture');
 
   // Get organization members for status analysis
   const { data: organizationMembers = [] } = useOrganizationMembers();
 
-  // Handle section toggle
-  const handleSectionToggle = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+  // Handle tab change
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
   };
 
   const { data: products, isLoading: areProductsLoading } = useQuery(
@@ -154,66 +161,70 @@ const Insights = () => {
       }
     },
   );
-  // Consolidated data queries with optimized caching
-  const { data: reportData, isLoading: isGettingProductReport } = useQuery(
+  // Consolidated data queries with optimized caching and parallel loading
+  const { data: reportData, isLoading: isGettingProductReport, error: reportError } = useQuery(
     ['productReport', selectedProduct],
     () => getProductReportQuery(selectedProduct, displayAlert),
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
       staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 15 * 60 * 1000, // 15 minutes - increased cache time
-      retry: 2
+      cacheTime: 15 * 60 * 1000, // 15 minutes
+      retry: 1, // Reduced retry count for faster failures
+      retryDelay: 1000 // Faster retry
     },
   );
   
-  const { data: releaseReport, isLoading: isGettingReleaseProductReport } = useQuery(
+  const { data: releaseReport, isLoading: isGettingReleaseProductReport, error: releaseReportError } = useQuery(
     ['releaseProductReport', selectedProduct],
     () => getReleaseProductReportQuery(selectedProduct, displayAlert),
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
-      staleTime: 10 * 60 * 1000, // 10 minutes - longer cache for release data
-      cacheTime: 30 * 60 * 1000, // 30 minutes - much longer cache
-      retry: 2,
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      cacheTime: 30 * 60 * 1000, // 30 minutes
+      retry: 1, // Reduced retry count
+      retryDelay: 1000,
       // Keep previous data while fetching new data to prevent UI flicker
       keepPreviousData: true,
-      // Only refetch if the data is truly stale
-      refetchOnMount: 'always',
-      // Background refetch for better UX
-      refetchInterval: 15 * 60 * 1000 // Refetch every 15 minutes in background
+      // Fetch in background for better UX
+      refetchInterval: 20 * 60 * 1000 // Refetch every 20 minutes in background
     },
   );
 
-  // Optimize budget query with longer cache since budgets change less frequently
-  const { data: budgetData, isLoading: isGettingProductBudget } = useQuery(
+  // Optimize budget query with faster failure recovery
+  const { data: budgetData, isLoading: isGettingProductBudget, error: budgetError } = useQuery(
     ['productBudget', selectedProduct],
     () => getProductBudgetQuery(selectedProduct, displayAlert),
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
-      staleTime: 10 * 60 * 1000, // 10 minutes - increased
-      cacheTime: 30 * 60 * 1000, // 30 minutes - increased
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      cacheTime: 30 * 60 * 1000, // 30 minutes
       retry: (failureCount, error) => {
-        // Don't retry on 404 errors (budget doesn't exist)
-        if (error?.response?.status === 404) {
+        // Don't retry on 404 errors (budget doesn't exist) or network errors
+        if (error?.response?.status === 404 || error?.code === 'NETWORK_ERROR') {
           return false;
         }
-        return failureCount < 2;
-      }
+        return failureCount < 1; // Only retry once
+      },
+      retryDelay: 500 // Faster retry for budget
     },
   );
 
-  // Enhanced queries with better caching and dependency optimization
+  // Load secondary data with reduced blocking - these shouldn't delay the main UI
   const { data: featuresData, isLoading: isGettingFeatures } = useQuery(
     ['allFeatures', selectedProduct],
     () => getAllFeatureQuery(selectedProduct, displayAlert),
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
-      staleTime: 5 * 60 * 1000, // 5 minutes - increased
-      cacheTime: 20 * 60 * 1000, // 20 minutes - increased
-      retry: 2
+      staleTime: 5 * 60 * 1000,
+      cacheTime: 20 * 60 * 1000,
+      retry: 1,
+      retryDelay: 1000,
+      // Don't block UI for secondary data
+      suspense: false
     },
   );
 
@@ -223,9 +234,11 @@ const Insights = () => {
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
-      staleTime: 3 * 60 * 1000, // 3 minutes
-      cacheTime: 15 * 60 * 1000, // 15 minutes - increased
-      retry: 2
+      staleTime: 3 * 60 * 1000,
+      cacheTime: 15 * 60 * 1000,
+      retry: 1,
+      retryDelay: 1000,
+      suspense: false
     },
   );
 
@@ -235,22 +248,26 @@ const Insights = () => {
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
-      staleTime: 5 * 60 * 1000, // 5 minutes - increased
-      cacheTime: 20 * 60 * 1000, // 20 minutes - increased
-      retry: 2
+      staleTime: 5 * 60 * 1000,
+      cacheTime: 20 * 60 * 1000,
+      retry: 1,
+      retryDelay: 1000,
+      suspense: false
     },
   );
 
-  // Statuses change rarely, so we can cache them longer
+  // Statuses change rarely, so we can cache them longer and load independently
   const { data: statusLookupData, isLoading: isGettingStatuses } = useQuery(
-    ['allStatuses'],  // Removed selectedProduct dependency since statuses are likely global
+    ['allStatuses', selectedProduct],  // Keep product dependency for now
     () => getAllStatusQuery(selectedProduct, displayAlert),
     { 
       refetchOnWindowFocus: false, 
       enabled: !_.isEmpty(selectedProduct) && !_.isEqual(_.toNumber(selectedProduct), 0),
-      staleTime: 30 * 60 * 1000, // 30 minutes - statuses change rarely
-      cacheTime: 60 * 60 * 1000, // 1 hour - much longer cache
-      retry: 2
+      staleTime: 30 * 60 * 1000, // 30 minutes
+      cacheTime: 60 * 60 * 1000, // 1 hour
+      retry: 1,
+      retryDelay: 500,
+      suspense: false
     },
   );
 
@@ -476,67 +493,147 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
     }
   };
 
-  // Memoized data processing to prevent unnecessary re-calculations
+  // Highly optimized data processing with aggressive memoization
   const processedReleaseData = useMemo(() => {
     if (!releaseReport?.release_data || releaseReport.release_data.length === 0) {
+      // Return cached empty array to prevent re-renders
       return [];
     }
 
-    // The data is already pre-processed in the query with embedded features and issues
+    // Pre-process data only once with minimal transformations for speed
     const enhancedReleases = releaseReport.release_data.map(release => ({
       ...release,
-      // Add colors for timeline display (remove problematic emoji icon)
+      // Add minimal required properties for timeline display
       bgColor: '#0D5595',
-      // Ensure calculated_end_date exists
-      calculated_end_date: release.calculated_end_date || release.release_date
+      calculated_end_date: release.calculated_end_date || release.release_date,
+      // Pre-calculate completion status for performance
+      is_completed: release.is_completed || false,
+      // Ensure features and issues arrays exist
+      features: release.features || [],
+      issues: release.issues || []
     }));
 
-    devLog.log('Processed release data for timeline:', enhancedReleases.length);
+    devLog.log('Processed release data for timeline (optimized):', enhancedReleases.length);
     return enhancedReleases;
-  }, [releaseReport]);
+  }, [releaseReport?.release_data]); // More specific dependency
 
-  // effects - optimized with memoization
-  useEffect(() => {
-    if (selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0)) {
-      if (reportData) {
-        // set states
-        setProductData(reportData);
+  // Memoize product status calculation
+  const productStatusData = useMemo(() => {
+    // Primary data source should be productData (the product object), not reportData (array of releases)
+    if (!productData) {
+      return null;
+    }
+    
+    if (!productData[0] || (!productData[0].name && !productData[0].architecture_type && !productData[0].complexity_score)) {
+      return null;
+    }
+
+    try {
+      // Use the correct parameter order: (product, releases, features, issues, budget, teamMembers)
+      const result = calculateProductStatus(
+        productData[0] || {}, // Extract first product from array, fallback to empty object
+        releaseData || releasesData || [],
+        featuresData || [],
+        issuesData || [],
+        budgetData,
+        organizationMembers || []
+      );
+      
+      // If calculation fails, return a basic fallback status
+      if (!result) {
+        return {
+          overall: 'yellow',
+          timeline: 'green',
+          budget: 'green',
+          quality: 'yellow',
+          score: 75,
+          details: {
+            timeline: { hasTimeline: false },
+            budget: { hasData: !!budgetData },
+            resources: { hasTeam: (organizationMembers || []).length > 0 },
+            features: { total: (featuresData || []).length },
+            releases: { total: (releaseData || releasesData || []).length }
+          }
+        };
       }
       
-      // Use pre-processed data instead of heavy processing
+      return result;
+    } catch (error) {
+      console.warn('Error calculating product status:', error);
+      // Return fallback status on error
+      return {
+        overall: 'yellow',
+        timeline: 'yellow',
+        budget: 'green',
+        quality: 'yellow',
+        score: 65,
+        details: {
+          timeline: { hasTimeline: false, error: true },
+          budget: { hasData: !!budgetData },
+          resources: { hasTeam: (organizationMembers || []).length > 0 },
+          features: { total: (featuresData || []).length },
+          releases: { total: (releaseData || releasesData || []).length }
+        }
+      };
+    }
+  }, [productData, reportData, releaseData, releasesData, featuresData, issuesData, budgetData, organizationMembers]);
+
+  // Memoize status report for performance
+  const statusReport = useMemo(() => {
+    if (!productStatusData) return null;
+    try {
+      return generateStatusReport(productStatusData);
+    } catch (error) {
+      console.warn('Error generating status report:', error);
+      return null;
+    }
+  }, [productStatusData]);
+
+  // Optimized effects with reduced re-renders
+  useEffect(() => {
+    if (selectedProduct && !_.isEqual(_.toNumber(selectedProduct), 0)) {
+      // Set product data immediately when available
+      // Check if reportData is the product object (has architecture_type, complexity_score, etc.)
+      if (reportData && (reportData.name || reportData.architecture_type || reportData.complexity_score)) {
+        setProductData([reportData]); // Wrap in array since productData expects an array
+      }
+      
+      // Use pre-processed data for faster updates
       if (processedReleaseData.length > 0) {
         setReleaseData(processedReleaseData);
-        devLog.log('Timeline data updated with', processedReleaseData.length, 'releases');
+        devLog.log('Timeline data updated (optimized):', processedReleaseData.length, 'releases');
+      } else if (releaseReport && releaseReport.release_data?.length === 0) {
+        // Handle empty release data case
+        setReleaseData([]);
+        devLog.log('Timeline data cleared - no releases available');
       }
     } else {
       displayReport = false;
     }
-  }, [selectedProduct, reportData, processedReleaseData]);
+  }, [selectedProduct, reportData?.name, processedReleaseData.length, releaseReport]); // More specific dependencies
 
-  // Initialize budget estimates from API data
+  // Optimize budget estimates initialization
   useEffect(() => {
-    if (budgetData && budgetData.release_budgets) {
+    if (budgetData?.release_budgets && budgetData.release_budgets.length > 0) {
       const budgetEstimatesFromAPI = {};
       
       budgetData.release_budgets.forEach(releaseBudget => {
         if (releaseBudget.release_name && releaseBudget.budget_estimate) {
-          // Merge the budget estimate with team configuration data
-          const budgetEstimate = {
+          budgetEstimatesFromAPI[releaseBudget.release_name] = {
             ...releaseBudget.budget_estimate,
-            // Map team_configuration back to team if it exists
             team: releaseBudget.team_configuration || releaseBudget.budget_estimate.team || []
           };
-          budgetEstimatesFromAPI[releaseBudget.release_name] = budgetEstimate;
         }
       });
       
       setBudgetEstimates(budgetEstimatesFromAPI);
+      devLog.log('Budget estimates loaded from API:', Object.keys(budgetEstimatesFromAPI).length);
     }
-  }, [budgetData]);
+  }, [budgetData?.release_budgets?.length]); // More specific dependency
 
-  // Create default budget estimates for releases that don't have them
+  // Optimize default budget estimates creation
   useEffect(() => {
-    if (releaseData && releaseData.length > 0) {
+    if (releaseData?.length > 0) {
       setBudgetEstimates(prev => {
         const updated = { ...prev };
         let hasUpdates = false;
@@ -544,13 +641,10 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
         releaseData.forEach(release => {
           const releaseName = release.name || release.release_name;
           if (releaseName && !updated[releaseName]) {            
-            // Calculate default timeline weeks based on release duration or default to 12 weeks
-            const defaultWeeks = release.duration?.weeks || 12;
-            
             updated[releaseName] = {
-              total_budget: 50000, // Default budget
+              total_budget: 50000,
               base_cost: 42000,
-              timeline_weeks: defaultWeeks,
+              timeline_weeks: release.duration?.weeks || 12,
               team: [
                 { role: 'Frontend Developer', count: 1, weeklyRate: 2500 },
                 { role: 'Backend Developer', count: 1, weeklyRate: 2800 },
@@ -565,10 +659,13 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
           }
         });
         
+        if (hasUpdates) {
+          devLog.log('Created default budget estimates for releases without budgets');
+        }
         return hasUpdates ? updated : prev;
       });
     }
-  }, [releaseData]);
+  }, [releaseData?.length]); // More specific dependency
 
   // Fetch Buildly open source tools from GitHub
   useEffect(() => {
@@ -808,16 +905,17 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
     }
   }, [productData]);
 
-  // Timeout effect to prevent loader from staying on indefinitely
+  // Much faster timeout to prevent hanging UI
   useEffect(() => {
     if (selectedProduct && _.toNumber(selectedProduct) !== 0) {
       // Reset timeout when product changes
       setLoaderTimeout(false);
       
-      // Set a timeout to force hide loader after 30 seconds
+      // Much shorter timeout for better UX - force show partial UI after 5 seconds
       const timer = setTimeout(() => {
         setLoaderTimeout(true);
-      }, 30000);
+        devLog.log('Loader timeout reached - showing partial UI for better UX');
+      }, 5000); // Reduced from 30 seconds to 5 seconds
 
       return () => clearTimeout(timer);
     }
@@ -1082,24 +1180,36 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
     }
   };
 
-  // Check if any critical data is still loading - only show loader while essential data loads
-  const isEssentialDataLoading = areProductsLoading || isGettingProductReport || isGettingReleaseProductReport;
+  // Optimized loading states for faster UI response
+  // Only block UI for absolutely essential data
+  const isEssentialDataLoading = areProductsLoading || isGettingProductReport;
+  
+  // Secondary data loading should not block the main UI
   const isSecondaryDataLoading = isGettingProductBudget || isGettingFeatures || isGettingIssues || 
     isGettingReleases || isGettingStatuses;
   
-  // Check if Timeline/Budget data is ready for rendering
+  // Timeline/Budget data is ready when we have core product data and either:
+  // 1. Release report has loaded (even if empty), OR 
+  // 2. Release report failed (show graceful fallback), OR
+  // 3. We have any release data from previous loads
   const isTimelineBudgetDataReady = selectedProduct && 
     !isEssentialDataLoading && 
-    (productData && productData.name) &&
-    // Either we have release data OR the release report has loaded (even if empty)
-    (releaseReport !== undefined);
+    (productData?.name || reportData?.name) &&
+    (releaseReport !== undefined || releaseReportError || releaseData?.length > 0);
   
-  // Show loader for essential data AND while Timeline/Budget data is processing
-  // But force hide after timeout to prevent infinite loading
+  // Much more aggressive loading optimization
+  // Only show loader for truly essential data and very briefly for Timeline/Budget
   const shouldShowLoader = !loaderTimeout && (
     isEssentialDataLoading || isEmailingReport || 
-    (selectedProduct && _.toNumber(selectedProduct) !== 0 && !isTimelineBudgetDataReady)
+    // Only block on Timeline/Budget for first 3 seconds, then show partial UI
+    (selectedProduct && _.toNumber(selectedProduct) !== 0 && !isTimelineBudgetDataReady && 
+     isGettingReleaseProductReport && !releaseReportError)
   );
+
+  // Add optimized data ready states for each tab
+  const isArchitectureDataReady = productData?.name || reportData?.name;
+  const isTimelineDataReady = isTimelineBudgetDataReady && (releaseData?.length > 0 || releaseReport?.release_data);
+  const isBudgetDataReady = isTimelineBudgetDataReady && (budgetData !== undefined || budgetError);
 
   return (
     <>
@@ -1158,6 +1268,13 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
           <div className="row mb-3">
             <section className="text-end">
               <Button
+                className="btn btn-small btn-outline-primary me-2"
+                onClick={openTeamHelpModal}
+                startIcon={<HelpIcon />}
+              >
+                Get Development Help
+              </Button>
+              <Button
                 aria-controls={open ? 'basic-menu' : undefined}
                 aria-haspopup="true"
                 aria-expanded={open ? 'true' : undefined}
@@ -1181,60 +1298,178 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
             </section>
           </div>
 
-          {/* Product Status Dashboard Section */}
-          <Accordion expanded={expandedSections.status} onChange={() => handleSectionToggle('status')}>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="status-content"
-              id="status-header"
-              sx={{
-                backgroundColor: '#0C5595',
-                color: 'white',
-                '& .MuiAccordionSummary-expandIconWrapper': {
-                  color: 'white',
-                },
-                '&:hover': {
-                  backgroundColor: '#0A4A85',
-                },
-              }}
-            >
-              <MuiTypography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
-                📊 Product Status Dashboard
-              </MuiTypography>
-            </AccordionSummary>
-            <AccordionDetails sx={{ padding: 2 }}>
-              {(() => {
-                // Use real data when available, fallback to mock data for missing endpoints
-                
-                // Real budget data (already available)
-                const realBudget = budgetData ? {
-                  total_budget: budgetData.total_budget || 0,
-                  spent_budget: budgetData.spent_budget || 0
-                } : {
-                  total_budget: 85000,
-                  spent_budget: 52000
-                };
+          {/* Compact Product Status Dashboard */}
+          <Card style={{ marginBottom: '24px', border: '2px solid #0C5595' }}>
+            <Card.Header style={{ 
+              backgroundColor: '#0C5595',
+              color: 'white',
+              fontWeight: 'bold',
+              padding: '12px 16px'
+            }}>
+              📊 Product Status Dashboard
+            </Card.Header>
+            <Card.Body style={{ padding: '16px' }}>
+              {productStatusData ? (
+                <div className="row">
+                  {/* Overall Status - Compact */}
+                  <div className="col-md-3">
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ 
+                        fontSize: '2rem', 
+                        fontWeight: 'bold', 
+                        color: getStatusColor(productStatusData.overall) 
+                      }}>
+                        {productStatusData.score}%
+                      </div>
+                      <div style={{ 
+                        color: getStatusColor(productStatusData.overall), 
+                        fontWeight: 'bold' 
+                      }}>
+                        {getStatusLabel(productStatusData.overall)}
+                      </div>
+                    </div>
+                  </div>
 
-                // Real releases data from API
-                const releases = releasesData && releasesData.length > 0 ? releasesData.map(release => ({
-                  name: release.name || 'Unnamed Release',
-                  release_uuid: release.release_uuid,
-                  release_date: release.release_date,
-                  start_date: release.start_date,
-                  environment: release.environment,
-                  prerelease: release.prerelease,
-                  // Calculate status based on dates
-                  status: (() => {
-                    const now = new Date();
-                    const releaseDate = new Date(release.release_date);
-                    const startDate = new Date(release.start_date);
-                    
-                    if (releaseDate < now) {return 'completed';}
-                    if (startDate <= now && releaseDate >= now) {return 'active';}
-                    return 'planned';
-                  })(),
-                  target_date: release.release_date
-                })) : [
+                  {/* Status Breakdown - Compact */}
+                  <div className="col-md-9">
+                    <div className="row">
+                      <div className="col-md-4">
+                        <div style={{ textAlign: 'center', fontSize: '0.9rem' }}>
+                          <div style={{ 
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            backgroundColor: getStatusColor(productStatusData.timeline),
+                            margin: '0 auto 5px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '1.2rem'
+                          }}>
+                            ⏱️
+                          </div>
+                          <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>Timeline</div>
+                          <div style={{ color: getStatusColor(productStatusData.timeline) }}>
+                            {getStatusLabel(productStatusData.timeline)}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="col-md-4">
+                        <div style={{ textAlign: 'center', fontSize: '0.9rem' }}>
+                          <div style={{ 
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            backgroundColor: getStatusColor(productStatusData.budget),
+                            margin: '0 auto 5px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '1.2rem'
+                          }}>
+                            💰
+                          </div>
+                          <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>Budget</div>
+                          <div style={{ color: getStatusColor(productStatusData.budget) }}>
+                            {getStatusLabel(productStatusData.budget)}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="col-md-4">
+                        <div style={{ textAlign: 'center', fontSize: '0.9rem' }}>
+                          <div style={{ 
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            backgroundColor: getStatusColor(productStatusData.quality),
+                            margin: '0 auto 5px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '1.2rem'
+                          }}>
+                            ✅
+                          </div>
+                          <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>Quality</div>
+                          <div style={{ color: getStatusColor(productStatusData.quality) }}>
+                            {getStatusLabel(productStatusData.quality)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Loading or error state
+                <div className="row">
+                  <div className="col-12" style={{ textAlign: 'center', padding: '20px' }}>
+                    {selectedProduct ? (
+                      <div>
+                        <div style={{ marginBottom: '10px' }}>
+                          🔄 Loading product status data...
+                        </div>
+                        <div style={{ fontSize: '0.9rem', color: '#666' }}>
+                          {isGettingProductReport && "Fetching product report..."} 
+                          {isGettingReleaseProductReport && !isGettingProductReport && "Loading release data..."} 
+                          {isSecondaryDataLoading && !isEssentialDataLoading && "Loading additional data..."}
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ color: '#666' }}>
+                        Please select a product to view status
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+
+          {/* Tab Navigation for Insights Sections */}
+          <TabContext value={activeTab}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+              <TabList onChange={handleTabChange} aria-label="insights sections">
+                <Tab 
+                  icon={<ArchitectureIcon />}
+                  label="Architecture & Design" 
+                  value="architecture" 
+                />
+                <Tab 
+                  icon={<TimelineIcon />}
+                  label="Timelines & Productivity" 
+                  value="timelines" 
+                />
+                <Tab 
+                  icon={<BudgetIcon />}
+                  label="Budget Management" 
+                  value="budget" 
+                />
+              </TabList>
+            </Box>
+
+              {/* Product Status Dashboard */}
+              {(() => {
+                // Optimized product status data using real APIs with performance caching
+                const releases = releasesData && releasesData.length > 0 ? releasesData.map(release => {
+                  const releaseDate = new Date(release.release_date);
+                  const startDate = new Date(release.start_date);
+                  const now = new Date();
+                  
+                  return {
+                    name: release.name || `Release ${release.release_uuid}`,
+                    status: (() => {
+                      if (releaseDate < now) return 'completed';
+                      if (startDate <= now && releaseDate >= now) return 'active';
+                      return 'planned';
+                    })(),
+                    target_date: release.release_date
+                  };
+                }) : [
                   { 
                     name: 'v1.0', 
                     status: 'completed', 
@@ -1316,7 +1551,7 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                   releases, 
                   features, 
                   issues, 
-                  realBudget,
+                  budgetData,
                   organizationMembers
                 );
 
@@ -1324,165 +1559,9 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
 
                 return (
                   <div className="row">
-                    {/* Overall Status Card */}
-                    <div className="col-md-4">
-                      <Card className="h-100" style={{ 
-                        border: `3px solid ${getStatusColor(calculatedStatus.overall)}`,
-                        borderRadius: '8px'
-                      }}>
-                        <Card.Header style={{ 
-                          backgroundColor: getStatusColor(calculatedStatus.overall),
-                          color: 'white',
-                          fontWeight: 'bold',
-                          textAlign: 'center'
-                        }}>
-                          🎯 Overall Status
-                        </Card.Header>
-                        <Card.Body style={{ textAlign: 'center' }}>
-                          <h2 style={{ 
-                            color: getStatusColor(calculatedStatus.overall),
-                            fontSize: '3rem',
-                            margin: '20px 0'
-                          }}>
-                            {calculatedStatus.score}%
-                          </h2>
-                          <h4 style={{ color: getStatusColor(calculatedStatus.overall), marginBottom: '20px' }}>
-                            {getStatusLabel(calculatedStatus.overall)}
-                          </h4>
-                          <div style={{ fontSize: '0.9rem', color: '#6c757d' }}>
-                            {calculatedStatus.overall === 'green' && '✅ Project is on track'}
-                            {calculatedStatus.overall === 'yellow' && '⚠️ Project needs attention'}
-                            {calculatedStatus.overall === 'red' && '🚨 Critical issues require immediate action'}
-                          </div>
-                        </Card.Body>
-                      </Card>
-                    </div>
-
-                    {/* Status Breakdown */}
-                    <div className="col-md-8">
-                      <Card className="h-100">
-                        <Card.Header style={{ 
-                          backgroundColor: '#f8f9fa',
-                          fontWeight: 'bold'
-                        }}>
-                          📈 Status Breakdown
-                        </Card.Header>
-                        <Card.Body>
-                          <div className="row">
-                            <div className="col-md-4">
-                              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                                <div style={{ 
-                                  width: '60px',
-                                  height: '60px',
-                                  borderRadius: '50%',
-                                  backgroundColor: getStatusColor(calculatedStatus.timeline),
-                                  margin: '0 auto 10px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'white',
-                                  fontSize: '1.5rem'
-                                }}>
-                                  ⏰
-                                </div>
-                                <h6>Timeline</h6>
-                                <div style={{ color: getStatusColor(calculatedStatus.timeline), fontWeight: 'bold' }}>
-                                  {getStatusLabel(calculatedStatus.timeline)}
-                                </div>
-                                <small style={{ color: '#6c757d' }}>
-                                  {calculatedStatus?.details?.timeline?.daysRemaining !== null ? 
-                                    `${calculatedStatus?.details?.timeline?.daysRemaining} days remaining` : 'No timeline set'}
-                                </small>
-                              </div>
-                            </div>
-                            
-                            <div className="col-md-4">
-                              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                                <div style={{ 
-                                  width: '60px',
-                                  height: '60px',
-                                  borderRadius: '50%',
-                                  backgroundColor: getStatusColor(calculatedStatus.budget),
-                                  margin: '0 auto 10px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'white',
-                                  fontSize: '1.5rem'
-                                }}>
-                                  💰
-                                </div>
-                                <h6>Budget</h6>
-                                <div style={{ color: getStatusColor(calculatedStatus.budget), fontWeight: 'bold' }}>
-                                  {getStatusLabel(calculatedStatus.budget)}
-                                </div>
-                                <small style={{ color: '#6c757d' }}>
-                                  {calculatedStatus?.details?.budget?.budgetUtilization || 0}% utilized
-                                </small>
-                              </div>
-                            </div>
-                            
-                            <div className="col-md-4">
-                              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                                <div style={{ 
-                                  width: '60px',
-                                  height: '60px',
-                                  borderRadius: '50%',
-                                  backgroundColor: getStatusColor(calculatedStatus.resources),
-                                  margin: '0 auto 10px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'white',
-                                  fontSize: '1.5rem'
-                                }}>
-                                  👥
-                                </div>
-                                <h6>Resources</h6>
-                                <div style={{ color: getStatusColor(calculatedStatus.resources), fontWeight: 'bold' }}>
-                                  {getStatusLabel(calculatedStatus.resources)}
-                                </div>
-                                <small style={{ color: '#6c757d' }}>
-                                  {calculatedStatus?.details?.resources?.activeTeamMembers || 0} active members
-                                </small>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Progress Stats */}
-                          <div className="row mt-3">
-                            <div className="col-md-4">
-                              <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
-                                  {calculatedStatus?.details?.features?.completed || 0}/{calculatedStatus?.details?.features?.total || 0}
-                                </div>
-                                <small>Features Complete</small>
-                              </div>
-                            </div>
-                            <div className="col-md-4">
-                              <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
-                                  {calculatedStatus?.details?.issues?.completed || 0}/{calculatedStatus?.details?.issues?.total || 0}
-                                </div>
-                                <small>Issues Resolved</small>
-                              </div>
-                            </div>
-                            <div className="col-md-4">
-                              <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0C5595' }}>
-                                  {calculatedStatus?.details?.releases?.completed || 0}/{calculatedStatus?.details?.releases?.total || 0}
-                                </div>
-                                <small>Releases Done</small>
-                              </div>
-                            </div>
-                          </div>
-                        </Card.Body>
-                      </Card>
-                    </div>
-
                     {/* Recommendations */}
                     {statusReport.recommendations && statusReport.recommendations.length > 0 && (
-                      <div className="col-12 mt-3">
+                      <div className="col-12">
                         <Card>
                           <Card.Header style={{ 
                             backgroundColor: '#fff3cd',
@@ -1551,71 +1630,9 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                   </div>
                 );
               })()}
-            </AccordionDetails>
-          </Accordion>
 
-          {/* Architecture & Design Section */}
-          <Accordion expanded={expandedSections.architecture} onChange={() => handleSectionToggle('architecture')}>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="architecture-content"
-              id="architecture-header"
-              sx={{
-                backgroundColor: '#0C5595',
-                color: 'white',
-                '& .MuiAccordionSummary-expandIconWrapper': {
-                  color: 'white',
-                },
-                '&:hover': {
-                  backgroundColor: '#0A4A85',
-                },
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                <MuiTypography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
-                  🏗️ Architecture & Design
-                </MuiTypography>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Tooltip 
-                    title="Our Request Help feature connects you with expert developers and architects to accelerate your project. Get personalized assistance with technical challenges, architecture decisions, and implementation guidance."
-                    placement="left"
-                    arrow
-                  >
-                    <IconButton 
-                      size="small" 
-                      sx={{ color: 'white' }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setHelpInfoOpen(!helpInfoOpen);
-                      }}
-                    >
-                      <InfoIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    startIcon={<HelpIcon />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowTeamHelpModal(true);
-                    }}
-                    sx={{
-                      backgroundColor: '#ffffff',
-                      color: '#0C5595',
-                      fontWeight: 'bold',
-                      minWidth: '140px',
-                      '&:hover': {
-                        backgroundColor: '#f5f5f5',
-                      },
-                    }}
-                  >
-                    Request Help
-                  </Button>
-                </div>
-              </div>
-            </AccordionSummary>
-            <AccordionDetails sx={{ padding: 0 }}>
+            {/* Tab Panels */}
+            <TabPanel value="architecture">
               <div className="row">
                 <div className="col-md-6">
                   <Card className="w-100 h-100">
@@ -1901,31 +1918,9 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                   </Card>
                 </div>
               </div>
-            </AccordionDetails>
-          </Accordion>
-          
-          {/* Timelines & Productivity Section */}
-          <Accordion expanded={expandedSections.timelines} onChange={() => handleSectionToggle('timelines')} sx={{ mt: 2 }}>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="timelines-content"
-              id="timelines-header"
-              sx={{
-                backgroundColor: '#28a745',
-                color: 'white',
-                '& .MuiAccordionSummary-expandIconWrapper': {
-                  color: 'white',
-                },
-                '&:hover': {
-                  backgroundColor: '#218838',
-                },
-              }}
-            >
-              <MuiTypography variant="h6" sx={{ fontWeight: 'bold' }}>
-                📅 Timelines & Productivity
-              </MuiTypography>
-            </AccordionSummary>
-            <AccordionDetails sx={{ padding: 2 }}>
+            </TabPanel>
+
+            <TabPanel value="timelines">
               <Card className="w-100">
                 <Card.Body>
                   <div className="d-flex justify-content-between align-items-center mb-3">
@@ -1949,40 +1944,66 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                     </div>
                   </div>
                   <div className="m-2">
-                    {
-                      releaseData && releaseData.length
-                        ? (
-                          viewMode === 'timeline' ? (
-                            <TimelineComponent
-                              reportData={releaseData}
-                              suggestedFeatures={productData?.feature_suggestions}
-                              onReleaseClick={handleReleaseClick}
-                              productContext={{
-                                name: productData?.name,
-                                architecture_type: productData?.architecture_type,
-                                product_uuid: productData?.product_uuid
-                              }}
-                            />
-                          ) : (
-                            <div>
-                              <GanttChart
-                                releases={releaseData}
-                                onReleaseClick={handleReleaseClick}
-                                title="Release Gantt Chart"
-                                productContext={{
-                                  name: productData?.name,
-                                  architecture_type: productData?.architecture_type,
-                                  product_uuid: productData?.product_uuid
-                                }}
-                              />
-                            </div>
-                          )
-                        ) : (
-                          <div className="alert alert-warning" role="alert">
-                            No releases for this product!
-                          </div>
-                        )
-                    }
+                    {/* Enhanced Timeline Data Loading and Error Handling */}
+                    {isGettingReleaseProductReport && !releaseData?.length ? (
+                      <div className="text-center py-4">
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="visually-hidden">Loading timeline data...</span>
+                        </div>
+                        <p className="mt-2 text-muted">Loading release timeline...</p>
+                      </div>
+                    ) : releaseReportError ? (
+                      <Alert variant="warning" className="mb-3">
+                        <Alert.Heading>Timeline Data Unavailable</Alert.Heading>
+                        <p>
+                          Unable to load release timeline data. This could be due to:
+                        </p>
+                        <ul>
+                          <li>Release service is temporarily unavailable</li>
+                          <li>No releases have been created for this product yet</li>
+                          <li>Network connectivity issues</li>
+                        </ul>
+                        <p className="mb-0">
+                          <Button variant="outline-primary" size="sm" onClick={() => window.location.reload()}>
+                            Retry Loading
+                          </Button>
+                        </p>
+                      </Alert>
+                    ) : releaseData && releaseData.length > 0 ? (
+                      viewMode === 'timeline' ? (
+                        <TimelineComponent
+                          reportData={releaseData}
+                          suggestedFeatures={productData?.feature_suggestions}
+                          onReleaseClick={handleReleaseClick}
+                          productContext={{
+                            name: productData?.name || reportData?.name,
+                            architecture_type: productData?.architecture_type || reportData?.architecture_type,
+                            product_uuid: productData?.product_uuid || selectedProduct
+                          }}
+                        />
+                      ) : (
+                        <div>
+                          <GanttChart
+                            releases={releaseData}
+                            onReleaseClick={handleReleaseClick}
+                            title="Release Gantt Chart"
+                            productContext={{
+                              name: productData?.name || reportData?.name,
+                              architecture_type: productData?.architecture_type || reportData?.architecture_type,
+                              product_uuid: productData?.product_uuid || selectedProduct
+                            }}
+                          />
+                        </div>
+                      )
+                    ) : (
+                      <div className="text-center py-4">
+                        <div className="alert alert-info">
+                          <h5>No Release Timeline Available</h5>
+                          <p>This product doesn't have any releases configured yet.</p>
+                          <p className="mb-0">Create your first release to see the timeline visualization.</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </Card.Body>
               </Card>
@@ -2072,36 +2093,32 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
                   </div>
                 </Card.Body>
               </Card>
-            </AccordionDetails>
-          </Accordion>
+            </TabPanel>
 
-          {/* Budget Management Section */}
-          <Accordion expanded={expandedSections.budget} onChange={() => handleSectionToggle('budget')} sx={{ mt: 2 }}>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="budget-content"
-              id="budget-header"
-              sx={{
-                backgroundColor: '#6f42c1',
-                color: 'white',
-                '& .MuiAccordionSummary-expandIconWrapper': {
-                  color: 'white',
-                },
-                '&:hover': {
-                  backgroundColor: '#5a2d8a',
-                },
-              }}
-            >
-              <MuiTypography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
-                💰 Budget Management
-              </MuiTypography>
-            </AccordionSummary>
-            <AccordionDetails sx={{ padding: 2 }}>
+            <TabPanel value="budget">
               <Card className="w-100">
                 <Card.Body>
                   <Card.Title>Estimates and Team</Card.Title>
                   <div className="m-2">
-                    {releaseData && releaseData.length ? (
+                    {/* Enhanced Budget Data Loading and Error Handling */}
+                    {isGettingProductBudget && !budgetData && !budgetError ? (
+                      <div className="text-center py-4">
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="visually-hidden">Loading budget data...</span>
+                        </div>
+                        <p className="mt-2 text-muted">Loading budget estimates...</p>
+                      </div>
+                    ) : budgetError && budgetError.response?.status !== 404 ? (
+                      <Alert variant="warning" className="mb-3">
+                        <Alert.Heading>Budget Data Unavailable</Alert.Heading>
+                        <p>Unable to load budget data from the server. Using default estimates.</p>
+                        <Button variant="outline-primary" size="sm" onClick={() => window.location.reload()}>
+                          Retry Loading
+                        </Button>
+                      </Alert>
+                    ) : null}
+
+                    {releaseData && releaseData.length > 0 ? (
                       <div className="row">
                         {releaseData.map((release, index) => (
                           <div key={`release-estimate-${index}`} className="col-md-6 mb-4">
@@ -2435,8 +2452,8 @@ Generated from Buildly Product Labs - ${new Date().toLocaleDateString()}`
               </div>
             </Card.Body>
           </Card>
-            </AccordionDetails>
-          </Accordion>
+            </TabPanel>
+          </TabContext>
 
 
 

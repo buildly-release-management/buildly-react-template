@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import { useQuery } from 'react-query';
@@ -228,18 +228,33 @@ const TopBar = ({ history, location, sessionManager }) => {
 
   const { mutate: addSubscriptionMutation, isLoading: isAddSubscriptionLoading } = useAddSubscriptionMutation(displayAlert);
 
+  // Memoize the organization value to prevent infinite re-renders
+  const organizationValue = useMemo(() => {
+    if (!orgNamesData || orgNamesData.length === 0) {
+      return '';
+    }
+    
+    // If organization is set and exists in the available options, use it
+    if (organization && orgNamesData.includes(organization)) {
+      return organization;
+    }
+    
+    // Otherwise, use the first available organization
+    return orgNamesData[0] || '';
+  }, [organization, orgNamesData]);
+
   // Safely initialize organization once data is available
   useEffect(() => {
+    // Only run if we don't have an organization set and data is available
     if (user && !organization && orgNamesData && orgNamesData.length > 0) {
       const userOrgName = user.organization?.name;
-      if (userOrgName && orgNamesData.includes(userOrgName)) {
-        setOrganization(userOrgName);
-      } else {
-        // Fallback to first available organization
-        setOrganization(orgNamesData[0]);
-      }
+      const targetOrg = (userOrgName && orgNamesData.includes(userOrgName)) 
+        ? userOrgName 
+        : orgNamesData[0];
+      
+      setOrganization(targetOrg);
     }
-  }, [user, organization, orgNamesData]);
+  }, [user?.organization?.name, orgNamesData]); // Remove organization from dependencies to prevent loops
 
   const handleDialogOpen = () => {
     setOpen(true);
@@ -259,6 +274,12 @@ const TopBar = ({ history, location, sessionManager }) => {
 
   const handleOrganizationChange = (e) => {
     const organization_name = e.target.value;
+    
+    // Prevent unnecessary updates if the value hasn't actually changed
+    if (organization_name === organization) {
+      return;
+    }
+    
     setOrganization(organization_name);
     const profileValues = {
       id: user.id,
@@ -386,12 +407,7 @@ const TopBar = ({ history, location, sessionManager }) => {
                 id="org"
                 label="Organization"
                 select
-                value={
-                  // Ensure the organization value exists in the available options
-                  orgNamesData && orgNamesData.includes(organization)
-                    ? organization
-                    : (orgNamesData && orgNamesData.length > 0 ? orgNamesData[0] : '')
-                }
+                value={organizationValue}
                 onChange={handleOrganizationChange}
               >
                 {_.map(orgNamesData, (org, index) => (

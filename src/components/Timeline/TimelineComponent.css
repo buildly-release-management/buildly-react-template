@@ -1,3 +1,54 @@
+/* Timeline Component Styles - Optimized for Performance and Readability */
+
+/* Essential Timeline Library Styles */
+.timeline-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  padding: 20px 0;
+  min-height: 800px; /* Ensure minimum height for timeline visibility */
+}
+
+/* Ensure Timeline library base styles are applied */
+.timeline-wrapper .horizontal-timeline {
+  position: relative;
+  width: 100%;
+  height: 780px;
+}
+
+.timeline-wrapper .horizontal-timeline .events-wrapper {
+  position: relative;
+  height: 100%;
+  margin: 0 40px;
+  overflow: hidden;
+}
+
+.timeline-wrapper .horizontal-timeline .filling-line {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 50%;
+  height: 2px;
+  background: #dfdfdf;
+  transition: width 0.4s;
+}
+
+.timeline-wrapper .horizontal-timeline .events {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 49px;
+  height: 2px;
+  width: 100%;
+}
+
+.timeline-wrapper .horizontal-timeline .events li {
+  position: absolute;
+  display: inline-block;
+  left: 0;
+  height: 100%;
+  transition: left 0.4s;
+}
+
 .feature-list {
   width: 210px;
   height: 180px;
@@ -6,27 +57,14 @@
   border-radius: 4px;
 }
 
-/* Timeline consistency improvements */
-.release-summary {
-  min-width: 420px !important;
-  max-width: 420px !important;
-  width: 420px !important;
-  box-sizing: border-box;
+/* Timeline Icon Styles */
+.timeline-icon {
+  transition: all 0.3s ease;
+  will-change: transform;
 }
 
-/* Ensure consistent timeline event spacing */
-.horizontal-timeline-event {
-  margin: 0 10px;
-}
-
-/* Fix text overflow in timeline cards */
-.release-summary * {
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-/* Current release highlighting */
-.current-release-highlight {
+.timeline-icon.active {
+  transform: scale(1.1);
   animation: pulse 2s infinite;
 }
 
@@ -39,6 +77,387 @@
   }
   100% {
     box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  }
+}
+
+/* Timeline Card Styles */
+.timeline-card {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 12px;
+  color: #333;
+  width: 450px;
+  max-width: 450px;
+  min-width: 450px;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.timeline-card.current-release {
+  border-color: #4CAF50;
+  background-color: #f1f8e9;
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.2);
+}
+
+.timeline-card-header {
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #0C5595;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timeline-active-badge {
+  font-size: 10px;
+  background-color: #4CAF50;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: normal;
+}
+
+.timeline-card-stats {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  color: #555;
+}
+
+.timeline-stat {
+  margin-bottom: 4px;
+}
+
+.timeline-extension-stat {
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #f57c00;
+}
+
+.timeline-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-card-footer {
+  margin-top: auto;
+}
+
+/* Features Section Styles */
+.timeline-features-section {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: rgba(12, 85, 149, 0.1);
+  border-radius: 8px;
+  font-size: 12px;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-features-header {
+  font-weight: bold;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #0C5595;
+}
+
+.timeline-features-title {
+  color: #0C5595;
+}
+
+.timeline-expand-chip {
+  height: 20px !important;
+  font-size: 10px !important;
+  cursor: pointer !important;
+  background-color: rgba(12, 85, 149, 0.2) !important;
+  color: #0C5595 !important;
+}
+
+.timeline-expand-chip:hover {
+  background-color: rgba(12, 85, 149, 0.3) !important;
+}
+
+.timeline-features-content {
+  position: relative;
+  padding-left: 12px;
+  flex: 1;
+}
+
+/* Extended Timeline Line */
+.timeline-line {
+  position: absolute;
+  left: 18px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #4CAF50, #2196F3);
+  opacity: 0.7;
+  border-radius: 2px;
+}
+
+.timeline-no-features {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  margin-top: 40px;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+}
+
+.timeline-feature-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  border: 1px solid rgba(12, 85, 149, 0.2);
+  position: relative;
+  margin-left: 22px;
+  max-width: 340px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Timeline Dots */
+.timeline-dot {
+  position: absolute;
+  left: -32px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.timeline-dot.ai-estimated {
+  background-color: #4CAF50;
+}
+
+.timeline-dot.manual-estimated {
+  background-color: #FFC107;
+}
+
+.timeline-feature-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.timeline-feature-name {
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+  color: #333;
+}
+
+.timeline-feature-details {
+  font-size: 11px;
+  opacity: 0.8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #666;
+}
+
+.timeline-feature-date {
+  color: #666;
+}
+
+.timeline-feature-source {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.timeline-feature-source.ai-source {
+  color: #4CAF50;
+}
+
+.timeline-feature-source.manual-source {
+  color: #FFC107;
+}
+
+/* Budget Section Styles */
+.timeline-budget-section {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: rgba(12, 85, 149, 0.15);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.timeline-budget-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #0C5595;
+}
+
+.timeline-budget-content {
+  color: #333;
+}
+
+.timeline-budget-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.timeline-budget-amount {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.timeline-budget-details {
+  font-size: 11px;
+  opacity: 0.8;
+  color: #666;
+}
+
+.timeline-budget-placeholder {
+  text-align: center;
+  font-size: 11px;
+  font-style: italic;
+  color: #666;
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+/* Issues and Suggestions Sections */
+.timeline-issues-section,
+.timeline-suggestions-section {
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.timeline-issues-header,
+.timeline-suggestions-header {
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: #0C5595;
+}
+
+.timeline-issues-content,
+.timeline-suggestions-content {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #555;
+}
+
+.timeline-issue-item,
+.timeline-suggestion-item {
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-issues-overflow {
+  font-style: italic;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* View Details Button */
+.timeline-view-details {
+  font-size: 12px;
+  text-align: center;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: rgba(12, 85, 149, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #0C5595;
+  font-weight: bold;
+}
+
+.timeline-view-details:hover {
+  background-color: rgba(12, 85, 149, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Title Styles */
+.timeline-title {
+  color: #0C5595;
+}
+
+.timeline-title-text {
+  color: #0C5595;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.timeline-title-text:hover {
+  color: #4CAF50;
+}
+
+.timeline-extension-notice {
+  font-size: 12px;
+  color: #f57c00;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.timeline-current-badge {
+  font-size: 11px;
+  color: #4CAF50;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+/* Ensure consistent timeline event spacing */
+.horizontal-timeline-event {
+  margin: 0 15px;
+}
+
+/* Fix text overflow in timeline cards */
+.timeline-card * {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Performance optimizations */
+.timeline-card,
+.timeline-feature-item,
+.timeline-icon {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .timeline-card {
+    width: 380px;
+    max-width: 380px;
+    min-width: 380px;
+  }
+  
+  .timeline-feature-item {
+    max-width: 300px;
+  }
+  
+  .timeline-feature-name {
+    max-width: 250px;
   }
 }
 

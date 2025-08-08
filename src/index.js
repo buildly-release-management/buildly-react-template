@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -44,12 +44,15 @@ const queryClient = new QueryClient({
   },
 });
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+const container = document.getElementById('root');
+const root = createRoot(container);
+
+root.render(
   <QueryClientProvider client={queryClient}>
     <Elements stripe={stripePromise}>
       <App />
     </Elements>
-  </QueryClientProvider>,
+  </QueryClientProvider>
 );
 
 registerServiceWorker();
